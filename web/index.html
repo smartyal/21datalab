@@ -1,0 +1,79 @@
+<html>
+<head>
+    <title>21datalab workbench 0.1</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="modules/bootstrap/css/bootstrap.min.css"/>
+	<link rel="stylesheet" href="modules/jstree/dist/themes/default/style.min.css"/>
+    <link rel="stylesheet" href="modules/bootstrap-select/dist/css/bootstrap-select.min.css">
+    <link rel="stylesheet" href="modules/font-awesome/css/all.css">
+
+
+
+    <link rel="icon" type="image/x-icon" href="favicon.ico"/>
+    <script src="modules/jquery/jquery.js"></script>
+    <script src="modules/other/popper.min.js"></script>
+	<script src="modules/jstree/dist/jstree.min.js"></script>
+    <script src="modules/jstree-grid/jstreegrid.js"></script>
+    <script src="modules/bootstrap/js/bootstrap.js"></script>
+    <script defer src="modules/font-awesome/js/all.js"></script>
+
+    <script src="js/utils.js"></script>
+	<script src="js/tree.js"></script>
+    <script src="modules/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
+    <script src="js/index.js"></script>
+
+	
+	
+	
+
+</head>
+<body>
+<div class="container">
+  <ul class="nav nav-tabs">
+    <li class="nav-item"> <a class="nav-link active" href="#nav-model" data-toggle="tab">Model</a></li>
+    <li class="nav-item"> <a class="nav-link" href="#nav-pipelines" data-toggle="tab">Pipelines</a></li>
+    <li class="nav-item"> <a class="nav-link" href="#nav-streaming" data-toggle="tab">Streaming</a></li>
+    <li class="nav-item"> <a class="nav-link" href="#nav-settings" data-toggle="tab">  Settings</a></li>
+
+  </ul>
+    <div class="tab-content">
+    <div id="nav-model" class="tab-pane active">
+        <button type="button" class="btn btn-light" id="reloadtreebtn">Reload Tree</button>
+
+        <div id="navtree">
+            <div class="pre-scrollable" id="jstreeContainer" style="overflow-y: auto;overflow-x: auto;width:100%">
+                <div id="jstree_div" class="jstree jstree-default"></div>
+            </div>
+        </div>
+    </div>
+    <div id="nav-pipelines" class="tab-pane fade">
+        <h3><br> Pipelines</h3>
+        <div id="pipelines"></div>
+            <div class="input-group mb-3">
+                <select class="custom-select"  id="pipelineselect"  >
+                    <option selected="true" disabled="disabled">select pipeline ..</option>
+                </select>
+                <div class="input-group-prepend">
+                    <button class="btn btn-outline-secondary" type="button" id="pipelinebutton">open</button>
+                </div>
+
+            </div>
+        <div id="pipelinediv"></div>
+        <!-- here goes the chart?-->
+    </div>
+
+    <div id="nav-streaming" class="tab-pane fade">
+        <h3>Streaming</h3>
+    </div>
+    <div id="nav-settings" class="tab-pane fade">
+      <h3>Settings</h3>
+
+    </div>
+  </div>
+</div>
+
+
+</body>
+
+</html>

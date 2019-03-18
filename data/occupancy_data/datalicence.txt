@@ -1,0 +1,12 @@
+I herewith ackknowledge the original authors of the paper:
+
+Accurate occupancy detection of an office room from light, temperature, humidity and CO2 measurements using statistical learning models. 
+Luis M. Candanedo, Veronique Feldheim. Energy and Buildings. Volume 112, 15 January 2016, Pages 28-39.
+
+for putting the dataset to the public
+https://archive.ics.uci.edu/ml/datasets/Occupancy+Detection+
+This dataset is used here for demo purposes
+
+More datasets are available at
+UCI Machine Learning Repository [http://archive.ics.uci.edu/ml]. Irvine, CA: University of California, School of Information and Computer Science.
+
