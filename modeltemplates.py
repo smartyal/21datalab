@@ -1,3 +1,5 @@
+import numpy
+
 timeseriesWidget = [
     {"name":"selectableVariables","type":"referencer"},
     {"name":"selectedVariables","type":"referencer"},
@@ -27,3 +29,45 @@ button=[
     {"name":"caption","type":"const","value":"learn"},
     {"name":"counter","type":"variable"},
     {"name":"onClick","type":"referencer"}]
+
+dataTable = [
+    {
+        "name": "description",
+        "type": "const",
+        "value": "this is a table generated from the template"
+    },
+    {
+        "name": "columns",
+        "type": "referencer",
+    },
+    {
+        "name": "timeField",
+        "type": "referencer",
+    },
+    {
+        "name": "numberOfRows",
+        "type": "variable",
+        "value": 0
+    },
+    {
+        "name":"variables",
+        "type":"folder"
+    },
+    {
+        "name":"time",
+        "type":"column",
+        "value":[]
+    }
+]
+
+
+def create_table(model,newTablePath="root.newTable",variableNames=["var1","var2"]):
+    model.create_node_from_path(newTablePath, {"type": "table"})
+    model.create_nodes_from_template(newTablePath, template=dataTable)
+    for var in variableNames:
+        variablePath = newTablePath+'.variables.'+var
+        #model.create_node_from_path(variablePath,{"type":"column","value":numpy.empty([0],dtype=numpy.float64)})
+        model.create_node_from_path(variablePath, {"type": "column", "value": None})
+        model.add_forward_refs(newTablePath+'.columns',[variablePath])
+    model.add_forward_refs(newTablePath+'.timeField',[newTablePath+'.time'])
+    model.add_forward_refs(newTablePath+'.columns', [newTablePath + '.time'])

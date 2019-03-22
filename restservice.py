@@ -349,9 +349,11 @@ if __name__ == '__main__':
     m = model.Model()
     if len(sys.argv) > 1:
         if sys.argv[1] == "occupancy":
+            print("starting occupany demo")
             m.create_test(2)
         else:
-            m.create_test(1)
+            print("load model from disk: "+sys.argv[1])
+            m.load(sys.argv[1])
     else:
         m.create_test(1)
 

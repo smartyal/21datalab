@@ -52,6 +52,11 @@ def date2secs(value):
     else:
         return value
 
+def date2msecs(value):
+    """
+        converst a timestamp in to ms since epoch
+    """
+    return date2secs(value)*1000
 
 def secs2date(epoch):
     """ converts float seconds since epoch into datetime object with UTC timezone """
@@ -451,7 +456,7 @@ class Node():
         return self.model
 
     def get_leaves(self):
-        """ this function returns a list of dicts containing the leaves where this referencer points to
+        """ this function returns a list of Nodes containing the leaves where this referencer points to
         this functions works only for nodes of type "referencer", as we are following the forward references
         leaves are defined as following:
             1) all nodes that are listed under the forward references and which are not of type referencer or folder
@@ -635,7 +640,9 @@ class Model():
             take from there the templates from the files and the functions
             this function is execution on startup of the model
         """
-        plugins = os.listdir(os.getcwd()+'/plugins')
+        mydir =os.path.dirname(os.path.realpath(__file__))
+        os.chdir(mydir)#to enable import easily
+        plugins = os.listdir(mydir+'/plugins')
         for fileName in plugins:
             if fileName.startswith('__'):
                 continue # avoid __pycache__ things
@@ -1065,7 +1072,17 @@ class Model():
         return targets
 
 
-
+    def get_leaves_ids(self,desc):
+        """
+            get the list of ids of the leaves, see get_leaves()
+            Returns:
+                a list of ids of the leaves
+        """
+        leaves = self.get_leaves(desc) # a list of node dicts
+        leaveIds = []
+        for leave in leaves:
+            leaveIds.append(leave["id"])
+        return leaveIds
 
     def get_leaves(self,desc):
         """
@@ -1150,7 +1167,7 @@ class Model():
                     return False
                 table.append(self.__find_table(var))
             if len(set(table)) != 1 or  set(table)== {None}:
-                self.logger.warn("not the same table")
+                self.logger.warning("not the same table")
                 return False
 
             #get the time field, and make fancy indexing via numpy arrays
@@ -1249,7 +1266,123 @@ class Model():
                 return self.model[ref]["parent"]
         return None
 
+    def ts_table_add_blob(self,dataBlob):
+        """
+            this function add a data blob to an existing table, it accepts multiple values at once to speed up internals
+            Args:
+                dataBlob (dict or list(dict)): containing key:value pair with key=a descriptor of a column of one table
+                                                          value: a scalar or list or numpy array of values
+        """
 
+        if type(dataBlob) is list:
+            self.logger.error("currently no support for list blobs")
+            return None
+        with self.lock:
+
+            #first find the table and decide for the type conversion
+            for key in dataBlob:
+                if key != '__time':
+                    tableId = self.__find_table(key)
+                    break
+            if not tableId:
+                self.logger.error("can't find the table of "+str(dataBlob[list(dataBlob.keys())[0]]))
+            tableNode =self.get_node(tableId)
+            columnsType = numpy.float64 # this is the default
+
+            # make sure the time is there and convert it: we accept datetime objects, iso strings or floats seconds
+            # plus, the key will be the time node id afterwards
+            timeNode = tableNode.get_child("timeField").get_leaves()[0]
+            #try to find the time entry in the dataBlob, rename it to the timenode id
+            timeKeyOptions = ['__time',timeNode.get_browse_path(),timeNode.get_id()]
+            for timeKeyOption in timeKeyOptions:
+                if timeKeyOption in dataBlob:
+                    dataBlob[timeNode.get_id()] = dataBlob.pop(timeKeyOption) # from now on the time field is names as its browsepath
+                    break
+            if timeNode.get_id() not in dataBlob:
+                self.logger.error("time field entry missing")
+                return False
+
+            #now check if all are on the same table and convert the keys to node ids
+            variables = list(dataBlob.keys())
+            for var in variables:
+                if self.__find_table(var) != tableId:
+                    self.logger.error("variables are not on the same table")
+                    return False
+                id = self.get_id(var)
+                if id != var:
+                    dataBlob[self.get_id(var)]=dataBlob.pop(var) # make new entry as nodeid
+
+
+
+            #now check the sizes of the incoming data and convert them to the requested type
+            inputSizes = set()
+            for key,value in dataBlob.items():
+                if key == timeNode.get_id():
+                    #if we handle the time node, we might have to convert
+                    if type(value) is list or type(value) is numpy.ndarray:
+                        newValues = []
+                        #newValues = numpy.asarray([],dtype=numpy.float64)
+                        for val in value:
+                            newValues.append(date2secs(val))
+                        dataBlob[key] = numpy.asarray(newValues,dtype=numpy.float64) # write it back to the data
+                    else:
+                        #it is a scalar
+                        dataBlob[key] = numpy.asarray([date2secs(value)],dtype=numpy.float64)
+                else:
+                    if numpy.isscalar(dataBlob[key]):
+                        dataBlob[key]=numpy.asarray([dataBlob[key]],dtype=columnsType) # make a list if it is scalar
+                    else:
+                        dataBlob[key]=numpy.asarray(dataBlob[key],dtype=columnsType) # if it is a numpy array already, numpy makes no copy
+                inputSizes.add(dataBlob[key].shape[0])
+            if len(inputSizes)!=1:
+                self.logger.error("incoming data has different len, can't hande as padding is unclear")
+
+            # when we are here, we have converted all incoming data ot numpy arrays, all belong to the same table
+            # and all have the same length, we are ready to put them inside
+            #print("through")
+            #now append them
+            return self.__ts_table_add_row(dataBlob,tableNodeId=tableId)
+
+
+    def __ts_table_add_row(self,dataBlob,tableNodeId=None,autoPad=True,pad=numpy.NaN):
+        """
+            must be called under lock !!
+            this function accepts a dataBlob which is ready to be inserted, we don't make any more checks here
+            it must use variables from one table, it must contain data as numpyarrays
+            variables of the tables which are missing will be filled with pad if autoPad is true
+        """
+        if not tableNodeId:
+            tableNode = self.get_node(self.__get_table(list(dataBlob.keys())[0]))
+        else:
+            tableNode = self.get_node(tableNodeId)
+
+        dataLen = dataBlob[list(dataBlob)[0]].shape[0]
+        columnNodes = tableNode.get_child("columns").get_leaves()
+        for columnNode in columnNodes:
+            id = columnNode.get_id()
+            if id in dataBlob:
+                #we add that one to the table
+                if type(self.model[id]['value']) != numpy.ndarray:
+                    self.model[id]['value'] = dataBlob[id]
+                else:
+                    self.model[id]['value'] = numpy.append(self.model[id]['value'],dataBlob[id])
+            else:
+                #we must pad
+                self.loger.debug("we are padding "+id+" with % ",dataLen)
+                if type(self.model[id]['value']) != numpy.ndarray:
+                    self.model[id]=numpy.full(dataLen,numpy.nan)
+                else:
+                    self.model[id]['value'] = numpy.append(self.model[id]['value'],numpy.full(dataLen,numpy.nan))
+
+        return True
+
+
+
+    def append_rows_to_table(self,dataRow):
+        """
+            this function takes one data row and adds it to a table
+        """
+        pass
 
 
     def append_table(self,blob,autocreate=True,autopad=True):
@@ -1342,11 +1475,24 @@ class Model():
         print (indentation+"-",self.model[rootId]["name"],end="")
         noShowProperties=["name","parent","children"]
         for property in self.model[rootId]:
+            try:
+                if property=="value" and len(self.model[rootId]["value"])>10:
+                    print(",len:"+str(len(self.model[rootId]["value"])),end="")
+            except:
+                pass
             if not property in noShowProperties:
-                value = str(self.model[rootId][property])
-                if len(value)>40:
-                    value = value[0:37]+"..."
-                print("," + property + "=" +value, end="")
+                try:
+                    #if this entry has a len and the len is larger then 20, show only a part of it
+                    if len(self.model[rootId][property]) > 10:
+                        print("," + property + "=" + str(self.model[rootId][property][0:10])+"...("+str(len(self.model[rootId][property]))+")", end="")
+                    else:
+                        print("," + property + "=" + str(self.model[rootId][property]), end="")
+                except:
+                    print("," + property + "=" + str(self.model[rootId][property]), end="")
+                #value = str(self.model[rootId][property])
+                #if len(value)>40:
+                #    value = value[0:37]+"..."
+                #print("," + property + "=" +value, end="")
         print("")
         for child in self.model[rootId]["children"]:
             self.__show_subtree(child)
@@ -1447,32 +1593,57 @@ class Model():
         with self.lock:
             self.__show_subtree("1")
 
+
     # save model and data to files
-    def save(self,fileName):
+    def save(self, fileName):
         """
-            save the model to disk
+            save the model to disk, save the tables separately
+            the model file will be saves as ./models/fileName.model.json and the tables will be saved under
+            ./models/filename.tablePath.npy
+
             Args: the fileName to store it under, please don't give extensions
+
         """
         with self.lock:
-            f = open(fileName+".model.json","w")
-            f.write(json.dumps(self.model,indent=4))
+            m = self.get_model_for_web()  # leave out the tables
+            for nodeId in self.model:
+                if self.get_node_info(nodeId)["type"] == "table":
+                    tablePath = self.get_browse_path(nodeId)
+                    self.logger.debug("found table "+tablePath)
+                    columnNodes = self.get_leaves(tablePath+".columns")
+                    myList = []
+                    for node in columnNodes:
+                        myList.append(self.get_value(node["id"]))
+                    table = numpy.stack(myList,axis=0)
+                    numpy.save("./models/" + fileName + "."+tablePath+".npy", table)
+            f = open("./models/"+fileName + ".model.json", "w")
+            f.write(json.dumps(m, indent=4))
             f.close()
-            #self.timeSeriesTables.save(fileName)
 
     def load(self,fileName):
         """
             replace the current model in memory with the model from disk
             please give only a name without extensions
+            the filename must be in ./models
+            Args:
+                fileName(string) the name of the file without extension
         """
         with self.lock:
             try:
-                f = open(fileName+".model.json","r")
+                f = open("./models/"+fileName+".model.json","r")
                 model = json.loads(f.read())
                 self.model = model
                 f.close()
-            except:
-                print("problem loading")
-            #self.timeSeriesTables.load(fileName)
+                #now also load the tables
+                for nodeId in self.model:
+                    if self.get_node_info(nodeId)["type"] == "table":
+                        table = self.get_browse_path(nodeId)
+                        data = numpy.load("./models/" + fileName+'.'+table + ".npy")
+                        ids = self.get_leaves_ids(table+".columns")
+                        for id, column in zip(ids, data):
+                            self.set_value(id,column)
+            except Exception as e:
+                print("problem loading"+str(e))
 
 
     def create_test(self,testNo=1):

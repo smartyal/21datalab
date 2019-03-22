@@ -176,7 +176,7 @@ class TimeSeriesWidgetDataServer():
         for node in info[0]["children"]:
             if node["name"] == "hasBackground":
                 background["hasBackground"] = node["value"]
-            if node["name"] == "background":
+            if node["name"] == "background" and background["hasBackground"]==True:
                 # we take only the first entry (there should be only one) of the referencer:
                 # this is the nodeId of the background values
                 background["background"]=node["forwardRefs"][0]
