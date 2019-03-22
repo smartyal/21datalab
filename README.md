@@ -30,5 +30,7 @@ The framework is prepared to run on edge, desktop or cloud and is a microservice
 * goto http://localhost:6001/index.html
   * you'll find the model tree under the tab model  
   * you'll find the time UI under tab pipelines, then select the "occupancy" and open, it takes 10 seconds to load the UI
+  * demo how to here: https://docs.google.com/document/d/1q7Ph-TBbDy314IkCoWfwP1www-dX2-i9EQaSTRKHtlc/edit?usp=sharing
+  
 
 
