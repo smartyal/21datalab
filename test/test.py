@@ -80,7 +80,7 @@ def create_test_model_large(myModel,noVars=100,blobs=10,lines=1000):
         #for the time it's special
         blob['__time']=[]
         for d in range(lines):
-            blob['__time'].append( model.date2msecs(startTime+datetime.timedelta(seconds=deltaseconds+d) )        )
+            blob['__time'].append( model.date2secs(startTime+datetime.timedelta(seconds=deltaseconds+d) )        )
         deltaseconds+=lines
         print("deltasec",deltaseconds)
         tt.remaining(blobNo,blobs)
@@ -108,13 +108,13 @@ def create_ts_visu_for_table(model,tablePath="root.newTable",visuPath="root.visu
 if __name__ == "__main__":
     t = Timer()
     m=model.Model()
-    create_test_model_large(m,lines=100000)
+    create_test_model_large(m,lines=10000)
     create_ts_visu_for_table(m)
     m.show()
     #now check the times
     timeBrowsePath = m.get_leaves('root.newTable.timeField')[0]['browsePath']
     val = m.get_value(timeBrowsePath)
-    print("vals",val[0],val[-1],model.secs2dateString(val[0]/1000),model.secs2dateString(val[-1]/1000))
+    print("vals",val[0],val[-1],model.secs2dateString(val[0]),model.secs2dateString(val[-1]))
 
 
 

@@ -512,8 +512,8 @@ class Node():
 
         """
         try:
-            startTime = date2secs(startTime)*1000
-            endTime = date2secs(endTime)*1000
+            startTime = date2secs(startTime)
+            endTime = date2secs(endTime)
             times = numpy.asarray(self.get_value())
             indices = numpy.where((times >= startTime) & (times <= endTime))[0]
             return indices
@@ -1719,7 +1719,7 @@ class Model():
                     values = numpy.round(values)
                 self.model[id]["value"]=values.tolist()
             id = self.get_id("root.variables.time")
-            self.model[id]["value"]=(1000*times).tolist()
+            self.model[id]["value"]=(times).tolist()
             #now correct the background
 
 
@@ -1890,6 +1890,7 @@ class Model():
             self.add_forward_refs('root.visualization.widgets.timeseriesOccupancy.selectableVariables',["root.occupancy.variables"])
             self.add_forward_refs('root.visualization.widgets.timeseriesOccupancy.table',['root.occupancy'])
             self.add_forward_refs('root.visualization.widgets.timeseriesOccupancy.background',['root.occupancy.classification'])
+            self.set_value('root.visualization.widgets.timeseriesOccupancy.backgroundMap', {"1": "yellow", "0": "brown", "-1": "blue", "default": "white"}) #match annotation colors
 
             #now create the logistic regression
             self.create_nodes_from_template('root',self.templates["logisticregression.logisticRegressionTemplate"])
@@ -1901,7 +1902,7 @@ class Model():
 
             self.add_forward_refs('root.visualization.widgets.timeseriesOccupancy.observer',['root.logisticRegression.executionCounter']) # observe the execution of the scorer
 
-
+            self.show()
 
 if __name__ == '__main__':
 

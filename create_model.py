@@ -103,7 +103,7 @@ def create_test(model, testNo=1):
         model.create_node_from_path('root.visualization.widgets.timeseriesOne.hasAnnotation.tags',
                                    {"type": "const", "value": ["one", "two"]})
         model.create_node_from_path('root.visualization.widgets.timeseriesOne.hasAnnotation.colors',
-                                   {"type": "const", "value": ["yellow", "brown", "greay", "green", "red"]})
+                                   {"type": "const", "value": ["yellow", "brown", "grey", "green", "red"]})
 
         model.create_node_from_path('root.visualization.widgets.timeseriesOne.table',
                                    {"type": "referencer"})
@@ -192,8 +192,8 @@ def create_test(model, testNo=1):
         model.create_node_from_path("root.visualization.widgets.timeseriesOne.background", {"type": "referencer"})
         model.add_forward_refs("root.visualization.widgets.timeseriesOne.background", ["root.variables.back"])
         model.create_node_from_path("root.visualization.widgets.timeseriesOne.backgroundMap", {"type": "const",
-                                                                                              "value": {"1": "red",
-                                                                                                        "0": "green",
+                                                                                              "value": {"1": "black",
+                                                                                                        "0": "white",
                                                                                                         "-1": "blue",
                                                                                                         "default": "white"}})
 

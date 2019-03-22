@@ -31,7 +31,7 @@ def read_occupancy(fileName="datatest2.txt"):
         items=items[1:] # omit the first
         #convert the time
         my_time = parse(items[0])
-        epoch = round_time(my_time).timestamp()*1000
+        epoch = round_time(my_time).timestamp()#*1000
         #print(epoch)
         items[0]=epoch # write it back to the items
         for key,item in zip(newLabels,items):

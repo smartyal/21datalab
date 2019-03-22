@@ -22,7 +22,7 @@ timeseriesWidget = [
     ]},
     {"name":"hasBackground","type": "const", "value": True},
     {"name":"background","type":"referencer"},
-    {"name":"backgroundMap","type": "const", "value": {"1": "red", "0": "green", "-1": "blue", "default": "white"}}
+    {"name":"backgroundMap","type": "const", "value": {"1": "yellow", "0": "brown", "-1": "blue", "default": "white"}}
 ]
 
 button=[

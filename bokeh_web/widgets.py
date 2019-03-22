@@ -224,6 +224,10 @@ class TimeSeriesWidgetDataServer():
         if self.settings["background"]["hasBackground"]==True:
             varList.append(self.settings["background"]["background"]) # include the node it holding the backgrounds
         # now get data from server
+        if start:
+            start=start/1000
+        if end:
+            end=end/1000
         body = {
             "nodes": varList,
              "startTime" : start,
@@ -232,6 +236,8 @@ class TimeSeriesWidgetDataServer():
             "includeTimeStamps": "02:00",
         }
         r=self.__web_call("POST","_getdata",body)
+        #convert the time to ms since epoch
+        r["__time"]=(numpy.asarray(r["__time"])*1000).tolist()
         return r
 
     def get_time_node(self):
