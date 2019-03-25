@@ -388,7 +388,7 @@ class TimeSeriesWidget():
         self.plot = figure(tools='xpan,xwheel_zoom',
                            plot_height=self.height,
                            plot_width=self.width,
-                           x_axis_type='datetime',y_range=DataRange1d())
+                           x_axis_type='datetime',y_range=Range1d())
 
         self.plot.toolbar.logo = None   #avoid the bokeh logo
 
@@ -542,12 +542,9 @@ class TimeSeriesWidget():
             yMax = dataMax + (dataMax - dataMin) * 0.02
             self.logger.debug("current y axis limits" + str(yMin)+" "+str(yMax))
 
-            self.plot.y_range.start = 0
-            self.plot.y_range.end = 1
-
             self.plot.y_range.start = yMin
             self.plot.y_range.end = yMax
-            #self.plot.y_range = Range1d(yMin, yMax)
+
         else:
             self.logger.warning("not y axix to arrange")
 
@@ -574,13 +571,13 @@ class TimeSeriesWidget():
 
     def __plot_lines(self):
         """ plot the currently selected variables as lines, update the legend """
-        self.logger.debug("__plot_lines")
+        self.logger.debug("@__plot_lines")
         settings= self.server.get_settings()
         self.variables = self.server.get_variables_selected().copy()
-        self.logger.debug("from server var selected %s",str(self.variables))
+        self.logger.debug("@__plot_lines:from server var selected %s",str(self.variables))
         variablesRequest = self.variables.copy()
         variablesRequest.append("__time")   #make sure we get the time included
-        self.logger.debug("self.variables, bins "+str(variablesRequest)+str( settings["bins"]))
+        self.logger.debug("@__plot_lines:self.variables, bins "+str(variablesRequest)+str( settings["bins"]))
         getData = self.server.get_data(variablesRequest,self.rangeStart,self.rangeEnd,settings["bins"]) # for debug
 
         self.data=ColumnDataSource(getData) # this will magically update the plot
@@ -605,7 +602,7 @@ class TimeSeriesWidget():
             self.hasLegend = True
         else:
             self.plot.legend.items = legendItems #replace them
-
+        #self.data.data = getData #xxxtest
         self.adjust_y_axis_limits()
 
 
