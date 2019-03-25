@@ -18,8 +18,8 @@ logisticRegressionTemplate=[
             {"name":"input","type":"referencer"},                  # the outputs
             {"name":"output","type":"referencer"},
             {"name":"annotations","type":"referencer"},             #the user annotations
+            {"name":"categoryMap","type":"const"},                  #logistic regression work on categories, this is the number mapper, INPUT
             {"name":"signal","type":"variable","value":"nosignal"}, # of ["nosignal","interrupt"]
-            {"name":"classificationMap","type":"variable"},          #a dict mapping the class value and the given string tag, this is an output
             {"name":"executionCounter","type":"variable","value":0}            # a counter which is increased on each execution of this function
         ]
     }
@@ -70,10 +70,7 @@ def logistic_regression(functionNode):
     for anno in annotations:
         tags.add(anno.get_child('tags').get_value()[0]) # we expect the annotation to have a "tags" field and we only take the first tag
     print("now the tags are",tags)
-    tagsMap = {}
-    for index,tag in zip(range(len(tags)),list(tags)):
-        tagsMap[tag]=index
-    print("now the tag map",tagsMap)
+    tagsMap = functionNode.get_child("categoryMap").get_value()# pick the category mapping from the model
 
 
     indices = [] # a list of indices which give the points in time that were labelled

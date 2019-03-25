@@ -1890,13 +1890,16 @@ class Model():
             self.add_forward_refs('root.visualization.widgets.timeseriesOccupancy.selectableVariables',["root.occupancy.variables"])
             self.add_forward_refs('root.visualization.widgets.timeseriesOccupancy.table',['root.occupancy'])
             self.add_forward_refs('root.visualization.widgets.timeseriesOccupancy.background',['root.occupancy.classification'])
-            self.set_value('root.visualization.widgets.timeseriesOccupancy.backgroundMap', {"1": "yellow", "0": "brown", "-1": "blue", "default": "white"}) #match annotation colors
+            self.set_value('root.visualization.widgets.timeseriesOccupancy.backgroundMap', {"0": "brown", "1": "yellow", "-1": "blue", "default": "white"}) #match annotation colors
+            #self.set_value('root.visualization.widgets.timeseriesOccupancy.backgroundMap', {"0": "blue", "1": "black", "-1": "blue", "default": "white"}) #match annotation colors
+            self.set_value('root.visualization.widgets.timeseriesOccupancy.hasAnnotation.tags',["busy","free"])
 
             #now create the logistic regression
             self.create_nodes_from_template('root',self.templates["logisticregression.logisticRegressionTemplate"])
             self.add_forward_refs('root.logisticRegression.input',['root.occupancy.variables.Temperature', 'root.occupancy.variables.Light','root.occupancy.variables.CO2'])
             self.add_forward_refs('root.logisticRegression.output', ['root.occupancy.classification'])
             self.add_forward_refs('root.logisticRegression.annotations',['root.visualization.widgets.timeseriesOccupancy.hasAnnotation.newAnnotations'])
+            self.set_value('root.logisticRegression.categoryMap', {"busy": 1, "free": 0})
             #also hook the button on it
             self.add_forward_refs('root.visualization.widgets.timeseriesOccupancy.buttons.button1.onClick',['root.logisticRegression'])
 
