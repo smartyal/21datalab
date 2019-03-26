@@ -56,7 +56,16 @@ palette = {
     'alarm' : '#d92200'
 }
 
-lineColors =[
+whiteLineColors =[
+'#d9b100',
+'#002699',
+'#660000',
+"#8080ff",
+"#66ff66",
+palette['alarm']
+]
+
+defaultLineColors=[
 palette['21yellow'],
 palette["21yellow20%"],
 palette['bw70%'],
@@ -64,6 +73,7 @@ palette["21yellow70%"],
 palette["bw20%"],
 palette['alarm']
 ]
+
 
 defaultTheme = {
     'attrs' : {
@@ -85,5 +95,29 @@ defaultTheme = {
     }
 }
 
+whiteTheme ={
+'attrs' : {
+        'Figure' : {
+                'background_fill_color': "white",
+                'border_fill_color': "white",
+                'outline_line_color':"black",
+            },
+        'Grid': {
+            'grid_line_color':palette['bw60%']
+        },
+        'Title': {
+            'text_color': palette['bw30%']
+        },
+        'Legend':{
+            'background_fill_color': palette['bw80%'],
+            'label_text_color': palette['bw20%']
+        }
+    }
+
+}
+
+
+
 textcolor=palette["bw80%"]
+lineColors = whiteLineColors
 

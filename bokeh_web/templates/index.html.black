@@ -6,7 +6,7 @@
     {{ bokeh_js }}
     <style type="text/css">{% include 'styles.css' %}</style>
   </head>
-  <body bgcolor = "white" text="black">
+  <body bgcolor = "#1a1a1a" text="#cccccc">
     {{ plot_div|indent(8) }}
     {{ plot_script|indent(8) }}
   </body>
