@@ -13,8 +13,10 @@ import datetime
 import dateutil.parser
 import sys
 import os
+import uuid
 
 import modeltemplates
+
 
 
 """
@@ -543,6 +545,7 @@ class Model():
         self.templates={} # holding all templates from ./plugins
         self.lock = threading.RLock()
         self.import_plugins()
+        self.differentialHandles ={} # containing handle:model_copy entries to support differential queries
 
     def __init_logger(self, level):
         """setup the logger object"""
@@ -642,6 +645,8 @@ class Model():
         """
         mydir =os.path.dirname(os.path.realpath(__file__))
         os.chdir(mydir)#to enable import easily
+        sys.path.append(mydir+'/plugins') # for the importlib to find the stuff
+
         plugins = os.listdir(mydir+'/plugins')
         for fileName in plugins:
             if fileName.startswith('__'):
@@ -735,6 +740,8 @@ class Model():
             newNode.update({"id":newId,"name":name,"type":type,"parent":parentId})
             if properties !={}:
                 newNode.update(properties)
+            if value != None:
+                newNode["value"]=value
             self.model[parentId]["children"].append(newId)
             self.model[newId]=newNode
             return newNode["id"]
@@ -851,27 +858,28 @@ class Model():
         """
             Returns: the full deepcopy of the internal model object (list of dictionaries of the nodes)
                      but leaving out the column values (this can be a lot of data)
+                     and the file values (files are binary or strings with big size, typically serialized ML-models)
         """
 
         model = {}
         with self.lock:
-            for k, v in self.model.items():
-                if v["type"] == "column":
+            for nodeId, nodeDict in self.model.items():
+                if nodeDict["type"] in ["column","file"]:
                     # with columns we filter out the values
                     node = {}
-                    for nk, nv in v.items():
+                    for nk, nv in nodeDict.items():
                         if nk == "value":
                             try:
-                                value = "len " + str(len(nv))
+                                node[nk] = "len " + str(len(nv))
                             except:
-                                value = "None"
-                            node[nk] = value
+                                node[nk] = "None"
                         else:
-                            node[nk] = nv
-                    model[k] = node
+                            node[nk] = copy.deepcopy(nv)  # values can be list, dict and deeper objects
+                    model[nodeId] = node
                 else:
-                    model[k] = v
-                model[k]["browsePath"] = self.get_browse_path(k) #also add the browsepath
+                    #this node is not a colum, can still hold huge data
+                    model[nodeId] = copy.deepcopy(nodeDict)  # values can be list, dict and deeper objects nodeDict
+                model[nodeId]["browsePath"] = self.get_browse_path(nodeId) #also add the browsepath
         return model
 
 
@@ -1645,6 +1653,91 @@ class Model():
             except Exception as e:
                 print("problem loading"+str(e))
 
+    def create_differential_handle(self):
+        """
+            make a copy of the current model and keep it as copy, create a handle for it and return that handle
+            Returns:
+             a hash handle for the current model
+        """
+        with self.lock:
+            newHandle = str(uuid.uuid4().hex) # make a new unique handle
+            self.differentialHandles[newHandle]= self.get_model_for_web() # make an entry by copying the whole model
+            return newHandle
+
+    def remove_differential_handle(self,handle):
+        """
+            removes an entry from the memorized model states of the past identified by the handle
+            Arges: handle (uuid string): the id of the handle
+            Returns (bool) for success
+        """
+        with self.lock:
+            if handle in self.differentialHandles:
+                del self.differentialHandles[handle]
+                return True
+            else:
+                return False # not found
+
+    def get_differential_update(self,oldHandle,newHandle=None,delOld=True):
+        """
+            this function takes the copy of the model (hopefully) held under handle and compares it to the current model:
+            the differences are analyzed and returned, the old copy of the model under "handle" is replaced by
+            Args:
+                oldHandle (string): the unique id of the old version of the model
+                newHandle (string): the unique id of the new version to compare to, if not given, we take the current
+                                    and will automatically make a new entry for the current
+                delOld: if set, we remove the old entry from the memorized models
+            Returns (dict):
+                containing information about the changes between and old and new version of the model
+                key values:
+                "handle":(string): the handle under which we find the new version of the model
+                "newNodes": (dict) nodes which are new to the tree in the form Nodeid:{properties}
+                "deletedNodeIds": (list) list of node ids which have been deleted
+                "modifiedNodes": (dict) nodes which have changed properties: if so, we give the full updated node back
+
+        """
+        diff={"handle":None,"newNodes":{},"deletedNodeIds":[],"modifiedNodes":{}}
+        if newHandle is None:
+            newModel = self.get_model_for_web()
+        else:
+            if newModel in self.differentialHandles:
+                newModel = self.differentialHandles[newModel]
+            else:
+                return None # the newhandle did not exist
+        if oldHandle not in self.differentialHandles:
+            return None # the old handle does not exist
+        oldModel = self.differentialHandles[oldHandle]
+
+        #now iterate over the nodes
+
+        #find the changes
+        for newNodeId in newModel:
+            if newNodeId not in oldModel:
+                #this node is not found in the old model, so it is new
+                diff["newNodes"][newNodeId]=copy.deepcopy(newModel[newNodeId])
+            else:
+                #this node is in both models, check if there was a change insight the nodes
+                #for a deep comparison, serialize them
+                newNodeSerialized = json.dumps(newModel[newNodeId],sort_keys=True)
+                oldNodeSerialized = json.dumps(oldModel[newNodeId],sort_keys=True)
+                if newNodeSerialized != oldNodeSerialized:
+                    #something is different, so return that node
+                    diff["modifiedNodes"][newNodeId]=copy.deepcopy(newModel[newNodeId])
+
+        #now check for deleted once, these appear in the old but not in the new
+        diff["deletedNodeIds"]=list(set(oldModel.keys())-set(newModel.keys()))
+
+        if delOld:
+            del self.differentialHandles[oldHandle]
+
+        if not newHandle:
+            #we auto-create a new handle and entry
+            diff["handle"]=self.create_differential_handle()
+
+        return diff
+
+
+
+
 
     def create_test(self,testNo=1):
         """
@@ -1906,6 +1999,31 @@ class Model():
             self.add_forward_refs('root.visualization.widgets.timeseriesOccupancy.observer',['root.logisticRegression.executionCounter']) # observe the execution of the scorer
 
             self.show()
+
+        elif testNo == 3:
+            # make some nodes
+            for id in range(10):
+                self.create_node_from_path("root.add.var"+str(id), {"type": "variable", "value": id+100})
+            for id in range(100):
+                self.create_node_from_path("root.remove.var"+str(id), {"type": "variable", "value": id+100})
+
+
+            #now start a thread that changes the tree periodically
+            def __update_tree():
+                while True:
+                    time.sleep(3.0)
+                    with self.lock:
+                        self.logger.debug("__update_tree")
+                        self.create_node_from_path("root.add.dyn"+str(uuid.uuid4()))
+                        removeFolder = self.get_id("root.remove")
+                        if self.model[removeFolder]["children"]:
+                            self.delete_node(self.model[removeFolder]["children"][0])
+
+            self.testThread = threading.Thread(target=__update_tree)
+            self.testThread.start()
+
+
+
 
 if __name__ == '__main__':
 

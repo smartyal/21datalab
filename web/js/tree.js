@@ -73,14 +73,20 @@ var treeTypes=
     }
 }
 
+var diffHandle = null;
+var treeNodes = null; //holding the current treeNodes
+
 function tree_generate()
 {
     $('#jstree_div').jstree("destroy");
-    data = http_get("/_getall");
+    //data = http_get("/_getall");
+    var data = http_get("_diffUpdate"); //the diff update call without data return a handle and the full model
 
     try
     {
-        var model = JSON.parse(data);
+        var parsed = JSON.parse(data);
+        var model = parsed.model;
+        diffHandle = parsed.handle; //this is a global
     }
     catch(err)
     {
@@ -89,6 +95,7 @@ function tree_generate()
 
 
     var nodes = create_children(model,'1');
+    treeNodes = nodes; //keep a copy in the global
 
     var myTree = {
         'plugins':["grid"],
@@ -110,7 +117,12 @@ function tree_generate()
                     'children': nodes,
                     data: {}
                 }
-            ]
+            ],
+            'check_callback' : function(operation, node, node_parent, node_position, more) {
+                console.log('check_callback' + operation + " " + node.id + " " + node_parent.text);
+                return true; //we allow all operations as default
+            }
+
         },
         grid: {
             columns: [
@@ -125,6 +137,45 @@ function tree_generate()
 
 }
 
+
+//get the differential tree
+function tree_update()
+{
+
+   var query = {handle: diffHandle};
+   http_post('/_diffUpdate/', JSON.stringify(query),tree_update_cb);
+}
+
+function tree_update_cb(data)
+{
+    try
+    {
+        var updateData =JSON.parse(data);
+        diffHandle = updateData.handle; //remember this for the next time
+    }
+    catch
+    {
+        return;
+    }
+
+    //remove deleted nodes from the tree
+    for (var i=0;i<updateData.deletedNodeIds.length;i++)
+    {
+        var deleteId = updateData.deletedNodeIds[i];
+        delete treeNodes[deleteId]; //remove it from the global tree
+        var res = $('#jstree_div').jstree().delete_node(deleteId);
+        console.log("deleting id ",deleteId,res);
+    }
+
+    for (var newNodeId in updateData.newNodes)
+    {
+        var node = updateData.newNodes[newNodeId];
+        console.log("new node",node.id)
+        var treeNode = node_to_tree(node);
+        $("#jstree_div").jstree(true).create_node(node.parent, treeNode);
+        treeNodes[newNodeId] = node; //store the info in the tree
+    }
+}
 
 
  //returns an array of children ready for the tree

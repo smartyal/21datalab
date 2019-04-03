@@ -158,6 +158,10 @@ def all(path):
     except:
         pass
 
+    #if the path has ending /, we remove it
+    if path[-1]=='/':
+        path = path[:-1]
+
     # server all the frontend stuff: js, css etc
     if any(extension in str(path) for extension in ['.js','.css','.htm','.img','.ico','.png','.gif','.map','.svg','.wof','.ttf']):
 
@@ -177,12 +181,16 @@ def all(path):
 
     elif (str(path) == "pipelines") and str(flask.request.method) in ["GET"]:
         logger.debug("execute get pipelines")
-        pipelinesNodeIds= m.get_node('root.visualization.pipelines').get_children()
-        pipelines = {}
-        for pipeNode in pipelinesNodeIds:
-            pipelines[pipeNode.get_name()]= {"url":pipeNode.get_child("url").get_property("value")}
-        response = json.dumps(pipelines,indent=4)# some pretty printing for debug
-        responseCode = 200
+        try:
+            pipelinesNodeIds= m.get_node('root.visualization.pipelines').get_children()
+            pipelines = {}
+            for pipeNode in pipelinesNodeIds:
+                pipelines[pipeNode.get_name()]= {"url":pipeNode.get_child("url").get_property("value")}
+            response = json.dumps(pipelines,indent=4)# some pretty printing for debug
+            responseCode = 200
+        except:
+            logger.error("I have no pipelines")
+            responseCode = 404
 
     elif(str(path) == "_getleaves") and str(flask.request.method) in ["POST", "GET"]:
         logger.debug("execute get forward")
@@ -317,7 +325,7 @@ def all(path):
             result.append(newNodeId)
             if not newNodeId:
                 responseCode = 400
-        respone = json.dumps(result)
+        response = json.dumps(result)
         responseCode = 201
 
     elif (str(path) == "_references"):
@@ -337,6 +345,26 @@ def all(path):
         else:
             responseCode = 404
 
+    elif (str(path) == "_diffUpdate") and str(flask.request.method) in ["GET","POST"]:
+        logger.debug("get differential update")
+        if not data or data["handle"] is None:
+            #this is for creating a handle
+            curModel = m.get_model_for_web()
+            handle = m.create_differential_handle()
+            res = {"handle":handle,"model":curModel}
+            response = json.dumps(res)
+            responseCode = 200
+        else:
+            #we have a handle
+            res = m.get_differential_update(data["handle"])
+            if res:
+                response = json.dumps(res)
+                responseCode = 200
+            else:
+                logger.error("requested handle does not exist")
+                response ="requested handle does not exist"
+                responseCode = 404
+
 
     else:
         logger.warn("CANNOT HANDLE REQUEST"+str(path))
@@ -351,6 +379,9 @@ if __name__ == '__main__':
         if sys.argv[1] == "occupancy":
             print("starting occupany demo")
             m.create_test(2)
+        elif sys.argv[1] == "dynamictest":
+            print("starting the dynamic test")
+            m.create_test(3)
         else:
             print("load model from disk: "+sys.argv[1])
             m.load(sys.argv[1])

@@ -5,6 +5,7 @@ import model
 import modeltemplates
 import datetime
 import pytz
+import json
 
 
 """
@@ -105,20 +106,53 @@ def create_ts_visu_for_table(model,tablePath="root.newTable",visuPath="root.visu
     model.add_forward_refs(visuPath+'.table', [tablePath])
     model.set_value(visuPath+".hasBackground",False)
 
-if __name__ == "__main__":
-    t = Timer()
+
+
+def diff_test():
+    """
+        a test for the differential update thing
+    """
     m=model.Model()
-    create_test_model_large(m,lines=10000)
-    create_ts_visu_for_table(m)
+
+    #make some nodes
+    for id in range(10):
+        m.create_node("root",name="node"+str(id),type="const",value=id)
     m.show()
+    handle = m.create_differential_handle() # get a status snap
+
+    #make some new ones
+    for id in range(2):
+        m.create_node("root",name="node"+str(id+10),type="const")
+    #delete one
+    m.delete_node('2')
+    #modify
+    m.set_value('1',100)
+    m.add_property('3',"newPropt","something")
+    diff = m.get_differential_update(handle)
+    m.show()
+    print(json.dumps(diff,indent =4))
+    print("unchanged")
+    print(json.dumps(m.get_differential_update(diff["handle"])))
+
+
+
+
+
+if __name__ == "__main__":
+
+    #t = Timer()
+    #m=model.Model()
+    #create_test_model_large(m,lines=10000)
+    #create_ts_visu_for_table(m)
+    #m.show()
     #now check the times
-    timeBrowsePath = m.get_leaves('root.newTable.timeField')[0]['browsePath']
-    val = m.get_value(timeBrowsePath)
-    print("vals",val[0],val[-1],model.secs2dateString(val[0]),model.secs2dateString(val[-1]))
+    #timeBrowsePath = m.get_leaves('root.newTable.timeField')[0]['browsePath']
+    #val = m.get_value(timeBrowsePath)
+    #print("vals",val[0],val[-1],model.secs2dateString(val[0]),model.secs2dateString(val[-1]))
 
 
 
-    m.save("newtest")
+    #m.save("newtest")
 
     #t.start()
     #m.save("savetest")
@@ -129,7 +163,7 @@ if __name__ == "__main__":
     #t.stop("loading")
     #n.show()
 
-
+    diff_test()
 
 
 
