@@ -21,7 +21,7 @@ var treeIconsOld =
     reference : "fa fa-link",
     template : "fa fa-file-text-o",
     add : "fa fa-plus",
-    delete : "fa fa-remove",
+    delete : "far fa-trash-alt",
     rename : "fa fa-pencil-square-o",
     execute : "fa fa-play",
     abort : "fa fa-stop"
@@ -98,7 +98,7 @@ function tree_generate()
     treeNodes = model; //keep a copy in the global
 
     var myTree = {
-        'plugins':["grid"],
+        'plugins':["grid","contextmenu"],
         'core': {
             "themes" : {
                 "variant" : "small"
@@ -124,18 +124,51 @@ function tree_generate()
             }
 
         },
-        grid: {
+        'grid': {
             columns: [
                 { header: "Nodes" },
                 { header: "Value", value:"value"}
                 //{ header: "Value", value:"value"}function(node){return(node.data.value);
             ]
-        }
-        //'types':treeTypes,
-        //"themes" : {"variant" : "small"}
-    }
-    $('#jstree_div').jstree(myTree);
+        },
+        'contextmenu':{
+            items:function(node){
+                var menuObject={
+                    "delete": {
+                        "label": "delete",
+                        "action": function (obj) {context_menu_delete(node);},
+                        "icon": treeIconsOld["delete"]
+                    }
+                };
 
+                //if this node is a function, execution is also possible
+                if ((node.id in treeNodes) && (treeNodes[node.id].type == "function"))
+                {
+
+                    menuObject["execute"] = {
+                        "label": "execute",
+                        "action": function(obj){context_menu_execute(node);},
+                        "icon": treeIconsOld["function"]
+                    }
+                }
+
+                return menuObject;
+            }
+        }
+    }
+
+    $('#jstree_div').jstree(myTree);
+}
+
+
+function context_menu_delete(node)
+{
+    console.log("context delete",node);
+}
+
+function context_menu_execute(node)
+{
+    console.log("context execute",node);
 }
 
 
