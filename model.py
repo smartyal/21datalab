@@ -2010,13 +2010,21 @@ class Model():
             self.create_node_from_path("root.change_name_one")
             self.create_node_from_path("root.change_value")
 
+            self.create_node_from_path("root.move.first")
+            self.create_node_from_path("root.move.second")
+
+            self.create_node_from_path("root.refs",properties={"type":"referencer"})
+            self.add_forward_refs("root.refs",["root.move.first","root.move.second","root.move"])
+
 
             #now start a thread that changes the tree periodically
+
             def __update_tree():
                 while True:
                     time.sleep(3.0)
                     with self.lock:
                         self.logger.debug("__update_tree")
+
                         self.create_node_from_path("root.add.dyn"+str(uuid.uuid4()))
                         removeFolder = self.get_id("root.remove")
                         if self.model[removeFolder]["children"]:
@@ -2028,6 +2036,12 @@ class Model():
                         else:
                             id = self.get_id("root.change_name_two")
                             self.model[id]["name"]="change_name_one"
+
+                        id = self.get_id("root.move")
+                        self.model[id]["children"].reverse()
+
+                        id=self.get_id("root.refs")
+                        self.model[id]["forwardRefs"].reverse()
 
                         self.set_value("root.change_value",int(uuid.uuid4())%100)
 

@@ -166,6 +166,9 @@ function tree_update_cb(data)
         delete treeNodes[parseInt(deleteId)]; //remove it from the global tree
         var res = $('#jstree_div').jstree().delete_node(deleteId);
         console.log("deleting id ",deleteId,res);
+        // missing here is the synchronization with the treeNodes: the parent still holds the id in it's list,
+        // this will be fixed when we look for the modifications:
+        // the parent will be in the modified nodes list, finally we will take over the new node dict of the parent
     }
 
     //add new nodes
@@ -175,7 +178,10 @@ function tree_update_cb(data)
         console.log("new node",node.id)
         var treeNode = node_to_tree(node);
         $("#jstree_div").jstree(true).create_node(node.parent, treeNode);
-        treeNodes[newNodeId] = node; //store the info in the tree
+        treeNodes[newNodeId] = node; //store the nodedict info in the tree
+        // missing here is the synchronization with the treeNodes: the parent still holds the id in it's list,
+        // this will be fixed when we look for the modifications:
+        // the parent will be in the modified nodes list, finally we will take over the new node dict of the parent
     }
 
     //synchronize modified nodes
@@ -189,11 +195,13 @@ function tree_update_cb(data)
         // name, value, children and references
         // check if any property relevant for thehas changed
 
+        //check name changes
         if (newNode.name != oldNode.name)
         {
             $('#jstree_div').jstree(true).rename_node(id, newNode.name);
         }
 
+        //check value changes
         if (newNode.value != oldNode.value)
         {
             var tree = $('#jstree_div').jstree(true);
@@ -203,7 +211,47 @@ function tree_update_cb(data)
             tree.rename_node(id,newNode.name); // same name as it was
         }
 
-        treeNodes[id] = newNode; // update the new properties
+        //check modification of dependencies: children and references
+        if (newNode.children.toString() != oldNode.children.toString())
+        {
+            //iterate over the array
+
+            for (index =0; index < newNode.children.length;index++)
+            {
+                if (newNode.children[index] != oldNode.children[index])
+                {
+                    var result = $('#jstree_div').jstree(true).move_node(newNode.children[index],newNode.id,index);
+                    console.log("move ",newNode.children[index]," to parent ",newNode.id,"on position ", index,"jstreeresult:",result);
+                }
+            }
+            //children have changed
+        }
+
+        if (newNode.forwardRefs.toString() != oldNode.forwardRefs.toString())
+        {
+            //references have changed, we take the brute force by rebuilding all refs from scratch
+            // for this, we iterate over the children of the referencer - js tree node
+            // we must use the real node of the jstree, as the reference - node are
+            // only create on the js tree, not in the models
+            var children = $('#jstree_div').jstree(true).get_node(oldNode.id).children;
+            var result = $('#jstree_div').jstree(true).delete_node(children);
+            console.log("deleted reference nodes ",children.toString()," from ",oldNode.id,"result ",result);
+
+            //now rebuild them
+            for (entry in newNode.forwardRefs)
+            {
+                var targetId = newNode.forwardRefs[entry];
+                var referenceeModelNode = {
+                        'type': 'referencee',
+                        'name': treeNodes[targetId].browsePath,
+                        'parent': newNode.id
+                };
+                var referenceeNode = node_to_tree(referenceeModelNode);
+                var result = $('#jstree_div').jstree(true).create_node(newNode.id,referenceeNode);
+                console.log("built reference",referenceeModelNode.name,result);
+            }
+        }
+        treeNodes[id] = newNode; // update the new properties including children, refs etc
     }
 }
 
