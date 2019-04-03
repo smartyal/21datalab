@@ -2007,6 +2007,9 @@ class Model():
             for id in range(100):
                 self.create_node_from_path("root.remove.var"+str(id), {"type": "variable", "value": id+100})
 
+            self.create_node_from_path("root.change_name_one")
+            self.create_node_from_path("root.change_value")
+
 
             #now start a thread that changes the tree periodically
             def __update_tree():
@@ -2018,6 +2021,16 @@ class Model():
                         removeFolder = self.get_id("root.remove")
                         if self.model[removeFolder]["children"]:
                             self.delete_node(self.model[removeFolder]["children"][0])
+
+                        id = self.get_id("root.change_name_one")
+                        if id:
+                            self.model[id]["name"]="change_name_two"
+                        else:
+                            id = self.get_id("root.change_name_two")
+                            self.model[id]["name"]="change_name_one"
+
+                        self.set_value("root.change_value",int(uuid.uuid4())%100)
+
 
             self.testThread = threading.Thread(target=__update_tree)
             self.testThread.start()

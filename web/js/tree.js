@@ -95,7 +95,7 @@ function tree_generate()
 
 
     var nodes = create_children(model,'1');
-    treeNodes = nodes; //keep a copy in the global
+    treeNodes = model; //keep a copy in the global
 
     var myTree = {
         'plugins':["grid"],
@@ -128,6 +128,7 @@ function tree_generate()
             columns: [
                 { header: "Nodes" },
                 { header: "Value", value:"value"}
+                //{ header: "Value", value:"value"}function(node){return(node.data.value);
             ]
         }
         //'types':treeTypes,
@@ -162,11 +163,12 @@ function tree_update_cb(data)
     for (var i=0;i<updateData.deletedNodeIds.length;i++)
     {
         var deleteId = updateData.deletedNodeIds[i];
-        delete treeNodes[deleteId]; //remove it from the global tree
+        delete treeNodes[parseInt(deleteId)]; //remove it from the global tree
         var res = $('#jstree_div').jstree().delete_node(deleteId);
         console.log("deleting id ",deleteId,res);
     }
 
+    //add new nodes
     for (var newNodeId in updateData.newNodes)
     {
         var node = updateData.newNodes[newNodeId];
@@ -174,6 +176,34 @@ function tree_update_cb(data)
         var treeNode = node_to_tree(node);
         $("#jstree_div").jstree(true).create_node(node.parent, treeNode);
         treeNodes[newNodeId] = node; //store the info in the tree
+    }
+
+    //synchronize modified nodes
+    for (var id in updateData.modifiedNodes)
+    {
+        var newNode = updateData.modifiedNodes[id];
+        var oldNode = treeNodes[parseInt(id)];
+
+        // we will take over the full property dictionary, but we also must do some special things
+        // for properties that have an importance for the front end; these are:
+        // name, value, children and references
+        // check if any property relevant for thehas changed
+
+        if (newNode.name != oldNode.name)
+        {
+            $('#jstree_div').jstree(true).rename_node(id, newNode.name);
+        }
+
+        if (newNode.value != oldNode.value)
+        {
+            var tree = $('#jstree_div').jstree(true);
+            var treeNode = tree.get_node(id);
+            //trigger the redraw of the node, unfortunately all other redraw(), refresh() etc. do not trigger the grid refresh
+            treeNode.data.value = newNode.value;
+            tree.rename_node(id,newNode.name); // same name as it was
+        }
+
+        treeNodes[id] = newNode; // update the new properties
     }
 }
 
@@ -237,7 +267,7 @@ function node_to_tree(modelNode)
             'id': modelNode.id,
             'parent': modelNode.parent,
             'type': modelNode.type,
-            'text': ' '+modelNode.name,
+            'text': modelNode.name,
             'state': {
                 'opened': false,
                 'selected': false
