@@ -7,20 +7,22 @@ function http_get(myUrl) {
 }
 
 
-function http_post(url, data, cb)
+function http_post(url, data, params, cb)
 {
     // construct an HTTP request
     var xhr = new XMLHttpRequest();
     xhr.open("POST", url, true); //asynchronous call
     xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
     xhr.onreadystatechange = function() {
-        if (xhr.readyState == XMLHttpRequest.DONE) {
-            if (xhr.status == 200) {
-                cb(xhr.responseText);
-            }
-            else
+        if (xhr.readyState == XMLHttpRequest.DONE)
+        {
+            if (xhr.status > 201)
             {
-                console.log("error calling ",url,xhr.status)
+                console.log("error calling ",url,xhr.status);
+            }
+            if (cb != null)
+            {
+                cb(xhr.status,xhr.responseText,params);
             }
         }
     }

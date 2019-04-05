@@ -49,7 +49,7 @@ path                    REQUEST BOY               RESPONSE BODY
 POST /_create       [<createnode.json>]         [<node.json>]           ## give a list of new nodes, result contains all the created nodes  
 POST /_delete       [<nodedescriptor>]          [<nodedescriptor>]      ## give list of deleted nodes back
 POST /_getall       -                           [<node.json>]           ## give the whole address space
-POST /setProperty   [<node.json>]               [<node.json>]           ## the node.json only contains properties
+POST /setProperties   [<node.json>]               [<node.json>]           ## the node.json only contains properties to change
 POST /_get          [<nodescriptor>]            [<node.json>]           ## get node including children as json
 POST /_getvalue     [<nodedescriptor>]          [<values>]              ## get a list of values, not available are returned as none
 POST /_getleaves    <nodedescriptor>            [<node.json>]           ## get the leaves of a referencer
@@ -327,6 +327,15 @@ def all(path):
                 responseCode = 400
         response = json.dumps(result)
         responseCode = 201
+
+    elif (str(path) == "setProperties"):
+        logger.debug("set properties ")
+        responseCode = 200
+        result = True
+        for blob in data:
+            result = result and m.set_properties(blob)
+        if not result:
+            responseCode = 400
 
     elif (str(path) == "_references"):
         logger.debug("set new references")

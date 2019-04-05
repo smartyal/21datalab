@@ -39,6 +39,8 @@ function on_first_load () {
         win.focus();
 	});
 
+
+
 	//populate piplelines menue
 	var data = http_get("/pipelines");
 	populate_dropdown(data);

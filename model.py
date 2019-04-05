@@ -962,6 +962,33 @@ class Model():
             self.model[id][property]=value
             return True
 
+    def set_properties(self,properties={},nodeDesc=None):
+        """
+            changes a random set of properties given by the dict or adds them if not existant, some properties are not allowed here:
+            children, parent, forward and back ward refs, allowed are all others including type, name, value
+            Args:
+                nodeDesc: the descriptor of the node, is optional, can also be given as browsePath or id in he properties dict
+                properties: the new properties or changed
+            Returns:
+                True for done
+                False for node not found or if the property already exists
+        """
+        with self.lock:
+            if nodeDesc:
+                id = self.get_id(nodeDesc)
+            elif "id" in properties:
+                id = properties["id"]
+            else:
+                self.logger.error("set properties is missing id ")
+                return False
+
+            for k,v in properties.items():
+                if k in ["id","browsePath","children","parent","forwardRefs","backRefs"]:
+                    continue # we ignore these entries
+                self.model[id][k]=v # overwrite or set new
+            return True
+
+
     #delete node and all subnodes
     def delete_node(self,desc):
         """

@@ -20,11 +20,12 @@ var treeIconsOld =
     referencer : "fas fa-share",
     reference : "fa fa-link",
     template : "fa fa-file-text-o",
-    add : "fa fa-plus",
+    add : "fas fa-plus",
     delete : "far fa-trash-alt",
-    rename : "fa fa-pencil-square-o",
+    rename : "fas fa-pencil-alt",
     execute : "fa fa-play",
-    abort : "fa fa-stop"
+    abort : "fa fa-stop",
+    file:"far fa-file-alt"
 };
 
 var treeIconsPath = 'modules/font-awesome/svgs/regular/'
@@ -138,6 +139,67 @@ function tree_generate()
                         "label": "delete",
                         "action": function (obj) {context_menu_delete(node);},
                         "icon": treeIconsOld["delete"]
+                    },
+                    "create":{
+                        "label":"create",
+                        "icon":treeIconsOld["add"],
+                        "submenu":
+                        {
+                            "node":
+                            {
+                                "label":"node",
+                                "submenu":
+                                {
+                                    "folder":
+                                    {
+                                        "label":"folder",
+                                        "action":function(obj){context_menu_create(node,"folder");},
+                                        "icon":treeIconsOld["folder"]
+                                    },
+                                    "variable":
+                                    {
+                                        "label":"variable",
+                                        "action":function(obj){context_menu_create(node,"variable");},
+                                        "icon":treeIconsOld["variable"]
+                                    },
+                                    "const":
+                                    {
+                                        "label":"const",
+                                        "action":function(obj){context_menu_create(node,"const");},
+                                        "icon":treeIconsOld["const"]
+                                    },
+                                    "file":
+                                    {
+                                        "label":"file",
+                                        "action":function(obj){context_menu_create(node,"file");},
+                                        "icon":treeIconsOld["file"]
+                                    },
+                                    "referencer":
+                                    {
+                                        "label":"referencer",
+                                        "action":function(obj){context_menu_create(node,"referencer");},
+                                        "icon":treeIconsOld["referencer"]
+                                    },
+                                    "column":
+                                    {
+                                        "label":"column",
+                                        "action":function(obj){context_menu_create(node,"column");},
+                                        "icon":treeIconsOld["column"]
+                                    }
+                                }
+                            },
+                            "template":
+                            {
+                                "label":"template",
+                                "submenu":{
+                                    "onetemplate":
+                                    {
+                                        "label":"onetamplate"
+                                    }
+                                }
+
+                            }
+                        }
                     }
                 };
 
@@ -149,6 +211,17 @@ function tree_generate()
                         "label": "execute",
                         "action": function(obj){context_menu_execute(node);},
                         "icon": treeIconsOld["function"]
+                    }
+                }
+
+                //if this node is a function, execution is also possible
+                if ((node.id in treeNodes) && (treeNodes[node.id].type != "referencee"))
+                {
+
+                    menuObject["rename"] = {
+                        "label": "rename",
+                        "action": function(obj){context_menu_rename(node);},
+                        "icon": treeIconsOld["rename"]
                     }
                 }
 
@@ -164,12 +237,86 @@ function tree_generate()
 function context_menu_delete(node)
 {
     console.log("context delete",node);
+    var allNodes = $('#jstree_div').jstree(true).get_selected();
+    http_post("/_delete",JSON.stringify(allNodes),null,null);
 }
 
 function context_menu_execute(node)
 {
     console.log("context execute",node);
+    var query=node.id;
+    http_post("/_execute",JSON.stringify(query),null,null);
 }
+
+function context_menu_rename(node)
+{
+    $('#jstree_div').jstree(true).edit(node,null,edit_node_done);
+}
+
+function context_menu_create(node,type)
+{
+    var newBrowsePath = treeNodes[parseInt(node.id)].browsePath+".new_"+type+"_"+Math.random().toString(16).substring(2,6);
+    var query=[{"browsePath":newBrowsePath,"type":type}];
+    console.log("create ",newBrowsePath);
+    http_post('/_create',JSON.stringify(query),node,create_node_done)
+}
+
+function create_node_done(status,data,params)
+{
+    if (status>201) return;
+}
+
+
+function edit_node_done(node, status, cancel)
+{
+    // we check if the new name is allowed: it must be unique under the parent
+    console.log("edit node done",status,cancel);
+
+    var children = treeNodes[parseInt(node.parent)].children;
+    var originalName = treeNodes[parseInt(node.id)].name;
+    var newName = node.text;
+
+    if ((newName == originalName)  ||  (cancel == true))
+    {
+        //still the old name, nothing to do
+        console.log("old name,nothing to do, cancel ");
+        return ;
+    }
+
+     //iterate over the children
+    for (var child in children)
+    {
+        var brotherName = treeNodes[parseInt(children[child])].name;
+        if (brotherName == newName)
+        {
+            //not allowed , bring back the old name
+            $('#jstree_div').jstree(true).rename_node(node,originalName);
+            console.log("not allowed name exist under parent");
+            return;
+        }
+    }
+    var query=[{id:node.id,name:newName}];
+    var params={id:node.id,'originalName':originalName,'newName':newName};
+    http_post('/setProperties',JSON.stringify(query), params, function(status,data,params)   {
+        if (status!=200)
+        {
+            //backend responded bad, we must set the frontend back
+            $('#jstree_div').jstree(true).rename_node(node,params.originalName);
+            console.log("renameing did not work on backend");
+        }
+        else
+        {
+            //all good, we also adjust the settings in our local view
+            treeNodes[params.id].name=params.newName;
+            treeNodes[params.id].browsePath = (treeNodes[params.id].browsePath.split('.').slice(0,-1)).join('.')+'.'+params.newName;
+        }
+    });
+
+
+    console.log("change to new name!", newName);
+}
+
+
 
 
 //get the differential tree
@@ -177,11 +324,13 @@ function tree_update()
 {
 
    var query = {handle: diffHandle};
-   http_post('/_diffUpdate/', JSON.stringify(query),tree_update_cb);
+   http_post('/_diffUpdate/', JSON.stringify(query),null,tree_update_cb);
 }
 
-function tree_update_cb(data)
+function tree_update_cb(status,data,params)
 {
+    if (status > 201) return;
+
     try
     {
         var updateData =JSON.parse(data);
