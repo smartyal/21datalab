@@ -30,6 +30,7 @@ next Todo
 
 sys.path.append("./plugins") #for the importlib loader, doesn't understand relative paths
 
+myGlobalDir = os.path.dirname(os.path.realpath(__file__)) # holds the directory of this script
 
 
 
@@ -643,7 +644,8 @@ class Model():
             take from there the templates from the files and the functions
             this function is execution on startup of the model
         """
-        mydir =os.path.dirname(os.path.realpath(__file__))
+        #mydir =os.path.dirname(os.path.realpath(__file__))
+        mydir = myGlobalDir
         os.chdir(mydir)#to enable import easily
         sys.path.append(mydir+'/plugins') # for the importlib to find the stuff
 
@@ -1731,12 +1733,16 @@ class Model():
                 f.close()
                 #now also load the tables
                 for nodeId in self.model:
+                    if int(nodeId)>self.globalIdCounter:
+                        self.globalIdCounter = int(nodeId) # here, we recover the global id counter
                     if self.get_node_info(nodeId)["type"] == "table":
                         table = self.get_browse_path(nodeId)
                         data = numpy.load("./models/" + fileName+'.'+table + ".npy")
                         ids = self.get_leaves_ids(table+".columns")
                         for id, column in zip(ids, data):
                             self.set_value(id,column)
+                #now also recover the global id counter
+
             except Exception as e:
                 print("problem loading"+str(e))
 

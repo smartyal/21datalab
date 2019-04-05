@@ -176,6 +176,20 @@ def template_test():
     m.show()
 
 
+def test_global_id_counter():
+    #when the model is saved and loaded, the id counter is not corrected, let's test this here
+    m=model.Model()
+    m.create_template_from_path("root.something",m.get_templates()["templates.timeseriesWidget"])
+    m.create_node_from_path("root.new1")
+    m.show()
+    m.save("savetest")
+    n=model.Model()
+    n.load("savetest")
+    print("--- after load")
+    n.show()
+    n.create_node_from_path("root.new2")
+    print("--- after create ")
+    n.show()
 
 
 if __name__ == "__main__":
@@ -204,7 +218,8 @@ if __name__ == "__main__":
     #n.show()
 
     #diff_test()
-    template_test()
+    #template_test()
+    test_global_id_counter()
 
 
 
