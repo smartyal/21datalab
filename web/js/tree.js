@@ -1,6 +1,19 @@
+var templates = null; // global list with available templates
+
 function tree_initialize() {
     $('#jstree_div').jstree();
     tree_generate();
+
+    //get the templates
+    data = http_get('/templates')
+    try
+    {
+        templates = JSON.parse(data);
+    }
+    catch(err)
+    {
+        return;
+    }
 }
 
 //https://fontawesome.com/icons
@@ -191,17 +204,24 @@ function tree_generate()
                             "template":
                             {
                                 "label":"template",
-                                "submenu":{
-                                    "onetemplate":
-                                    {
-                                        "label":"onetamplate"
-                                    }
-                                }
-
+                                "submenu":{}
                             }
                         }
                     }
                 };
+
+                // now make the templates entries
+                for (var template of templates)
+                {
+                    //var template = templ
+                    var entry = {
+                        "label":template,
+                        "__templateType":template, //to store it here, so we get it back on the call
+                        "action":function(obj){context_menu_create_template(node,obj.item.__templateType);}
+                    }
+                    menuObject.create.submenu.template.submenu[template]=entry;
+
+                }
 
                 //if this node is a function, execution is also possible
                 if ((node.id in treeNodes) && (treeNodes[node.id].type == "function"))
@@ -248,6 +268,16 @@ function context_menu_execute(node)
     http_post("/_execute",JSON.stringify(query),null,null);
 }
 
+function context_menu_create_template(node,templateType)
+{
+    console.log("create temlate",node,templateType);
+    var splitted = templateType.split('.');
+    var templateName = splitted.pop();
+    var newBrowsePath = treeNodes[parseInt(node.id)].browsePath+".new_"+templateName+"_"+Math.random().toString(16).substring(2,6);
+    var query={"type":templateType,"browsePath":newBrowsePath};
+    http_post('/_createTemplate',JSON.stringify(query),null);
+}
+
 function context_menu_rename(node)
 {
     $('#jstree_div').jstree(true).edit(node,null,edit_node_done);
@@ -258,13 +288,9 @@ function context_menu_create(node,type)
     var newBrowsePath = treeNodes[parseInt(node.id)].browsePath+".new_"+type+"_"+Math.random().toString(16).substring(2,6);
     var query=[{"browsePath":newBrowsePath,"type":type}];
     console.log("create ",newBrowsePath);
-    http_post('/_create',JSON.stringify(query),node,create_node_done)
+    http_post('/_create',JSON.stringify(query),node,null);
 }
 
-function create_node_done(status,data,params)
-{
-    if (status>201) return;
-}
 
 
 function edit_node_done(node, status, cancel)

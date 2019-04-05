@@ -60,6 +60,8 @@ POST /_getdata      <dataquery.json>]
 POST /_appendRow     [<data.json>]
 POST /_references <referencequery.json>
 POST /_execute      <nodedescriptor>            //nothing               ## execute a function
+GET /templates      -                           [templatename]          ## get all available templates to be created
+POST /_createTemplate  <createtemplate.json>     -                        #create a template at a path given
 data:
 
 
@@ -88,6 +90,12 @@ createnode.json =
   ######  
   dont't put "children"
   
+}
+
+createtemplate.json
+{
+    "browsePath":"root.myfolder..."         # the path of the root of the template, this is a node to be created!
+    "type": "templates.button"      # a well-known template name
 }
 
 dataquery.json
@@ -191,6 +199,14 @@ def all(path):
         except:
             logger.error("I have no pipelines")
             responseCode = 404
+
+    elif (str(path) == "templates") and str(flask.request.method) in ["GET"]:
+        logger.debug(" get templates")
+        templates = list(m.get_templates().keys())
+        logger.debug(" templates are "+str(templates))
+        response = json.dumps(templates)
+        responseCode = 200
+
 
     elif(str(path) == "_getleaves") and str(flask.request.method) in ["POST", "GET"]:
         logger.debug("execute get forward")
@@ -328,6 +344,18 @@ def all(path):
         response = json.dumps(result)
         responseCode = 201
 
+    elif (str(path) == "_createTemplate") and str(flask.request.method) in ["POST"]:
+        logger.debug("craete Template ")
+
+        templates = m.get_templates()
+        if data["type"] in templates:
+            m.create_template_from_path(data["browsePath"],templates[data["type"]])
+            responseCode = 201
+        else:
+            responseCode = 404
+
+
+
     elif (str(path) == "setProperties"):
         logger.debug("set properties ")
         responseCode = 200
@@ -376,7 +404,7 @@ def all(path):
 
 
     else:
-        logger.warn("CANNOT HANDLE REQUEST"+str(path))
+        logger.warning("CANNOT HANDLE REQUEST, is unknown"+str(path))
         responseCode = 404
 
 

@@ -5,25 +5,24 @@ import numpy
 
 
 
-logisticRegressionTemplate=[
-    {
-        "name":"logisticRegression",
-        "type":"function",
-        "functionPointer":"logisticregression.logistic_regression",   #filename.functionname
-        "autoReload":True,                                 #set this to true to reload the module on each execution
-        "children":[
-            {"name":"status","type":"variable","value":"idle"},     # one of ["finished","running"]
-            {"name":"progress","type":"variable","value":0},          # a value between 0 and 1
-            {"name":"result","type":"variable","value":"ok"},       # of ["ok","error","pending" or a last error message]
-            {"name":"input","type":"referencer"},                  # the outputs
-            {"name":"output","type":"referencer"},
-            {"name":"annotations","type":"referencer"},             #the user annotations
-            {"name":"categoryMap","type":"const"},                  #logistic regression work on categories, this is the number mapper, INPUT
-            {"name":"signal","type":"variable","value":"nosignal"}, # of ["nosignal","interrupt"]
-            {"name":"executionCounter","type":"variable","value":0}            # a counter which is increased on each execution of this function
-        ]
-    }
-]
+logisticRegressionTemplate= {
+    "name":"logisticRegression",
+    "type":"function",
+    "functionPointer":"logisticregression.logistic_regression",   #filename.functionname
+    "autoReload":True,                                 #set this to true to reload the module on each execution
+    "children":[
+        {"name":"status","type":"variable","value":"idle"},     # one of ["finished","running"]
+        {"name":"progress","type":"variable","value":0},          # a value between 0 and 1
+        {"name":"result","type":"variable","value":"ok"},       # of ["ok","error","pending" or a last error message]
+        {"name":"input","type":"referencer"},                  # the outputs
+        {"name":"output","type":"referencer"},
+        {"name":"annotations","type":"referencer"},             #the user annotations
+        {"name":"categoryMap","type":"const"},                  #logistic regression work on categories, this is the number mapper, INPUT
+        {"name":"signal","type":"variable","value":"nosignal"}, # of ["nosignal","interrupt"]
+        {"name":"executionCounter","type":"variable","value":0}            # a counter which is increased on each execution of this function
+    ]
+}
+
 
 
 

@@ -4,8 +4,7 @@
 
 
 
-counterFunctionTemplate=[
-    {
+counterFunctionTemplate = {
         "name":"counterFunction",
         "type":"function",
         "functionPointer":"counterfunction.counterfkt",   #filename.functionname
@@ -17,8 +16,8 @@ counterFunctionTemplate=[
             {"name":"output","type":"variable","value":0},                  # the outputs
             {"name":"signal","type":"variable","value":"nosignal"}# of ["nosignal","interrupt"]
         ]
-    }
-]
+}
+
 
 
 

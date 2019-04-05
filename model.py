@@ -658,7 +658,7 @@ class Model():
                 if objName.startswith('__'):
                     continue # these are python generated info objects, we don't want them
                 element = getattr(module,objName)
-                if type(element ) is list:
+                if type(element ) is dict:
                     #this is a template information
                     self.templates[moduleName+"."+objName]=copy.deepcopy(element)
                 elif callable(element):
@@ -772,7 +772,8 @@ class Model():
 
     def create_nodes_from_template(self,parent="root",template=[]):
         """
-            Create a node from a template; a template is a list of node-dicts
+            deprecated!! this is the old style of templates as lists, now it's a dict
+            Create a node from a template; a template is a list of node-dicts,
             Args:
                 parent(string): descriptor of the parent node under which the nodes of the template should be created
                 template: a list of node dicts of the nodes to be creates, children are allowed as dict
@@ -816,6 +817,65 @@ class Model():
             return True
 
 
+    def __create_nodes_from_path_with_children(self,parentPath,nodes):
+        """
+            recursive helper function for create_template_from_path
+            e build all nodes under the parentPath on this level and then the children
+            we return a list of all created node ids
+        """
+        createdNodes = []
+
+        for node in nodes:
+            newModelNode = {}
+            for k, v in node.items():
+                if k not in ["children", "parent", "id", "browsePath"]:  # avoid stupid things
+                    newModelNode[k] = v
+            newId = self.create_node_from_path(parentPath+'.'+newModelNode["name"],newModelNode)
+            if newId:
+                createdNodes.append(newId)
+            if "children" in node:
+                createdNodes.extend(self.__create_nodes_from_path_with_children(parentPath+'.'+newModelNode["name"],node["children"]))
+        return createdNodes
+
+
+
+    def create_template_from_path(self,path,template):
+        """
+            Create a template from a path given, the template contains one or more nodes
+            the path must not yet exist!
+            Args:
+                path(string): the path under which the template will be placed. the template always contains
+                  a root node, this will be renamed according to the path
+            Returns:
+                (boolenan) True for created, False for error
+        """
+
+        with self.lock:
+            #first create the template root node
+            #we rename the template according to the path requested
+            template["name"]=path.split('.')[-1]
+            parentPath = '.'.join(path.split('.')[:-1])
+            newNodeIds = self.__create_nodes_from_path_with_children(parentPath,[template])
+            print(newNodeIds)
+
+            #now adjust the references
+            for newNodeId in newNodeIds:
+                if "references" in self.model[newNodeId]:
+                    #we must create forward references
+                    for ref in self.model[newNodeId]["references"]:
+                        # the given path is of the form templatename.levelone.leveltwo inside the template
+                        # we replace the "templatename" with the path name the template was given
+                        targetPath = parentPath+'.'+template['name']+'.'+'.'.join(ref.split('.')[1:])
+                        self.add_forward_refs(newNodeId,[targetPath])
+                    del self.model[newNodeId]["references"] # we remove the reference information from the template
+
+    def get_templates(self):
+        """
+            give all templates loaded
+            Returns: a dict with entries containing the full templates
+        """
+        with self.lock:
+            return copy.deepcopy(self.templates)
 
     def add_forward_refs(self,referencerDesc,targets):
         """
@@ -1928,10 +1988,10 @@ class Model():
 
             #make a real function
             self.create_node_from_path("root.functions",{"type":"folder"})
-            self.create_nodes_from_template("root.functions",self.templates["testfunction.delayFunctionTemplate"])
+            self.create_nodes_from_template("root.functions",[self.templates["testfunction.delayFunctionTemplate"]])
 
             #now make cutom function to trigger something
-            self.create_nodes_from_template("root.functions",self.templates["counterfunction.counterFunctionTemplate"])
+            self.create_nodes_from_template("root.functions",[self.templates["counterfunction.counterFunctionTemplate"]])
             #now hook the function output to the observer of the plot
             self.add_forward_refs('root.visualization.widgets.timeseriesOne.observer',['root.functions.counterFunction.output'])
 
@@ -2015,7 +2075,7 @@ class Model():
             self.set_value('root.visualization.widgets.timeseriesOccupancy.hasAnnotation.tags',["busy","free"])
 
             #now create the logistic regression
-            self.create_nodes_from_template('root',self.templates["logisticregression.logisticRegressionTemplate"])
+            self.create_nodes_from_template('root',[self.templates["logisticregression.logisticRegressionTemplate"]])
             self.add_forward_refs('root.logisticRegression.input',['root.occupancy.variables.Temperature', 'root.occupancy.variables.Light','root.occupancy.variables.CO2'])
             self.add_forward_refs('root.logisticRegression.output', ['root.occupancy.classification'])
             self.add_forward_refs('root.logisticRegression.annotations',['root.visualization.widgets.timeseriesOccupancy.hasAnnotation.newAnnotations'])

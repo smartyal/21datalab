@@ -135,6 +135,46 @@ def diff_test():
     print(json.dumps(m.get_differential_update(diff["handle"])))
 
 
+def template_test():
+    m=model.Model()
+
+    template={
+        "name": "table",
+        "type": "table",
+        "value": "this is a great table",
+        "children":[
+            {
+                "name":"var1",
+                "type":"variable"
+            },
+            {
+                "name": "columns",
+                "type": "referencer",
+            },
+            {
+                "name": "timeField",
+                "type": "referencer",
+                "references":["table.var1","table.variables.leveltwo"]
+            },
+            {
+                "name": "variables",
+                "type": "folder",
+                "children":[
+                    {
+                        "name":"leveltwo",
+                        "type":"const"
+                    },
+                    {
+                        "name":"leveltwo2",
+                        "type":"const"
+                    }
+                ]
+            }
+        ]
+    }
+    m.create_template_from_path("root.myfolder.myfolder2.mynewNameofTemplate",template)
+    m.show()
+
 
 
 
@@ -163,7 +203,8 @@ if __name__ == "__main__":
     #t.stop("loading")
     #n.show()
 
-    diff_test()
+    #diff_test()
+    template_test()
 
 
 
