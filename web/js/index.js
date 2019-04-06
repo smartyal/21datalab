@@ -30,14 +30,17 @@ function on_first_load () {
 	$('#reloadtreebtn').click( function () {
 		tree_initialize();
 	});
+
 	$('#updatetreebtn').click( function () {
 		tree_update();
 	});
+
     $('#pipelinebutton').on('click',function () {
         target = $('#pipelineselect option:selected').text();
 		var win = window.open(pipelines[target], '_blank');
         win.focus();
 	});
+	//tree_initialize();
 
 
 

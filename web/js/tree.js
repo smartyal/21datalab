@@ -1,4 +1,28 @@
 var templates = null; // global list with available templates
+var periodicTreeUpdate = false; //
+var globalCopyBuffer = [];
+
+
+function start_periodic_tree_update()
+{
+    periodicTreeUpdate = true;
+    window.setTimeout(trigger_tree_update,1000)
+}
+
+function stop_periodicTreeUpdate()
+{
+    periodicTreeUpdate = false;
+}
+
+function trigger_tree_update()
+{
+    if (periodicTreeUpdate == true)
+    {
+        tree_update();
+        window.setTimeout(trigger_tree_update,1000);
+    }
+}
+
 
 function tree_initialize() {
     $('#jstree_div').jstree();
@@ -14,6 +38,7 @@ function tree_initialize() {
     {
         return;
     }
+    //start_periodic_tree_update();
 }
 
 //https://fontawesome.com/icons
@@ -38,7 +63,9 @@ var treeIconsOld =
     rename : "fas fa-pencil-alt",
     execute : "fa fa-play",
     abort : "fa fa-stop",
-    file:"far fa-file-alt"
+    file:"far fa-file-alt",
+    copy:"far fa-copy",
+    paste: "fas fa-paint-roller"
 };
 
 var treeIconsPath = 'modules/font-awesome/svgs/regular/'
@@ -234,7 +261,7 @@ function tree_generate()
                     }
                 }
 
-                //if this node is a function, execution is also possible
+                //if this node is not a greferencee node, renaming is possible
                 if ((node.id in treeNodes) && (treeNodes[node.id].type != "referencee"))
                 {
 
@@ -244,6 +271,38 @@ function tree_generate()
                         "icon": treeIconsOld["rename"]
                     }
                 }
+
+                //if all selected nodes are not referencees, then copy is possible
+                var allNodes = $('#jstree_div').jstree(true).get_selected();
+                var isReferencee=false;
+                for (nodeId of allNodes)
+                {
+                    var node = $('#jstree_div').jstree(true).get_node(nodeId);
+                    if (node.original.type == "referencee")
+                    {
+                        isReferencee = true;
+                        break;
+                    }
+                }
+                if (isReferencee == false)      // only if none of the selected is areferencee are we able to copy
+                {
+                    menuObject["copy"] = {
+                        "label": "copy",
+                        "action": function(obj){context_menu_copy(node);},
+                        "icon": treeIconsOld["copy"]
+                    }
+                }
+
+                //for referencees, paste is possible
+                if (node.original.type == "referencer")
+                {
+                    menuObject["paste"] = {
+                        "label": "paste",
+                        "action": function(obj){context_menu_paste(node);},
+                        "icon": treeIconsOld["paste"]
+                    }
+                }
+
 
                 return menuObject;
             }
@@ -257,8 +316,48 @@ function tree_generate()
 function context_menu_delete(node)
 {
     console.log("context delete",node);
+    //deleting is different for referencee nodes, these are in fact references
     var allNodes = $('#jstree_div').jstree(true).get_selected();
     http_post("/_delete",JSON.stringify(allNodes),null,null);
+
+    //now for the referencees here, we remove the refs
+    var allRefs={}; //all refs holds the parent:[list of references o delete]
+    var allNormalNodes = []; //list of al normal nodes to delete
+
+    for (nodeId of allNodes)
+    {
+        var node = $('#jstree_div').jstree(true).get_node(nodeId);
+        if (node.original.type == "referencee")
+        {
+            if (!(allRefs.hasOwnProperty(node.parent)))
+            {
+                allRefs[node.parent]=[];
+            }
+
+            allRefs[node.parent].push(node.original.targetId);
+        }
+        else
+        {
+            //this is a standard node to delete
+            allNormalNodes.push(nodeId);
+        }
+    }
+
+    //now delete normal nodes
+    if (Object.keys(allNormalNodes).length != 0)
+    {
+        http_post("/_delete",JSON.stringify(allNormalNodes),null,null);
+    }
+
+    //we must delete some references
+    if (Object.keys(allRefs).length !=0)
+    {
+        for (var parent in allRefs)
+        {
+            var query={"parent":parent,"remove":allRefs[parent]};
+            http_post("/_references",JSON.stringify(query),null,null);
+        }
+    }
 }
 
 function context_menu_execute(node)
@@ -289,6 +388,23 @@ function context_menu_create(node,type)
     var query=[{"browsePath":newBrowsePath,"type":type}];
     console.log("create ",newBrowsePath);
     http_post('/_create',JSON.stringify(query),node,null);
+}
+
+function context_menu_copy(node)
+{
+
+    var allNodes = $('#jstree_div').jstree(true).get_selected();
+    globalCopyBuffer = allNodes;
+    console.log("context_menu_copy ",allNodes);
+
+}
+
+function context_menu_paste(node)
+{
+    console.log("paste",node,globalCopyBuffer);
+    //if type(globalCopyBuffer)
+    var query={"parent":node.id,"add":globalCopyBuffer};
+    http_post("/_references",JSON.stringify(query),null,null);
 }
 
 
@@ -452,7 +568,8 @@ function tree_update_cb(status,data,params)
                 var referenceeModelNode = {
                         'type': 'referencee',
                         'name': treeNodes[targetId].browsePath,
-                        'parent': newNode.id
+                        'parent': newNode.id,
+                        'targetId' : targetId //for later
                 };
                 var referenceeNode = node_to_tree(referenceeModelNode);
                 var result = $('#jstree_div').jstree(true).create_node(newNode.id,referenceeNode);
@@ -498,7 +615,8 @@ function create_children(model,parentNodeId)
                         var referenceeModelNode = {
                                 'type': 'referencee',
                                 'name': model[targetId].browsePath,
-                                'parent': childNode.id
+                                'parent': childNode.id,
+                                'targetId' : targetId
                         };
                         var referenceeNode = node_to_tree(referenceeModelNode);
                         treeNode.children.push(referenceeNode);
@@ -532,6 +650,10 @@ function node_to_tree(modelNode)
             'data': {},
             'icon': treeIconsOld[modelNode.type]//'fa fa-folder-o'//"fa fa-play o",//"fa fa-folder-o",//treeIconsPath+treeIcons[modelNode.type]
     };
+    if (modelNode.hasOwnProperty('targetId'))
+    {
+        newTreeNode['targetId'] = modelNode.targetId;
+    }
 
     if ((newTreeNode.type == "const")  || (newTreeNode.type == "variable"))
     {

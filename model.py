@@ -945,11 +945,12 @@ class Model():
         return model
 
 
-    def remove_forward_refs(self,sourceDesc):
+    def remove_forward_refs(self,sourceDesc,targetDescriptors = []):
         """
-            remove all forward references from a referencer, this also removes the backreference from the target
+            remove forward references from a referencer, this also removes the backreference from the target
             Args:
                 sourceDesc: the descriptor of the referencer node
+                targets: a list of descriptors, if missing we delete all
             Returns:
                 True/False for success
         """
@@ -959,8 +960,14 @@ class Model():
                 return False
             if not self.model[fromId]["type"] == "referencer":
                 return False  # only for referencers
-            targets = self.model[fromId]["forwardRefs"].copy()
+            if targetDescriptors == []:
+                targets = self.model[fromId]["forwardRefs"].copy()
+            else:
+                targets = self.get_id(targetDescriptors)
+
             for toId in targets:
+                if not toId:
+                    continue # we skip Nones coming from the get_id
                 self.model[fromId]["forwardRefs"].remove(toId)
                 self.model[toId]["backRefs"].remove(fromId)
         return True

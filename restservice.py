@@ -139,9 +139,10 @@ pipelines.json
  
 referencequery.json
 {
-    "parent": <nodedescriptor> # must be a referencer
+    "node": <nodedescriptor> # must be a referencer
     "add": [<nodedescriptors>]
-    "deleteExisting" : one of True/False # if set, the existings references are deleted
+    "deleteExisting" : one of True/False # if set, all existings references are deleted
+    "remove" :[<nodedescriptors>]
 }
 
 
@@ -370,7 +371,10 @@ def all(path):
         result = []
         if "deleteExisting" in data and data["deleteExisting"] == True:
             m.remove_forward_refs(data["parent"])
-        result = m.add_forward_refs(data["parent"],data["add"])
+        if "add" in data:
+            result = m.add_forward_refs(data["parent"],data["add"])
+        if "remove" in data:
+            result = m.remove_forward_refs(data["parent"], data["remove"])
         responseCode = 201
 
     elif (str(path) == "_execute"):
