@@ -2,8 +2,9 @@ import requests
 import json
 import copy
 import datetime
-from model import date2secs
+#from model import date2secs
 import pytz
+import aiohttp
 
 
 
@@ -64,5 +65,83 @@ def remote_test():
     pass
 
 
+def __web_call(self, method, path, reqData):
+    """
+        this functions makes a call to the backend model serer to get data
+        Args:
+            method(string) one of ["GET","POST"]
+            path: the nodepath to the time series widtet
+            reqData: a dictionary with request data for te query like the list of variables, time limits etc.
+        Returns (dict):
+            the data from the backend as dict
+    """
+    self.logger.info("__web_call %s %s", method, path)
+    try:
+        if method.upper() == "GET":
+            response = requests.get(self.url + path, timeout=0.01)
+        elif method.upper() == "POST":
+            import datetime
+            now = datetime.datetime.now()
+            for timeout in [0.001,0.1,1,10]:
+                try:
+                    response = requests.post(self.url + path, data=json.dumps(reqData), timeout=timeout)
+                    break
+                except:
+                    continue
+
+
+            after = datetime.datetime.now()
+            diff = (after - now).total_seconds()
+            self.logger.debug("response " + str(response) + " took " + str(diff))
+        rData = json.loads(response.content.decode("utf-8"))
+        return rData
+    except BaseException as ex:
+        self.logger.error("Error calling web " + str(ex))
+        return None
+
+
+
+
+def speed_test():
+    #testing the sequential speed of requests
+    def post(path,reqData,asynch = False):
+        response = None
+        host = "http://localhost:6001/"
+        import datetime
+        now = datetime.datetime.now()
+        for timeout in [0.001, 0.1, 1, 10]:
+            try:
+                response = requests.post(host+ path, data=json.dumps(reqData), timeout=timeout)
+                print(timeout)
+                break
+            except:
+                continue
+        after = datetime.datetime.now()
+        diff = (after-now).total_seconds()
+        print("response "+str(response)+" took "+ str(diff))
+        if not response:
+            print("no res")
+            return None
+        else:
+            rData = json.loads(response.content.decode("utf-8"))
+            return rData
+
+
+    host = "localhost:6001"
+    path = "root.visualization.widgets.timeseriesOccupancy"
+
+    request = path + ".selectedVariables"
+    nodes = post("_getleaves", request)
+
+    # get the selectable
+    nodes = post("_getleaves", path + '.selectableVariables')
+
+    # also remeber the timefield as path
+    request = path + ".table"
+    nodes = post("_getleaves", request)
+
+
+
 if __name__ == '__main__':
-    get_forwards()
+    #get_forwards()
+    speed_test()

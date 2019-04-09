@@ -5,6 +5,13 @@ import model
 import sys
 import datetime
 import dateutil.parser
+import random
+import requests
+from gevent.pywsgi import WSGIServer
+
+from flask import  render_template, render_template_string
+from bokeh.client import pull_session
+from bokeh.embed import server_session,server_document
 
 
 
@@ -26,6 +33,13 @@ handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
+
+logfile = logging.FileHandler("./log/restservice.log")
+logfile.setFormatter(formatter)
+logger.addHandler(logfile)
+
+
+
 logger.setLevel(logging.DEBUG)
 
 
@@ -175,12 +189,15 @@ def all(path):
     if any(extension in str(path) for extension in ['.js','.css','.htm','.img','.ico','.png','.gif','.map','.svg','.wof','.ttf']):
 
         logger.debug(" serve html "+ str(path))
-        try:
-            obj = flask.send_from_directory('web',path)
-            return obj
-        except IOError as exc:
-            logger.error("file not found" + str(path))
-            code = 404
+        if "styles.css" in path:
+            print("hier")
+        for sourceFolder in ["web","bokeh_web","bokeh_web/templates"]:
+            try:
+                obj = flask.send_from_directory(sourceFolder,path)
+                return obj
+            except Exception as exc:
+                logger.error("file "+ str(path)+" not found on folder"+sourceFolder)
+        code = 404
 
     elif (str(path) == "_getall") and str(flask.request.method) in ["POST","GET"]:
         logger.debug("execute getall")
@@ -230,12 +247,14 @@ def all(path):
 
 
     elif (str(path) == "_get") and str(flask.request.method) in ["POST", "GET"]:
-        logger.debug("execute get")
+        logger.debug("execute get"+str(data))
         nodes = []
         for nodeDesc in data:
-            nodes.append(m.get_node_with_children(nodeDesc))
+            resNodes = m.get_node_with_children(nodeDesc)
+            print(resNodes)
+            nodes.append(resNodes)
         response = json.dumps(nodes, indent=4)  # some pretty printing for debug
-        logger.debug("sending"+response)
+        logger.debug("sending"+str(len(response)))
         responseCode = 200
 
 
@@ -406,12 +425,31 @@ def all(path):
                 response ="requested handle does not exist"
                 responseCode = 404
 
+    elif (str(path)=='embed'):
+        # here, we must have the correct html file for rendering including css and html coloring
+        # as the index.html is not relevant anymore
+        embed = """     
+            <!doctype html>
+            <body>
+              <link rel="stylesheet" href="templates/styles.css">
+              {{ script|safe }}
+            </body>
+            </html>
+        """
+        app_url = 'http://localhost:5006/bokeh_web'
+        with pull_session(url=app_url) as session:
+            # customize session here
+            script = server_session(session_id='12345', url=app_url)
+            #script = server_document('http://localhost:5006/bokeh_web')
+            temp = render_template_string(embed, script=script)
+            return temp
+
 
     else:
         logger.warning("CANNOT HANDLE REQUEST, is unknown"+str(path))
         responseCode = 404
 
-
+    logger.info("response len is"+str(len(response)))
     return flask.Response(response, mimetype="text/html"), responseCode
 
 if __name__ == '__main__':
@@ -430,3 +468,8 @@ if __name__ == '__main__':
         m.create_test(1)
 
     web.run(host='0.0.0.0', port=6001, debug=False)
+
+    #enable this to use wsgi web server instead
+    #http_server = WSGIServer(('0.0.0.0', 6001), web)
+    #http_server.serve_forever()
+

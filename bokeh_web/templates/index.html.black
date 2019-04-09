@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     {{ bokeh_css }}
     {{ bokeh_js }}
-    <style type="text/css">{% include 'styles.css' %}</style>
+    <style type="text/css">{% include 'styles_black.css' %}</style>
   </head>
   <body bgcolor = "#1a1a1a" text="#cccccc">
     {{ plot_div|indent(8) }}

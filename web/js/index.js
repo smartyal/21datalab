@@ -48,6 +48,8 @@ function on_first_load () {
 	var data = http_get("/pipelines");
 	populate_dropdown(data);
 
+	$( "#embed" ).load( "http://localhost:6001/embed" );
+
 }
 
 $( document ).ready(function() {

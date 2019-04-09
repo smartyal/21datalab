@@ -1,8 +1,11 @@
+
+
 import sys
 import os
 import time
 import random
 import numpy
+import datetime
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -21,6 +24,30 @@ from bokeh import events
 from bokeh.models.widgets import RadioButtonGroup, Paragraph, Toggle, MultiSelect, Button
 from bokeh.plotting import figure, curdoc
 from bokeh.layouts import layout,widgetbox
+
+haveLogger = False
+
+
+
+def setup_logging(loglevel=logging.DEBUG):
+    global haveLogger
+    if not haveLogger:
+        # fileName = 'C:/Users/al/devel/ARBEIT/testmyapp.log'
+
+
+        formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+        console = logging.StreamHandler()
+        console.setLevel(loglevel)
+        console.setFormatter(formatter)
+        logging.getLogger('').addHandler(console)
+
+        logfile = logging.FileHandler('./log/widget_'+'%08x' % random.randrange(16 ** 8)+".log")
+        logfile.setLevel(loglevel)
+        logfile.setFormatter(formatter)
+        logging.getLogger('').addHandler(logfile)
+        haveLogger = True
+
+
 
 
 #import model
@@ -46,20 +73,22 @@ class TimeSeriesWidgetDataServer():
         it also caches settings which don't change over time
     """
     def __init__(self,modelUrl,avatarPath):
-        self.__init_logger(logging.DEBUG)
+
+        self.__init_logger()
         self.url = modelUrl # get the data from here
         self.path = avatarPath # here is the struct for the timeserieswidget
         self.__get_settings()
 
 
 
-    def __init_logger(self, level):
+    def __init_logger(self, level=logging.DEBUG):
+        setup_logging()
         self.logger = logging.getLogger("TSWidgetDataServer")
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
-        self.logger.setLevel(level)
+        #handler = logging.StreamHandler()
+        #formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+        #handler.setFormatter(formatter)
+        #self.logger.addHandler(handler)
+        #self.logger.setLevel(level)
 
 
 
@@ -73,18 +102,38 @@ class TimeSeriesWidgetDataServer():
             Returns (dict):
                 the data from the backend as dict
         """
-        self.logger.info("__web_call %s %s",method,path)
-        try:
-            if method.upper() =="GET":
-                response = requests.get(self.url+path)
-            elif method.upper() =="POST":
-                response = requests.post(self.url+path, data=json.dumps(reqData))
-                self.logger.debug("response %s",str(response))
+        self.logger.info("__web_call %s @%s data:%s",method,path,str(reqData))
+        response = None
+        now = datetime.datetime.now()
+        if method.upper() =="GET":
+            for timeout in [0.001, 0.1, 1, 10]:
+                try:
+                    #self.logger.debug("timeout set is", timeout)
+                    response = requests.get(self.url + path, timeout=timeout)
+                    break
+                except Exception as ex:
+                    #self.logger.error("exceptino timeout"+str(timeout)+" msg:"+str(ex))
+                    continue
+        elif method.upper() =="POST":
+            now = datetime.datetime.now()
+            for timeout in [0.001, 0.1, 1, 10]:
+                try:
+                    #self.logger.debug("timeout set is" +str(timeout))
+                    response = requests.post(self.url + path, data=json.dumps(reqData), timeout=timeout)
+                    break
+                except Exception as ex:
+                    #self.logger.error("exceptino timeout" + str(timeout) + " msg:" + str(ex))
+                    continue
+        after = datetime.datetime.now()
+        diff = (after-now).total_seconds()
+        self.logger.info("response "+str(response)+" took "+ str(diff)+"@ my timeout"+str(timeout))
+        if not response:
+            #print("no ressponse")
+            self.logger.error("Error calling web " + path + str(timeout))
+            return None
+        else:
             rData = json.loads(response.content.decode("utf-8"))
             return rData
-        except BaseException as ex:
-            self.logger.error("Error calling web " + str(ex))
-            return None
 
     def __get_settings(self):
         """
@@ -94,7 +143,7 @@ class TimeSeriesWidgetDataServer():
         """
         request = [self.path]
         info = self.__web_call("post","_get",request)
-        self.logger.info("initial settings %s",json.dumps(info,indent=4))
+        self.logger.debug("initial settings %s",json.dumps(info,indent=4))
         #self.originalInfo=copy.deepcopy(info)
         #grab some settings
         self.settings = get_const_nodes_as_dict(info[0]["children"])
@@ -189,8 +238,8 @@ class TimeSeriesWidgetDataServer():
                 #we dont have a valid background definition
 
 
-        self.logger.info("SERVER.SETTINGS-------------------------")
-        self.logger.info("%s",json.dumps(self.settings,indent=4))
+        self.logger.debug("SERVER.SETTINGS-------------------------")
+        self.logger.debug("%s",json.dumps(self.settings,indent=4))
 
 
     ##############################
@@ -308,7 +357,7 @@ class TimeSeriesWidgetDataServer():
 
 class TimeSeriesWidget():
     def __init__(self, dataserver):
-        self.__init_logger(logging.DEBUG)
+        self.__init_logger()
         self.server = dataserver
         self.height = 600
         self.width = 900
@@ -321,7 +370,7 @@ class TimeSeriesWidget():
         self.dispatchLock = threading.Lock() # need a lock for the dispatch list
 
         self.__init_figure() #create the graphical output
-        self.__init_observer() #create the observer: do we need to watch something periodically?
+        #self.__init_observer() #create the observer: do we need to watch something periodically?
 
 
     class ButtonCb():
@@ -338,14 +387,18 @@ class TimeSeriesWidget():
             pass
 
 
-    def __init_logger(self, level):
+    def __init_logger(self, level=logging.DEBUG):
         """initialize the logging object"""
+        setup_logging()
         self.logger = logging.getLogger("TSWidget")
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
-        self.logger.setLevel(level)
+        self.logger.setLevel(logging.DEBUG)
+        #handler = logging.StreamHandler()
+
+        #formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+        #handler.setFormatter(formatter)
+        #self.logger.addHandler(handler)
+
+        #self.logger.setLevel(level)
 
 
     def __init_observer(self):
@@ -388,6 +441,7 @@ class TimeSeriesWidget():
         self.plot = figure(tools='xpan,xwheel_zoom',
                            plot_height=self.height,
                            plot_width=self.width,
+                           sizing_mode="scale_width",
                            x_axis_type='datetime',y_range=Range1d())
 
         self.plot.toolbar.logo = None   #avoid the bokeh logo
@@ -470,7 +524,14 @@ class TimeSeriesWidget():
             layoutControls.append(self.customButtonsWidgets)
 
         #apply all to the layout
-        self.layout = layout([[self.plot,layoutControls]])
+        #self.plot.sizing_mode = "scale_width"
+        #for elem in layoutControls:
+        #    if type(elem) is list:
+        #        for subelem in elem:
+        #            subelem.sizing_mode = "scale_both"
+        #    else:
+        #        elem.sizing_mode = "scale_both"
+        self.layout = layout([[self.plot,layoutControls]])#,sizing_mode="scale_width")
 
 
     def __thread_function(self):
