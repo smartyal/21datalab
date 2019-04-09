@@ -370,7 +370,7 @@ class TimeSeriesWidget():
         self.dispatchLock = threading.Lock() # need a lock for the dispatch list
 
         self.__init_figure() #create the graphical output
-        #self.__init_observer() #create the observer: do we need to watch something periodically?
+        self.__init_observer() #create the observer: do we need to watch something periodically?
 
 
     class ButtonCb():
