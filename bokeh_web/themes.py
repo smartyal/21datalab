@@ -109,7 +109,7 @@ whiteTheme ={
             'text_color': palette['bw30%']
         },
         'Legend':{
-            'background_fill_color': palette['bw80%'],
+            'background_fill_color': palette['bw90%'],
             'label_text_color': palette['bw20%']
         }
     }

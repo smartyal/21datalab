@@ -638,6 +638,24 @@ class Model():
 
 
 
+    def get_models(self):
+        """
+            get the available model files from the disk under /models
+        :   Returns: a list of strings
+        """
+        try:
+            mydir = myGlobalDir
+            os.chdir(mydir)  # to enable import easily
+            files = os.listdir(mydir + '/models')
+            # take only the ones with '.json, but cut the '.model.json' extension
+            models = [f.split('.model')[0] for f in files if f.endswith(".json")]
+
+            return models
+        except Exception as ex:
+            self.logger.error("Model.get_models() failed "+str(ex))
+            return []
+
+
 
     def import_plugins(self):
         """ find all plugins (= all .py files in the ./plugin folder

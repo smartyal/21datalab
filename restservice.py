@@ -76,6 +76,7 @@ POST /_references <referencequery.json>
 POST /_execute      <nodedescriptor>            //nothing               ## execute a function
 GET /templates      -                           [templatename]          ## get all available templates to be created
 POST /_createTemplate  <createtemplate.json>     -                        #create a template at a path given
+GET /models         -                           [string]             #  a list of available models from the /model folder 
 data:
 
 
@@ -223,6 +224,12 @@ def all(path):
         templates = list(m.get_templates().keys())
         logger.debug(" templates are "+str(templates))
         response = json.dumps(templates)
+        responseCode = 200
+
+    elif (str(path) == "models") and str(flask.request.method) in ["GET"]:
+        logger.debug(" get templates")
+        models = m.get_models()
+        response = json.dumps(models)
         responseCode = 200
 
 

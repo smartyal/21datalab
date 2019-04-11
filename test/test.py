@@ -192,6 +192,11 @@ def test_global_id_counter():
     n.show()
 
 
+def test_list_dir():
+    m=model.Model()
+    print(m.get_models())
+
+
 if __name__ == "__main__":
 
     #t = Timer()
@@ -219,7 +224,8 @@ if __name__ == "__main__":
 
     #diff_test()
     #template_test()
-    test_global_id_counter()
+    #test_global_id_counter()
+    test_list_dir()
 
 
 
