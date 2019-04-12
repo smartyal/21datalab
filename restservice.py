@@ -74,9 +74,9 @@ POST /_getdata      <dataquery.json>]
 POST /_appendRow     [<data.json>]
 POST /_references <referencequery.json>
 POST /_execute      <nodedescriptor>            //nothing               ## execute a function
-GET /templates      -                           [templatename]          ## get all available templates to be created
+GET  /templates      -                           [templatename]          ## get all available templates to be created
 POST /_createTemplate  <createtemplate.json>     -                        #create a template at a path given
-GET /models         -                           [string]             #  a list of available models from the /model folder 
+GET /models         -                           [string]                #  a list of available models from the /model folder 
 data:
 
 

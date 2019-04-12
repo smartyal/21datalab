@@ -2,6 +2,8 @@ var templates = null; // global list with available templates
 var periodicTreeUpdate = false; //
 var globalCopyBuffer = [];
 
+var globalIconType = "standard"; // use to ingest html styles for the icons
+
 
 function start_periodic_tree_update()
 {
@@ -39,6 +41,30 @@ function tree_initialize() {
         return;
     }
     //start_periodic_tree_update();
+    $('#jstree_div').on("select_cell.jstree-grid",function (e,data) {
+        //alert( "The user double clicked a jstreegrid cell"+data.column+"  "+data.value+ );
+        var id = data.node.get()[0].id;
+        var value = treeNodes[id].value;
+        //we only edit variables, consts
+        if ( (treeNodes[id].type == "variable") || (treeNodes[id].type == "const") )
+        {
+            //only vars and consts can be edited
+            $('#editNodeModalName').text(treeNodes[id].browsePath);
+            $('#editNodeModalValue').val(JSON.stringify(treeNodes[id].value));
+            $('#editNodeModalId').val(id);
+            $('#editNodeModal').modal('show');
+        }
+    });
+
+
+    $('#editNodeModalButtonSave').click(function(){
+        var id = $('#editNodeModalId').val();
+        var value = JSON.parse($('#editNodeModalValue').val());
+        var query=[{"id":id,"value":value}];
+        http_post("/setProperties",JSON.stringify(query),null,null);
+    });
+
+
 }
 
 //https://fontawesome.com/icons
@@ -139,7 +165,7 @@ function tree_generate()
     treeNodes = model; //keep a copy in the global
 
     var myTree = {
-        'plugins':["grid","contextmenu"],
+        'plugins':["grid","contextmenu","types"],
         'core': {
             "themes" : {
                 "variant" : "small"
@@ -153,7 +179,7 @@ function tree_generate()
                     },
                     'id': '1',
                     'modelId': '1',
-                    'type': "root",
+                    'type': globalIconType,
                     'icon':"fa fa-folder",//treeIconsPath+treeIcons["root"],
                     'children': nodes,
                     data: {}
@@ -262,7 +288,7 @@ function tree_generate()
                 }
 
                 //if this node is not a greferencee node, renaming is possible
-                if ((node.id in treeNodes) && (treeNodes[node.id].type != "referencee"))
+                if ((node.id in treeNodes) && (treeNodes[node.id].nodeType != "referencee"))
                 {
 
                     menuObject["rename"] = {
@@ -278,7 +304,7 @@ function tree_generate()
                 for (nodeId of allNodes)
                 {
                     var node = $('#jstree_div').jstree(true).get_node(nodeId);
-                    if (node.original.type == "referencee")
+                    if (node.original.nodeType == "referencee")
                     {
                         isReferencee = true;
                         break;
@@ -294,7 +320,7 @@ function tree_generate()
                 }
 
                 //for referencees, paste is possible
-                if (node.original.type == "referencer")
+                if (node.original.nodeType == "referencer")
                 {
                     menuObject["paste"] = {
                         "label": "paste",
@@ -306,6 +332,10 @@ function tree_generate()
 
                 return menuObject;
             }
+        },
+        'types':{
+            "standard":{"a_attr":{"style":"color:#606060;background-color:white"}},
+            "inverse":{"a_attr":{"style":"color:white;background-color:grey"}},
         }
     }
 
@@ -327,7 +357,7 @@ function context_menu_delete(node)
     for (nodeId of allNodes)
     {
         var node = $('#jstree_div').jstree(true).get_node(nodeId);
-        if (node.original.type == "referencee")
+        if (node.original.nodeType == "referencee")
         {
             if (!(allRefs.hasOwnProperty(node.parent)))
             {
@@ -531,7 +561,7 @@ function tree_update_cb(status,data,params)
             var tree = $('#jstree_div').jstree(true);
             var treeNode = tree.get_node(id);
             //trigger the redraw of the node, unfortunately all other redraw(), refresh() etc. do not trigger the grid refresh
-            treeNode.data.value = newNode.value;
+            treeNode.data.value = JSON.stringify(newNode.value);
             tree.rename_node(id,newNode.name); // same name as it was
         }
 
@@ -595,7 +625,7 @@ function create_children(model,parentNodeId)
             var treeNode = node_to_tree(childNode);
             //some more stuff
             treeNode.data.nodeid=childNodeId;
-            treeNode.data['value']=childNode['value'];
+            //treeNode.data['value']=childNode['value'];
 
             if (childNode.children.length>0)
             {
@@ -613,6 +643,7 @@ function create_children(model,parentNodeId)
                     {
                         var targetId = childNode.forwardRefs[entry];
                         var referenceeModelNode = {
+
                                 'type': 'referencee',
                                 'name': model[targetId].browsePath,
                                 'parent': childNode.id,
@@ -640,7 +671,8 @@ function node_to_tree(modelNode)
     var newTreeNode = {
             'id': modelNode.id,
             'parent': modelNode.parent,
-            'type': modelNode.type,
+            'type': globalIconType,
+            'nodeType':modelNode.type,
             'text': modelNode.name,
             'state': {
                 'opened': false,
@@ -655,9 +687,9 @@ function node_to_tree(modelNode)
         newTreeNode['targetId'] = modelNode.targetId;
     }
 
-    if ((newTreeNode.type == "const")  || (newTreeNode.type == "variable"))
+    if ((newTreeNode.nodeType == "const")  || (newTreeNode.nodeType == "variable") || (newTreeNode.nodeType == "column"))
     {
-        newTreeNode.data.value = modelNode.value;
+        newTreeNode.data.value = JSON.stringify(modelNode.value);//modelNode.value;
     }
     return newTreeNode;
 }

@@ -46,9 +46,36 @@
 
 
         <div id="navtree">
+
+
             <div class="pre-scrollable" id="jstreeContainer" style="overflow-y: auto;overflow-x: auto;width:100%">
-                <div id="jstree_div" class="jstree jstree-default"></div>
+                <div id="jstree_div" class="jstree jstree-default">
+                </div>
             </div>
+            <!-- Modal -->
+               <div class="modal fade" id="editNodeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                  <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                          <h4 class="modal-title" id="myModalLabel">Edit Node Value</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+
+                      </div>
+                      <div class="modal-body">
+                        <div class="form-group">
+                            <label id="editNodeModalName">nodePath</label>
+                            <label id="editNodeModalId" hidden>id</label>
+                            <input type="email" class="form-control" id="editNodeModalValue" aria-describedby="emailHelp" >
+
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" id ="editNodeModalButtonSave">Save changes</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
         </div>
     </div>
     <div id="nav-pipelines" class="tab-pane fade">
