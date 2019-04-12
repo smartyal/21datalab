@@ -207,8 +207,14 @@ function tree_generate()
                         "label": "delete",
                         "action": function (obj) {context_menu_delete(node);},
                         "icon": treeIconsOld["delete"]
-                    },
-                    "create":{
+                    }
+                };
+
+                if ((node.id in treeNodes) && (treeNodes[node.id].type != "referencer"))
+                {
+                    //creation is only for non-referencer
+
+                    menuObject["create"]={
                         "label":"create",
                         "icon":treeIconsOld["add"],
                         "submenu":
@@ -263,19 +269,18 @@ function tree_generate()
                             }
                         }
                     }
-                };
+                    // now make the templates entries
+                    for (var template of templates)
+                    {
+                        //var template = templ
+                        var entry = {
+                            "label":template,
+                            "__templateType":template, //to store it here, so we get it back on the call
+                            "action":function(obj){context_menu_create_template(node,obj.item.__templateType);}
+                        }
+                        menuObject.create.submenu.template.submenu[template]=entry;
 
-                // now make the templates entries
-                for (var template of templates)
-                {
-                    //var template = templ
-                    var entry = {
-                        "label":template,
-                        "__templateType":template, //to store it here, so we get it back on the call
-                        "action":function(obj){context_menu_create_template(node,obj.item.__templateType);}
                     }
-                    menuObject.create.submenu.template.submenu[template]=entry;
-
                 }
 
                 //if this node is a function, execution is also possible

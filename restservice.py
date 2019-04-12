@@ -395,7 +395,7 @@ def all(path):
 
     elif (str(path) == "setProperties"):
         logger.debug("set properties ")
-        responseCode = 200
+        responseCode = 201
         result = True
         for blob in data:
             result = result and m.set_properties(blob)
@@ -454,12 +454,16 @@ def all(path):
             </html>
         """
         app_url = 'http://localhost:5006/bokeh_web'
-        with pull_session(url=app_url) as session:
-            # customize session here
-            script = server_session(session_id='12345', url=app_url)
-            #script = server_document('http://localhost:5006/bokeh_web')
-            temp = render_template_string(embed, script=script)
-            return temp
+        try:
+            with pull_session(url=app_url) as session:
+                # customize session here
+                script = server_session(session_id='12345', url=app_url)
+                #script = server_document('http://localhost:5006/bokeh_web')
+                temp = render_template_string(embed, script=script)
+                return temp
+        except:
+            logger.error("pulling session failed")
+            responseCode = 404
 
 
     else:

@@ -908,6 +908,7 @@ class Model():
         """
             adding forward references from a referencer to other nodes, the forward references are appended at the list
             of forward references of the referencer node
+            references to oneself are not allowed
 
             Args:
                 referenderDesc (string): descriptor of the referencer node from which we want to add forward references
@@ -926,7 +927,9 @@ class Model():
             for target in targets:
                 toId = self.get_id(target)
                 if not toId:
-                    return None
+                    continue
+                if toId == fromId:
+                    continue
                 self.model[toId]["backRefs"].append(fromId)
                 self.model[fromId]["forwardRefs"].append(toId)
             return True
