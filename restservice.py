@@ -77,6 +77,7 @@ POST /_execute      <nodedescriptor>            //nothing               ## execu
 GET  /templates      -                           [templatename]          ## get all available templates to be created
 POST /_createTemplate  <createtemplate.json>     -                        #create a template at a path given
 GET /models         -                           [string]                #  a list of available models from the /model folder 
+GEt /modelinfo      -                           <modelinfo.json>              # get the current name of the model, path etc
 data:
 
 
@@ -161,6 +162,10 @@ referencequery.json
 }
 
 
+modelinfo.json
+{
+    "name" : "myfirstModel" # the name of the model
+}
 
 '''
 
@@ -218,6 +223,11 @@ def all(path):
         except:
             logger.error("I have no pipelines")
             responseCode = 404
+
+    elif (str(path) == "modelinfo") and str(flask.request.method) in ["GET"]:
+        logger.debug("get modelinfo")
+        response = json.dumps(m.get_info(), indent=4)
+        responseCode = 200
 
     elif (str(path) == "templates") and str(flask.request.method) in ["GET"]:
         logger.debug(" get templates")

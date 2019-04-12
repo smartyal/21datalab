@@ -71,15 +71,17 @@ function tree_initialize() {
 var treeIconsOld =
 {
     root : "fa fa-folder fa-sm",
+    root : "far fa-folder",
+    //folder : "fa fa-folder fa-sm",
     folder : "far fa-folder",
-    variable : "far fa-square",
+    variable:"fas fa-random",
     timeseries : "fas fa-chart-line fa-xs",
     table :"fas fa-table",
     annotation: "fas fa-pencil-alt",
     widget : "fas fa-chart-line fa-xs",
     column :"fas fa-columns",
-    const : "far fa-dot-circle",//"fas fa-equals",
-    referencee : "fas fa-ghost",
+    const :  "fas fa-sliders-h",
+    referencee : "fas fa-link",
     function : "fa fa-play-circle",
     referencer : "fas fa-share",
     reference : "fa fa-link",
@@ -180,7 +182,7 @@ function tree_generate()
                     'id': '1',
                     'modelId': '1',
                     'type': globalIconType,
-                    'icon':"fa fa-folder",//treeIconsPath+treeIcons["root"],
+                    'icon':treeIconsOld["root"],
                     'children': nodes,
                     data: {}
                 }

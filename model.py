@@ -547,6 +547,7 @@ class Model():
         self.lock = threading.RLock()
         self.import_plugins()
         self.differentialHandles ={} # containing handle:model_copy entries to support differential queries
+        self.currentModelName = "emptyModel" # the current name of the model
 
     def __init_logger(self, level):
         """setup the logger object"""
@@ -655,6 +656,12 @@ class Model():
             self.logger.error("Model.get_models() failed "+str(ex))
             return []
 
+    def get_info(self):
+        """
+            get some information about the model
+            Returns: (dict) key value pairs on information of the model,
+        """
+        return {"name":self.currentModelName}
 
 
     def import_plugins(self):
@@ -1766,7 +1773,7 @@ class Model():
                         ids = self.get_leaves_ids(table+".columns")
                         for id, column in zip(ids, data):
                             self.set_value(id,column)
-                #now also recover the global id counter
+                self.currentModelName = fileName
 
             except Exception as e:
                 print("problem loading"+str(e))
@@ -2055,6 +2062,7 @@ class Model():
         elif testNo == 2:
             #we take the full test number 1 and rearrange some things
             self.create_test(1)
+            self.currentModelName = "occupancydemo"
 
             import data.occupancy_data.occupancy as occ
             occData = occ.read_occupancy("./data/occupancy_data/datatest2.txt")
@@ -2120,6 +2128,7 @@ class Model():
 
         elif testNo == 3:
             # make some nodes
+
             for id in range(10):
                 self.create_node_from_path("root.add.var"+str(id), {"type": "variable", "value": id+100})
             for id in range(100):
