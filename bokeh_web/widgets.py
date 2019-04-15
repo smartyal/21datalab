@@ -25,6 +25,7 @@ from bokeh.models.widgets import RadioButtonGroup, Paragraph, Toggle, MultiSelec
 from bokeh.plotting import figure, curdoc
 from bokeh.layouts import layout,widgetbox
 
+
 haveLogger = False
 
 
@@ -41,7 +42,8 @@ def setup_logging(loglevel=logging.DEBUG):
         console.setFormatter(formatter)
         logging.getLogger('').addHandler(console)
 
-        logfile = logging.FileHandler('./log/widget_'+'%08x' % random.randrange(16 ** 8)+".log")
+        #logfile = logging.FileHandler('./log/widget_'+'%08x' % random.randrange(16 ** 8)+".log")
+        logfile = logging.FileHandler('./widget_' + '%08x' % random.randrange(16 ** 8) + ".log")
         logfile.setLevel(loglevel)
         logfile.setFormatter(formatter)
         logging.getLogger('').addHandler(logfile)
@@ -370,7 +372,7 @@ class TimeSeriesWidget():
         self.dispatchLock = threading.Lock() # need a lock for the dispatch list
 
         self.__init_figure() #create the graphical output
-        self.__init_observer() #create the observer: do we need to watch something periodically?
+        #self.__init_observer() #create the observer: do we need to watch something periodically?
 
 
     class ButtonCb():
@@ -438,7 +440,7 @@ class TimeSeriesWidget():
         self.rangeEnd = settings["endTime"]
 
         #create figure
-        self.plot = figure(tools='xpan,xwheel_zoom',
+        self.plot = figure(tools='xpan,xwheel_zoom,reset',
                            plot_height=self.height,
                            plot_width=self.width,
                            sizing_mode="scale_width",
@@ -468,6 +470,7 @@ class TimeSeriesWidget():
         self.plot.on_event(events.PanStart, self.event_cb)
         self.plot.on_event(events.PanEnd, self.event_cb)
         self.plot.on_event(events.LODEnd, self.event_cb)
+        self.plot.on_event(events.Reset, self.event_cb)
         self.plot.on_event(events.SelectionGeometry, self.event_cb)
 
 
@@ -747,6 +750,7 @@ class TimeSeriesWidget():
         msg = " "
         for k in event.__dict__:
             msg += str(k) + " " + str(event.__dict__[k]) + " "
+        self.logger.debug("event " + eventType + msg)
         #print("event " + eventType + msg)
 
         if eventType == "PanEnd":
@@ -755,11 +759,20 @@ class TimeSeriesWidget():
         if eventType == "LODEnd":
             self.refresh_plot()
 
+        if eventType == "Reset":
+            self.reset_plot_cb()
+
         if eventType == "SelectionGeometry":
             option = self.annotationButtons.active # gives a 0,1 list, get the label now
             tags = self.server.get_settings()["tags"]
             mytag= tags[option]
             self.edit_annotation_cb(event.__dict__["geometry"]["x0"],event.__dict__["geometry"]["x1"],mytag)
+
+    def reset_plot_cb(self):
+        self.logger.debug("reset plot")
+        self.rangeStart = None
+        self.rangeEnd = None
+        self.refresh_plot()
 
 
     def remove_renderes(self,deleteList=[],deleteMatch=""):
