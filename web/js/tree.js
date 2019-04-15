@@ -89,6 +89,7 @@ var treeIconsOld =
     add : "fas fa-plus",
     delete : "far fa-trash-alt",
     rename : "fas fa-pencil-alt",
+    changevalue : "fas fa-edit",
     execute : "fa fa-play",
     abort : "fa fa-stop",
     file:"far fa-file-alt",
@@ -210,10 +211,9 @@ function tree_generate()
                     }
                 };
 
+                //creation is only for non-referencer
                 if ((node.id in treeNodes) && (treeNodes[node.id].type != "referencer"))
                 {
-                    //creation is only for non-referencer
-
                     menuObject["create"]={
                         "label":"create",
                         "icon":treeIconsOld["add"],
@@ -294,8 +294,8 @@ function tree_generate()
                     }
                 }
 
-                //if this node is not a greferencee node, renaming is possible
-                if ((node.id in treeNodes) && (treeNodes[node.id].nodeType != "referencee"))
+                //if this node is not a referencee node, renaming is possible
+                if ((node.original.nodeType != "referencee"))
                 {
 
                     menuObject["rename"] = {
@@ -304,6 +304,17 @@ function tree_generate()
                         "icon": treeIconsOld["rename"]
                     }
                 }
+
+                // for variables and const also editing is possible
+                if ((node.original.nodeType == "variable") || (node.original.nodeType == "const"))
+                {
+                    menuObject["editvalue"] ={
+                        "label" : "edit value",
+                        "action" : function(obj){context_menu_change_value(node);},
+                        "icon": treeIconsOld["changevalue"]
+                    }
+                }
+
 
                 //if all selected nodes are not referencees, then copy is possible
                 var allNodes = $('#jstree_div').jstree(true).get_selected();
@@ -442,6 +453,18 @@ function context_menu_paste(node)
     //if type(globalCopyBuffer)
     var query={"parent":node.id,"add":globalCopyBuffer};
     http_post("/_references",JSON.stringify(query),null,null);
+}
+
+
+function context_menu_change_value(node)
+{
+        var id = node.id;
+        var value = treeNodes[id].value;
+        //only vars and consts can be edited
+        $('#editNodeModalName').text(treeNodes[id].browsePath);
+        $('#editNodeModalValue').val(JSON.stringify(treeNodes[id].value));
+        $('#editNodeModalId').val(id);
+        $('#editNodeModal').modal('show');
 }
 
 
