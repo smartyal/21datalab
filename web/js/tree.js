@@ -215,7 +215,7 @@ function tree_generate()
                 if ((node.id in treeNodes) && (treeNodes[node.id].type != "referencer"))
                 {
                     menuObject["create"]={
-                        "label":"create",
+                        "label":"new",
                         "icon":treeIconsOld["add"],
                         "submenu":
                         {
@@ -417,7 +417,7 @@ function context_menu_execute(node)
 
 function context_menu_create_template(node,templateType)
 {
-    console.log("create temlate",node,templateType);
+    console.log("create template",node,templateType);
     var splitted = templateType.split('.');
     var templateName = splitted.pop();
     var newBrowsePath = treeNodes[parseInt(node.id)].browsePath+".new_"+templateName+"_"+Math.random().toString(16).substring(2,6);

@@ -1645,7 +1645,7 @@ class Model():
                 return False
             functionName = self.model[id]["functionPointer"]
             if not functionName in  self.functions:
-                print ("can't find function in global list")
+                self.logger.error("can't find function in global list")
                 return False
             #check if function is interactive, then we reload it right now
             if self.model[id]["autoReload"] == True:

@@ -75,13 +75,25 @@ class TimeSeriesWidgetDataServer():
         it also caches settings which don't change over time
     """
     def __init__(self,modelUrl,avatarPath):
-
         self.__init_logger()
+        self.__init_proxy()
         self.url = modelUrl # get the data from here
         self.path = avatarPath # here is the struct for the timeserieswidget
         self.__get_settings()
 
 
+    def __init_proxy(self):
+        """
+            try to open the proxies file, set the local proxy if possible
+        """
+        self.proxySetting = {}
+        try:
+            with open('proxies.json','r') as f:
+                self.proxySetting = json.loads(f.read())
+                self.logger.info("using a proxy!")
+        except:
+            self.logger.info("no proxy used")
+            pass
 
     def __init_logger(self, level=logging.DEBUG):
         setup_logging()
@@ -105,26 +117,26 @@ class TimeSeriesWidgetDataServer():
                 the data from the backend as dict
         """
         self.logger.info("__web_call %s @%s data:%s",method,path,str(reqData))
+
         response = None
         now = datetime.datetime.now()
-        if method.upper() =="GET":
+        if method.upper() == "GET":
             for timeout in [0.001, 0.1, 1, 10]:
                 try:
-                    #self.logger.debug("timeout set is", timeout)
-                    response = requests.get(self.url + path, timeout=timeout)
+                    response = requests.get(self.url + path, timeout=timeout,proxies=self.proxySetting)
                     break
                 except Exception as ex:
-                    #self.logger.error("exceptino timeout"+str(timeout)+" msg:"+str(ex))
+                    #self.logger.error("requests.get"+str(timeout)+" msg:"+str(ex))
                     continue
         elif method.upper() =="POST":
             now = datetime.datetime.now()
             for timeout in [0.001, 0.1, 1, 10]:
                 try:
-                    #self.logger.debug("timeout set is" +str(timeout))
-                    response = requests.post(self.url + path, data=json.dumps(reqData), timeout=timeout)
+                    response = requests.post(self.url + path, data=json.dumps(reqData), timeout=timeout,
+                                             proxies=self.proxySetting)
                     break
                 except Exception as ex:
-                    #self.logger.error("exceptino timeout" + str(timeout) + " msg:" + str(ex))
+                    #self.logger.error("requets.post" + str(timeout) + " msg:" + str(ex))
                     continue
         after = datetime.datetime.now()
         diff = (after-now).total_seconds()
@@ -352,7 +364,10 @@ class TimeSeriesWidgetDataServer():
         return
 
     def get_settings(self):
-        return self.settings
+        return copy.deepcopy(self.settings)
+
+    def refresh_settings(self):
+        self.__get_settings()
 
 
 
@@ -372,7 +387,7 @@ class TimeSeriesWidget():
         self.dispatchLock = threading.Lock() # need a lock for the dispatch list
 
         self.__init_figure() #create the graphical output
-        #self.__init_observer() #create the observer: do we need to watch something periodically?
+        self.__init_observer() #create the observer: do we need to watch something periodically?
 
 
     class ButtonCb():
@@ -490,7 +505,7 @@ class TimeSeriesWidget():
         if settings["hasAnnotation"] == True:
             self.plot.add_tools(BoxSelectTool(dimensions="width"))
             #also add a drop down for the creation
-            labels= settings["tags"]
+            labels = settings["tags"]
             labels.append("-erase-")
             self.annotationButtons = RadioButtonGroup(labels=labels,active=0,css_classes=['group_button_21'])
             self.annotationOptions = widgetbox(Paragraph(text="Select Annotation Tag"),self.annotationButtons)
@@ -524,7 +539,7 @@ class TimeSeriesWidget():
                 self.customButtonsInstances.append(instance)
                 self.customButtonsWidgets.append(button)
 
-            layoutControls.append(self.customButtonsWidgets)
+            layoutControls.extend(self.customButtonsWidgets)
 
         #apply all to the layout
         #self.plot.sizing_mode = "scale_width"
@@ -564,10 +579,19 @@ class TimeSeriesWidget():
                     if "background" in self.server.get_settings()["observer"]["observerUpdate"]:
                         self.logger.debug("observer updates the background")
                         self.__dispatch_function(self.refresh_backgrounds)
-
-
         except:
             self.logger.error("problem during __check_observed")
+
+    def reset_all(self):
+        """
+            this is an experimental function that reloads the widget in the frontend
+            it should be executed as dispatched
+        """
+        self.logger.debug("self.reset_all()")
+        self.server.refresh_settings()
+        self.__init_figure()
+        self.curdoc().clear()
+        self.curdoc().add_root(self.get_layout())
 
     def __dispatch_function(self,function):
         """
@@ -838,7 +862,8 @@ class TimeSeriesWidget():
     def get_layout(self):
         """ return the inner layout, used by the main"""
         return self.layout
-
+    def set_curdoc(self,curdoc):
+        self.curdoc = curdoc
 
     def draw_annotation(self, modelPath):
         """
