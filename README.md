@@ -18,6 +18,7 @@ The framework is prepared to run on edge, desktop or cloud and is a microservice
 * prepare the web applications folder, it needs some more packages which are placed under web/modules:
   * web/modules/bootstrap (MIT License): get the latest bootstrap dist https://getbootstrap.com/, place it here directly 
   * web/modules/bootstrap-select/ (MIT License):https://developer.snapappointments.com/bootstrap-select/
+  * web/modules/bootstrap-navbar-sidebar (MIT License): https://github.com/mladenplavsic/bootstrap-navbar-sidebar
   * web/modules/font-awesome/ (License: https://fontawesome.com/license/free) https://use.fontawesome.com/releases/v5.7.2/fontawesome-free-5.7.2-web.zip
   * web/modules/jquery/ (MIT License) https://jquery.com/download/
   * web/modules/jstree (MIT License) https://www.jstree.com/
