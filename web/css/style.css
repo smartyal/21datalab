@@ -1,0 +1,28 @@
+.nav-item-text {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.4s linear;
+}
+
+.nav-item-hover:hover .nav-item-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+@media (min-width: 768px) {
+    body {
+        margin-left: 150px;
+    }
+}  
+
+@media (min-width: 768px) {
+    .navbar.fixed-left {
+        width: 150px;
+    }
+}
+@media (min-width: 768px) {
+    .nav-brand-image {
+        width: 100%;
+    }
+}
+

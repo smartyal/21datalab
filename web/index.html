@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="modules/bootstrap/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="modules/jstree/dist/themes/default/style.min.css"/>
-    <link rel="stylesheet" href="modules/bootstrap-select/dist/css/bootstrap-select.min.css">
-    <link rel="stylesheet" href="modules/font-awesome/css/all.css">
+    <link rel="stylesheet" href="modules/bootstrap-select/dist/css/bootstrap-select.min.css"/>
+    <link rel="stylesheet" href="modules/font-awesome/css/all.css"/>
+    <link rel="stylesheet" href="modules/bootstrap-navbar-sidebar/dist/navbar-fixed-left.css"/>
 
-
-
-
+    <link rel="stylesheet" href="css/style.css"/>
+ 
     <link rel="icon" type="image/x-icon" href="favicon.ico"/>
     <script src="modules/jquery/jquery.js"></script>
     <script src="modules/other/popper.min.js"></script>
@@ -23,33 +23,104 @@
 	<script src="js/tree.js"></script>
     <script src="modules/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
     <script src="js/index.js"></script>
-
-	
-	
-	
-
 </head>
-<body>
-<div class="container-fluid">
-  <ul class="nav nav-tabs">
-    <li class="nav-item"> <a class="nav-link active" href="#nav-model" data-toggle="tab">Model</a></li>
-    <li class="nav-item"> <a class="nav-link" href="#nav-pipelines" data-toggle="tab">Pipelines</a></li>
-    <li class="nav-item"> <a class="nav-link" href="#nav-streaming" data-toggle="tab">Streaming</a></li>
-    <li class="nav-item"> <a class="nav-link" href="#nav-settings" data-toggle="tab">  Settings</a></li>
-    <li class="nav-item"> <a class="nav-link" href="#nav-composite" data-toggle="tab">  composite</a></li>
 
-  </ul>
-    <div class="tab-content">
-        <div id="nav-model" class="tab-pane active">
-            <div class = "container-fluid">
-                <div class="row" >
-                    <div class="col-3">
-                        <button type="button" class="btn btn-light" id="reloadtreebtn">Reload Tree</button>
-                        <button type="button" class="btn btn-light" id="updatetreebtn">Update Tree</button>
-                        <div id="navtree">
-                            <div class="pre-scrollable" id="jstreeContainer" style="overflow-y: auto;overflow-x: auto;width:100%">
-                                <div id="jstree_div" class="jstree jstree-default"> </div>
-                            </div>
+<body >
+    <nav class="navbar navbar-expand-lg fixed-left navbar-dark bg-dark text-center">
+        <div class="text-center nav-brand-image mt-2">
+            <a href="http://www.21data.io">
+                <img src="img/logo.png" height="30" alt="21data.io" class="rounded">
+            </a>
+        </div>
+        <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="navbar-collapse collapse mt-4" id="navbarResponsive">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link nav-item-hover active" href="#nav-data" data-toggle="tab">
+                        <h3>
+                            <i class="fas fa-database"></i>
+                        </h3>
+                        <div class="nav-item-text">
+                            Data
+                        </div>
+                    </a>                    
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-item-hover" href="#nav-modelling" data-toggle="tab">
+                        <h3>
+                            <i class="fas fa-network-wired"></i>
+                        </h3>
+                        <div class="nav-item-text">
+                            Modelling
+                        </div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-item-hover" href="#nav-self-service" data-toggle="tab">
+                        <h3>
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        </h3>
+                        <div class="nav-item-text">
+                            Self-service
+                        </div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-item-hover" href="#nav-deployment" data-toggle="tab">
+                        <h3>
+                            <i class="fas fa-cubes"></i>
+                        </h3>
+                        <div class="nav-item-text">
+                            Deployment
+                        </div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-item-hover" href="#nav-settings" data-toggle="tab">
+                        <h3>
+                            <i class="fas fa-cog"></i>
+                        </h3>
+                        <div class="nav-item-text">
+                            Settings
+                        </div>                        
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <div class="tab-content">
+            <div id="nav-data" class="tab-pane fade active show">
+                <div class="container mt-4">
+                    <div class="row">
+                        <div class="col">
+                            <h5>Data</h5>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            Load, Save, Create models
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="nav-modelling" class="tab-pane fade">
+                <div class="container-fluid mt-4">
+                    <div class="row">
+                        <div class="col">
+                            <h5>Modelling</h5>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3">
+                            <button type="button" class="btn btn-light" id="reloadtreebtn">Reload Tree</button>
+                            <button type="button" class="btn btn-light" id="updatetreebtn">Update Tree</button>
+                            <div id="navtree">
+                                <div class="pre-scrollable" id="jstreeContainer" style="overflow-y: auto;overflow-x: auto;width:100%">
+                                    <div id="jstree_div" class="jstree jstree-default"></div>
+                                </div>
                             <!-- Modal -->
                             <div class="modal fade" id="editNodeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
                                 <div class="modal-dialog" role="document">
@@ -72,55 +143,52 @@
                                     </div>
                                 </div>
                             </div> <!-- modal end -->
+                            </div>
+                        </div>
+                        <div class="col-9"  id="embed" >
+                            Time Series Widget
                         </div>
                     </div>
-                    <div class ="col-9" id="embed">
+                </div>
+            </div>
+            <div id="nav-self-service" class="tab-pane fade">
+                <div class="container mt-4"> 
+                    <div class="row">
+                        <div class="col">
+                            <h5>Self-service</h5>
+                            Time Series Widget
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="nav-deployment" class="tab-pane fade">
+                <div class="container mt-4"> 
+                    <div class="row">
+                        <div class="col">
+                            <h5>Deployment</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="nav-settings" class="tab-pane fade">
+                <div class="container mt-4"> 
+                    <div class="row">
+                        <div class="col">
+                            <h5>Settings</h5>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
-
-
-        <div id="nav-pipelines" class="tab-pane fade">
-            <h3><br> Pipelines</h3>
-            <div id="pipelines"></div>
-                <div class = "container">
-                    <div class="input-group mb-3">
-                        <select class="custom-select"  id="pipelineselect"  >
-                            <option selected="true" disabled="disabled">select pipeline ..</option>
-                        </select>
-                        <div class="input-group-prepend">
-                            <button class="btn btn-outline-secondary" type="button" id="pipelinebutton">open</button>
-                        </div>
-                    </div>
-                </div>
-            <div id="pipelinediv"></div>
-            <!-- here goes the chart?-->
-        </div>
-
-        <div id="nav-streaming" class="tab-pane fade">
-            <h3>Streaming</h3>
-        </div>
-        <div id="nav-settings" class="tab-pane fade">
-          <h3>Settingss</h3>
-
-
-
-        </div>
-        <div id="nav-composite" class="tab-pane fade">
-          <h3>composite</h3>
-            <!-- <object type="text/html" data="http://localhost:5006/bokeh_web" width="100%" height="100%" style="overflow:auto">
-            <object type="text/html" data="http://localhost:6001/embed" width="100%" height="100%" style="overflow:auto">
-            </object>-->
-            <div id="embed"> </div>
-
-
-        </div>
     </div>
-</div>
-
-
 </body>
+
+<script>
+    // Adjust the navigation item classes when tab starts to load
+    $('.nav-link').on('show.bs.tab', function (e) {
+        $('.nav-link.show').removeClass('show');
+        $('.nav-link.active').removeClass('active');
+    });
+</script>
 
 </html>
