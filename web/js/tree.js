@@ -41,6 +41,7 @@ function tree_initialize() {
         return;
     }
     //start_periodic_tree_update();
+
     $('#jstree_div').on("select_cell.jstree-grid",function (e,data) {
         //alert( "The user double clicked a jstreegrid cell"+data.column+"  "+data.value+ );
         var id = data.node.get()[0].id;
@@ -57,12 +58,16 @@ function tree_initialize() {
     });
 
 
+
     $('#editNodeModalButtonSave').click(function(){
         var id = $('#editNodeModalId').val();
         var value = JSON.parse($('#editNodeModalValue').val());
         var query=[{"id":id,"value":value}];
         http_post("/setProperties",JSON.stringify(query),null,null);
     });
+
+
+
 
 
 }
@@ -592,7 +597,8 @@ function tree_update_cb(status,data,params)
             var treeNode = tree.get_node(id);
             //trigger the redraw of the node, unfortunately all other redraw(), refresh() etc. do not trigger the grid refresh
             treeNode.data.value = JSON.stringify(newNode.value);
-            tree.rename_node(id,newNode.name); // same name as it was
+            treeNode["a_attr"]={"title":JSON.stringify(newNode.value),"class":"show_tooltip"};
+            tree.rename_node(id,newNode.name); // same name as it was, this is to trigger the redraw
         }
 
         //check modification of dependencies: children and references
@@ -699,6 +705,12 @@ function node_to_tree(modelNode)
 {
     //parse the model Node, we expect the parent to be there already
     var newTreeNode = {
+            /*
+            "a_attr": { //or a_attr if you prefer
+                "title": "my tooltip text",
+                "class": "show_tooltip"
+            },
+            */
             'id': modelNode.id,
             'parent': modelNode.parent,
             'type': globalIconType,
@@ -720,6 +732,7 @@ function node_to_tree(modelNode)
     if ((newTreeNode.nodeType == "const")  || (newTreeNode.nodeType == "variable") || (newTreeNode.nodeType == "column"))
     {
         newTreeNode.data.value = JSON.stringify(modelNode.value);//modelNode.value;
+        newTreeNode["a_attr"]={"title":JSON.stringify(modelNode.value),"class":"show_tooltip"};
     }
     return newTreeNode;
 }
