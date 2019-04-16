@@ -387,7 +387,6 @@ class TimeSeriesWidget():
         self.dispatchLock = threading.Lock() # need a lock for the dispatch list
         self.annotationTags = []
 
-
         self.__init_figure() #create the graphical output
 
         #self.__init_observer() #create the observer: do we need to watch something periodically?
@@ -814,7 +813,6 @@ class TimeSeriesWidget():
         """
         newRenderers = []
         for r in self.plot.renderers:
-            print(r,r.name)
             if r.name:
                 if r.name in deleteList:
                     pass  # we ignore this one and do NOT add it to the renderers, this will hide the object
@@ -824,7 +822,6 @@ class TimeSeriesWidget():
                     newRenderers.append(r)  # we keep this one, as it doesnt mathc the deletersl
             else:
                 newRenderers.append(r)  # if we have no name, we can't filter, keep this
-
         self.plot.renderers = newRenderers
 
     def annotation_toggle_click_cb(self,toggleState):
@@ -947,18 +944,21 @@ class TimeSeriesWidget():
         #now we have a list of backgrounds
         self.logger.info("have %i background entries",len(backgrounds))
         #now plot them
+
         for back in backgrounds:
             name = "__background"+str('%8x'%random.randrange(16**8))
             newBack = BoxAnnotation(left=back["start"], right=back["end"],
                                     fill_color=back["color"],
                                     fill_alpha=0.2,
                                     name=name)  # +"_annotaion
-
             self.plot.add_layout(newBack)
 
     def hide_backgrounds(self):
         """ remove all background from the plot """
         self.remove_renderes(deleteMatch="__background")
+
+
+
 
     #called when the user dreates/removes annotations
     def edit_annotation_cb(self,start,end,tag):

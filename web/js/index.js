@@ -60,7 +60,25 @@ function on_first_load () {
 	var data = http_get("/pipelines");
 	populate_dropdown(data);
 
-	$( "#embed" ).load( "http://localhost:6001/embed" );
+
+	//load the bokeh widget for the data scientist to the embed, standard on 5006
+	http_post("http://localhost:6001/embedbokeh",JSON.stringify({"url":"http://localhost:5006/bokeh_web"}),null, function(status,data,params)   {
+        if (status==200)
+        {
+            $('#embed').html(data);
+        }
+    });
+
+	//load the bokeh widget for the self-service to the self-service, for now on 5007
+	http_post("http://localhost:6001/embedbokeh",JSON.stringify({"url":"http://localhost:5007/bokeh_web"}),null, function(status,data,params)   {
+        if (status==200)
+        {
+            $('#self-service-embed').html(data);
+        }
+    });
+
+
+
 
 }
 

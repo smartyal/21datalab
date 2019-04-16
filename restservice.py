@@ -77,7 +77,8 @@ POST /_execute      <nodedescriptor>            //nothing               ## execu
 GET  /templates      -                           [templatename]          ## get all available templates to be created
 POST /_createTemplate  <createtemplate.json>     -                        #create a template at a path given
 GET /models         -                           [string]                #  a list of available models from the /model folder 
-GEt /modelinfo      -                           <modelinfo.json>              # get the current name of the model, path etc
+GET /modelinfo      -                           <modelinfo.json>              # get the current name of the model, path etc
+GEt /embedbokeh     <urlstring>                 <bokeh session>         # pull a bokeh session for forwarding to a div, url string is eg. http://localhost:5006/bokeh_web
 data:
 
 
@@ -442,7 +443,7 @@ def all(path):
                 response ="requested handle does not exist"
                 responseCode = 404
 
-    elif (str(path)=='embed'):
+    elif (str(path)=='embedbokeh'):
         # here, we must have the correct html file for rendering including css and html coloring
         # as the index.html is not relevant anymore
         embed = """     
@@ -453,7 +454,8 @@ def all(path):
             </body>
             </html>
         """
-        app_url = 'http://localhost:5006/bokeh_web'
+
+        app_url = data['url']#'http://localhost:5006/bokeh_web'
         try:
             with pull_session(url=app_url) as session:
                 # customize session here
