@@ -8,3 +8,7 @@ font-awesome
 jquery
 jstree
 __pycache__
+/scripts/*.log
+bootstrap-navbar-sidebar
+/*.log
+*.log

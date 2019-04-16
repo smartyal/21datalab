@@ -25,6 +25,25 @@ function trigger_tree_update()
     }
 }
 
+function load_tree(name)
+{
+    http_post('/_load',name, null, function(status,data,params)   {
+        if (status!=200)
+        {
+            console.log("cant load  model"+name);
+        }
+        else
+        {
+            tree_initialize();
+        }
+    });
+}
+function save_tree(name)
+{
+
+    http_post('/_save',name, null, null);
+}
+
 
 function tree_initialize() {
     $('#jstree_div').jstree();

@@ -385,9 +385,12 @@ class TimeSeriesWidget():
         self.dispatchList = [] # a list of function to be executed in the bokeh app look context
                                 # this is needed e.g. to assign values to renderes etc
         self.dispatchLock = threading.Lock() # need a lock for the dispatch list
+        self.annotationTags = []
+
 
         self.__init_figure() #create the graphical output
-        self.__init_observer() #create the observer: do we need to watch something periodically?
+
+        #self.__init_observer() #create the observer: do we need to watch something periodically?
 
 
     class ButtonCb():
@@ -507,6 +510,8 @@ class TimeSeriesWidget():
             #also add a drop down for the creation
             labels = settings["tags"]
             labels.append("-erase-")
+            self.annotationTags=copy.deepcopy(labels)
+            print("HAVE SET ANNOT"+str(labels)+"   "+str(self.annotationTags))
             self.annotationButtons = RadioButtonGroup(labels=labels,active=0,css_classes=['group_button_21'])
             self.annotationOptions = widgetbox(Paragraph(text="Select Annotation Tag"),self.annotationButtons)
             self.showAnnotationToggle = Toggle(label="hide Annotations", active=True,css_classes=['button_21'])#, button_type="success")
@@ -788,8 +793,9 @@ class TimeSeriesWidget():
 
         if eventType == "SelectionGeometry":
             option = self.annotationButtons.active # gives a 0,1 list, get the label now
-            tags = self.server.get_settings()["tags"]
-            mytag= tags[option]
+            #tags = self.server.get_settings()["tags"]
+            mytag = self.annotationTags[option]
+            self.logger.info("TAGS"+str(self.annotationTags)+"   "+str(option))
             self.edit_annotation_cb(event.__dict__["geometry"]["x0"],event.__dict__["geometry"]["x1"],mytag)
 
     def reset_plot_cb(self):

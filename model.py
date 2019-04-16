@@ -1737,20 +1737,25 @@ class Model():
 
         """
         with self.lock:
-            m = self.get_model_for_web()  # leave out the tables
-            for nodeId in self.model:
-                if self.get_node_info(nodeId)["type"] == "table":
-                    tablePath = self.get_browse_path(nodeId)
-                    self.logger.debug("found table "+tablePath)
-                    columnNodes = self.get_leaves(tablePath+".columns")
-                    myList = []
-                    for node in columnNodes:
-                        myList.append(self.get_value(node["id"]))
-                    table = numpy.stack(myList,axis=0)
-                    numpy.save("./models/" + fileName + "."+tablePath+".npy", table)
-            f = open("./models/"+fileName + ".model.json", "w")
-            f.write(json.dumps(m, indent=4))
-            f.close()
+            try:
+                m = self.get_model_for_web()  # leave out the tables
+                for nodeId in self.model:
+                    if self.get_node_info(nodeId)["type"] == "table":
+                        tablePath = self.get_browse_path(nodeId)
+                        self.logger.debug("found table "+tablePath)
+                        columnNodes = self.get_leaves(tablePath+".columns")
+                        myList = []
+                        for node in columnNodes:
+                            myList.append(self.get_value(node["id"]))
+                        table = numpy.stack(myList,axis=0)
+                        numpy.save("./models/" + fileName + "."+tablePath+".npy", table)
+                f = open("./models/"+fileName + ".model.json", "w")
+                f.write(json.dumps(m, indent=4))
+                f.close()
+                return True
+            except Exception as e:
+                self.logger.error("problem sving "+str(e))
+                return False
 
     def load(self,fileName):
         """
@@ -1777,9 +1782,10 @@ class Model():
                         for id, column in zip(ids, data):
                             self.set_value(id,column)
                 self.currentModelName = fileName
-
+                return True
             except Exception as e:
-                print("problem loading"+str(e))
+                self.logger.error("problem loading"+str(e))
+                return False
 
     def create_differential_handle(self):
         """

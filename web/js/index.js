@@ -35,6 +35,18 @@ function on_first_load () {
 		tree_update();
 	});
 
+	$('#loadModelbtn').click( function () {
+	    var name = $('#modelNameInput').val();
+		load_tree(name);
+	});
+
+	$('#saveModelbtn').click( function () {
+	    var name = $('#modelNameInput').val();
+		save_tree(name);
+	});
+
+
+
     $('#pipelinebutton').on('click',function () {
         target = $('#pipelineselect option:selected').text();
 		var win = window.open(pipelines[target], '_blank');
