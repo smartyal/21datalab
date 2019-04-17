@@ -24,6 +24,7 @@ from bokeh import events
 from bokeh.models.widgets import RadioButtonGroup, Paragraph, Toggle, MultiSelect, Button
 from bokeh.plotting import figure, curdoc
 from bokeh.layouts import layout,widgetbox
+from bokeh.models import Range1d, PanTool, WheelZoomTool, ResetTool, ToolbarBox, Toolbar
 
 
 haveLogger = False
@@ -316,7 +317,7 @@ class TimeSeriesWidgetDataServer():
         return copy.deepcopy(self.selectedVariables)
 
     def get_annotations(self):
-        return self.annotations
+        return copy.deepcopy(self.annotations)
 
     #start and end are ms(!) sice epoch, tag is a string
     def add_annotation(self,start,end,tag):
@@ -389,7 +390,6 @@ class TimeSeriesWidget():
 
         self.__init_figure() #create the graphical output
 
-        #self.__init_observer() #create the observer: do we need to watch something periodically?
 
 
     class ButtonCb():
@@ -438,10 +438,8 @@ class TimeSeriesWidget():
             self.observerThread = threading.Thread(target=self.__thread_function).start()
 
 
-
-
-
     def __init_figure(self):
+
         """
             initialize the time series widget, plot the lines, create controls like buttons and menues
             also hook the callbacks
@@ -457,13 +455,34 @@ class TimeSeriesWidget():
         self.rangeEnd = settings["endTime"]
 
         #create figure
-        self.plot = figure(tools='xpan,xwheel_zoom,reset',
-                           plot_height=self.height,
-                           plot_width=self.width,
-                           sizing_mode="scale_width",
-                           x_axis_type='datetime',y_range=Range1d())
+        """
+           the creation of the figure was reworked as this is a work around for a well known bug (in 1.04), see here
+           https://github.com/bokeh/bokeh/issues/7497
 
-        self.plot.toolbar.logo = None   #avoid the bokeh logo
+           it's a bokeh problem with internal sync problems of frontend and backend, so what we do now is:
+           1) use toolbar_location = None to avoid auto-creation of toolbar
+           2) create tools by hand
+           3) assign them to the figure with add_tools()
+           4) create a toolbar and add it to the layout by hand
+        """
+
+        tools = [WheelZoomTool(dimensions="width"), PanTool(dimensions="width")]
+        if settings["hasAnnotation"] == True:
+            tools.append(BoxSelectTool(dimensions="width"))
+        tools.append(ResetTool())
+        fig = figure(toolbar_location=None, plot_height=self.height,
+                     plot_width=self.width,
+                     sizing_mode="scale_width",
+                     x_axis_type='datetime', y_range=Range1d())
+        for tool in tools:
+            fig.add_tools(tool) # must assign them to the layout to have the actual use hooked
+        toolBarBox = ToolbarBox()
+        toolBarBox.toolbar = Toolbar(tools=tools)
+        toolBarBox.toolbar_location = "right"
+        toolBarBox.toolbar.logo = None # no bokeh logo
+        self.plot = fig
+        self.tools = toolBarBox
+
 
         datetimeFormat = ["%Y-%m-%d %H:%M:%S"]
         datetimeTickFormat = DatetimeTickFormatter(
@@ -505,7 +524,7 @@ class TimeSeriesWidget():
 
         #make the annotation controls
         if settings["hasAnnotation"] == True:
-            self.plot.add_tools(BoxSelectTool(dimensions="width"))
+            #self.plot.add_tools(BoxSelectTool(dimensions="width"))
             #also add a drop down for the creation
             labels = settings["tags"]
             labels.append("-erase-")
@@ -545,6 +564,16 @@ class TimeSeriesWidget():
 
             layoutControls.extend(self.customButtonsWidgets)
 
+        #make the debug button
+        if "hasReloadButton" in self.server.get_settings():
+            if self.server.get_settings()["hasReloadButton"] == True:
+                #we must create a reload button
+                button = Button(label="reload widget", css_classes=['button_21'])
+                button.on_click(self.reset_all)
+                layoutControls.append(button)
+
+
+
         #apply all to the layout
         #self.plot.sizing_mode = "scale_width"
         #for elem in layoutControls:
@@ -553,7 +582,7 @@ class TimeSeriesWidget():
         #            subelem.sizing_mode = "scale_both"
         #    else:
         #        elem.sizing_mode = "scale_both"
-        self.layout = layout([[self.plot,layoutControls]])#,sizing_mode="scale_width")
+        self.layout = layout([[self.plot,self.tools,layoutControls]])#,sizing_mode="scale_width")
 
 
     def __thread_function(self):
