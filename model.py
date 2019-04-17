@@ -1757,6 +1757,50 @@ class Model():
                 self.logger.error("problem sving "+str(e))
                 return False
 
+    def move(self, nodeList, newParent, newIndex=None):
+        """
+            move a list of nodes under a new Parent on the child position new Index
+            if the newParent is a referencer, we are creating references instead and keep the nodes where they are
+
+            Args:
+                nodeList [string]: a list of node descriptors of the nodes to move, scalar is also allowed
+                NewParent [string] a node descriptor for the new parent under which the nodes should appear
+                new Index  int : the position on the children of newParent where the new nodes should appear
+            Returns:
+                True
+        """
+        with self.lock:
+            if not type(nodeList) is list:
+                nodeList = [nodeList]
+
+            nodeIds = self.get_id(nodeList)
+            parentId = self.get_id(newParent)
+            if not parentId: return False
+
+            #check the special case that the parent is a referencer:
+            if self.model[parentId]["type"] == "referencer":
+                self.add_forward_refs(parentId,nodeIds)
+                self.logger.info("moves nodes as references "+ parentId + str(nodeIds))
+                return True
+
+            #for all others, we start moving nodes
+            try:
+                for id in nodeIds:
+                    if id == parentId or id == "1":
+                        self.logger.error("cant move " +id + " to " + parentId)
+                        continue
+                    oldParent = self.model[id]["parent"]
+                    self.model[oldParent]["children"].remove(id) # remove the child from the old parent
+                    self.model[id]["parent"]=parentId
+                    if newIndex:
+                        self.model[parentId]["children"].insert(newIndex,id) # at specific index
+                    else:
+                        self.model[parentId]["children"].append(id)    # at the end
+            except:
+                self.logger.error("problem moving "+str(nodeIds)+" to new parent"+ parentId+".. this is critical, the model can be messed up")
+            return True
+
+
     def load(self,fileName):
         """
             replace the current model in memory with the model from disk

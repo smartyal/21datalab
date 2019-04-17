@@ -196,6 +196,19 @@ def test_list_dir():
     m=model.Model()
     print(m.get_models())
 
+def test_move():
+    m=model.Model()
+    m.create_test(1)
+    m.show()
+    print("----------------------")
+    m.create_node_from_path("root.movehere")
+    m.create_node_from_path("root.movehereref",{"type":"referencer"})
+    m.move("root.variables","root.movehere")
+    m.move("root.folder2", "root.movehereref")
+    m.show()
+
+
+
 
 if __name__ == "__main__":
 
@@ -225,7 +238,8 @@ if __name__ == "__main__":
     #diff_test()
     #template_test()
     #test_global_id_counter()
-    test_list_dir()
+    #test_list_dir()
+    test_move()
 
 
 
