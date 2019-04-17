@@ -86,6 +86,13 @@ function tree_initialize() {
     });
 
 
+    $('#advancedEditModalButtonSave').click(function(){
+        var id = $('#advancedEditModalId').val();
+        var value = JSON.parse($('#advancedEditModalValue').val());
+        var query=[{"id":id,"type":value}];
+        http_post("/setProperties",JSON.stringify(query),null,null);
+    });
+
 
 
 
@@ -118,7 +125,9 @@ var treeIconsOld =
     abort : "fa fa-stop",
     file:"far fa-file-alt",
     copy:"far fa-copy",
-    paste: "fas fa-paint-roller"
+    paste: "fas fa-paint-roller",
+    toolbox: "fas fa-toolbox",
+    unknown: "fas fa-question-circle"
 };
 
 var treeIconsPath = 'modules/font-awesome/svgs/regular/'
@@ -371,7 +380,18 @@ function tree_generate()
                     }
                 }
 
-
+                //advanced menu
+                menuObject["advanced"] = {
+                    "label":"advanced",
+                    "icon": treeIconsOld["toolbox"],
+                    "submenu":{
+                        "edit properties":{
+                            "label":"edit properties",
+                            "icon":treeIconsOld["changevalue"],
+                            "action":function(obj){context_menu_change_properties(node);}
+                        }
+                    }
+                }
                 return menuObject;
             }
         },
@@ -384,6 +404,17 @@ function tree_generate()
     $('#jstree_div').jstree(myTree);
 }
 
+
+function context_menu_change_properties(node)
+{
+        var id = node.id;
+        var value = treeNodes[id].value;
+        //only vars and consts can be edited
+        $('#advancedEditModalName').text(treeNodes[id].browsePath);
+        $('#advancedEditModalValue').val(JSON.stringify(treeNodes[id].type));
+        $('#advancedEditModalId').val(id);
+        $('#advancedEditModal').modal('show');
+}
 
 function context_menu_delete(node)
 {
@@ -620,6 +651,24 @@ function tree_update_cb(status,data,params)
             tree.rename_node(id,newNode.name); // same name as it was, this is to trigger the redraw
         }
 
+        //check type changes
+        if (newNode.type != oldNode.type)
+        {
+            var tree = $('#jstree_div').jstree(true);
+            var treeNode = tree.get_node(id);
+            if (newNode.type in treeIconsOld)
+            {
+                icon = treeIconsOld[newNode.type];
+            }
+            else
+            {
+                icon = treeIconsOld["unknown"];
+            }
+            treeNode.icon = icon;
+            tree.rename_node(id,newNode.name);// same name as it was, this is to trigger the redraw
+        }
+
+
         //check modification of dependencies: children and references
         if (newNode.children.toString() != oldNode.children.toString())
         {
@@ -723,6 +772,15 @@ function create_children(model,parentNodeId)
 function node_to_tree(modelNode)
 {
     //parse the model Node, we expect the parent to be there already
+    if (modelNode.type in treeIconsOld)
+    {
+        icon = treeIconsOld[modelNode.type];
+    }
+    else
+    {
+        icon = treeIconsOld["unknown"];
+    }
+
     var newTreeNode = {
             /*
             "a_attr": { //or a_attr if you prefer
@@ -741,7 +799,7 @@ function node_to_tree(modelNode)
             },
             'children': [],
             'data': {},
-            'icon': treeIconsOld[modelNode.type]//'fa fa-folder-o'//"fa fa-play o",//"fa fa-folder-o",//treeIconsPath+treeIcons[modelNode.type]
+            'icon': icon
     };
     if (modelNode.hasOwnProperty('targetId'))
     {

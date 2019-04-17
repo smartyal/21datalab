@@ -207,6 +207,14 @@ def test_move():
     m.move("root.folder2", "root.movehereref")
     m.show()
 
+def adjust():
+    m=model.Model()
+    m.load("hybif3",includeData = False)
+    m.create_node_from_path("root.visualization")
+    m.move(["root.self-service","root.workbench"],"root.visualization")
+    m.save("hybif3",includeData = False)
+    m.show()
+
 
 
 
@@ -239,7 +247,8 @@ if __name__ == "__main__":
     #template_test()
     #test_global_id_counter()
     #test_list_dir()
-    test_move()
+    #test_move()
+    adjust()
 
 
 

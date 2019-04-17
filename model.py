@@ -1727,28 +1727,31 @@ class Model():
 
 
     # save model and data to files
-    def save(self, fileName):
+    def save(self, fileName, includeData = True):
         """
             save the model to disk, save the tables separately
             the model file will be saves as ./models/fileName.model.json and the tables will be saved under
             ./models/filename.tablePath.npy
 
-            Args: the fileName to store it under, please don't give extensions
+            Args:
+                fileName to store it under, please don't give extensions
+                includeData : if set to False, we DONT store the values of node types tables or files to disk
 
         """
         with self.lock:
             try:
                 m = self.get_model_for_web()  # leave out the tables
-                for nodeId in self.model:
-                    if self.get_node_info(nodeId)["type"] == "table":
-                        tablePath = self.get_browse_path(nodeId)
-                        self.logger.debug("found table "+tablePath)
-                        columnNodes = self.get_leaves(tablePath+".columns")
-                        myList = []
-                        for node in columnNodes:
-                            myList.append(self.get_value(node["id"]))
-                        table = numpy.stack(myList,axis=0)
-                        numpy.save("./models/" + fileName + "."+tablePath+".npy", table)
+                if includeData:
+                    for nodeId in self.model:
+                        if self.get_node_info(nodeId)["type"] == "table":
+                            tablePath = self.get_browse_path(nodeId)
+                            self.logger.debug("found table "+tablePath)
+                            columnNodes = self.get_leaves(tablePath+".columns")
+                            myList = []
+                            for node in columnNodes:
+                                myList.append(self.get_value(node["id"]))
+                            table = numpy.stack(myList,axis=0)
+                            numpy.save("./models/" + fileName + "."+tablePath+".npy", table)
                 f = open("./models/"+fileName + ".model.json", "w")
                 f.write(json.dumps(m, indent=4))
                 f.close()
@@ -1801,13 +1804,14 @@ class Model():
             return True
 
 
-    def load(self,fileName):
+    def load(self,fileName,includeData = True):
         """
             replace the current model in memory with the model from disk
             please give only a name without extensions
             the filename must be in ./models
             Args:
                 fileName(string) the name of the file without extension
+                includeData bool: if set to false, the values for tables and files will NOT be loaded
         """
         with self.lock:
             try:
@@ -1816,15 +1820,17 @@ class Model():
                 self.model = model
                 f.close()
                 #now also load the tables
+                self.globalIdCounter = 0    #reset the counter and recover it further down
                 for nodeId in self.model:
                     if int(nodeId)>self.globalIdCounter:
                         self.globalIdCounter = int(nodeId) # here, we recover the global id counter
-                    if self.get_node_info(nodeId)["type"] == "table":
-                        table = self.get_browse_path(nodeId)
-                        data = numpy.load("./models/" + fileName+'.'+table + ".npy")
-                        ids = self.get_leaves_ids(table+".columns")
-                        for id, column in zip(ids, data):
-                            self.set_value(id,column)
+                    if includeData:
+                        if self.get_node_info(nodeId)["type"] == "table":
+                            table = self.get_browse_path(nodeId)
+                            data = numpy.load("./models/" + fileName+'.'+table + ".npy")
+                            ids = self.get_leaves_ids(table+".columns")
+                            for id, column in zip(ids, data):
+                                self.set_value(id,column)
                 self.currentModelName = fileName
                 return True
             except Exception as e:
