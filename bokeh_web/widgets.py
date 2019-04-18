@@ -386,11 +386,12 @@ class TimeSeriesWidget():
         self.dispatchList = [] # a list of function to be executed in the bokeh app look context
                                 # this is needed e.g. to assign values to renderes etc
         self.dispatchLock = threading.Lock() # need a lock for the dispatch list
+        self.observerThreadRunning = False
         self.annotationTags = []
 
         self.__init_figure() #create the graphical output
 
-
+        self.__init_observer() #create the observer: do we need to watch something periodically?
 
     class ButtonCb():
         """
@@ -419,6 +420,11 @@ class TimeSeriesWidget():
 
         #self.logger.setLevel(level)
 
+    def __stop_observer(self):
+        self.logger.debug("__stop_observer")
+        if self.observerThreadRunning:
+            self.observerThreadRunning = False
+            self.observerThread.join()  # wait for finish
 
     def __init_observer(self):
         """
@@ -433,9 +439,17 @@ class TimeSeriesWidget():
             values = self.server.get_values(settings["observer"]["targets"])
             for k,v in zip(settings["observer"]["targets"],values):
                 self.observed[k]=v
-            #start the observer thread
-            self.observerThreadRunning = True
-            self.observerThread = threading.Thread(target=self.__thread_function).start()
+            #start the observer thread, if it's running, we stop it here
+            self.__stop_observer()
+
+            if ("observerEnabled" in settings and settings["observerEnabled"] == False):
+                self.logger.info("observerthread will not be started")
+                pass # we don't start the thread
+            else:
+                self.logger.info("we start the observer thread")
+                self.observerThreadRunning = True
+                self.observerThread = threading.Thread(target=self.__observer_thread_function)
+                self.observerThread.start()
 
 
     def __init_figure(self):
@@ -585,7 +599,7 @@ class TimeSeriesWidget():
         self.layout = layout([[self.plot,self.tools,layoutControls]])#,sizing_mode="scale_width")
 
 
-    def __thread_function(self):
+    def __observer_thread_function(self):
         """ the periodic thread function"""
         self.logger.info("starting observer thread functino")
         while (self.observerThreadRunning):
@@ -620,9 +634,11 @@ class TimeSeriesWidget():
             this is an experimental function that reloads the widget in the frontend
             it should be executed as dispatched
         """
+        self.__stop_observer()
         self.logger.debug("self.reset_all()")
         self.server.refresh_settings()
         self.__init_figure()
+        self.__init_observer()
         self.curdoc().clear()
         self.curdoc().add_root(self.get_layout())
 
