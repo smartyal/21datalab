@@ -3,16 +3,39 @@
     <title>21datalab workbench 0.1</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="modules/bootstrap/css/bootstrap.min.css"/>
-	<link rel="stylesheet" href="modules/jstree/dist/themes/default/style.min.css"/>
+
+    <!-- Declare the bootstrap and jstree style sheets empty, based on the stored theme (dark/light) they shall be populated -->
+    <link id="bootstrap_theme" rel="stylesheet"/>
+    <link id="jstree_theme" rel="stylesheet"/>
+
+    <script src="modules/jquery/jquery.js"></script>
+
+    <!-- Execute this script here, in order to set the bootstrap and jstree theme as soon as possible, thus avoiding the flickering page issue -->
+    <script>
+        // Retrieve the theme from the local storage
+        var datalabGlobalTheme = localStorage.getItem("21datalabTheme");
+
+        // Set the default path to the light theme
+        let pageThemePath = "/modules/bootswatch/dist/flatly/bootstrap.min.css";
+        let treeThemePath = "/modules/jstree/dist/themes/default/style.min.css";
+        // In case the theme is set to dark, set the proper paths
+        if (datalabGlobalTheme == "dark") {
+            pageThemePath = "/modules/bootswatch/dist/darkly/bootstrap.min.css"
+            treeThemePath = "/modules/jstree/dist/themes/default-dark/style.min.css";
+        }
+        // Apply the themes
+        $('#bootstrap_theme').attr('href', pageThemePath);
+        $('#jstree_theme').attr('href', treeThemePath);
+    </script>
+
     <link rel="stylesheet" href="modules/bootstrap-select/dist/css/bootstrap-select.min.css"/>
     <link rel="stylesheet" href="modules/font-awesome/css/all.css"/>
     <link rel="stylesheet" href="modules/bootstrap-navbar-sidebar/dist/navbar-fixed-left.css"/>
 
     <link rel="stylesheet" href="css/style.css"/>
- 
+
     <link rel="icon" type="image/x-icon" href="favicon.ico"/>
-    <script src="modules/jquery/jquery.js"></script>
+
     <script src="modules/other/popper.min.js"></script>
 	<script src="modules/jstree/dist/jstree.min.js"></script>
     <script src="modules/jstree-grid/jstreegrid.js"></script>
@@ -26,7 +49,7 @@
 </head>
 
 <body >
-    <nav class="navbar navbar-expand-lg fixed-left navbar-dark bg-dark text-center">
+    <nav class="navbar navbar-expand-lg fixed-left navbar-dark bg-primary text-center">
         <div class="text-center nav-brand-image mt-2">
             <a href="http://www.21data.io">
                 <img src="img/logo.png" height="30" alt="21data.io" class="rounded">
@@ -45,7 +68,7 @@
                         <div class="nav-item-text">
                             Data
                         </div>
-                    </a>                    
+                    </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link nav-item-hover" href="#nav-modelling" data-toggle="tab">
@@ -84,7 +107,7 @@
                         </h3>
                         <div class="nav-item-text">
                             Settings
-                        </div>                        
+                        </div>
                     </a>
                 </li>
             </ul>
@@ -94,13 +117,67 @@
         <div class="tab-content">
             <div id="nav-data" class="tab-pane fade active show">
                 <div class="container mt-4">
-                    <div class="row">
+                    <div class="row mb-4">
                         <div class="col">
-                            <h5>Data</h5>
+                            <div class="row mb-2">
+                                <div class="col">
+                                    <h5>Model</h5>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-4">Current Model</label>
+                                <label class="col-4">name</label>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-4">Load Model</label>
+                                <div class="col-4">
+                                    <select class="form-control" id="modelSelect"></select>
+                                </div>
+                                <div class="col-4">
+                                    <button class="btn btn-primary" id="loadModelBtn">Load</button>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-4">Save Model</label>
+                                <div class="col-4">
+                                    <input class="form-control" type="text" id="modelNameInput"></input>
+                                </div>
+                                <div class="col-4">
+                                    <button class="btn btn-primary" id="saveModelBtn">Save</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="row">
+
+                    <div class="row mb-4">
                         <div class="col">
+                            <div class="row mb-2">
+                                <div class="col">
+                                    <h5>Import data</h5>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-4">Source Database</label>
+                                <div class="col-4">
+                                    <select class="form-control">
+                                        <option>elasticsearch</option>
+                                        <option>mongoDB</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-4">URL</label>
+                                <div class="col-4">
+                                    <input class="form-control" type="text"></input>
+                                </div>
+                                <div class="col-4">
+                                    <button class="btn btn-primary">Import</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- <div class="col">
                             Load, Save, Create models
                             <form>
                                 <div class="form-group">
@@ -111,8 +188,8 @@
                                 </div>
                             </form>
 
-                        </div>
-                    </div>
+                        </div> -->
+
                 </div>
             </div>
             <div id="nav-modelling" class="tab-pane fade">
@@ -126,6 +203,7 @@
                         <div class="col-3">
                             <button type="button" class="btn btn-light" id="reloadtreebtn">Reload Tree</button>
                             <button type="button" class="btn btn-light" id="updatetreebtn">Update Tree</button>
+
                             <div id="navtree">
                                 <div class="pre-scrollable" id="jstreeContainer" style="overflow-y: auto;overflow-x: auto;width:100%">
                                     <div id="jstree_div" class="jstree jstree-default"></div>
@@ -184,7 +262,7 @@
                 </div>
             </div>
             <div id="nav-self-service" class="tab-pane fade">
-                <div class="container mt-4"> 
+                <div class="container mt-4">
                     <div class="row">
                         <div class="col" id="self-service-embed">
                             <h5>Self-service</h5>
@@ -194,19 +272,104 @@
                 </div>
             </div>
             <div id="nav-deployment" class="tab-pane fade">
-                <div class="container mt-4"> 
-                    <div class="row">
+                <div class="container mt-4">
+                    <div class="row mb-4">
                         <div class="col">
-                            <h5>Deployment</h5>
+                            <div class="row mb-2">
+                                <div class="col">
+                                    <h5>Services</h5>
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <div class="offset-1 col-5">
+                                    UI self-service production 2
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="button" class="btn btn-secondary"><i class="fas fa-play"></i></button>
+                                    <button type="button" class="btn btn-secondary"><i class="fas fa-power-off"></i></button>
+                                    <button type="button" class="btn btn-secondary"><i class="fas fa-redo-alt"></i></button>
+                                    <button type="button" class="btn btn-secondary"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <div class="offset-1 col-5">
+                                    OPC UA Client - AB01
+                                </div>
+                                <div class="col">
+                                    <button type="button" class="btn btn-secondary"><i class="fas fa-play"></i></button>
+                                    <button type="button" class="btn btn-secondary"><i class="fas fa-power-off"></i></button>
+                                    <button type="button" class="btn btn-secondary"><i class="fas fa-redo-alt"></i></button>
+                                    <button type="button" class="btn btn-secondary"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <div class="offset-1 col-5">
+                                    OPC UA Server - EE23
+                                </div>
+                                <div class="col">
+                                    <button type="button" class="btn btn-secondary"><i class="fas fa-play"></i></button>
+                                    <button type="button" class="btn btn-secondary"><i class="fas fa-power-off"></i></button>
+                                    <button type="button" class="btn btn-secondary"><i class="fas fa-redo-alt"></i></button>
+                                    <button type="button" class="btn btn-secondary"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <div class="offset-1 col-5">
+                                    Regression model - 23E
+                                </div>
+                                <div class="col">
+                                    <button type="button" class="btn btn-secondary"><i class="fas fa-play"></i></button>
+                                    <button type="button" class="btn btn-secondary"><i class="fas fa-power-off"></i></button>
+                                    <button type="button" class="btn btn-secondary"><i class="fas fa-redo-alt"></i></button>
+                                    <button type="button" class="btn btn-secondary"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </div>
+                            <div class="form-group row mb-1">
+                                <div class="offset-1 col-5">
+                                    <select class="form-control">
+                                        <option value="" disabled selected></option>
+                                        <option>OPC UA Cient</option>
+                                        <option>OPC UA Server</option>
+                                        <option>Regression Model</option>
+                                    </select>
+                                </div>
+
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div id="nav-settings" class="tab-pane fade">
-                <div class="container mt-4"> 
-                    <div class="row">
+                <div class="container mt-4">
+                    <div class="row mb-4">
                         <div class="col">
-                            <h5>Settings</h5>
+                            <div class="row mb-2">
+                                <div class="col">
+                                    <h5>Settings</h5>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-4">Auto-refresh tree</label>
+                                <div class="col-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="autoRefreshTree">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-4">Theme</label>
+                                <div class="col-4">
+                                    <select class="form-control" id="themeSelect">
+                                        <option>light</option>
+                                        <option>dark</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-4 offset-8">
+                                    <button class="btn btn-primary" id="applySettings">Apply</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

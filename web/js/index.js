@@ -22,9 +22,41 @@ function populate_dropdown(data)
     }
 }
 
+function populate_models() {
+    let data = http_get("/models");
+    let models = JSON.parse(data);
+
+    $('#modelSelect').empty();
+
+    $('#modelSelect').append(`<option value="" disabled selected>Choose a model</option>`)
+
+    for (let model of models) {
+        $('#modelSelect').append(`<option>` + model + `</option>`);
+    }
+}
+
+function populate_settings() {
+    // Try to retrieve the current setting from the local storage
+    let data = localStorage.getItem("21dataSettings");
+
+    if (data != undefined) {
+        try {
+            // Try to deserialize the settings into an object
+            let crtSettings = JSON.parse(data);
+
+            // Set the appropriate parameters based on the configuration
+            $("#autoRefreshTree").prop('checked', crtSettings.autoRefreshTree);
+            $('#themeSelect').val(crtSettings.theme);
+        }
+        catch {
+
+        }
+    }
+}
+
 
 function on_first_load () {
-	
+
 	//register menue calls#
 	$('.selectpicker').selectpicker();
 	$('#reloadtreebtn').click( function () {
@@ -35,17 +67,26 @@ function on_first_load () {
 		tree_update();
 	});
 
-	$('#loadModelbtn').click( function () {
-	    var name = $('#modelNameInput').val();
-		load_tree(name);
+    populate_models();
+
+	$('#loadModelBtn').click(() => {
+        let modelName = $('#modelSelect').val();
+
+        if (modelName != "") {
+            load_tree(modelName);
+        }
 	});
 
-	$('#saveModelbtn').click( function () {
-	    var name = $('#modelNameInput').val();
-		save_tree(name);
+	$('#saveModelBtn').click(() => {
+        let modelName = $('#modelNameInput').val();
+
+        // save_tree(modelName);
+        // Trigger a model save and afterwards clear the input for the model name and update the model dropdown
+        http_post('/_save', modelName, null, () => {
+            $('#modelNameInput').val('');
+            populate_models();
+        });
 	});
-
-
 
     $('#pipelinebutton').on('click',function () {
         target = $('#pipelineselect option:selected').text();
@@ -55,6 +96,24 @@ function on_first_load () {
 	//tree_initialize();
 
 
+    populate_settings();
+
+    $('#applySettings').click(() => {
+        let autoRefreshTree = $('#autoRefreshTree').is(":checked");
+        let theme = $('#themeSelect').val();
+
+        // Store all the settings into the local storage
+        localStorage.setItem("21dataSettings", JSON.stringify({
+            "autoRefreshTree": autoRefreshTree,
+            "theme": theme
+        }));
+
+        // Store the theme settings also separately, this shall be read at the beginning to set the proper theme.
+        localStorage.setItem("21datalabTheme", theme);
+
+        // Finally reload the page, which will trigger the theme change
+        location.reload();
+    });
 
 	//populate piplelines menue
 	var data = http_get("/pipelines");
@@ -78,7 +137,7 @@ function on_first_load () {
     });
 
 
-
+    tree_initialize();
 
 }
 

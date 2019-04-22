@@ -45,12 +45,13 @@ function save_tree(name)
 }
 
 
-function tree_initialize() {
+function tree_initialize() 
+{
     $('#jstree_div').jstree();
     tree_generate();
 
     //get the templates
-    data = http_get('/templates')
+    var data = http_get('/templates')
     try
     {
         templates = JSON.parse(data);
@@ -59,6 +60,29 @@ function tree_initialize() {
     {
         return;
     }
+    
+    
+     
+
+    
+    try 
+    {
+        // Try to deserialize the settings into an object
+        let crtSettings = JSON.parse(localStorage.getItem("21dataSettings"));
+        if (crtSettings.autoRefreshTree)
+        {
+            start_periodic_tree_update();
+        }
+    }
+    catch
+    {
+        
+    }
+    
+    
+    
+    
+    
     //start_periodic_tree_update();
 
     $('#jstree_div').on("select_cell.jstree-grid",function (e,data) {
@@ -200,11 +224,24 @@ function tree_generate()
     var nodes = create_children(model,'1');
     treeNodes = model; //keep a copy in the global
 
+    // Depending on the global theme set the default or the default-dark as the tree theme
+    let themeToUse = "default";
+    if (datalabGlobalTheme == "dark") {
+        themeToUse = "default-dark";
+        // Overwrite the jstree grid header colors
+        $("<style>")
+            .prop("type", "text/css")
+            .html(`.jstree-grid-header-regular {
+                background-color: #444 !important;
+            }`)
+            .appendTo("head");
+    }
     var myTree = {
-        'plugins':["grid","contextmenu","types"],
+        'plugins':["grid", "contextmenu","types"],
         'core': {
             "themes" : {
-                "variant" : "small"
+                "variant" : "small",
+                "name": themeToUse
             },
             'data': [
                  {
@@ -396,8 +433,11 @@ function tree_generate()
             }
         },
         'types':{
-            "standard":{"a_attr":{"style":"color:#606060;background-color:white"}},
-            "inverse":{"a_attr":{"style":"color:white;background-color:grey"}},
+            // "standard":{"a_attr":{"style":"color:#606060;background-color:white"}},
+            // "inverse":{"a_attr":{"style":"color:white;background-color:grey"}},
+            // Commented the above lines because it was overwriting the default and the default-dark themes colors and backgrounds
+            "standard":{},
+            "inverse":{}
         }
     }
 

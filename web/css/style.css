@@ -13,7 +13,7 @@
     body {
         margin-left: 150px;
     }
-}  
+}
 
 @media (min-width: 768px) {
     .navbar.fixed-left {
@@ -26,3 +26,10 @@
     }
 }
 
+.jstree-default-dark {
+    background: #222
+}
+
+.jstree-default-dark .jstree-anchor {
+    color: #ffffff;
+}
