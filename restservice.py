@@ -182,298 +182,302 @@ def all(path):
     responseCode = 404 # default is not found
 
     try:
-        #parse the incoming data
-        data = flask.request.data.decode('utf-8') # just the string
-        data = json.loads(flask.request.data.decode('utf-8'))
-    except:
-        pass
 
-    #if the path has ending /, we remove it
-    if path[-1]=='/':
-        path = path[:-1]
-
-    # server all the frontend stuff: js, css etc
-    if any(extension in str(path) for extension in ['.js','.css','.htm','.img','.ico','.png','.gif','.map','.svg','.wof','.ttf']):
-
-        logger.debug(" serve html "+ str(path))
-        if "styles.css" in path:
-            print("hier")
-        for sourceFolder in ["web","bokeh_web","bokeh_web/templates"]:
-            try:
-                obj = flask.send_from_directory(sourceFolder,path)
-                return obj
-            except Exception as exc:
-                logger.error("file "+ str(path)+" not found on folder"+sourceFolder)
-        code = 404
-
-    elif (str(path) == "_getall") and str(flask.request.method) in ["POST","GET"]:
-        logger.debug("execute getall")
-        mymodel = m.get_model_for_web()
-        response = json.dumps(mymodel,indent=4)# some pretty printing for debug
-        responseCode = 200
-
-    elif (str(path) == "pipelines") and str(flask.request.method) in ["GET"]:
-        logger.debug("execute get pipelines")
         try:
-            pipelinesNodeIds= m.get_node('root.visualization.pipelines').get_children()
-            pipelines = {}
-            for pipeNode in pipelinesNodeIds:
-                pipelines[pipeNode.get_name()]= {"url":pipeNode.get_child("url").get_property("value")}
-            response = json.dumps(pipelines,indent=4)# some pretty printing for debug
-            responseCode = 200
+            #parse the incoming data
+            data = flask.request.data.decode('utf-8') # just the string
+            data = json.loads(flask.request.data.decode('utf-8'))
         except:
-            logger.error("I have no pipelines")
-            responseCode = 404
+            pass
 
-    elif (str(path) == "modelinfo") and str(flask.request.method) in ["GET"]:
-        logger.debug("get modelinfo")
-        response = json.dumps(m.get_info(), indent=4)
-        responseCode = 200
+        #if the path has ending /, we remove it
+        if path[-1]=='/':
+            path = path[:-1]
 
-    elif (str(path) == "templates") and str(flask.request.method) in ["GET"]:
-        logger.debug(" get templates")
-        templates = list(m.get_templates().keys())
-        logger.debug(" templates are "+str(templates))
-        response = json.dumps(templates)
-        responseCode = 200
+        # server all the frontend stuff: js, css etc
+        if any(extension in str(path) for extension in ['.js','.css','.htm','.img','.ico','.png','.gif','.map','.svg','.wof','.ttf']):
 
-    elif (str(path) == "models") and str(flask.request.method) in ["GET"]:
-        logger.debug(" get templates")
-        models = m.get_models()
-        response = json.dumps(models)
-        responseCode = 200
+            logger.debug(" serve html "+ str(path))
+            if "styles.css" in path:
+                print("hier")
+            for sourceFolder in ["web","bokeh_web","bokeh_web/templates"]:
+                try:
+                    obj = flask.send_from_directory(sourceFolder,path)
+                    return obj
+                except Exception as exc:
+                    logger.error("file "+ str(path)+" not found on folder"+sourceFolder)
+            code = 404
 
-
-    elif(str(path) == "_getleaves") and str(flask.request.method) in ["POST", "GET"]:
-        logger.debug("execute get forward")
-        nodes = m.get_leaves(data)
-        response = json.dumps(nodes, indent=4)
-        responseCode = 200
-
-    elif(str(path) == "_delete") and str(flask.request.method) in ["POST"]:
-        logger.debug("delete nodes")
-        result = []
-        responseCode = 200
-        for nodePath in data:
-            delResult = m.delete_node(nodePath)
-            logger.debug("deleted " +nodePath + " result: "+str(delResult))
-            result.append(delResult)
-            if not delResult:
-                responseCode = 401
-        response = json.dumps(result, indent=4)
-
-
-
-    elif (str(path) == "_get") and str(flask.request.method) in ["POST", "GET"]:
-        logger.debug("execute get"+str(data))
-        nodes = []
-        for nodeDesc in data:
-            resNodes = m.get_node_with_children(nodeDesc)
-            print(resNodes)
-            nodes.append(resNodes)
-        response = json.dumps(nodes, indent=4)  # some pretty printing for debug
-        logger.debug("sending"+str(len(response)))
-        responseCode = 200
-
-
-    elif (str(path) == "_getvalue") and str(flask.request.method) in ["POST", "GET"]:
-        logger.debug("execute getvalue")
-        values = []
-        for nodeDesc in data:
-            values.append(m.get_value(nodeDesc))
-        response = json.dumps(values, indent=4)  # some pretty printing for debug
-        logger.debug("sending"+response)
-        responseCode = 200
-
-
-
-    elif (str(path) == "_load") and str(flask.request.method) in ["POST"]:
-        logger.debug("load model:" + data)
-        result = m.load(data)
-        if result:
+        elif (str(path) == "_getall") and str(flask.request.method) in ["POST","GET"]:
+            logger.debug("execute getall")
+            mymodel = m.get_model_for_web()
+            response = json.dumps(mymodel,indent=4)# some pretty printing for debug
             responseCode = 200
-        else:
-            responseCode = 404
 
-    elif (str(path) == "_save") and str(flask.request.method) in ["POST"]:
-        logger.debug("save to model:" + data)
-        result = m.save(data)
-        if result:
+        elif (str(path) == "pipelines") and str(flask.request.method) in ["GET"]:
+            logger.debug("execute get pipelines")
+            try:
+                pipelinesNodeIds= m.get_node('root.visualization.pipelines').get_children()
+                pipelines = {}
+                for pipeNode in pipelinesNodeIds:
+                    pipelines[pipeNode.get_name()]= {"url":pipeNode.get_child("url").get_property("value")}
+                response = json.dumps(pipelines,indent=4)# some pretty printing for debug
+                responseCode = 200
+            except:
+                logger.error("I have no pipelines")
+                responseCode = 404
+
+        elif (str(path) == "modelinfo") and str(flask.request.method) in ["GET"]:
+            logger.debug("get modelinfo")
+            response = json.dumps(m.get_info(), indent=4)
             responseCode = 200
-        else:
-            responseCode = 404
+
+        elif (str(path) == "templates") and str(flask.request.method) in ["GET"]:
+            logger.debug(" get templates")
+            templates = list(m.get_templates().keys())
+            logger.debug(" templates are "+str(templates))
+            response = json.dumps(templates)
+            responseCode = 200
+
+        elif (str(path) == "models") and str(flask.request.method) in ["GET"]:
+            logger.debug(" get templates")
+            models = m.get_models()
+            response = json.dumps(models)
+            responseCode = 200
 
 
-    elif (str(path)=="_appendRow"):
-        logger.debug("writeRow")
-        for blob in data:
-            result = m.append_table(blob)
+        elif(str(path) == "_getleaves") and str(flask.request.method) in ["POST", "GET"]:
+            logger.debug("execute get forward")
+            nodes = m.get_leaves(data)
+            response = json.dumps(nodes, indent=4)
+            responseCode = 200
+
+        elif(str(path) == "_delete") and str(flask.request.method) in ["POST"]:
+            logger.debug("delete nodes")
+            result = []
+            responseCode = 200
+            for nodePath in data:
+                delResult = m.delete_node(nodePath)
+                logger.debug("deleted " +nodePath + " result: "+str(delResult))
+                result.append(delResult)
+                if not delResult:
+                    responseCode = 401
+            response = json.dumps(result, indent=4)
+
+
+
+        elif (str(path) == "_get") and str(flask.request.method) in ["POST", "GET"]:
+            logger.debug("execute get"+str(data))
+            nodes = []
+            for nodeDesc in data:
+                resNodes = m.get_node_with_children(nodeDesc)
+                print(resNodes)
+                nodes.append(resNodes)
+            response = json.dumps(nodes, indent=4)  # some pretty printing for debug
+            logger.debug("sending"+str(len(response)))
+            responseCode = 200
+
+
+        elif (str(path) == "_getvalue") and str(flask.request.method) in ["POST", "GET"]:
+            logger.debug("execute getvalue")
+            values = []
+            for nodeDesc in data:
+                values.append(m.get_value(nodeDesc))
+            response = json.dumps(values, indent=4)  # some pretty printing for debug
+            logger.debug("sending"+response)
+            responseCode = 200
+
+
+
+        elif (str(path) == "_load") and str(flask.request.method) in ["POST"]:
+            logger.debug("load model:" + data)
+            result = m.load(data)
+            if result:
+                responseCode = 200
+            else:
+                responseCode = 404
+
+        elif (str(path) == "_save") and str(flask.request.method) in ["POST"]:
+            logger.debug("save to model:" + data)
+            result = m.save(data)
+            if result:
+                responseCode = 200
+            else:
+                responseCode = 404
+
+
+        elif (str(path)=="_appendRow"):
+            logger.debug("writeRow")
+            for blob in data:
+                result = m.append_table(blob)
+                if not result:
+                    responseCode = 400
+                    break
+            responseCode = 200
+            m.show()
+
+
+        elif (str(path)=="_getdata"):
+            logger.debug("get data")
+            startTime = None
+            endTime = None
+            al
+            if set(["bins","nodes"]).issubset(set(data.keys())):
+                #we have both bins and nodes
+                startTime = 0
+                endTime = 0
+                if "startTime" in data:
+                    #try to parse it, we support iso format or epoch
+                    if type(data["startTime"]) is str:
+                        try:
+                            startTime = dateutil.parser.parse(data["startTime"])
+                        except:
+                            logger.info("cant parse start time")
+                    else:
+                        startTime = data["startTime"]
+                if "endTime" in data:
+                    #try to parse it, we support iso format or epoch
+                    if type(data["endTime"]) is str:
+                        try:
+                            startTime = dateutil.parser.parse(data["endTime"])
+                        except:
+                            logger.info("cant parse end time")
+                    else:
+                        endTime = data["endTime"]
+
+                if "includeTimeStamps" in data:
+                    includeTimeStamps = data["includeTimeStamps"]
+                else:
+                    includeTimeStamps= None
+
+                if "includeBackGround" in data:
+                    includeBackGround = data["includeBackGround"]
+                else:
+                    includeBackGround = None
+                try:
+                    result = m.get_timeseries_table(data["nodes"],startTime=startTime,endTime=endTime,noBins=int(data["bins"]),includeTimeStamps=includeTimeStamps,format="dict",includeBackGround=includeBackGround)
+                    if type(result) != type(None):
+                        if includeTimeStamps:
+                            pass #XXX todo: include the timestamps converted to a certain format
+                            #data["nodes"].append("time")
+                        response = json.dumps(result,indent = 4)
+                        responseCode = 200
+                    else:
+                        responseData = 400
+                except:
+                    logger.warn("get time series tables failed",sys.exc_info())
+                    responseCode = 404
+            else:
+                responseCode = 400 # malformed
+
+        elif (str(path) == "_create"):
+            logger.debug("create ")
+            result = []
+            responseCode = 201
+            for blob in data:
+                newNodeId = m.create_node_from_path(blob["browsePath"],blob)
+                logger.debug('creating'+blob["browsePath"]+', result:'+str(newNodeId))
+                result.append(newNodeId)
+                if not newNodeId:
+                    responseCode = 400
+            response = json.dumps(result)
+            responseCode = 201
+
+        elif (str(path) == "_createTemplate") and str(flask.request.method) in ["POST"]:
+            logger.debug("craete Template ")
+
+            templates = m.get_templates()
+            if data["type"] in templates:
+                m.create_template_from_path(data["browsePath"],templates[data["type"]])
+                responseCode = 201
+            else:
+                responseCode = 404
+
+
+
+        elif (str(path) == "setProperties"):
+            logger.debug("set properties ")
+            responseCode = 201
+            result = True
+            for blob in data:
+                result = result and m.set_properties(blob)
             if not result:
                 responseCode = 400
-                break
-        responseCode = 200
-        m.show()
 
-
-    elif (str(path)=="_getdata"):
-        logger.debug("get data")
-        startTime = None
-        endTime = None
-
-        if set(["bins","nodes"]).issubset(set(data.keys())):
-            #we have both bins and nodes
-
-            startTime = 0
-            endTime = 0
-            if "startTime" in data:
-                #try to parse it, we support iso format or epoch
-                if type(data["startTime"]) is str:
-                    try:
-                        startTime = dateutil.parser.parse(data["startTime"])
-                    except:
-                        logger.info("cant parse start time")
-                else:
-                    startTime = data["startTime"]
-            if "endTime" in data:
-                #try to parse it, we support iso format or epoch
-                if type(data["endTime"]) is str:
-                    try:
-                        startTime = dateutil.parser.parse(data["endTime"])
-                    except:
-                        logger.info("cant parse end time")
-                else:
-                    endTime = data["endTime"]
-
-            if "includeTimeStamps" in data:
-                includeTimeStamps = data["includeTimeStamps"]
-            else:
-                includeTimeStamps= None
-
-            if "includeBackGround" in data:
-                includeBackGround = data["includeBackGround"]
-            else:
-                includeBackGround = None
-            try:
-                result = m.get_timeseries_table(data["nodes"],startTime=startTime,endTime=endTime,noBins=int(data["bins"]),includeTimeStamps=includeTimeStamps,format="dict",includeBackGround=includeBackGround)
-                if type(result) != type(None):
-                    if includeTimeStamps:
-                        pass #XXX todo: include the timestamps converted to a certain format
-                        #data["nodes"].append("time")
-                    response = json.dumps(result,indent = 4)
-                    responseCode = 200
-                else:
-                    responseData = 400
-            except:
-                logger.warn("get time series tables failed",sys.exc_info())
-                responseCode = 404
-        else:
-            responseCode = 400 # malformed
-
-    elif (str(path) == "_create"):
-        logger.debug("create ")
-        result = []
-        responseCode = 201
-        for blob in data:
-            newNodeId = m.create_node_from_path(blob["browsePath"],blob)
-            logger.debug('creating'+blob["browsePath"]+', result:'+str(newNodeId))
-            result.append(newNodeId)
-            if not newNodeId:
-                responseCode = 400
-        response = json.dumps(result)
-        responseCode = 201
-
-    elif (str(path) == "_createTemplate") and str(flask.request.method) in ["POST"]:
-        logger.debug("craete Template ")
-
-        templates = m.get_templates()
-        if data["type"] in templates:
-            m.create_template_from_path(data["browsePath"],templates[data["type"]])
+        elif (str(path) == "_references"):
+            logger.debug("set new references")
+            result = []
+            if "deleteExisting" in data and data["deleteExisting"] == True:
+                m.remove_forward_refs(data["parent"])
+            if "add" in data:
+                result = m.add_forward_refs(data["parent"],data["add"])
+            if "remove" in data:
+                result = m.remove_forward_refs(data["parent"], data["remove"])
             responseCode = 201
-        else:
-            responseCode = 404
 
+        elif (str(path) == "_execute"):
+            logger.debug("execute function")
+            result =[]
+            launch = m.execute_function(data)
+            if launch:
+                responseCode = 200
+            else:
+                responseCode = 404
 
-
-    elif (str(path) == "setProperties"):
-        logger.debug("set properties ")
-        responseCode = 201
-        result = True
-        for blob in data:
-            result = result and m.set_properties(blob)
-        if not result:
-            responseCode = 400
-
-    elif (str(path) == "_references"):
-        logger.debug("set new references")
-        result = []
-        if "deleteExisting" in data and data["deleteExisting"] == True:
-            m.remove_forward_refs(data["parent"])
-        if "add" in data:
-            result = m.add_forward_refs(data["parent"],data["add"])
-        if "remove" in data:
-            result = m.remove_forward_refs(data["parent"], data["remove"])
-        responseCode = 201
-
-    elif (str(path) == "_execute"):
-        logger.debug("execute function")
-        result =[]
-        launch = m.execute_function(data)
-        if launch:
-            responseCode = 200
-        else:
-            responseCode = 404
-
-    elif (str(path) == "_diffUpdate") and str(flask.request.method) in ["GET","POST"]:
-        logger.debug("get differential update")
-        if not data or data["handle"] is None:
-            #this is for creating a handle
-            curModel = m.get_model_for_web()
-            handle = m.create_differential_handle()
-            res = {"handle":handle,"model":curModel}
-            response = json.dumps(res)
-            responseCode = 200
-        else:
-            #we have a handle
-            res = m.get_differential_update(data["handle"])
-            if res:
+        elif (str(path) == "_diffUpdate") and str(flask.request.method) in ["GET","POST"]:
+            logger.debug("get differential update")
+            if not data or data["handle"] is None:
+                #this is for creating a handle
+                curModel = m.get_model_for_web()
+                handle = m.create_differential_handle()
+                res = {"handle":handle,"model":curModel}
                 response = json.dumps(res)
                 responseCode = 200
             else:
-                logger.error("requested handle does not exist")
-                response ="requested handle does not exist"
+                #we have a handle
+                res = m.get_differential_update(data["handle"])
+                if res:
+                    response = json.dumps(res)
+                    responseCode = 200
+                else:
+                    logger.error("requested handle does not exist")
+                    response ="requested handle does not exist"
+                    responseCode = 404
+
+        elif (str(path)=='embedbokeh'):
+            # here, we must have the correct html file for rendering including css and html coloring
+            # as the index.html is not relevant anymore
+            embed = """     
+                <!doctype html>
+                <body>
+                  <link rel="stylesheet" href="templates/styles.css">
+                  {{ script|safe }}
+                </body>
+                </html>
+            """
+
+            app_url = data['url']#'http://localhost:5006/bokeh_web'
+            try:
+                with pull_session(url=app_url) as session:
+                    # customize session here
+                    script = server_session(session_id='12345', url=app_url)
+                    #script = server_document('http://localhost:5006/bokeh_web')
+                    temp = render_template_string(embed, script=script)
+                    return temp
+            except:
+                logger.error("pulling session failed")
                 responseCode = 404
 
-    elif (str(path)=='embedbokeh'):
-        # here, we must have the correct html file for rendering including css and html coloring
-        # as the index.html is not relevant anymore
-        embed = """     
-            <!doctype html>
-            <body>
-              <link rel="stylesheet" href="templates/styles.css">
-              {{ script|safe }}
-            </body>
-            </html>
-        """
 
-        app_url = data['url']#'http://localhost:5006/bokeh_web'
-        try:
-            with pull_session(url=app_url) as session:
-                # customize session here
-                script = server_session(session_id='12345', url=app_url)
-                #script = server_document('http://localhost:5006/bokeh_web')
-                temp = render_template_string(embed, script=script)
-                return temp
-        except:
-            logger.error("pulling session failed")
+        else:
+            logger.error("CANNOT HANDLE REQUEST, is unknown"+str(path))
             responseCode = 404
 
-
-    else:
-        logger.warning("CANNOT HANDLE REQUEST, is unknown"+str(path))
-        responseCode = 404
-
-    logger.info("response len is"+str(len(response))+" rspcodecode"+str(responseCode))
-    return flask.Response(response, mimetype="text/html"), responseCode
+        logger.info("response len is"+str(len(response))+" rspcodecode"+str(responseCode))
+        return flask.Response(response, mimetype="text/html"), responseCode
+    except Exception as ex:
+        logger.error("general error " +str(sys.exc_info()[0])+".."+str(ex))
+        return flask.Response("",mimetype="text/html"),501
 
 if __name__ == '__main__':
     m = model.Model()
