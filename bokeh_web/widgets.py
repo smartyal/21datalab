@@ -129,9 +129,9 @@ class TimeSeriesWidgetDataServer():
                 except Exception as ex:
                     #self.logger.error("requests.get"+str(timeout)+" msg:"+str(ex))
                     continue
-        elif method.upper() =="POST":
+        elif method.upper() == "POST":
             now = datetime.datetime.now()
-            for timeout in [0.001, 0.1, 1, 10]:
+            for timeout in [0.1, 0.1, 1, 10]:
                 try:
                     response = requests.post(self.url + path, data=json.dumps(reqData), timeout=timeout,
                                              proxies=self.proxySetting)

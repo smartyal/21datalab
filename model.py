@@ -617,6 +617,7 @@ class Model():
             return copy.deepcopy(self.model[id])
 
 
+
     def get_node_with_children(self,desc):
         """ retrieve node information including children of the first level
             Args:
@@ -636,7 +637,6 @@ class Model():
                     children.append(copy.deepcopy(self.model[childId]))
             response["children"]=children
             return response
-
 
 
     def get_models(self):
@@ -1716,6 +1716,8 @@ class Model():
             return result
         except:
             print("error inside execution thread", "id",id,"functionname",functionName,sys.exc_info()[1])
+            statusNode.set_value("interrupted")
+            resultNode.set_value("error")
             return False
 
     def show(self):

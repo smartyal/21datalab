@@ -1,0 +1,717 @@
+{
+    "1": {
+        "name": "root",
+        "type": "folder",
+        "children": [
+            "13",
+            "114",
+            "150"
+        ],
+        "parent": "0",
+        "id": "1",
+        "backRefs": [],
+        "forwardRefs": [],
+        "browsePath": "root"
+    },
+    "13": {
+        "id": "13",
+        "name": "visualization",
+        "type": "folder",
+        "parent": "1",
+        "children": [
+            "127"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization"
+    },
+    "114": {
+        "id": "114",
+        "name": "occupancyData",
+        "type": "table",
+        "parent": "1",
+        "children": [
+            "115",
+            "116",
+            "117",
+            "118",
+            "126",
+            "188"
+        ],
+        "backRefs": [
+            "138"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.occupancyData"
+    },
+    "115": {
+        "id": "115",
+        "name": "description",
+        "type": "const",
+        "parent": "114",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "this is the occupancy data table",
+        "browsePath": "root.occupancyData.description"
+    },
+    "116": {
+        "id": "116",
+        "name": "columns",
+        "type": "referencer",
+        "parent": "114",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "119",
+            "120",
+            "121",
+            "122",
+            "123",
+            "124",
+            "125",
+            "126"
+        ],
+        "value": null,
+        "browsePath": "root.occupancyData.columns"
+    },
+    "117": {
+        "id": "117",
+        "name": "timeField",
+        "type": "referencer",
+        "parent": "114",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "119"
+        ],
+        "value": null,
+        "browsePath": "root.occupancyData.timeField"
+    },
+    "118": {
+        "id": "118",
+        "name": "variables",
+        "type": "folder",
+        "parent": "114",
+        "children": [
+            "119",
+            "120",
+            "121",
+            "122",
+            "123",
+            "124",
+            "125"
+        ],
+        "backRefs": [
+            "128"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.occupancyData.variables"
+    },
+    "119": {
+        "id": "119",
+        "name": "date",
+        "type": "column",
+        "parent": "118",
+        "children": [],
+        "backRefs": [
+            "116",
+            "117"
+        ],
+        "forwardRefs": [],
+        "value": "len 9752",
+        "browsePath": "root.occupancyData.variables.date"
+    },
+    "120": {
+        "id": "120",
+        "name": "Temperature",
+        "type": "column",
+        "parent": "118",
+        "children": [],
+        "backRefs": [
+            "116",
+            "129",
+            "154"
+        ],
+        "forwardRefs": [],
+        "value": "len 9752",
+        "browsePath": "root.occupancyData.variables.Temperature"
+    },
+    "121": {
+        "id": "121",
+        "name": "Humidity",
+        "type": "column",
+        "parent": "118",
+        "children": [],
+        "backRefs": [
+            "116"
+        ],
+        "forwardRefs": [],
+        "value": "len 9752",
+        "browsePath": "root.occupancyData.variables.Humidity"
+    },
+    "122": {
+        "id": "122",
+        "name": "Light",
+        "type": "column",
+        "parent": "118",
+        "children": [],
+        "backRefs": [
+            "116",
+            "154"
+        ],
+        "forwardRefs": [],
+        "value": "len 9752",
+        "browsePath": "root.occupancyData.variables.Light"
+    },
+    "123": {
+        "id": "123",
+        "name": "CO2",
+        "type": "column",
+        "parent": "118",
+        "children": [],
+        "backRefs": [
+            "116",
+            "154"
+        ],
+        "forwardRefs": [],
+        "value": "len 9752",
+        "browsePath": "root.occupancyData.variables.CO2"
+    },
+    "124": {
+        "id": "124",
+        "name": "HumidityRatio",
+        "type": "column",
+        "parent": "118",
+        "children": [],
+        "backRefs": [
+            "116"
+        ],
+        "forwardRefs": [],
+        "value": "len 9752",
+        "browsePath": "root.occupancyData.variables.HumidityRatio"
+    },
+    "125": {
+        "id": "125",
+        "name": "Occupancy",
+        "type": "column",
+        "parent": "118",
+        "children": [],
+        "backRefs": [
+            "116"
+        ],
+        "forwardRefs": [],
+        "value": "len 9752",
+        "browsePath": "root.occupancyData.variables.Occupancy"
+    },
+    "126": {
+        "id": "126",
+        "name": "classification",
+        "type": "column",
+        "parent": "114",
+        "children": [],
+        "backRefs": [
+            "116",
+            "145",
+            "155"
+        ],
+        "forwardRefs": [],
+        "value": "len 9752",
+        "browsePath": "root.occupancyData.classification"
+    },
+    "127": {
+        "id": "127",
+        "name": "workbench",
+        "type": "widget",
+        "parent": "13",
+        "children": [
+            "128",
+            "129",
+            "130",
+            "131",
+            "132",
+            "133",
+            "138",
+            "139",
+            "140",
+            "141",
+            "142",
+            "144",
+            "145",
+            "146",
+            "189",
+            "217"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench"
+    },
+    "128": {
+        "id": "128",
+        "name": "selectableVariables",
+        "type": "referencer",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "118"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.selectableVariables"
+    },
+    "129": {
+        "id": "129",
+        "name": "selectedVariables",
+        "type": "referencer",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "120"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.selectedVariables"
+    },
+    "130": {
+        "id": "130",
+        "name": "startTime",
+        "type": "variable",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.startTime"
+    },
+    "131": {
+        "id": "131",
+        "name": "endTime",
+        "type": "variable",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.endTime"
+    },
+    "132": {
+        "id": "132",
+        "name": "bins",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 300,
+        "browsePath": "root.visualization.workbench.bins"
+    },
+    "133": {
+        "id": "133",
+        "name": "hasAnnotation",
+        "type": "const",
+        "parent": "127",
+        "children": [
+            "134",
+            "135",
+            "136",
+            "137"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.hasAnnotation"
+    },
+    "134": {
+        "id": "134",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "133",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "135"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.annotations"
+    },
+    "135": {
+        "id": "135",
+        "name": "newAnnotations",
+        "type": "folder",
+        "parent": "133",
+        "children": [],
+        "backRefs": [
+            "156",
+            "134"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations"
+    },
+    "136": {
+        "id": "136",
+        "name": "tags",
+        "type": "const",
+        "parent": "133",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy",
+            "free"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.tags"
+    },
+    "137": {
+        "id": "137",
+        "name": "colors",
+        "type": "const",
+        "parent": "133",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "yellow",
+            "brown",
+            "grey",
+            "green",
+            "red"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.colors"
+    },
+    "138": {
+        "id": "138",
+        "name": "table",
+        "type": "referencer",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "114"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.table"
+    },
+    "139": {
+        "id": "139",
+        "name": "lineColors",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "blue",
+            "yellow",
+            "brown",
+            "grey",
+            "red"
+        ],
+        "browsePath": "root.visualization.workbench.lineColors"
+    },
+    "140": {
+        "id": "140",
+        "name": "observer",
+        "type": "referencer",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "159"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.observer"
+    },
+    "141": {
+        "id": "141",
+        "name": "observerUpdate",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "line",
+            "background",
+            "annotations"
+        ],
+        "browsePath": "root.visualization.workbench.observerUpdate"
+    },
+    "142": {
+        "id": "142",
+        "name": "buttons",
+        "type": "folder",
+        "parent": "127",
+        "children": [
+            "143"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.buttons"
+    },
+    "143": {
+        "id": "143",
+        "name": "button1",
+        "type": "folder",
+        "parent": "142",
+        "children": [
+            "147",
+            "148",
+            "149"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.buttons.button1"
+    },
+    "144": {
+        "id": "144",
+        "name": "hasBackground",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.hasBackground"
+    },
+    "145": {
+        "id": "145",
+        "name": "background",
+        "type": "referencer",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "126"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.background"
+    },
+    "146": {
+        "id": "146",
+        "name": "backgroundMap",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "0": "brown",
+            "1": "yellow",
+            "-1": "blue",
+            "default": "white"
+        },
+        "browsePath": "root.visualization.workbench.backgroundMap"
+    },
+    "147": {
+        "id": "147",
+        "name": "caption",
+        "type": "const",
+        "parent": "143",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "learn",
+        "browsePath": "root.visualization.workbench.buttons.button1.caption"
+    },
+    "148": {
+        "id": "148",
+        "name": "counter",
+        "type": "variable",
+        "parent": "143",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.buttons.button1.counter"
+    },
+    "149": {
+        "id": "149",
+        "name": "onClick",
+        "type": "referencer",
+        "parent": "143",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "150"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.buttons.button1.onClick"
+    },
+    "150": {
+        "id": "150",
+        "name": "logisticRegression",
+        "type": "function",
+        "parent": "1",
+        "children": [
+            "151",
+            "152",
+            "153",
+            "154",
+            "155",
+            "156",
+            "157",
+            "158",
+            "159"
+        ],
+        "backRefs": [
+            "149"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "functionPointer": "logisticregression.logistic_regression",
+        "autoReload": true,
+        "browsePath": "root.logisticRegression"
+    },
+    "151": {
+        "id": "151",
+        "name": "status",
+        "type": "variable",
+        "parent": "150",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "finished",
+        "browsePath": "root.logisticRegression.status"
+    },
+    "152": {
+        "id": "152",
+        "name": "progress",
+        "type": "variable",
+        "parent": "150",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 1,
+        "browsePath": "root.logisticRegression.progress"
+    },
+    "153": {
+        "id": "153",
+        "name": "result",
+        "type": "variable",
+        "parent": "150",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "ok",
+        "browsePath": "root.logisticRegression.result"
+    },
+    "154": {
+        "id": "154",
+        "name": "input",
+        "type": "referencer",
+        "parent": "150",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "120",
+            "122",
+            "123"
+        ],
+        "value": null,
+        "browsePath": "root.logisticRegression.input"
+    },
+    "155": {
+        "id": "155",
+        "name": "output",
+        "type": "referencer",
+        "parent": "150",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "126"
+        ],
+        "value": null,
+        "browsePath": "root.logisticRegression.output"
+    },
+    "156": {
+        "id": "156",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "150",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "135"
+        ],
+        "value": null,
+        "browsePath": "root.logisticRegression.annotations"
+    },
+    "157": {
+        "id": "157",
+        "name": "categoryMap",
+        "type": "const",
+        "parent": "150",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "busy": 1,
+            "free": 0
+        },
+        "browsePath": "root.logisticRegression.categoryMap"
+    },
+    "158": {
+        "id": "158",
+        "name": "signal",
+        "type": "variable",
+        "parent": "150",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "nosignal",
+        "browsePath": "root.logisticRegression.signal"
+    },
+    "159": {
+        "id": "159",
+        "name": "executionCounter",
+        "type": "variable",
+        "parent": "150",
+        "children": [],
+        "backRefs": [
+            "140"
+        ],
+        "forwardRefs": [],
+        "value": 7,
+        "browsePath": "root.logisticRegression.executionCounter"
+    },
+    "188": {
+        "id": "188",
+        "name": "acknowledgement",
+        "type": "const",
+        "parent": "114",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "I herewith ackknowledge the original authors of the paper:  Accurate occupancy detection of an office room from light, temperature, humidity and CO2 measurements using statistical learning models.  Luis M. Candanedo, Veronique Feldheim. Energy and Buildings. Volume 112, 15 January 2016, Pages 28-39.  for putting the dataset to the public https://archive.ics.uci.edu/ml/datasets/Occupancy+Detection+ This dataset is used here for demo purposes  More datasets are available at UCI Machine Learning Repository [http://archive.ics.uci.edu/ml]. Irvine, CA: University of California, School of Information and Computer Science.",
+        "browsePath": "root.occupancyData.acknowledgement"
+    },
+    "189": {
+        "id": "189",
+        "name": "hasReloadButton",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.hasReloadButton"
+    },
+    "217": {
+        "id": "217",
+        "name": "observerEnabled",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.observerEnabled"
+    }
+}

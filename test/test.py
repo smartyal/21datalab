@@ -219,6 +219,16 @@ def adjust():
     m.show()
 
 
+def test_move2():
+    m=model.Model()
+    m.load("occupancydemo1")
+    #m.show()
+    print("----------------------")
+    m.move("root.visualization.widgets.timeseriesOccupancy","root.visualization")
+    m.delete_node("root.visualization.widgets")
+    m.set_properties({"name":"workbench"},nodeDesc="root.visualization.timeseriesOccupancy")
+    m.show()
+    m.save("occupancydemo2")
 
 
 
@@ -248,11 +258,12 @@ if __name__ == "__main__":
     #n.show()
 
     #diff_test()
-    template_test()
+    #template_test()
     #test_global_id_counter()
     #test_list_dir()
     #test_move()
     #adjust()
+    test_move2()
 
 
 

@@ -34,6 +34,7 @@ timeseriesWidget = {
         {"name":"lineColors","type": "const", "value": ["blue", "yellow", "brown", "grey", "red"]},
         {"name":"observer","type":"referencer"},
         {"name":"observerUpdate","type": "const","value":["line","background","annotations"]},
+        {"name":"observerEnabled","type":"const","value":True},
         {"name":"buttons","type":"folder","children":[
             {"name":"button1","type":"folder"}
         ]},

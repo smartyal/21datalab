@@ -88,13 +88,7 @@ function on_first_load () {
         });
 	});
 
-    $('#pipelinebutton').on('click',function () {
-        target = $('#pipelineselect option:selected').text();
-		var win = window.open(pipelines[target], '_blank');
-        win.focus();
-	});
 	//tree_initialize();
-
 
     populate_settings();
 
