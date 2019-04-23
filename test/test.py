@@ -1,11 +1,13 @@
 import sys
 sys.path.append('..')
+sys.path.append('../plugins')
 
 import model
 import modeltemplates
 import datetime
 import pytz
 import json
+import templates
 
 
 """
@@ -173,6 +175,7 @@ def template_test():
         ]
     }
     m.create_template_from_path("root.myfolder.myfolder2.mynewNameofTemplate",template)
+    m.create_template_from_path("root.myts",templates.timeseriesWidget)
     m.show()
 
 
@@ -218,6 +221,7 @@ def adjust():
 
 
 
+
 if __name__ == "__main__":
 
     #t = Timer()
@@ -244,11 +248,11 @@ if __name__ == "__main__":
     #n.show()
 
     #diff_test()
-    #template_test()
+    template_test()
     #test_global_id_counter()
     #test_list_dir()
     #test_move()
-    adjust()
+    #adjust()
 
 
 

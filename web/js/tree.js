@@ -595,7 +595,7 @@ function edit_node_done(node, status, cancel)
     var query=[{id:node.id,name:newName}];
     var params={id:node.id,'originalName':originalName,'newName':newName};
     http_post('/setProperties',JSON.stringify(query), params, function(status,data,params)   {
-        if (status!=200)
+        if (status>201)
         {
             //backend responded bad, we must set the frontend back
             $('#jstree_div').jstree(true).rename_node(node,params.originalName);
@@ -661,6 +661,9 @@ function tree_update_cb(status,data,params)
         // missing here is the synchronization with the treeNodes: the parent still holds the id in it's list,
         // this will be fixed when we look for the modifications:
         // the parent will be in the modified nodes list, finally we will take over the new node dict of the parent
+
+        // if the new node is a referencer we also must create the referencee nodes, we do this later
+        // as we might reference to nodes that don't exist yet
     }
 
     //synchronize modified nodes
@@ -751,6 +754,30 @@ function tree_update_cb(status,data,params)
             }
         }
         treeNodes[id] = newNode; // update the new properties including children, refs etc
+    }
+
+    // now check if a referencer is inside the new nodes so we also need to build the referencee nodes
+    for (var newNodeId in updateData.newNodes)
+    {
+        var node = updateData.newNodes[newNodeId];
+        if (node.type == "referencer")
+        {
+            for (entry in node.forwardRefs)
+            {
+                var targetId = node.forwardRefs[entry];
+                var referenceeModelNode = {
+
+                        'type': 'referencee',
+                        'name': treeNodes[targetId].browsePath,
+                        'parent': node.id,
+                        'targetId' : targetId
+                };
+                var referenceeNode = node_to_tree(referenceeModelNode);
+                var treeNode = $('#jstree_div').jstree(true).get_node(node.id);
+                let result = $('#jstree_div').jstree(true).create_node(node.id,referenceeNode);
+
+            }
+        }
     }
 }
 

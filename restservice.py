@@ -472,7 +472,7 @@ def all(path):
         logger.warning("CANNOT HANDLE REQUEST, is unknown"+str(path))
         responseCode = 404
 
-    logger.info("response len is"+str(len(response)))
+    logger.info("response len is"+str(len(response))+" rspcodecode"+str(responseCode))
     return flask.Response(response, mimetype="text/html"), responseCode
 
 if __name__ == '__main__':
