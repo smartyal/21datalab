@@ -556,9 +556,9 @@ class TimeSeriesWidget():
 
         if self.server.get_settings()["background"]["hasBackground"]:
             #create the controls and plot the backgrounds as boxannotations
-            self.backgroundbutton = Toggle(label="hide Backgrounds",css_classes=['button_21'],active=True)
+            self.backgroundbutton = Toggle(label="show Backgrounds",css_classes=['button_21'],active=False)
             self.backgroundbutton.on_click(self.backgroundbutton_cb)
-            self.showBackgrounds = True
+            self.showBackgrounds = False
             layoutControls.append(self.backgroundbutton)
             self.refresh_backgrounds()  #draw the backgrounds or not (check if needed)
 
