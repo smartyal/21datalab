@@ -321,7 +321,6 @@ def all(path):
             logger.debug("get data")
             startTime = None
             endTime = None
-            al
             if set(["bins","nodes"]).issubset(set(data.keys())):
                 #we have both bins and nodes
                 startTime = 0
