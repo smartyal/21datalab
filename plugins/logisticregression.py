@@ -1,7 +1,7 @@
 
 from sklearn.linear_model import LogisticRegression
 import numpy
-
+from system import __functioncontrolfolder
 
 
 
@@ -11,15 +11,11 @@ logisticRegressionTemplate= {
     "functionPointer":"logisticregression.logistic_regression",   #filename.functionname
     "autoReload":True,                                 #set this to true to reload the module on each execution
     "children":[
-        {"name":"status","type":"variable","value":"idle"},     # one of ["finished","running"]
-        {"name":"progress","type":"variable","value":0},          # a value between 0 and 1
-        {"name":"result","type":"variable","value":"ok"},       # of ["ok","error","pending" or a last error message]
         {"name":"input","type":"referencer"},                  # the outputs
         {"name":"output","type":"referencer"},
         {"name":"annotations","type":"referencer"},             #the user annotations
         {"name":"categoryMap","type":"const"},                  #logistic regression work on categories, this is the number mapper, INPUT
-        {"name":"signal","type":"variable","value":"nosignal"}, # of ["nosignal","interrupt"]
-        {"name":"executionCounter","type":"variable","value":0}            # a counter which is increased on each execution of this function
+        __functioncontrolfolder
     ]
 }
 
@@ -27,13 +23,8 @@ logisticRegressionTemplate= {
 
 
 
-
 def logistic_regression(functionNode):
     print("==>>>> in logisticregression",functionNode.get_browse_path())
-
-    functionNode.get_child("progress").set_value(0)
-    functionNode.get_child("status").set_value("running")
-
 
     #now get the input and outputs
     inputNodes = functionNode.get_child("input").get_leaves()
@@ -110,49 +101,5 @@ def logistic_regression(functionNode):
     #now write the score back to the ouput
     outputNode.set_value(list(score))
 
-    #now update the execution counter for those who watch it
-    executionCounterNode = functionNode.get_child("executionCounter")
-    executionCounterNode.set_value(executionCounterNode.get_value()+1)
-
-
-
-
-
-    functionNode.get_child("progress").set_value(1)
-    functionNode.get_child("status").set_value("finished")
-    functionNode.get_child("result").set_value("ok")
-
 
     return
-
-
-""""
-gistic regression
-from pandas import read_csv
-from sklearn.metrics import accuracy_score
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-from sklearn.linear_model import LogisticRegression
-# load the dataset
-data = read_csv('combined.csv', header=0, index_col=0, parse_dates=True, squeeze=True)
-values = data.values
-# split data into inputs and outputs
-X, y = values[:, :-1], values[:, -1]
-# split the dataset
-trainX, testX, trainy, testy = train_test_split(X, y, test_size=0.3, shuffle=False, random_state=1)
-# define the model
-model = LogisticRegression()
-# fit the model on the training set
-model.fit(trainX, trainy)
-# predict the test set
-yhat = model.predict(testX)
-
-
-def learnScore(functionNode):
-    print("==>>>> in logisticRegression",functionNode.get_browse_path())
-
-    output = functionNode.get_child("output")
-    output.set_value(output.get_value()+1)
-
-    return True
-"""

@@ -408,9 +408,12 @@ class Node():
             return None
 
     def get_child(self,childName):
-        """  Returns:
-            a Node() instance of the child holding the childName
-            None if the current node does not have a child with the name childName
+        """
+            Args:
+                childName(nodedescription):
+            Returns:
+                a Node() instance of the child holding the childName
+                None if the current node does not have a child with the name childName
         """
         nodeInfo = self.model.get_node_info(self.id)
         if nodeInfo:
@@ -523,7 +526,8 @@ class Node():
         except:
             return None
 
-
+    def execute(self):
+        return self.model.execute_function(self.id)
 
 
 
@@ -1683,41 +1687,45 @@ class Model():
                     print("not found in global functions list")
                     return False
                 functionPointer = self.functions[functionName]['function']
-                #now execute
-                node = self.get_node(id)
-                statusNode = node.get_child("status")
-                statusNode.set_value("running")
-
-                resultNode = node.get_child("result")
-                resultNode.set_value("pending")
-
-                signalNode = node.get_child("signal")
-                signalNode.set_value("nosignal")
+                #now set some controls
+                try:
+                    node = self.get_node(id)
+                    controlNode = node.get_child("control")
+                    controlNode.get_child("status").set_value("running")
+                    controlNode.get_child("result").set_value("pending")
+                    controlNode.get_child("signal").set_value("nosignal")
+                    startTime = datetime.datetime.now()
+                    controlNode.get_child("lastStartTime").set_value(startTime.isoformat())
+                finally:
+                    pass
 
             #lock open: we execute without lock
             result = functionPointer(node) # this is the actual execution
             #now we are back, set the status to finished
+            duration = (datetime.datetime.now()-startTime).total_seconds()
 
             with self.lock:
-                #this is a bit dangerous, maybe the node is not there anymore, so the
+                # this is a bit dangerous, maybe the node is not there anymore, so the
                 # inner functions calls of node.xx() will return nothing, so we try, catch
                 try:
-                    statusNode.set_value("finished")
+                    controlNode.get_child("lastExecutionDuration").set_value(duration)
+                    controlNode.get_child("status").set_value("finished")
+                    controlNode.get_child("executionCounter").set_value(controlNode.get_child("executionCounter").get_value()+1)
                     if result == True:
-                        resultNode.set_value("ok")
+                        controlNode.get_child("result").set_value("ok")
                     else:
-                        if resultNode.get_value() == "pending":
+                        if controlNode.get_child("result").get_value() == "pending":
                             #if the functions hasn't set anything else
-                            resultNode.set_value("error")
+                            controlNode.get_child("result").set_value("error")
                 except:
-                    print("problem setting results from execution of #",id)
+                    self.logger.error("problem setting results from execution of #"+str(id))
                     pass
 
             return result
         except:
-            print("error inside execution thread", "id",id,"functionname",functionName,sys.exc_info()[1])
-            statusNode.set_value("interrupted")
-            resultNode.set_value("error")
+            self.logger.error("error inside execution thread, id " +str(id)+" functionname"+str(functionName)+str(sys.exc_info()[1]))
+            controlNode.get_child("status").set_value("interrupted")
+            controlNode.get_child("result").set_value("error")
             return False
 
     def show(self):

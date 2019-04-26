@@ -237,7 +237,7 @@ function tree_generate()
             .appendTo("head");
     }
     var myTree = {
-        'plugins':["grid", "contextmenu","types"],
+        'plugins':["grid", "contextmenu","types","dnd"],
         'core': {
             "themes" : {
                 "variant" : "small",
@@ -260,6 +260,10 @@ function tree_generate()
             ],
             'check_callback' : function(operation, node, node_parent, node_position, more) {
                 console.log('check_callback' + operation + " " + node.id + " " + node_parent.text);
+                if (operation === "move_node")
+                {
+                    return false; //false; //moving not allowed currently
+                }
                 return true; //we allow all operations as default
             }
 
@@ -438,7 +442,33 @@ function tree_generate()
             // Commented the above lines because it was overwriting the default and the default-dark themes colors and backgrounds
             "standard":{},
             "inverse":{}
+        },
+        'dnd' : {
+            "check_while_dragging": false
+            /*
+            "drop_finish" : function () {
+                alert("DROP");
+            },
+            "drag_finish" : function (data) {
+                alert("DRAG OK");
+            },
+            "drag_check" : function (data) {
+
+				return true;
+				/*if(data.r.attr("id") == "phtml_1") {
+
+					return false;
+				}
+				return {
+					after : false,
+					before : false,
+					inside : true
+				};
+			},
+            */
+
         }
+
     }
 
     $('#jstree_div').jstree(myTree);

@@ -5,7 +5,7 @@
         "children": [
             "13",
             "114",
-            "150"
+            "218"
         ],
         "parent": "0",
         "id": "1",
@@ -134,7 +134,7 @@
         "backRefs": [
             "116",
             "129",
-            "154"
+            "219"
         ],
         "forwardRefs": [],
         "value": "len 9752",
@@ -161,7 +161,7 @@
         "children": [],
         "backRefs": [
             "116",
-            "154"
+            "219"
         ],
         "forwardRefs": [],
         "value": "len 9752",
@@ -175,7 +175,7 @@
         "children": [],
         "backRefs": [
             "116",
-            "154"
+            "219"
         ],
         "forwardRefs": [],
         "value": "len 9752",
@@ -216,7 +216,7 @@
         "backRefs": [
             "116",
             "145",
-            "155"
+            "220"
         ],
         "forwardRefs": [],
         "value": "len 9752",
@@ -343,10 +343,15 @@
         "name": "newAnnotations",
         "type": "folder",
         "parent": "133",
-        "children": [],
+        "children": [
+            "232",
+            "236",
+            "240",
+            "256"
+        ],
         "backRefs": [
-            "156",
-            "134"
+            "134",
+            "221"
         ],
         "forwardRefs": [],
         "value": null,
@@ -421,7 +426,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [
-            "159"
+            "228"
         ],
         "value": null,
         "browsePath": "root.visualization.workbench.observer"
@@ -539,147 +544,10 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [
-            "150"
+            "218"
         ],
         "value": null,
         "browsePath": "root.visualization.workbench.buttons.button1.onClick"
-    },
-    "150": {
-        "id": "150",
-        "name": "logisticRegression",
-        "type": "function",
-        "parent": "1",
-        "children": [
-            "151",
-            "152",
-            "153",
-            "154",
-            "155",
-            "156",
-            "157",
-            "158",
-            "159"
-        ],
-        "backRefs": [
-            "149"
-        ],
-        "forwardRefs": [],
-        "value": null,
-        "functionPointer": "logisticregression.logistic_regression",
-        "autoReload": true,
-        "browsePath": "root.logisticRegression"
-    },
-    "151": {
-        "id": "151",
-        "name": "status",
-        "type": "variable",
-        "parent": "150",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "finished",
-        "browsePath": "root.logisticRegression.status"
-    },
-    "152": {
-        "id": "152",
-        "name": "progress",
-        "type": "variable",
-        "parent": "150",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 1,
-        "browsePath": "root.logisticRegression.progress"
-    },
-    "153": {
-        "id": "153",
-        "name": "result",
-        "type": "variable",
-        "parent": "150",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "ok",
-        "browsePath": "root.logisticRegression.result"
-    },
-    "154": {
-        "id": "154",
-        "name": "input",
-        "type": "referencer",
-        "parent": "150",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "120",
-            "122",
-            "123"
-        ],
-        "value": null,
-        "browsePath": "root.logisticRegression.input"
-    },
-    "155": {
-        "id": "155",
-        "name": "output",
-        "type": "referencer",
-        "parent": "150",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "126"
-        ],
-        "value": null,
-        "browsePath": "root.logisticRegression.output"
-    },
-    "156": {
-        "id": "156",
-        "name": "annotations",
-        "type": "referencer",
-        "parent": "150",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "135"
-        ],
-        "value": null,
-        "browsePath": "root.logisticRegression.annotations"
-    },
-    "157": {
-        "id": "157",
-        "name": "categoryMap",
-        "type": "const",
-        "parent": "150",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": {
-            "busy": 1,
-            "free": 0
-        },
-        "browsePath": "root.logisticRegression.categoryMap"
-    },
-    "158": {
-        "id": "158",
-        "name": "signal",
-        "type": "variable",
-        "parent": "150",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "nosignal",
-        "browsePath": "root.logisticRegression.signal"
-    },
-    "159": {
-        "id": "159",
-        "name": "executionCounter",
-        "type": "variable",
-        "parent": "150",
-        "children": [],
-        "backRefs": [
-            "140"
-        ],
-        "forwardRefs": [],
-        "value": 7,
-        "browsePath": "root.logisticRegression.executionCounter"
     },
     "188": {
         "id": "188",
@@ -713,5 +581,391 @@
         "forwardRefs": [],
         "value": true,
         "browsePath": "root.visualization.workbench.observerEnabled"
+    },
+    "218": {
+        "id": "218",
+        "name": "logisticRegression",
+        "type": "function",
+        "parent": "1",
+        "children": [
+            "219",
+            "220",
+            "221",
+            "222",
+            "223"
+        ],
+        "backRefs": [
+            "149"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "functionPointer": "logisticregression.logistic_regression",
+        "autoReload": true,
+        "browsePath": "root.logisticRegression"
+    },
+    "219": {
+        "id": "219",
+        "name": "input",
+        "type": "referencer",
+        "parent": "218",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "120",
+            "122",
+            "123"
+        ],
+        "value": null,
+        "browsePath": "root.logisticRegression.input"
+    },
+    "220": {
+        "id": "220",
+        "name": "output",
+        "type": "referencer",
+        "parent": "218",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "126"
+        ],
+        "value": null,
+        "browsePath": "root.logisticRegression.output"
+    },
+    "221": {
+        "id": "221",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "218",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "135"
+        ],
+        "value": null,
+        "browsePath": "root.logisticRegression.annotations"
+    },
+    "222": {
+        "id": "222",
+        "name": "categoryMap",
+        "type": "const",
+        "parent": "218",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "busy": 1,
+            "free": 0
+        },
+        "browsePath": "root.logisticRegression.categoryMap"
+    },
+    "223": {
+        "id": "223",
+        "name": "control",
+        "type": "folder",
+        "parent": "218",
+        "children": [
+            "224",
+            "225",
+            "226",
+            "227",
+            "228",
+            "229",
+            "230",
+            "231"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.logisticRegression.control"
+    },
+    "224": {
+        "id": "224",
+        "name": "status",
+        "type": "variable",
+        "parent": "223",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "finished",
+        "browsePath": "root.logisticRegression.control.status"
+    },
+    "225": {
+        "id": "225",
+        "name": "progress",
+        "type": "variable",
+        "parent": "223",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.logisticRegression.control.progress"
+    },
+    "226": {
+        "id": "226",
+        "name": "result",
+        "type": "variable",
+        "parent": "223",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "error",
+        "browsePath": "root.logisticRegression.control.result"
+    },
+    "227": {
+        "id": "227",
+        "name": "signal",
+        "type": "variable",
+        "parent": "223",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "nosignal",
+        "browsePath": "root.logisticRegression.control.signal"
+    },
+    "228": {
+        "id": "228",
+        "name": "executionCounter",
+        "type": "variable",
+        "parent": "223",
+        "children": [],
+        "backRefs": [
+            "140"
+        ],
+        "forwardRefs": [],
+        "value": 6,
+        "browsePath": "root.logisticRegression.control.executionCounter"
+    },
+    "229": {
+        "id": "229",
+        "name": "lastExecutionDuration",
+        "type": "variable",
+        "parent": "223",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0.031192,
+        "browsePath": "root.logisticRegression.control.lastExecutionDuration"
+    },
+    "230": {
+        "id": "230",
+        "name": "lastStartTime",
+        "type": "variable",
+        "parent": "223",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2019-04-26T09:18:44.571617",
+        "browsePath": "root.logisticRegression.control.lastStartTime"
+    },
+    "231": {
+        "id": "231",
+        "name": "executionType",
+        "type": "const",
+        "parent": "223",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "async",
+        "browsePath": "root.logisticRegression.control.executionType"
+    },
+    "232": {
+        "id": "232",
+        "name": "dfd9128a",
+        "type": "annotation",
+        "parent": "135",
+        "children": [
+            "233",
+            "234",
+            "235"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.dfd9128a"
+    },
+    "233": {
+        "id": "233",
+        "name": "startTime",
+        "type": "const",
+        "parent": "232",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-14T01:12:11.786453+00:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.dfd9128a.startTime"
+    },
+    "234": {
+        "id": "234",
+        "name": "endTime",
+        "type": "const",
+        "parent": "232",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-14T08:21:45.127440+00:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.dfd9128a.endTime"
+    },
+    "235": {
+        "id": "235",
+        "name": "tags",
+        "type": "const",
+        "parent": "232",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.dfd9128a.tags"
+    },
+    "236": {
+        "id": "236",
+        "name": "9eed5262",
+        "type": "annotation",
+        "parent": "135",
+        "children": [
+            "237",
+            "238",
+            "239"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.9eed5262"
+    },
+    "237": {
+        "id": "237",
+        "name": "startTime",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-14T15:55:51.230770+00:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.9eed5262.startTime"
+    },
+    "238": {
+        "id": "238",
+        "name": "endTime",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-15T02:21:46.670494+00:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.9eed5262.endTime"
+    },
+    "239": {
+        "id": "239",
+        "name": "tags",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.9eed5262.tags"
+    },
+    "240": {
+        "id": "240",
+        "name": "e547704f",
+        "type": "annotation",
+        "parent": "135",
+        "children": [
+            "241",
+            "242",
+            "243"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.e547704f"
+    },
+    "241": {
+        "id": "241",
+        "name": "startTime",
+        "type": "const",
+        "parent": "240",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-16T10:53:11.276694+00:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.e547704f.startTime"
+    },
+    "242": {
+        "id": "242",
+        "name": "endTime",
+        "type": "const",
+        "parent": "240",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-16T19:53:12.048221+00:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.e547704f.endTime"
+    },
+    "243": {
+        "id": "243",
+        "name": "tags",
+        "type": "const",
+        "parent": "240",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "free"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.e547704f.tags"
+    },
+    "256": {
+        "id": "256",
+        "name": "258aec4a",
+        "type": "annotation",
+        "parent": "135",
+        "children": [
+            "257",
+            "258",
+            "259"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.258aec4a"
+    },
+    "257": {
+        "id": "257",
+        "name": "startTime",
+        "type": "const",
+        "parent": "256",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-17T22:40:57.981628+00:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.258aec4a.startTime"
+    },
+    "258": {
+        "id": "258",
+        "name": "endTime",
+        "type": "const",
+        "parent": "256",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-18T05:13:42.179102+00:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.258aec4a.endTime"
+    },
+    "259": {
+        "id": "259",
+        "name": "tags",
+        "type": "const",
+        "parent": "256",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.258aec4a.tags"
     }
 }

@@ -133,6 +133,20 @@ function on_first_load () {
 
     tree_initialize();
 
+    //this function is triggered on dropping from the tree nodes
+    $(document).on('dnd_stop.vakata', function(e, data) {
+        var t = $(data.event.target);
+        if(t.closest('.dropnodes').length) {
+            var nodes=" ";
+            for (let i = 0; i < data.data.nodes.length; i++) {
+                    nodes = nodes + " " + String(data.data.nodes[i]);
+            }
+            alert("add nodes to plot"+nodes);
+        }
+
+    });
+
+
 }
 
 $( document ).ready(function() {
