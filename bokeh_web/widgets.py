@@ -525,14 +525,18 @@ class TimeSeriesWidget():
 
 
         # make the variableSelector
-        options = [(x, x) for x in self.server.get_variables_selectable()]
-        self.variablesMultiSelect = MultiSelect(title="Select Variables", value=self.server.get_variables_selected(),
-                                                options=options,size = 5,css_classes=['multi_select_21'])
-        self.variablesSelectButton = Button(label="apply",css_classes=['button_21'])
-        self.variablesSelectButton.on_click(self.var_select_button_cb)
+        if "hasSelection" in settings and settings["hasSelection"] == False:
+            #we skip the selection buttons
+            pass
+        else:
+            options = [(x, x) for x in self.server.get_variables_selectable()]
+            self.variablesMultiSelect = MultiSelect(title="Select Variables", value=self.server.get_variables_selected(),
+                                                    options=options,size = 5,css_classes=['multi_select_21'])
+            self.variablesSelectButton = Button(label="apply",css_classes=['button_21'])
+            self.variablesSelectButton.on_click(self.var_select_button_cb)
 
-        selectWidget = widgetbox(self.variablesMultiSelect,self.variablesSelectButton)
-        layoutControls.append(selectWidget)
+            selectWidget = widgetbox(self.variablesMultiSelect,self.variablesSelectButton)
+            layoutControls.append(selectWidget)
 
 
 

@@ -461,6 +461,15 @@ class Node():
         """
         return self.model
 
+    def get_targets(self):
+        """ this function returns the target ids of a referencer as a list, not resolving the leaves"""
+        if self.get_properties()["type"] != "referencer":
+            return None
+        targets = []
+        for nodeid in  self.get_properties()["forwardRefs"]:
+            targets.append(Node(self.model,nodeid))
+        return targets
+
     def get_leaves(self):
         """ this function returns a list of Nodes containing the leaves where this referencer points to
         this functions works only for nodes of type "referencer", as we are following the forward references
@@ -923,10 +932,10 @@ class Model():
         with self.lock:
             fromId = self.get_id(referencerDesc)
             if not fromId:
-                self.logger.error("can't set forward ref on ",referencerDesc)
+                self.logger.error("can't set forward ref on "+str(referencerDesc))
                 return False
             if not self.model[fromId]["type"]=="referencer":
-                self.logger.error("can't set forward ref on ", referencerDesc, "is not type referencer, is type",self.model[fromId]["type"])
+                self.logger.error("can't set forward ref on "+str(referencerDesc)+ "is not type referencer, is type"+self.model[fromId]["type"])
                 return False
             for target in targets:
                 toId = self.get_id(target)
@@ -1238,6 +1247,9 @@ class Model():
             if not id:return None
 
             targets=self.__get_targets(id)
+            if targets and targets[0]["id"] == id:
+                #this can happen if the node is not a folder, ref and had no children
+                targets.pop(0)
             return targets
 
 
@@ -1643,6 +1655,7 @@ class Model():
             Returns:
                 True if the execution thread was launched
         """
+
         with self.lock:
             id = self.get_id(desc)
             if self.model[id]["type"]!= "function":
@@ -1660,12 +1673,22 @@ class Model():
                 #now update our global list
                 self.functions[functionName]["module"] = module
                 self.functions[functionName]["function"] = functionPointer
-
+            #now check if sync execution
+            functionNode= self.get_node(id)
+            executionType = functionNode.get_child("control").get_child("executionType").get_value()
         #here, the lock is open again!
+
         try:
-            thread = threading.Thread(target=self.__execution_thread, args=[id])
-            thread.start()
-            return True
+            if executionType == "async":
+                thread = threading.Thread(target=self.__execution_thread, args=[id])
+                thread.start()
+                return True
+            elif executionType == "sync":
+                self.__execution_thread(id) # call it sync here
+                return True
+            else:
+                self.logger.error("unsupported execution type"+str(executionType)+" in fuction"+str(id))
+                raise(Exception)
         except:
             return False
 

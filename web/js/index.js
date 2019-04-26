@@ -55,6 +55,13 @@ function populate_settings() {
 }
 
 
+function drop_nodes(nodeIds,path)
+{
+    let query={"nodes":nodeIds,"path":path};
+    http_post("http://localhost:6001/dropnodes",JSON.stringify(query),null,null);
+}
+
+
 function on_first_load () {
 
 	//register menue calls#
@@ -119,6 +126,7 @@ function on_first_load () {
         if (status==200)
         {
             $('#embed').html(data);
+            $('#embed').data('uicomponent', { "engine":"bokeh","path":"root.visualization.workbench"});
         }
     });
 
@@ -141,13 +149,21 @@ function on_first_load () {
             for (let i = 0; i < data.data.nodes.length; i++) {
                     nodes = nodes + " " + String(data.data.nodes[i]);
             }
-            alert("add nodes to plot"+nodes);
+            let div = t.closest('.dropnodes')[0];
+            let divid = div.id;
+            let info = $(div).data('uicomponent');
+            alert("add nodes "+nodes +"to div id"+divid+"with target"+String(info.path));
+            drop_nodes(data.data.nodes,info.path);
         }
 
     });
 
 
 }
+
+
+
+
 
 $( document ).ready(function() {
     console.log( "ready!" );

@@ -8,7 +8,7 @@ import datetime
 import pytz
 import json
 import templates
-
+import time
 
 """
  this file contains test functions and helpers to test the model api and functionality
@@ -230,6 +230,47 @@ def test_move2():
     m.show()
     m.save("occupancydemo2")
 
+def test_observer():
+    m=model.Model()
+    m.create_node_from_path("root.const",{"type":"const","value":0})
+    m.create_template_from_path("root.observer",m.get_templates()["system.observer"])
+    m.set_value("root.observer.control.executionType","sync")
+    m.add_forward_refs("root.observer.subject",["root.const"])
+    m.set_value("root.observer.properties",["value"])
+    print("before")
+    m.show()
+    m.execute_function("root.observer")
+    print("first execution")
+    m.show()
+    m.execute_function("root.observer")
+    print("second execution")
+    m.show()
+
+    m.set_value("root.const",1)
+    m.execute_function("root.observer")
+    print("somethings changed")
+    m.show()
+
+    print("REFERENCER TEST")
+    m.create_node_from_path("root.ref",{"type":"referencer"})
+    m.create_node_from_path("root.const2")
+    #reset the observer
+    m.set_value("root.observer.lastStatus",None)
+    m.remove_forward_refs("root.observer.subject")
+    m.add_forward_refs("root.observer.subject",["root.ref"])
+    m.add_forward_refs("root.ref",["root.const"])
+    m.set_value("root.observer.properties",["leaves"])
+    m.execute_function("root.observer")
+
+    m.show()
+    m.add_forward_refs("root.ref",["root.const2"])
+    print("changed the ref")
+    m.execute_function("root.observer")
+    m.show()
+    print("did nothing")
+    m.execute_function("root.observer")
+    m.show()
+
 
 
 if __name__ == "__main__":
@@ -263,7 +304,8 @@ if __name__ == "__main__":
     #test_list_dir()
     #test_move()
     #adjust()
-    test_move2()
+    #test_move2()
+    test_observer()
 
 
 

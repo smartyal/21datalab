@@ -40,7 +40,7 @@ logger.addHandler(logfile)
 
 
 
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 bokehPath = "http://localhost:5006/"
@@ -63,7 +63,7 @@ path                    REQUEST BOY               RESPONSE BODY
 POST /_create       [<createnode.json>]         [<node.json>]           ## give a list of new nodes, result contains all the created nodes  
 POST /_delete       [<nodedescriptor>]          [<nodedescriptor>]      ## give list of deleted nodes back
 POST /_getall       -                           [<node.json>]           ## give the whole address space
-POST /setProperties   [<node.json>]               [<node.json>]           ## the node.json only contains properties to change
+POST /setProperties   [<node.json>]               [<node.json>]         ## the node.json only contains properties to change
 POST /_get          [<nodescriptor>]            [<node.json>]           ## get node including children as json
 POST /_getvalue     [<nodedescriptor>]          [<values>]              ## get a list of values, not available are returned as none
 POST /_getleaves    <nodedescriptor>            [<node.json>]           ## get the leaves of a referencer
@@ -73,12 +73,13 @@ POST /_save         fileName (str)              -
 POST /_getdata      <dataquery.json>]
 POST /_appendRow     [<data.json>]
 POST /_references <referencequery.json>
-POST /_execute      <nodedescriptor>            //nothing               ## execute a function
+POST /_execute      <nodedescriptor>            //nothing                ## execute a function
 GET  /templates      -                           [templatename]          ## get all available templates to be created
-POST /_createTemplate  <createtemplate.json>     -                        #create a template at a path given
-GET /models         -                           [string]                #  a list of available models from the /model folder 
-GET /modelinfo      -                           <modelinfo.json>              # get the current name of the model, path etc
-GEt /embedbokeh     <urlstring>                 <bokeh session>         # pull a bokeh session for forwarding to a div, url string is eg. http://localhost:5006/bokeh_web
+POST /_createTemplate  <createtemplate.json>     -                       #create a template at a path given
+GET  /models         -                           [string]                #  a list of available models from the /model folder 
+GET  /modelinfo      -                           <modelinfo.json>        # get the current name of the model, path etc
+GEt  /embedbokeh     <urlstring>                 <bokeh session>         # pull a bokeh session for forwarding to a div, url string is eg. http://localhost:5006/bokeh_web
+POST /dropnodes      <dropquery.json>                                         # inform that nodes have been dropped on the frontend on a certain widget
 data:
 
 
@@ -168,6 +169,12 @@ modelinfo.json
     "name" : "myfirstModel" # the name of the model
 }
 
+
+dropquery.json
+{
+   "nodes": list of node ids
+   "path": the widget on which the nodes have been dropped in the ui
+}
 '''
 
 
@@ -467,6 +474,24 @@ def all(path):
                 logger.error("pulling session failed")
                 responseCode = 404
 
+        elif (str(path)=="dropnodes") and str(flask.request.method) in ["POST"]:
+            logger.debug("dropnodes")
+            try:
+                nodeIds = data["nodes"]
+                #for now, we assure it's a bokeh-ts widget, as we don't have any other
+                selectNode = m.get_node(data["path"]).get_child("selectedVariables")
+                #also check that the dropped nodes are columns
+                if type(data["nodes"]) is not list:
+                    data["nodes"]=[data["nodes"]]
+                for nodeid in data["nodes"]:
+                    if m.get_node_info(nodeid)["type"] != "column":
+                        responseCode = 404
+                        raise Exception(str(nodeid)+"is not a column")
+                m.add_forward_refs(selectNode.get_id(),nodeIds)
+                responseCode = 201
+            except:
+                logger.error("can't add the variables to the widget")
+                responseCode = 404
 
         else:
             logger.error("CANNOT HANDLE REQUEST, is unknown"+str(path))

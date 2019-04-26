@@ -1,5 +1,7 @@
 import datetime
 import time
+import json
+import copy
 
 __functioncontrolfolder = {
     "name":"control","type":"folder","children":[
@@ -39,12 +41,29 @@ counter = {
     "name":"counter",
     "type":"function",
     "functionPointer":"system.counter_f",   #filename.functionname
-    "autoReload":True,                                 #set this to true to reload the module on each execution
+    "autoReload":False,                                 #set this to true to reload the module on each execution
     "children":[
         {"name":"counter","type":"variable"},
         __functioncontrolfolder,
     ]
 }
+
+
+observer = {
+    "name":"observer",
+    "type":"function",
+    "functionPointer":"system.observer_function",
+    "autoReload":True,
+    "children":[
+        {"name":"subject","type":"referencer"},
+        {"name":"properties","type":"const","value":["leaves"]},   #properties to observe ["value","children","leaves"]
+        {"name":"updateCounter","type":"variable","value":0},
+        {"name":"onUpdate","type":"referencer"},                     #the function(s) to be called when triggering
+        {"name":"lastStatus","type":"variable","value":None},                    #the storage for the fuction to keep the last status
+        __functioncontrolfolder
+    ]
+}
+
 
 def counter_f(functionNode):
     counterNode = functionNode.get_child("counter")
@@ -80,4 +99,33 @@ def periodic_timer(functionNode):
         time.sleep(sleep_time)
     return True
 
+
+
+def observer_function(functionNode):
+    subjectNodes = functionNode.get_child("subject").get_targets() # this is the subject to watch
+    properties = functionNode.get_child("properties").get_value()
+    statusNode = functionNode.get_child("lastStatus")
+    currentStatus = {}
+    for node in subjectNodes:
+        nodeStatus = {}
+        if "leaves" in properties:
+            nodeStatus["leaves"]=[child.get_id() for child in node.get_leaves()]
+        if "value" in properties:
+            nodeStatus["value"]=node.get_value()
+        if "children" in properties:
+            nodeStatus["children"] = [child.get_id() for child in node.get_children()]
+        currentStatus[node.get_id()]=copy.deepcopy(nodeStatus)
+    if statusNode.get_value() == None:
+        #this is the first time
+        statusNode.set_value(copy.deepcopy(currentStatus))
+    else:
+        #we must compare
+        if json.dumps(statusNode.get_value()) != json.dumps(currentStatus):
+            #a change!
+            counterNode = functionNode.get_child("updateCounter")
+            counterNode.set_value(counterNode.get_value()+1)
+            for node in functionNode.get_child("onUpdate").get_leaves():
+                node.execute()
+            statusNode.set_value(copy.deepcopy(currentStatus))
+    return True
 
