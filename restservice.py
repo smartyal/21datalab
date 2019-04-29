@@ -497,9 +497,13 @@ def all(path):
                         if m.get_node_info(nodeid)["type"] != "column":
                             logger.warning("we ignore this node, is not a colum"+str(nodeid))
                         else:
-                            newNodesIds.append(nodeid)
+                            newNodesIds.append(m.get_id(nodeid))
+                    #the nodes are columns
                     logger.debug("now adding new nodes to the widget"+str(newNodesIds))
-                    m.add_forward_refs(selectNode.get_id(),newNodesIds)
+                    #first check, if we have this one already, if so, we don't add it again
+                    leaves=selectNode.get_leaves_ids()
+                    newRefs = [id for id in newNodesIds if id not in leaves]
+                    m.add_forward_refs(selectNode.get_id(),newRefs)
                 responseCode = 201
             except Exception as ex:
                 logger.error("can't add the variables to the widget"+str(ex)+str(sys.exc_info()[0]))

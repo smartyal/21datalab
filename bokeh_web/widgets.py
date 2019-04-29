@@ -757,32 +757,59 @@ class TimeSeriesWidget():
         with self.dispatchLock:
             self.dispatcherRunning = False # free this to run the next
 
-    def __plot_lines(self):
-        """ plot the currently selected variables as lines, update the legend """
+    def __get_free_color(self):
+        """
+            get a currently unused color from the given palette, we need to make this a function, not just a mapping list
+            as lines come and go and therefore colors become free again
+
+            Returns:
+                a free color code
+
+        """
+        usedColors =  [self.lines[lin].glyph.line_color for lin in self.lines]
+        for color in themes.lineColors:
+            if color not in usedColors:
+                return color
+        return "green" # as default
+
+
+
+
+    def __plot_lines(self,newVars = None):
+        """ plot the currently selected variables as lines, update the legend
+            if newVars are given, we only plot them and leave the old
+        """
         self.logger.debug("@__plot_lines")
+
+        if newVars == None:
+            #take them all fresh
+            newVars = self.server.get_variables_selected()
+
+        #first, get fresh data
         settings= self.server.get_settings()
-        self.variables = self.server.get_variables_selected().copy()
-        self.logger.debug("@__plot_lines:from server var selected %s",str(self.variables))
-        variablesRequest = self.variables.copy()
+        variables = self.server.get_variables_selected()
+        #self.logger.debug("@__plot_lines:from server var selected %s",str(newVars))
+        variablesRequest = variables.copy()
         variablesRequest.append("__time")   #make sure we get the time included
-        self.logger.debug("@__plot_lines:self.variables, bins "+str(variablesRequest)+str( settings["bins"]))
+        #self.logger.debug("@__plot_lines:self.variables, bins "+str(variablesRequest)+str( settings["bins"]))
         getData = self.server.get_data(variablesRequest,self.rangeStart,self.rangeEnd,settings["bins"]) # for debug
 
-        self.data=ColumnDataSource(getData) # this will magically update the plot
+        if newVars == []:
+            self.data.data = getData  # also apply the data
+        else:
+            self.logger.debug("new column daat source")
+            self.data=ColumnDataSource(getData) # this will magically update the plot, we replace all data
 
         timeNode = "__time"
-        #now plot
-        colors = themes.lineColors
-        for idx, variableName in enumerate(self.variables):
-            if idx > len(colors) - 1:
-                color = "red"
-            else:
-                color = colors[idx]
+        #now plot var
+        for variableName in newVars:
+            color = self.__get_free_color()
+            self.logger.debug("new color ist"+color)
             if variableName != timeNode:
                 self.lines[variableName] = self.plot.line(timeNode, variableName, color=color,
                                                   source=self.data, name=variableName,line_width=2)  # x:"time", y:variableName #the legend must havee different name than the source bug
         #now make a legend
-        legendItems=[LegendItem(label=var,renderers=[self.lines[var]]) for var in self.variables]
+        legendItems=[LegendItem(label=var,renderers=[self.lines[var]]) for var in self.lines]
         if not self.hasLegend:
             #at the first time, we create the "Legend" object
             self.plot.add_layout(Legend(items=legendItems))
@@ -791,7 +818,7 @@ class TimeSeriesWidget():
             self.hasLegend = True
         else:
             self.plot.legend.items = legendItems #replace them
-        #self.data.data = getData #xxxtest
+
         self.adjust_y_axis_limits()
 
 
@@ -816,36 +843,32 @@ class TimeSeriesWidget():
         """
         self.logger.debug("refresh_plot()")
         #have the variables changed?
-        if self.variables != self.server.get_variables_selected():
-            #must redraw
 
-            self.logger.debug("must rebild lines, old vars" +str(self.variables))
+        #make the differential analysis: what do we currently show and what are we supposed to show?
+        currentLines = [lin for lin in self.lines] #these are the names of the current vars
+        backendLines = self.server.get_variables_selected()
+        deleteLines = list(set(currentLines)-set(backendLines))
+        newLines = list(set(backendLines)-set(currentLines))
+        self.logger.debug("diffanalysis new"+str(newLines)+"  del "+str(deleteLines))
 
-            # iterate and turn off all lines to hide
-            for key in self.lines:
-                self.lines[key].visible=False
+        #now delete the ones to delete
+        for key in deleteLines:
+            self.lines[key].visible = False
+            del self.lines[key]
+        self.remove_renderes(deleteLines)
 
-            #also remove the renderers:
-            self.remove_renderes([key for key in self.lines])
 
-            #let's try a full replacement
-            self.__plot_lines()
-            self.variables = self.server.get_variables_selected().copy() # update to current status
-        else:
-            self.logger.debug("use old lines")
+        #create the new ones
+        self.__plot_lines(newLines)
 
-            bins = self.server.get_settings()["bins"]
-            requestVariables = self.server.get_variables_selected()
-            requestVariables.append(self.server.get_time_node())  # make sure we get the time included
-            self.logger.debug("self.variables, bins " + str(requestVariables) + str(bins))
-            #print("make request to get new data from to ",self.rangeStart,self.rangeEnd)
-            getData = self.server.get_data(requestVariables, start=self.rangeStart, end=self.rangeEnd,
-                                           bins=bins)  # for debug
-            self.data.data = getData  # this one magically refreshes the plot
-            self.adjust_y_axis_limits()
-            if self.server.get_settings()["background"]["hasBackground"]:
-                self.refresh_backgrounds()
-        pass
+
+        self.adjust_y_axis_limits()
+
+
+        #xxxtodo: make this differential as well
+        if self.server.get_settings()["background"]["hasBackground"]:
+            self.refresh_backgrounds()
+
 
     def refresh_backgrounds(self):
         """ check if backgrounds must be drawn if not, we just hide them"""
