@@ -18,7 +18,7 @@ import time
 import threading
 
 
-from bokeh.models import DatetimeTickFormatter, ColumnDataSource, BoxSelectTool, BoxAnnotation, Label, LegendItem, Legend
+from bokeh.models import DatetimeTickFormatter, ColumnDataSource, BoxSelectTool, BoxAnnotation, Label, LegendItem, Legend, HoverTool
 from bokeh.models import Range1d,DataRange1d
 from bokeh import events
 from bokeh.models.widgets import RadioButtonGroup, Paragraph, Toggle, MultiSelect, Button
@@ -502,6 +502,8 @@ class TimeSeriesWidget():
         tools = [WheelZoomTool(dimensions="width"), PanTool(dimensions="width")]
         if settings["hasAnnotation"] == True:
             tools.append(BoxSelectTool(dimensions="width"))
+        if settings["hasHover"] == True:
+            tools.append(HoverTool(mode='vline'))
         tools.append(ResetTool())
         fig = figure(toolbar_location=None, plot_height=self.height,
                      plot_width=self.width,
@@ -515,6 +517,16 @@ class TimeSeriesWidget():
         toolBarBox.toolbar.logo = None # no bokeh logo
         self.plot = fig
         self.tools = toolBarBox
+
+
+        #make the hover tool
+
+        #hover = self.plot.select(dict(type=HoverTool))
+        #hover.tooltips = [("date", "@__time"), ("$name", "$name"),("value","@$name")]
+        #hover.mode = 'vline'
+        #hover.line_policy = 'nearest'
+
+
 
 
         datetimeFormat = ["%Y-%m-%d %H:%M:%S"]
@@ -684,6 +696,15 @@ class TimeSeriesWidget():
         self.__stop_observer()
         self.logger.debug("self.reset_all()")
         self.server.refresh_settings()
+
+        #clear out the figure
+        self.hasLegend = False # to make sure the __init_figure makes a new legend
+        self.plot.renderers = [] # no more renderers
+        self.data = None #no more data
+        self.lines = {} #no more lines
+
+
+
         self.__init_figure()
         self.__init_observer()
         self.curdoc().clear()
@@ -795,10 +816,18 @@ class TimeSeriesWidget():
         getData = self.server.get_data(variablesRequest,self.rangeStart,self.rangeEnd,settings["bins"]) # for debug
 
         if newVars == []:
-            self.data.data = getData  # also apply the data
+            self.data.data = getData  # also apply the data to magically update
         else:
-            self.logger.debug("new column daat source")
-            self.data=ColumnDataSource(getData) # this will magically update the plot, we replace all data
+            self.logger.debug("new column data source")
+            if self.data is None:
+                #first time
+                self.data = ColumnDataSource(getData)  # this will magically update the plot, we replace all data
+            else:
+                #add more data
+                for variable in getData:
+                    if variable not in self.data.data:
+                        self.data.add(getData[variable],name=variable)
+
 
         timeNode = "__time"
         #now plot var
