@@ -150,6 +150,16 @@ class TimeSeriesWidgetDataServer():
             rData = json.loads(response.content.decode("utf-8"))
             return rData
 
+    def get_selected_variables_sync(self):
+        request = self.path + ".selectedVariables"
+        selectedVars = []
+
+        nodes = self.__web_call("post", "_getleaves", request)
+        selectedVars=[node["browsePath"] for node in nodes]
+        self.selectedVariables=copy.deepcopy(selectedVars)
+        return selectedVars
+
+
     def __get_settings(self):
         """
             get all the settings of the widget and store them also in the self.settings cache
@@ -227,13 +237,18 @@ class TimeSeriesWidgetDataServer():
 
         #now compile info for the observer, we expect a direct pointer
         observ = {}
-        for node in info[0]["children"]:
-            if node["name"] == "observer":
-                observ["targets"]=node["forwardRefs"].copy()
-            if node["name"] == "observerUpdate":
-                observ["observerUpdate"]=node["value"].copy()
-        if observ!={}:
-            self.settings["observer"]=copy.deepcopy(observ)
+        if self.settings["observerEnabled"]==True:
+            for node in info[0]["children"]:
+                if node["name"] == "observerBackground":
+                    observ["observerBackground"]=node["forwardRefs"].copy()
+                if node["name"] == "observerUpdate":
+                    observ["observerUpdate"]=node["value"].copy()
+            if observ!={}:
+                self.settings["observer"]=copy.deepcopy(observ)
+        else:
+            #we dont't put the "observer" key in the settings, so the widget knows, there is not observer
+            pass
+
 
         background={}
         #now grab the info for the backgrounds
@@ -376,6 +391,7 @@ class TimeSeriesWidgetDataServer():
 class TimeSeriesWidget():
     def __init__(self, dataserver):
         self.__init_logger()
+        self.logger.debug("__init TimeSeriesWidget()")
         self.server = dataserver
         self.height = 600
         self.width = 900
@@ -386,6 +402,7 @@ class TimeSeriesWidget():
         self.dispatchList = [] # a list of function to be executed in the bokeh app look context
                                 # this is needed e.g. to assign values to renderes etc
         self.dispatchLock = threading.Lock() # need a lock for the dispatch list
+        self.dispatcherRunning = False # set to true if a function is still running
         self.observerThreadRunning = False
         self.annotationTags = []
 
@@ -421,10 +438,11 @@ class TimeSeriesWidget():
         #self.logger.setLevel(level)
 
     def __stop_observer(self):
-        self.logger.debug("__stop_observer")
+        self.logger.debug("__stop_observer " +str(self.observerThreadRunning))
         if self.observerThreadRunning:
             self.observerThreadRunning = False
             self.observerThread.join()  # wait for finish
+            self.logger.debug("joined")
 
     def __init_observer(self):
         """
@@ -433,19 +451,20 @@ class TimeSeriesWidget():
         """
         settings = self.server.get_settings()
         if "observer" in settings:
-            self.logger.info("must observ %s",settings["observer"]["targets"])
-            #get the initial values
-            self.observed = {}
-            values = self.server.get_values(settings["observer"]["targets"])
-            for k,v in zip(settings["observer"]["targets"],values):
-                self.observed[k]=v
-            #start the observer thread, if it's running, we stop it here
-            self.__stop_observer()
+            self.logger.info("must observ %s",settings["observer"]["observerUpdate"])
+            self.__stop_observer()      #stop it, in case it's running
+            self.observerStatus = {}
 
-            if ("observerEnabled" in settings and settings["observerEnabled"] == False):
+            if (settings["observerEnabled"] != True):
                 self.logger.info("observerthread will not be started")
                 pass # we don't start the thread
             else:
+                if "background" in settings["observer"]["observerUpdate"]:
+                    #we must observ the background
+                    self.observerStatus["background"]=None # initialize with none
+                if "variables" in settings["observer"]["observerUpdate"]:
+                    self.observerStatus["variables"]=None
+
                 self.logger.info("we start the observer thread")
                 self.observerThreadRunning = True
                 self.observerThread = threading.Thread(target=self.__observer_thread_function)
@@ -606,32 +625,56 @@ class TimeSeriesWidget():
     def __observer_thread_function(self):
         """ the periodic thread function"""
         self.logger.info("starting observer thread functino")
+        counter = 0 # for debugging
         while (self.observerThreadRunning):
-            self.__check_observed()
+            counter+=1
+            self.__check_observed(counter)
             time.sleep(0.5)
         self.logger.debug("exit observer thread")
 
-    def __check_observed(self):
+    def __check_observed(self,counter):
         """
             this function is periodically called from a threading.thread
             we check if some data if the backend has changed and if we need to do something on change
         """
+        self.logger.debug("enter __check_observed() "+str(counter))
         try:
-            toObserve = list(self.observed.keys())
-            if not toObserve:
-                print("nothing to observe")
-                return
-            values = self.server.get_values(list(self.observed.keys()))
-            for k, v in zip(self.observed.keys(), values):
-                if self.observed[k]!=v:
-                    self.logger.debug("!trigger on %s",str(k))
-                    self.observed[k]=v
-                    #now we must redraw what is defined
-                    if "background" in self.server.get_settings()["observer"]["observerUpdate"]:
-                        self.logger.debug("observer updates the background")
-                        self.__dispatch_function(self.refresh_backgrounds)
-        except:
-            self.logger.error("problem during __check_observed")
+            #now see what we have to do
+            if "background" in self.observerStatus:
+                #check the background counter for update
+                backgroundCounter = self.server.get_values(self.server.get_settings()["observer"]["observerBackground"])
+                #self.logger.debug("background observer Val"+str(backgroundCounter))
+                if self.observerStatus["background"] != None and self.observerStatus["background"] != backgroundCounter:
+                    #we have a change in the background:
+                    self.logger.debug("observer background changed")
+                    self.__dispatch_function(self.refresh_backgrounds)
+                self.observerStatus["background"] = backgroundCounter
+            if "variables" in self.observerStatus:
+                variables = self.server.get_selected_variables_sync()
+                if self.observerStatus["variables"] != None and self.observerStatus["variables"]!=variables:
+                    #we have a change in the selected variables
+                    self.logger.debug("variables selection observer changed"+str(self.observerStatus["variables"] )+"=>"+str(variables))
+                    self.__dispatch_function(self.refresh_plot)
+                self.observerStatus["variables"] = variables
+
+            #now we also check if we have a legend click which means that we must delete a variable from the selection
+            self.logger.debug("RENDERERS CHECK --------------------------")
+            deleteList=[]
+            for r in self.plot.renderers:
+                if r.name and r.name in self.server.get_variables_selected() and r.visible == False:
+                    #there was a click on the legend to hide the variables
+                    self.logger.debug("=>>>>>>>>>>>>>>>>>DELETE FROM plot:"+r.name)
+                    deleteList.append(r.name)
+            if deleteList != []:
+                #now prepare the new list:
+                newVariablesSelected = [var for var in self.server.get_variables_selected() if var not in deleteList]
+                self.logger.debug("new var list"+str(newVariablesSelected))
+                self.server.set_variables_selected(newVariablesSelected)
+                self.__dispatch_function(self.refresh_plot)
+        except Exception as ex:
+            self.logger.error("problem during __check_observed"+str(ex)+str(sys.exc_info()[0]))
+
+        self.logger.debug("leave __check_observed()")
 
     def reset_all(self):
         """
@@ -702,13 +745,17 @@ class TimeSeriesWidget():
         executelist=[]
         #first copy over the dispatch list, this #todo: this must be done under lock
         with self.dispatchLock:
-            if self.dispatchList:
-                executelist = self.dispatchList.copy()
-                self.dispatchList = []
+            if not self.dispatcherRunning:
+                if self.dispatchList:
+                    executelist = self.dispatchList.copy()
+                    self.dispatchList = []
+                self.dispatcherRunning = True
 
         for fkt in executelist:
             self.logger.info("now executing dispatched %s",str(fkt))
             fkt() # execute the functions which wait for execution and must be executed from this context
+        with self.dispatchLock:
+            self.dispatcherRunning = False # free this to run the next
 
     def __plot_lines(self):
         """ plot the currently selected variables as lines, update the legend """
@@ -728,7 +775,7 @@ class TimeSeriesWidget():
         colors = themes.lineColors
         for idx, variableName in enumerate(self.variables):
             if idx > len(colors) - 1:
-                color = "white"
+                color = "red"
             else:
                 color = colors[idx]
             if variableName != timeNode:
@@ -740,6 +787,7 @@ class TimeSeriesWidget():
             #at the first time, we create the "Legend" object
             self.plot.add_layout(Legend(items=legendItems))
             self.plot.legend.location = "top_right"
+            self.plot.legend.click_policy = "hide"
             self.hasLegend = True
         else:
             self.plot.legend.items = legendItems #replace them
@@ -776,6 +824,9 @@ class TimeSeriesWidget():
             # iterate and turn off all lines to hide
             for key in self.lines:
                 self.lines[key].visible=False
+
+            #also remove the renderers:
+            self.remove_renderes([key for key in self.lines])
 
             #let's try a full replacement
             self.__plot_lines()

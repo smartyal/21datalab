@@ -461,12 +461,20 @@ class Node():
         """
         return self.model
 
+    def get_target_ids(self):
+        """ this function returns the target ids of a referencer as a list, not resolving the leaves"""
+
+        if self.get_properties()["type"] != "referencer":
+            return None
+        return self.get_properties()["forwardRefs"]
+
+
     def get_targets(self):
         """ this function returns the target ids of a referencer as a list, not resolving the leaves"""
         if self.get_properties()["type"] != "referencer":
             return None
         targets = []
-        for nodeid in  self.get_properties()["forwardRefs"]:
+        for nodeid in self.get_properties()["forwardRefs"]:
             targets.append(Node(self.model,nodeid))
         return targets
 
@@ -628,6 +636,64 @@ class Model():
             id = self.__get_id(desc)
             if not id: return None
             return copy.deepcopy(self.model[id])
+
+    def __get_node_with_children(self,id,nodes):
+        """
+            recursive helper for get_branch
+
+        """
+        if self.model[id]["type"] in ["file","column"]:
+            #we do not take these values
+            nodes[id]={k:v for k,v in self.model[id].items() if k!="value"} # copy the whole but leave out the value
+        elif self.model[id]["type"] == "referencer":
+            nodes[id] = self.model[id]
+            #for referencers, we take the direct targets
+            for targetId in self.model[id]["forwardRefs"]:
+                if self.model[targetId]["type"] in ["file", "column"]:
+                    # we do not take these values
+                    target = {k: v for k, v in self.model[id].items() if k != "value"}  # copy the whole but leave out the value
+                else:
+                    target = copy.deepcopy(self.model[targetId])
+                #xxx todo, we might take the wrong backrefs with us, also these target nodes might not have their parent here
+                nodes[targetId]=target
+        else:
+            nodes[id]=self.model[id]
+
+        for child in self.model[id]["children"]:
+            nodes.update(self.__get_node_with_children(child,nodes))
+
+
+        return nodes
+
+
+    def get_branch(self,desc):
+        """
+            get a branch of the model starting from desc including all children excluding:
+                columns
+                files
+            for referencers, we do not follow deep search for leaves, we just include the first level referenced nodes
+            referencers poiting to nodes that are not part of the branch will also be included
+
+
+            Returns:
+                a list of nodedicts that can be used as a full valid model again
+
+        """
+        with self.lock:
+            id = self.__get_id(desc)
+            if not id: return None
+            nodes = {}
+            nodes.update(self.__get_node_with_children(id,nodes))
+        #now we also need all nodes to the desc
+        while self.model[id]["parent"]!="0":
+            #the parent is not invalid so take the parent, we don't make further check for files and otheres
+            parentId =  self.model[id]["parent"]
+            parentNode = copy.deepcopy(self.model[parentId])
+            parentNode["children"]=[id] # the other side-children are not of interest
+            nodes.update({parentId:parentNode})
+            id = self.model[id]["parent"]
+
+        return copy.deepcopy(nodes)
 
 
 
@@ -1843,15 +1909,20 @@ class Model():
             please give only a name without extensions
             the filename must be in ./models
             Args:
-                fileName(string) the name of the file without extension
+                fileName(string) the name of the file without extension, we also accept a dict here: a list of nodes
                 includeData bool: if set to false, the values for tables and files will NOT be loaded
         """
         with self.lock:
             try:
-                f = open("./models/"+fileName+".model.json","r")
-                model = json.loads(f.read())
-                self.model = model
-                f.close()
+                if type(fileName) is str:
+                    f = open("./models/"+fileName+".model.json","r")
+                    model = json.loads(f.read())
+                    self.model = model
+                    f.close()
+                    self.currentModelName = fileName
+                elif type(fileName) is dict:
+                    self.model = copy.deepcopy(fileName) # take over the nodes
+                    self.currentModelName = "fromNodes"
                 #now also load the tables
                 self.globalIdCounter = 0    #reset the counter and recover it further down
                 for nodeId in self.model:
@@ -1864,7 +1935,7 @@ class Model():
                             ids = self.get_leaves_ids(table+".columns")
                             for id, column in zip(ids, data):
                                 self.set_value(id,column)
-                self.currentModelName = fileName
+
                 return True
             except Exception as e:
                 self.logger.error("problem loading"+str(e))

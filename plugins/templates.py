@@ -18,6 +18,7 @@ timeseriesWidget = {
     "type": "widget",
     "children":
     [
+        {"name":"widgetType","type":"const","value":"timeSeriesWidget"},
         {"name":"selectableVariables","type":"referencer"},
         {"name":"selectedVariables","type":"referencer"},
         {"name":"startTime","type":"variable"},
@@ -32,8 +33,8 @@ timeseriesWidget = {
         },
         {"name":"table","type":"referencer"},
         {"name":"lineColors","type": "const", "value": ["blue", "yellow", "brown", "grey", "red"]},
-        {"name":"observer","type":"referencer"},
-        {"name":"observerUpdate","type": "const","value":["line","background","annotations"]},
+        {"name":"observerBackground","type":"referencer"},        # the location of the variable to watch to find out the change of the background (typically a function execution counter)
+        {"name":"observerUpdate","type": "const","value":["variables","background","annotations"]},
         {"name":"observerEnabled","type":"const","value":True},
         {"name":"buttons","type":"folder","children":[
             {"name":"button1","type":"folder"}

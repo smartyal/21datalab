@@ -271,6 +271,26 @@ def test_observer():
     m.execute_function("root.observer")
     m.show()
 
+def test_get_branch():
+    m=model.Model()
+
+    for i in range(3):
+        m.create_template_from_path("root.level1.level2.myfolder"+str(i),m.get_templates()["system.counter"])
+    m.create_node_from_path("root.level1.level2.myfolder2.ref",{"type":"referencer"})
+    m.create_node_from_path("root.const.const")
+    m.add_forward_refs("root.level1.level2.myfolder2.ref",["root.const.const"])
+    m.show()
+    before = json.dumps(m.model)
+    branch = m.get_branch("root.level1.level2.myfolder2")
+    print(json.dumps(branch,indent = 4))
+
+    n=model.Model()
+    n.load(branch,False)
+    n.show()
+    print("------------")
+    m.show()
+    if json.dumps(m.model) == before:
+        print("model untouched")
 
 
 if __name__ == "__main__":
@@ -305,7 +325,8 @@ if __name__ == "__main__":
     #test_move()
     #adjust()
     #test_move2()
-    test_observer()
+    #test_observer()
+    test_get_branch()
 
 
 

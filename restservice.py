@@ -63,6 +63,7 @@ path                    REQUEST BOY               RESPONSE BODY
 POST /_create       [<createnode.json>]         [<node.json>]           ## give a list of new nodes, result contains all the created nodes  
 POST /_delete       [<nodedescriptor>]          [<nodedescriptor>]      ## give list of deleted nodes back
 POST /_getall       -                           [<node.json>]           ## give the whole address space
+POST /_getbranch    <nodedeccripttor>           {node.json}             ## get a part of the model 
 POST /setProperties   [<node.json>]               [<node.json>]         ## the node.json only contains properties to change
 POST /_get          [<nodescriptor>]            [<node.json>]           ## get node including children as json
 POST /_getvalue     [<nodedescriptor>]          [<values>]              ## get a list of values, not available are returned as none
@@ -219,6 +220,12 @@ def all(path):
             logger.debug("execute getall")
             mymodel = m.get_model_for_web()
             response = json.dumps(mymodel,indent=4)# some pretty printing for debug
+            responseCode = 200
+
+        elif (str(path) == "_getbranch") and str(flask.request.method) in ["POST","GET"]:
+            logger.debug("get branch")
+            mymodel = m.get_branch(data)
+            response = json.dumps(mymodel, indent=4)  # some pretty printing for debug
             responseCode = 200
 
         elif (str(path) == "pipelines") and str(flask.request.method) in ["GET"]:
@@ -466,31 +473,36 @@ def all(path):
             try:
                 with pull_session(url=app_url) as session:
                     # customize session here
-                    script = server_session(session_id='12345', url=app_url)
+                    #script = server_session(session_id='12345', url=app_url)
+                    script= server_session(session_id=session.id, url=app_url)
                     #script = server_document('http://localhost:5006/bokeh_web')
                     temp = render_template_string(embed, script=script)
                     return temp
-            except:
-                logger.error("pulling session failed")
+            except Exception as ex:
+                logger.error("pulling session failed"+str(ex)+str(sys.exc_info()[0]))
                 responseCode = 404
 
         elif (str(path)=="dropnodes") and str(flask.request.method) in ["POST"]:
             logger.debug("dropnodes")
             try:
                 nodeIds = data["nodes"]
-                #for now, we assure it's a bokeh-ts widget, as we don't have any other
-                selectNode = m.get_node(data["path"]).get_child("selectedVariables")
-                #also check that the dropped nodes are columns
-                if type(data["nodes"]) is not list:
-                    data["nodes"]=[data["nodes"]]
-                for nodeid in data["nodes"]:
-                    if m.get_node_info(nodeid)["type"] != "column":
-                        responseCode = 404
-                        raise Exception(str(nodeid)+"is not a column")
-                m.add_forward_refs(selectNode.get_id(),nodeIds)
+                #check which type of widget we have to work on
+                if  m.get_node(data["path"]).get_child("widgetType").get_value() == "timeSeriesWidget":
+                    selectNode = m.get_node(data["path"]).get_child("selectedVariables") # pick the referencer from the widget
+                    #also check that the dropped nodes are columns
+                    if type(data["nodes"]) is not list:
+                        data["nodes"]=[data["nodes"]]
+                    newNodesIds = []
+                    for nodeid in data["nodes"]:
+                        if m.get_node_info(nodeid)["type"] != "column":
+                            logger.warning("we ignore this node, is not a colum"+str(nodeid))
+                        else:
+                            newNodesIds.append(nodeid)
+                    logger.debug("now adding new nodes to the widget"+str(newNodesIds))
+                    m.add_forward_refs(selectNode.get_id(),newNodesIds)
                 responseCode = 201
-            except:
-                logger.error("can't add the variables to the widget")
+            except Exception as ex:
+                logger.error("can't add the variables to the widget"+str(ex)+str(sys.exc_info()[0]))
                 responseCode = 404
 
         else:

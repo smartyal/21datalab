@@ -25,7 +25,7 @@ periodicTimer = {
     "name":"periodicTimer",
     "type":"function",
     "functionPointer":"system.periodic_timer",   #filename.functionname
-    "autoReload":True,                                 #set this to true to reload the module on each execution
+    "autoReload":False,                                 #set this to true to reload the module on each execution
     "children":[
         {"name":"target","type":"referencer"},
         {"name":"periodSeconds","type":"const","value":1},
@@ -53,7 +53,7 @@ observer = {
     "name":"observer",
     "type":"function",
     "functionPointer":"system.observer_function",
-    "autoReload":True,
+    "autoReload":False,
     "children":[
         {"name":"subject","type":"referencer"},
         {"name":"properties","type":"const","value":["leaves"]},   #properties to observe ["value","children","leaves"]

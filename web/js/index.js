@@ -152,7 +152,7 @@ function on_first_load () {
             let div = t.closest('.dropnodes')[0];
             let divid = div.id;
             let info = $(div).data('uicomponent');
-            alert("add nodes "+nodes +"to div id"+divid+"with target"+String(info.path));
+            //alert("add nodes "+nodes +"to div id"+divid+"with target"+String(info.path));
             drop_nodes(data.data.nodes,info.path);
         }
 

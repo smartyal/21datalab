@@ -5,6 +5,9 @@ import datetime
 #from model import date2secs
 import pytz
 import aiohttp
+import sys
+sys.path.append('..')
+import model
 
 
 
@@ -141,7 +144,15 @@ def speed_test():
     nodes = post("_getleaves", request)
 
 
+def get_branch():
+    r = requests.post("http://localhost:6001/_getbranch", "root.visualization.workbench")
+    print(json.dumps(r.json(), indent=4))
+    m=model.Model()
+    m.load(r.json(),False)
+    m.show()
+
 
 if __name__ == '__main__':
     #get_forwards()
-    speed_test()
+    #speed_test()
+    get_branch()
