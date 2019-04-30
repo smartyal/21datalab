@@ -478,7 +478,9 @@ class TimeSeriesWidget():
             also hook the callbacks
         """
 
-
+        self.hoverCounter = 0
+        self.newHover = None
+        self.showBackgrounds = False
         layoutControls = []# this will later be applied to layout() function
 
         settings = self.server.get_settings()
@@ -502,32 +504,22 @@ class TimeSeriesWidget():
         tools = [WheelZoomTool(dimensions="width"), PanTool(dimensions="width")]
         if settings["hasAnnotation"] == True:
             tools.append(BoxSelectTool(dimensions="width"))
-        if settings["hasHover"] == True:
-            tools.append(HoverTool(mode='vline'))
         tools.append(ResetTool())
+
         fig = figure(toolbar_location=None, plot_height=self.height,
                      plot_width=self.width,
                      sizing_mode="scale_width",
                      x_axis_type='datetime', y_range=Range1d())
         for tool in tools:
             fig.add_tools(tool) # must assign them to the layout to have the actual use hooked
-        toolBarBox = ToolbarBox()
+        toolBarBox = ToolbarBox()  #we need the strange creation of the tools to avoid the toolbar to disappear after
+                                   # reload of widget, then drawing an annotations (bokeh bug?)
         toolBarBox.toolbar = Toolbar(tools=tools)
         toolBarBox.toolbar_location = "right"
         toolBarBox.toolbar.logo = None # no bokeh logo
         self.plot = fig
         self.tools = toolBarBox
-
-
-        #make the hover tool
-
-        #hover = self.plot.select(dict(type=HoverTool))
-        #hover.tooltips = [("date", "@__time"), ("$name", "$name"),("value","@$name")]
-        #hover.mode = 'vline'
-        #hover.line_policy = 'nearest'
-
-
-
+        self.toolBarBox = toolBarBox
 
         datetimeFormat = ["%Y-%m-%d %H:%M:%S"]
         datetimeTickFormat = DatetimeTickFormatter(
@@ -542,7 +534,7 @@ class TimeSeriesWidget():
             milliseconds=datetimeFormat
         )  # use the same time legend style for all zoom levels
         self.plot.xaxis.formatter = datetimeTickFormat
-        self.__plot_lines()
+        self.refresh_plot()
 
         #hook in the callback of the figure
         self.plot.x_range.on_change('start', self.range_cb)
@@ -631,7 +623,26 @@ class TimeSeriesWidget():
         #            subelem.sizing_mode = "scale_both"
         #    else:
         #        elem.sizing_mode = "scale_both"
-        self.layout = layout([[self.plot,self.tools,layoutControls]])#,sizing_mode="scale_width")
+        if self.tools:
+            self.layout = layout([[self.plot,self.tools,layoutControls]])#,sizing_mode="scale_width")
+        else:
+            self.layout = layout([[self.plot, layoutControls]])  # ,sizing_mode="scale_width")
+
+    def __make_tooltips(self):
+        #make the hover tool
+
+        self.logger.info("MAKE TOOLTIPS"+str(self.hoverCounter))
+        hover = HoverTool(renderers=[])
+        hover.tooltips = [("name","$name"),("time", "@__time{%Y-%m-%d %H:%M:%S.%3N}"),("value","@$name{0.000}")] #show one digit after dot
+        hover.formatters={'__time': 'datetime'}
+        if self.server.get_settings()["hasHover"] in ['vline','hline','mouse']:
+            hover.mode = self.server.get_settings()["hasHover"]
+        hover.line_policy = 'nearest'
+        for k,v in self.lines.items():
+            hover.renderers.append(v)
+        self.plot.add_tools(hover) # for the figure to make the hovering
+        #self.toolBarBox.toolbar.tools.append(hover) #does not work, the tool stays invisible
+
 
 
     def __observer_thread_function(self):
@@ -890,14 +901,12 @@ class TimeSeriesWidget():
         #create the new ones
         self.__plot_lines(newLines)
 
-
-        self.adjust_y_axis_limits()
-
-
         #xxxtodo: make this differential as well
         if self.server.get_settings()["background"]["hasBackground"]:
             self.refresh_backgrounds()
 
+        if self.server.get_settings()["hasHover"] not in [False,None]:
+            self.__make_tooltips() #must be the last in the drawings
 
     def refresh_backgrounds(self):
         """ check if backgrounds must be drawn if not, we just hide them"""
@@ -916,8 +925,6 @@ class TimeSeriesWidget():
         self.server.set_variables_selected(currentSelection)
         self.refresh_plot()
 
-    def test_button_cb(self):
-        self.plot.legend.items = self.legendItems[:-1]
 
     def event_cb(self,event):
         """
