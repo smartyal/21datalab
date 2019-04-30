@@ -18,30 +18,33 @@ timeseriesWidget = {
     "type": "widget",
     "children":
     [
-        {"name":"widgetType","type":"const","value":"timeSeriesWidget"},
-        {"name":"selectableVariables","type":"referencer"},
-        {"name":"selectedVariables","type":"referencer"},
-        {"name":"startTime","type":"variable"},
-        {"name":"endTime","type":"variable"},
-        {"name":"bins","type":"const","value":300},
-        {"name":"hasAnnotation","type":"const","value":True,"children":[
-                 {"name":"annotations","type":"referencer","references":["timeseriesWidget.hasAnnotation.newAnnotations"]},
-                 {"name":"newAnnotations","type":"folder"},
-                 {"name":"tags","type":"const","value":["one","two"]},
-                 {"name":"colors","type":"const","value":["yellow","brown","grey","green","red"]},
+        {"name":"widgetType","type":"const","value":"timeSeriesWidget"},        #the type of the widget, this is used by the backend to choose the right service to run
+        {"name":"selectableVariables","type":"referencer"},                     # the variables to appear in the select box
+        {"name":"selectedVariables","type":"referencer"},                       # the currently selected variables to be shown in the plot
+        {"name":"hasSelection","type":"const","value":True},                    # show/hide the variable selection area selectbox
+        {"name":"startTime","type":"variable"},                                 # the current start time of the view zoom
+        {"name":"endTime","type":"variable"},                                   # the current end time of the view zoom
+        {"name":"bins","type":"const","value":300},                             # the bins (number of points) used on the screen on the x-axis
+        {"name":"hasAnnotation","type":"const","value":True,"children":[        # show/hide annotations and annotations buttons
+                 {"name":"annotations","type":"referencer","references":[       # the locations where to find annotations
+                     "timeseriesWidget.hasAnnotation.newAnnotations"]},
+                 {"name":"newAnnotations","type":"folder"},                     # the folder where annotations created by the users are put
+                 {"name":"tags","type":"const","value":["one","two"]},          # the tags available for annotations
+                 {"name":"colors","type":"const","value":["yellow","brown","grey","green","red"]}, # the colors for annotations
             ]
         },
-        {"name":"table","type":"referencer"},
-        {"name":"lineColors","type": "const", "value": ["blue", "yellow", "brown", "grey", "red"]},
-        {"name":"observerBackground","type":"referencer"},        # the location of the variable to watch to find out the change of the background (typically a function execution counter)
-        {"name":"observerUpdate","type": "const","value":["variables","background","annotations"]},
-        {"name":"observerEnabled","type":"const","value":True},
-        {"name":"buttons","type":"folder","children":[
-            {"name":"button1","type":"folder"}
-        ]},
-        {"name":"hasBackground","type": "const", "value": True},
-        {"name":"background","type":"referencer"},
-        {"name":"backgroundMap","type": "const", "value": {"1": "yellow", "0": "brown", "-1": "blue", "default": "white"}},
-        {"name":"hasReloadButton","type":"const","value":True}
+        {"name":"table","type":"referencer"},                                   # the data table where the time series data resides to be used in this widget (it must be only one)
+        {"name":"lineColors","type": "const", "value": [
+            "blue", "yellow", "brown", "grey", "red"]},                         # colors of the lines
+        {"name":"observerBackground","type":"referencer"},                      # the location of the variable to watch to find out the change of the background (typically a function execution counter)
+        {"name":"observerUpdate","type": "const","value":["variables","background"]}, #content to be watched by the observer, select from ["variables", "background"]
+        {"name":"observerEnabled","type":"const","value":True},                 # enable/disable the observer
+        {"name":"buttons","type":"folder"},                                     # user buttons, place buttons-templates here
+        {"name":"hasBackground","type": "const", "value": True},                # use background coloring or not
+        {"name":"background","type":"referencer"},                              # the location of the background column (must be part of the table as well)
+        {"name":"backgroundMap","type": "const", "value": {
+            "1": "yellow", "0": "brown", "-1": "blue", "default": "white"}},    # color map for the background
+        {"name":"hasReloadButton","type":"const","value":True},                 # show/hide the reload button (show is only for dev-mode)
+        {"name":"hasHover","type":"const","value":False}                        # show/hide the hover-tool
     ]
 }

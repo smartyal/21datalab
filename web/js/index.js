@@ -1,26 +1,4 @@
 
-var pipelines={};
-
-function populate_dropdown(data)
-{
-    try
-    {
-        var pipelinesNode = JSON.parse(data);
-        for (var name in pipelinesNode)
-        {
-            var node = pipelinesNode[name];
-            var url = node.url;
-            //find the url
-            var entry='<option>'+name+'</option>';
-            pipelines[name]=url;
-            $('#pipelineselect').append(entry);
-        }
-    }
-    catch(err)
-    {
-        ;
-    }
-}
 
 function populate_models() {
     let data = http_get("/models");
@@ -28,7 +6,7 @@ function populate_models() {
 
     $('#modelSelect').empty();
 
-    $('#modelSelect').append(`<option value="" disabled selected>Choose a model</option>`)
+    $('#modelSelect').append('<option value="" disabled selected>Choose a model</option>')
 
     for (let model of models) {
         $('#modelSelect').append(`<option>` + model + `</option>`);
@@ -116,11 +94,6 @@ function on_first_load () {
         location.reload();
     });
 
-	//populate piplelines menue
-	var data = http_get("/pipelines");
-	populate_dropdown(data);
-
-
 	//load the bokeh widget for the data scientist to the embed, standard on 5006
 	http_post("http://localhost:6001/embedbokeh",JSON.stringify({"url":"http://localhost:5006/bokeh_web"}),null, function(status,data,params)   {
         if (status==200)
@@ -157,6 +130,11 @@ function on_first_load () {
         }
 
     });
+    $(document).on('dnd_move.vakata', function(e, data) {
+        console.log(e,data);
+        return true;
+    });
+
 
 
 }

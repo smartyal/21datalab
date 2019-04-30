@@ -262,6 +262,8 @@ function tree_generate()
                 console.log('check_callback' + operation + " " + node.id + " " + node_parent.text);
                 if (operation === "move_node")
                 {
+                    console.log("CHECK MOVE")
+                    if (node.id == "1") return true;
                     return false; //false; //moving not allowed currently
                 }
                 return true; //we allow all operations as default
@@ -444,7 +446,7 @@ function tree_generate()
             "inverse":{}
         },
         'dnd' : {
-            "check_while_dragging": false
+            "check_while_dragging": true,
             /*
             "drop_finish" : function () {
                 alert("DROP");
@@ -452,6 +454,7 @@ function tree_generate()
             "drag_finish" : function (data) {
                 alert("DRAG OK");
             },
+            */
             "drag_check" : function (data) {
 
 				return true;
@@ -466,6 +469,7 @@ function tree_generate()
 				};
 			},
             */
+            }
 
         }
 

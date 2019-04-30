@@ -133,8 +133,8 @@
         "children": [],
         "backRefs": [
             "116",
-            "129",
-            "219"
+            "219",
+            "129"
         ],
         "forwardRefs": [],
         "value": "len 9752",
@@ -243,7 +243,10 @@
             "145",
             "146",
             "189",
-            "217"
+            "217",
+            "232",
+            "233",
+            "234"
         ],
         "backRefs": [],
         "forwardRefs": [],
@@ -415,7 +418,7 @@
     },
     "140": {
         "id": "140",
-        "name": "observer",
+        "name": "observerBackground",
         "type": "referencer",
         "parent": "127",
         "children": [],
@@ -424,7 +427,7 @@
             "228"
         ],
         "value": null,
-        "browsePath": "root.visualization.workbench.observer"
+        "browsePath": "root.visualization.workbench.observerBackground"
     },
     "141": {
         "id": "141",
@@ -435,9 +438,8 @@
         "backRefs": [],
         "forwardRefs": [],
         "value": [
-            "line",
-            "background",
-            "annotations"
+            "variables",
+            "background"
         ],
         "browsePath": "root.visualization.workbench.observerUpdate"
     },
@@ -727,7 +729,7 @@
             "140"
         ],
         "forwardRefs": [],
-        "value": 8,
+        "value": 11,
         "browsePath": "root.logisticRegression.control.executionCounter"
     },
     "229": {
@@ -738,7 +740,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.025985,
+        "value": 0.385473,
         "browsePath": "root.logisticRegression.control.lastExecutionDuration"
     },
     "230": {
@@ -749,7 +751,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-04-26T09:29:40.205032",
+        "value": "2019-04-30T11:43:49.502723",
         "browsePath": "root.logisticRegression.control.lastStartTime"
     },
     "231": {
@@ -762,5 +764,38 @@
         "forwardRefs": [],
         "value": "async",
         "browsePath": "root.logisticRegression.control.executionType"
+    },
+    "232": {
+        "id": "232",
+        "name": "widgetType",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget",
+        "browsePath": "root.visualization.workbench.widgetType"
+    },
+    "233": {
+        "id": "233",
+        "name": "hasSelection",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.hasSelection"
+    },
+    "234": {
+        "id": "234",
+        "name": "hasHover",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.workbench.hasHover"
     }
 }

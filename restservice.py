@@ -377,8 +377,8 @@ def all(path):
                         responseCode = 200
                     else:
                         responseData = 400
-                except:
-                    logger.warn("get time series tables failed",sys.exc_info())
+                except Exception as ex:
+                    logger.error("get time series tables failed"+str(ex)+str(sys.exc_info()))
                     responseCode = 404
             else:
                 responseCode = 400 # malformed
