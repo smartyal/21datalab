@@ -8,7 +8,7 @@ var globalIconType = "standard"; // use to ingest html styles for the icons
 function start_periodic_tree_update()
 {
     periodicTreeUpdate = true;
-    window.setTimeout(trigger_tree_update,1000)
+    window.setTimeout(trigger_tree_update, 1000)
 }
 
 function stop_periodicTreeUpdate()
@@ -64,20 +64,20 @@ function tree_initialize()
 
 
 
+    // Not needed anymore handled in index.js
+    // try
+    // {
+    //     // Try to deserialize the settings into an object
+    //     let crtSettings = JSON.parse(localStorage.getItem("21dataSettings"));
+    //     if (crtSettings.autoRefreshTree)
+    //     {
+    //         start_periodic_tree_update();
+    //     }
+    // }
+    // catch
+    // {
 
-    try
-    {
-        // Try to deserialize the settings into an object
-        let crtSettings = JSON.parse(localStorage.getItem("21dataSettings"));
-        if (crtSettings.autoRefreshTree)
-        {
-            start_periodic_tree_update();
-        }
-    }
-    catch
-    {
-
-    }
+    // }
 
 
 
@@ -265,26 +265,14 @@ function tree_generate()
                 }
             ],
             'check_callback' : function(operation, node, node_parent, node_position, more) {
-                console.log('check_callback ' + operation + " " + node.id + " " +node.text+ "parent"+node_parent.text);
+                console.log('check_callback' + operation + " " + node.id + " " + node_parent.text);
                 if (operation === "move_node")
                 {
-                    // if the move has actually taken place, we allow the tree to finish it
-                    if (nodesMoving.vakata == "stopped") return true;
-
-                    //the check callback will be called again when we execute the moving, not only during drop, so the "more" might not
-                    // be there on the second cyll
-                    try
-                    {
-                            console.log("jstree.check_callback/move_node:",node.id,"from",node.parent,"=>",node_parent.id,"pos",node_position,"more",more.ref.text);
-                            nodesMoving.newParent = more.ref.id; //store this info for the later execution of the move
-                    }
-                    catch{}
-
                     // This is called when drag and drop action is performed inside the tree
                     // Handle the logic which determines if the source node can be dragged on the destination
-                    // we always return false here; if we return true then the tree will do moves by itself, so we can't avoid
-                    // movings into referencers etc. the actual move will be done inside the dnd_stop.vakata
-                    return false;
+
+                    // Some sanity check can be made here, in case some nodes are not allowed to be dragged and dropped
+                    return true;
                 }
                 return true; //we allow all operations as default
             }
@@ -474,16 +462,13 @@ function tree_generate()
 
     $('#jstree_div').jstree(myTree);
 
-    /*
     // Register a callback for the node move event inside the tree
     $('#jstree_div').on("move_node.jstree", function(e, data) {
         // This event is triggered when a node is dropped on another node inside the tree
         // and initial check from the check callback returned true
-        // when we are here,the move HAS BEEN performed by the jstree already, so we do is elsewhere:
-        // in the dnd_stop.vakata
-        return false;
+        console.log("TODO: Implement the handling for the node drop inside of the tree");
+
     });
-    */
 }
 
 
@@ -725,19 +710,16 @@ function tree_update_cb(status,data,params)
             $('#jstree_div').jstree(true).rename_node(id, newNode.name);
         }
 
-        try
-        {   //check value changes: values can be complex, so we stringify them to compare
-            if (JSON.stringify(newNode.value) != JSON.stringify(oldNode.value))
-            {
-                var tree = $('#jstree_div').jstree(true);
-                var treeNode = tree.get_node(id);
-                //trigger the redraw of the node, unfortunately all other redraw(), refresh() etc. do not trigger the grid refresh
-                treeNode.data.value = JSON.stringify(newNode.value);
-                treeNode["a_attr"]={"title":JSON.stringify(newNode.value),"class":"show_tooltip"};
-                tree.rename_node(id,newNode.name); // same name as it was, this is to trigger the redraw
-            }
+        //check value changes
+        if (newNode.value != oldNode.value)
+        {
+            var tree = $('#jstree_div').jstree(true);
+            var treeNode = tree.get_node(id);
+            //trigger the redraw of the node, unfortunately all other redraw(), refresh() etc. do not trigger the grid refresh
+            treeNode.data.value = JSON.stringify(newNode.value);
+            treeNode["a_attr"]={"title":JSON.stringify(newNode.value),"class":"show_tooltip"};
+            tree.rename_node(id,newNode.name); // same name as it was, this is to trigger the redraw
         }
-        catch{}
 
         //check type changes
         if (newNode.type != oldNode.type)
@@ -767,7 +749,7 @@ function tree_update_cb(status,data,params)
                 if (newNode.children[index] != oldNode.children[index])
                 {
                     var result = $('#jstree_div').jstree(true).move_node(newNode.children[index],newNode.id,index);
-                    console.log("update_cb():move ",newNode.children[index]," to parent ",newNode.id,"on position ", index,"jstreeresult:",result);
+                    console.log("move ",newNode.children[index]," to parent ",newNode.id,"on position ", index,"jstreeresult:",result);
                 }
             }
             //children have changed
@@ -781,7 +763,7 @@ function tree_update_cb(status,data,params)
             // only create on the js tree, not in the models
             var children = $('#jstree_div').jstree(true).get_node(oldNode.id).children;
             var result = $('#jstree_div').jstree(true).delete_node(children);
-            console.log("update_cb():deleted reference nodes ",children.toString()," from ",oldNode.id,"result ",result);
+            console.log("deleted reference nodes ",children.toString()," from ",oldNode.id,"result ",result);
 
             //now rebuild them
             for (entry in newNode.forwardRefs)
@@ -795,7 +777,7 @@ function tree_update_cb(status,data,params)
                 };
                 var referenceeNode = node_to_tree(referenceeModelNode);
                 var result = $('#jstree_div').jstree(true).create_node(newNode.id,referenceeNode);
-                console.log("update_cb():built reference",referenceeModelNode.name,result);
+                console.log("built reference",referenceeModelNode.name,result);
             }
         }
         treeNodes[id] = newNode; // update the new properties including children, refs etc

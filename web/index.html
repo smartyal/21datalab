@@ -49,7 +49,7 @@
 </head>
 
 <body >
-    <nav class="navbar navbar-expand-lg fixed-left navbar-dark bg-primary text-center">
+    <nav class="navbar navbar-expand-lg fixed-left navbar-dark bg-primary text-center pl-0 pr-0">
         <div class="text-center nav-brand-image mt-2">
             <a href="http://www.21data.io">
                 <img src="img/logo.png" height="30" alt="21data.io" class="rounded">
@@ -117,95 +117,147 @@
         <div class="tab-content">
             <div id="nav-data" class="tab-pane fade">
                 <div class="container mt-4">
-                    <div class="row mb-4">
+                    <!-- <div class="row mb-4">
                         <div class="col">
-                            <div class="row mb-2">
-                                <div class="col">
-                                    <h5>Model</h5>
+                            <div class="card">
+                                <div class="card-header">
+                                    Model
                                 </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-4">Current Model</label>
-                                <label class="col-4">name</label>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-4">Load Model</label>
-                                <div class="col-4">
-                                    <select class="form-control" id="modelSelect"></select>
-                                </div>
-                                <div class="col-4">
-                                    <button class="btn btn-primary" id="loadModelBtn">Load</button>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-4">Save Model</label>
-                                <div class="col-4">
-                                    <input class="form-control" type="text" id="modelNameInput"></input>
-                                </div>
-                                <div class="col-4">
-                                    <button class="btn btn-primary" id="saveModelBtn">Save</button>
+                                <div class="card-body">
+                                    <div class="form-group row">
+                                        <label class="col">Current Model</label>
+                                        <label class="col">name</label>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-4">Load Model</label>
+                                        <div class="col-4">
+                                            <select class="form-control" id="modelSelect"></select>
+                                        </div>
+                                        <div class="col-4">
+                                            <button class="btn btn-primary" id="loadModelBtn">Load</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-4">Save Model</label>
+                                        <div class="col-4">
+                                            <input class="form-control" type="text" id="modelNameInput"></input>
+                                        </div>
+                                        <div class="col-4">
+                                            <button class="btn btn-primary" id="saveModelBtn">Save</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
 
                     <div class="row mb-4">
                         <div class="col">
-                            <div class="row mb-2">
-                                <div class="col">
-                                    <h5>Import data</h5>
+                            <div class="card">
+                                <div class="card-header">
+                                    Import data
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group row">
+                                        <label class="col">Source Database</label>
+                                        <div class="col">
+                                            <select class="form-control">
+                                                <option>elasticsearch</option>
+                                                <option>mongoDB</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-0">
+                                        <label class="col">URL</label>
+                                        <div class="col">
+                                            <input class="form-control" type="text"></input>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-sm btn-primary">Import</button>
                                 </div>
                             </div>
-                            <div class="form-group row">
-                                <label class="col-4">Source Database</label>
-                                <div class="col-4">
-                                    <select class="form-control">
-                                        <option>elasticsearch</option>
-                                        <option>mongoDB</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-4">URL</label>
-                                <div class="col-4">
-                                    <input class="form-control" type="text"></input>
-                                </div>
-                                <div class="col-4">
-                                    <button class="btn btn-primary">Import</button>
-                                </div>
-                            </div>
+
                         </div>
                     </div>
-
-                    <!-- <div class="col">
-                            Load, Save, Create models
-                            <form>
-                                <div class="form-group">
-                                    <label for="modelNameInput">model name</label>
-                                    <input class="form-control" id="modelNameInput"  placeholder="Enter model name">
-                                    <button id ="loadModelbtn" type="button" class="btn btn-primary">load</button>
-                                    <button id ="saveModelbtn" type="button" class="btn btn-primary">save</button>
-                                </div>
-                            </form>
-
-                        </div> -->
 
                 </div>
             </div>
             <div id="nav-modelling" class="tab-pane fade active show">
                 <div class="container-fluid mt-4">
+
+                    <!-- Modal for saving model -->
+                    <div class="modal fade" id="saveModelAsModal" tabindex="-1" role="dialog">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 class="modal-title">Save Model As</h4>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <label>Model Name</label>
+                                        <input type="text" class="form-control" id="saveModelAsModelName">
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal" id ="saveModelAsBtnApply">Save model</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal for loading model -->
+                    <div class="modal fade" id="loadModelModal" tabindex="-1" role="dialog">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 class="modal-title" id="myModalLabel">Load Model</h4>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <label>Model Name</label>
+                                        <select class="form-control" id="modelSelect"></select>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal" id ="loadModelBtnApply">Load model</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-3">
                             <div class="card">
                                 <div class="card-header">
-                                    Modelling
+                                    <span id="currentModelName"></span>
+                                    <div class="card-header-actions">
+                                        <a id="reloadtreebtn" class="card-header-action" data-toggle="tooltip" data-placement="top" title="Reload tree">
+                                            <i class="fas fa-redo-alt"></i>
+                                        </a>
+                                        <a id="updatetreebtn" class="card-header-action" data-toggle="tooltip" data-placement="top" title="Toggle tree auto-refresh">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </a>
+                                        <a id="saveModelBtn" class="card-header-action" data-toggle="tooltip" data-placement="top" title="Save current tree">
+                                            <i class="fas fa-save"></i>
+                                        </a>
+                                        <a id="saveModelAsBtn" class="card-header-action" data-toggle="tooltip" data-placement="top" title="Save current tree as ...">
+                                            <i class="fas fa-file-export"></i>
+                                        </a>
+                                        <a id="loadModelBtn" class="card-header-action" data-toggle="tooltip" data-placement="top" title="Load tree ...">
+                                            <i class="fas fa-folder-open"></i>
+                                        </a>
+                                    </div>
                                 </div>
                                 <div class="card-body">
                                     <div class="pre-scrollable" id="jstreeContainer" style="overflow-y: auto;overflow-x: auto;width:100%">
                                         <div id="jstree_div" class="jstree jstree-default"></div>
                                     </div>
-                                    <button type="button" class="btn btn-light" id="reloadtreebtn">Reload Tree</button>
-                                    <button type="button" class="btn btn-light" id="updatetreebtn">Update Tree</button>
                                 </div>
                             </div>
 
@@ -358,33 +410,26 @@
                 <div class="container mt-4">
                     <div class="row mb-4">
                         <div class="col">
-                            <div class="row mb-2">
-                                <div class="col">
-                                    <h5>Settings</h5>
+                            <div class="card">
+                                <div class="card-header">
+                                    Settings
                                 </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-4">Auto-refresh tree</label>
-                                <div class="col-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="autoRefreshTree" checked>
+                                <div class="card-body">
+                                    <div class="form-group row mb-0">
+                                        <label class="col">Theme</label>
+                                        <div class="col">
+                                            <select class="form-control" id="themeSelect">
+                                                <option>light</option>
+                                                <option>dark</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-4">Theme</label>
-                                <div class="col-4">
-                                    <select class="form-control" id="themeSelect">
-                                        <option>light</option>
-                                        <option>dark</option>
-                                    </select>
+                                <div class="card-footer">
+                                    <button class="btn btn-primary btn-sm" id="applySettings">Apply</button>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <div class="col-4 offset-8">
-                                    <button class="btn btn-primary" id="applySettings">Apply</button>
-                                </div>
-                            </div>
+
                         </div>
                     </div>
                 </div>

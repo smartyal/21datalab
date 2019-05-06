@@ -27,7 +27,7 @@
 }
 
 .jstree-default-dark {
-    background: #222
+    background: #303030
 }
 
 .jstree-default-dark .jstree-anchor {
@@ -36,4 +36,21 @@
 
 .tree-icon-class {
     padding: 2px;
+}
+
+.card-header-actions {
+    display: inline-block;
+    float: right;
+    margin-right: -0.25rem;
+}
+
+.card-header-action {
+    cursor: pointer !important;
+    padding: 0 0.25rem !important;
+    color: var(--dark) !important;
+}
+
+.card-header-action:hover {
+    color: var(--dark-grey) !important;
+    text-decoration: none !important;
 }

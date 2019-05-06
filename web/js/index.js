@@ -1,3 +1,4 @@
+var crtModelName = undefined;
 
 var nodesMoving = {}; //here we store information from the tree plugin about the move, we grab in in the dnd_stop event and execute the move
 
@@ -26,13 +27,95 @@ function populate_settings() {
             let crtSettings = JSON.parse(data);
 
             // Set the appropriate parameters based on the configuration
-            $("#autoRefreshTree").prop('checked', crtSettings.autoRefreshTree);
             $('#themeSelect').val(crtSettings.theme);
         }
         catch {
 
         }
     }
+}
+
+function populate_model_card_header() {
+    try {
+        let info = http_get('/modelinfo');
+        crtModelName = JSON.parse(info).name;
+
+        $('#currentModelName').html(crtModelName);
+    }
+    catch {
+
+    }
+
+	$('#reloadtreebtn').click( function () {
+		tree_initialize();
+    });
+
+    // Handle the tree auto refresh settings
+    let crtTreeAutoRefreshEnabled = localStorage.getItem("21dataTreeAutoRefreshEnabled");
+    // Check the current settings and either start or stop the auto update timer and also set the proper icon
+    if (crtTreeAutoRefreshEnabled == "true") {
+        start_periodic_tree_update();
+        $('#updatetreebtn').html(`<i class="fas fa-sync-alt fa-spin"></i>`);
+    }
+    else {
+        stop_periodicTreeUpdate();
+        $('#updatetreebtn').html(`<i class="fas fa-sync-alt"></i>`);
+    }
+
+	$('#updatetreebtn').click(() => {
+        // Toggle the automatic tree update functionality
+        let crtTreeAutoRefreshEnabled = localStorage.getItem("21dataTreeAutoRefreshEnabled");
+
+        if (crtTreeAutoRefreshEnabled == "true") {
+            localStorage.setItem("21dataTreeAutoRefreshEnabled", false);
+            stop_periodicTreeUpdate();
+            $('#updatetreebtn').html(`<i class="fas fa-sync-alt"></i>`);
+        }
+        else {
+            localStorage.setItem("21dataTreeAutoRefreshEnabled", true);
+            start_periodic_tree_update();
+            $('#updatetreebtn').html(`<i class="fas fa-sync-alt fa-spin"></i>`);
+        }
+    });
+
+    $('#saveModelBtn').click(() => {
+        save_tree(crtModelName);
+    });
+
+    // Show the save as modal
+    $('#saveModelAsBtn').click(() => {
+        $("#saveModelAsModal").modal();
+    })
+
+    $('#saveModelAsBtnApply').click(() => {
+        let modelName = $('#saveModelAsModelName').val();
+
+        // save_tree(modelName);
+        // Trigger a model save and afterwards clear the input for the model name and update the model dropdown
+        http_post('/_save', modelName, null, () => {
+            $('#saveModelAsModelName').val('');
+            populate_models();
+        });
+    });
+
+    populate_models();
+
+    $('#loadModelBtn').click(() => {
+        $('#loadModelModal').modal();
+    });
+
+    $('#loadModelBtnApply').click(() => {
+        let modelName = $('#modelSelect').val();
+
+        if (modelName != "") {
+            load_tree(modelName);
+
+            crtModelName = modelName;
+            $('#currentModelName').html(modelName);
+        }
+    });
+
+    $('[data-toggle="tooltip"]').tooltip()
 }
 
 
@@ -46,47 +129,19 @@ function drop_nodes(nodeIds,path)
 function on_first_load () {
 
 	//register menue calls#
-	$('.selectpicker').selectpicker();
-	$('#reloadtreebtn').click( function () {
-		tree_initialize();
-	});
+    $('.selectpicker').selectpicker();
 
-	$('#updatetreebtn').click( function () {
-		tree_update();
-	});
-
-    populate_models();
-
-	$('#loadModelBtn').click(() => {
-        let modelName = $('#modelSelect').val();
-
-        if (modelName != "") {
-            load_tree(modelName);
-        }
-	});
-
-	$('#saveModelBtn').click(() => {
-        let modelName = $('#modelNameInput').val();
-
-        // save_tree(modelName);
-        // Trigger a model save and afterwards clear the input for the model name and update the model dropdown
-        http_post('/_save', modelName, null, () => {
-            $('#modelNameInput').val('');
-            populate_models();
-        });
-	});
+    populate_model_card_header();
 
 	//tree_initialize();
 
     populate_settings();
 
     $('#applySettings').click(() => {
-        let autoRefreshTree = $('#autoRefreshTree').is(":checked");
         let theme = $('#themeSelect').val();
 
         // Store all the settings into the local storage
         localStorage.setItem("21dataSettings", JSON.stringify({
-            "autoRefreshTree": autoRefreshTree,
             "theme": theme
         }));
 
