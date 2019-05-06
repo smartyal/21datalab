@@ -80,7 +80,8 @@ POST /_createTemplate  <createtemplate.json>     -                       #create
 GET  /models         -                           [string]                #  a list of available models from the /model folder 
 GET  /modelinfo      -                           <modelinfo.json>        # get the current name of the model, path etc
 GEt  /embedbokeh     <urlstring>                 <bokeh session>         # pull a bokeh session for forwarding to a div, url string is eg. http://localhost:5006/bokeh_web
-POST /dropnodes      <dropquery.json>                                         # inform that nodes have been dropped on the frontend on a certain widget
+POST /dropnodes      <dropquery.json>                                    # inform that nodes have been dropped on the frontend on a certain widget
+POST /move           <movequery.json>                                    # moves nodes to new parent or/and create new references
 data:
 
 
@@ -162,6 +163,12 @@ referencequery.json
     "add": [<nodedescriptors>]
     "deleteExisting" : one of True/False # if set, all existings references are deleted
     "remove" :[<nodedescriptors>]
+}
+
+movequery.json
+{
+    "nodes": [<nodedescriptor>]        # nodes to be moved
+    "parent" <nodedescriptor>          # new parent for the nodes
 }
 
 
@@ -438,18 +445,22 @@ def all(path):
                 responseCode = 404
 
         elif (str(path) == "_diffUpdate") and str(flask.request.method) in ["GET","POST"]:
-            logger.debug("get differential update")
+
             if not data or data["handle"] is None:
+
                 #this is for creating a handle
                 curModel = m.get_model_for_web()
                 handle = m.create_differential_handle()
+                logger.debug("get new differential update, return handle:"+handle)
                 res = {"handle":handle,"model":curModel}
                 response = json.dumps(res)
                 responseCode = 200
             else:
                 #we have a handle
+                logger.debug("get differential update with handle:"+data["handle"])
                 res = m.get_differential_update(data["handle"])
                 if res:
+                    logger.debug("return handle:" + res["handle"])
                     response = json.dumps(res)
                     responseCode = 200
                 else:
@@ -508,6 +519,16 @@ def all(path):
             except Exception as ex:
                 logger.error("can't add the variables to the widget"+str(ex)+str(sys.exc_info()[0]))
                 responseCode = 404
+
+        elif (str(path)=="move") and str(flask.request.method) in ["POST"]:
+            logger.debug("move")
+            try:
+                moveResult = m.move(data["nodes"],data["parent"])
+                responseCode = 200
+            except Exception as ex:
+                logger.error("can't move"+str(ex)+str(sys.exc_info()[0]))
+                responseCode = 404
+
 
         else:
             logger.error("CANNOT HANDLE REQUEST, is unknown"+str(path))

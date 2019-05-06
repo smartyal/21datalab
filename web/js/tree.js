@@ -45,7 +45,7 @@ function save_tree(name)
 }
 
 
-function tree_initialize() 
+function tree_initialize()
 {
     $('#jstree_div').jstree();
     tree_generate();
@@ -60,12 +60,12 @@ function tree_initialize()
     {
         return;
     }
-    
-    
-     
 
-    
-    try 
+
+
+
+
+    try
     {
         // Try to deserialize the settings into an object
         let crtSettings = JSON.parse(localStorage.getItem("21dataSettings"));
@@ -76,13 +76,13 @@ function tree_initialize()
     }
     catch
     {
-        
+
     }
-    
-    
-    
-    
-    
+
+
+
+
+
     //start_periodic_tree_update();
 
     $('#jstree_div').on("select_cell.jstree-grid",function (e,data) {
@@ -120,38 +120,44 @@ function tree_initialize()
 
 
 
+
+
+
+
+
+
 }
 
 //https://fontawesome.com/icons
 var treeIconsOld =
 {
     root : "fa fa-folder fa-sm",
-    root : "far fa-folder",
+    root : "far fa-folder tree-icon-class",
     //folder : "fa fa-folder fa-sm",
-    folder : "far fa-folder",
-    variable:"fas fa-random",
-    timeseries : "fas fa-chart-line fa-xs",
-    table :"fas fa-table",
-    annotation: "fas fa-pencil-alt",
-    widget : "fas fa-chart-line fa-xs",
-    column :"fas fa-columns",
-    const :  "fas fa-sliders-h",
-    referencee : "fas fa-link",
-    function : "fa fa-play-circle",
-    referencer : "fas fa-share",
-    reference : "fa fa-link",
-    template : "fa fa-file-text-o",
-    add : "fas fa-plus",
-    delete : "far fa-trash-alt",
-    rename : "fas fa-pencil-alt",
-    changevalue : "fas fa-edit",
-    execute : "fa fa-play",
-    abort : "fa fa-stop",
-    file:"far fa-file-alt",
-    copy:"far fa-copy",
-    paste: "fas fa-paint-roller",
-    toolbox: "fas fa-toolbox",
-    unknown: "fas fa-question-circle"
+    folder : "far fa-folder tree-icon-class",
+    variable:"fas fa-random tree-icon-class",
+    timeseries : "fas fa-chart-line fa-xs tree-icon-class",
+    table :"fas fa-table tree-icon-class",
+    annotation: "fas fa-pencil-alt tree-icon-class",
+    widget : "fas fa-chart-line fa-xs tree-icon-class",
+    column :"fas fa-columns tree-icon-class",
+    const :  "fas fa-sliders-h tree-icon-class",
+    referencee : "fas fa-link tree-icon-class",
+    function : "fa fa-play-circle tree-icon-class",
+    referencer : "fas fa-share tree-icon-class",
+    reference : "fa fa-link tree-icon-class",
+    template : "fa fa-file-text-o tree-icon-class",
+    add : "fas fa-plus tree-icon-class",
+    delete : "far fa-trash-alt tree-icon-class",
+    rename : "fas fa-pencil-alt tree-icon-class",
+    changevalue : "fas fa-edit tree-icon-class",
+    execute : "fa fa-play tree-icon-class",
+    abort : "fa fa-stop tree-icon-class",
+    file:"far fa-file-alt tree-icon-class",
+    copy:"far fa-copy tree-icon-class",
+    paste: "fas fa-paint-roller tree-icon-class",
+    toolbox: "fas fa-toolbox tree-icon-class",
+    unknown: "fas fa-question-circle tree-icon-class"
 };
 
 var treeIconsPath = 'modules/font-awesome/svgs/regular/'
@@ -240,7 +246,7 @@ function tree_generate()
         'plugins':["grid", "contextmenu","types","dnd"],
         'core': {
             "themes" : {
-                "variant" : "small",
+                "variant": "small",
                 "name": themeToUse
             },
             'data': [
@@ -259,12 +265,26 @@ function tree_generate()
                 }
             ],
             'check_callback' : function(operation, node, node_parent, node_position, more) {
-                console.log('check_callback' + operation + " " + node.id + " " + node_parent.text);
+                console.log('check_callback ' + operation + " " + node.id + " " +node.text+ "parent"+node_parent.text);
                 if (operation === "move_node")
                 {
-                    console.log("CHECK MOVE")
-                    if (node.id == "1") return true;
-                    return false; //false; //moving not allowed currently
+                    // if the move has actually taken place, we allow the tree to finish it
+                    if (nodesMoving.vakata == "stopped") return true;
+
+                    //the check callback will be called again when we execute the moving, not only during drop, so the "more" might not
+                    // be there on the second cyll
+                    try
+                    {
+                            console.log("jstree.check_callback/move_node:",node.id,"from",node.parent,"=>",node_parent.id,"pos",node_position,"more",more.ref.text);
+                            nodesMoving.newParent = more.ref.id; //store this info for the later execution of the move
+                    }
+                    catch{}
+
+                    // This is called when drag and drop action is performed inside the tree
+                    // Handle the logic which determines if the source node can be dragged on the destination
+                    // we always return false here; if we return true then the tree will do moves by itself, so we can't avoid
+                    // movings into referencers etc. the actual move will be done inside the dnd_stop.vakata
+                    return false;
                 }
                 return true; //we allow all operations as default
             }
@@ -447,35 +467,23 @@ function tree_generate()
         },
         'dnd' : {
             "check_while_dragging": true,
-            /*
-            "drop_finish" : function () {
-                alert("DROP");
-            },
-            "drag_finish" : function (data) {
-                alert("DRAG OK");
-            },
-            */
-            "drag_check" : function (data) {
-
-				return true;
-				/*if(data.r.attr("id") == "phtml_1") {
-
-					return false;
-				}
-				return {
-					after : false,
-					before : false,
-					inside : true
-				};
-			},
-            */
-            }
-
+            "inside_pos": "last"
         }
 
     }
 
     $('#jstree_div').jstree(myTree);
+
+    /*
+    // Register a callback for the node move event inside the tree
+    $('#jstree_div').on("move_node.jstree", function(e, data) {
+        // This event is triggered when a node is dropped on another node inside the tree
+        // and initial check from the check callback returned true
+        // when we are here,the move HAS BEEN performed by the jstree already, so we do is elsewhere:
+        // in the dnd_stop.vakata
+        return false;
+    });
+    */
 }
 
 
@@ -717,16 +725,19 @@ function tree_update_cb(status,data,params)
             $('#jstree_div').jstree(true).rename_node(id, newNode.name);
         }
 
-        //check value changes
-        if (newNode.value != oldNode.value)
-        {
-            var tree = $('#jstree_div').jstree(true);
-            var treeNode = tree.get_node(id);
-            //trigger the redraw of the node, unfortunately all other redraw(), refresh() etc. do not trigger the grid refresh
-            treeNode.data.value = JSON.stringify(newNode.value);
-            treeNode["a_attr"]={"title":JSON.stringify(newNode.value),"class":"show_tooltip"};
-            tree.rename_node(id,newNode.name); // same name as it was, this is to trigger the redraw
+        try
+        {   //check value changes: values can be complex, so we stringify them to compare
+            if (JSON.stringify(newNode.value) != JSON.stringify(oldNode.value))
+            {
+                var tree = $('#jstree_div').jstree(true);
+                var treeNode = tree.get_node(id);
+                //trigger the redraw of the node, unfortunately all other redraw(), refresh() etc. do not trigger the grid refresh
+                treeNode.data.value = JSON.stringify(newNode.value);
+                treeNode["a_attr"]={"title":JSON.stringify(newNode.value),"class":"show_tooltip"};
+                tree.rename_node(id,newNode.name); // same name as it was, this is to trigger the redraw
+            }
         }
+        catch{}
 
         //check type changes
         if (newNode.type != oldNode.type)
@@ -756,7 +767,7 @@ function tree_update_cb(status,data,params)
                 if (newNode.children[index] != oldNode.children[index])
                 {
                     var result = $('#jstree_div').jstree(true).move_node(newNode.children[index],newNode.id,index);
-                    console.log("move ",newNode.children[index]," to parent ",newNode.id,"on position ", index,"jstreeresult:",result);
+                    console.log("update_cb():move ",newNode.children[index]," to parent ",newNode.id,"on position ", index,"jstreeresult:",result);
                 }
             }
             //children have changed
@@ -770,7 +781,7 @@ function tree_update_cb(status,data,params)
             // only create on the js tree, not in the models
             var children = $('#jstree_div').jstree(true).get_node(oldNode.id).children;
             var result = $('#jstree_div').jstree(true).delete_node(children);
-            console.log("deleted reference nodes ",children.toString()," from ",oldNode.id,"result ",result);
+            console.log("update_cb():deleted reference nodes ",children.toString()," from ",oldNode.id,"result ",result);
 
             //now rebuild them
             for (entry in newNode.forwardRefs)
@@ -784,7 +795,7 @@ function tree_update_cb(status,data,params)
                 };
                 var referenceeNode = node_to_tree(referenceeModelNode);
                 var result = $('#jstree_div').jstree(true).create_node(newNode.id,referenceeNode);
-                console.log("built reference",referenceeModelNode.name,result);
+                console.log("update_cb():built reference",referenceeModelNode.name,result);
             }
         }
         treeNodes[id] = newNode; // update the new properties including children, refs etc

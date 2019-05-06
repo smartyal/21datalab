@@ -11,13 +11,13 @@
 
 @media (min-width: 768px) {
     body {
-        margin-left: 150px;
+        margin-left: 110px;
     }
 }
 
 @media (min-width: 768px) {
     .navbar.fixed-left {
-        width: 150px;
+        width: 110px;
     }
 }
 @media (min-width: 768px) {
@@ -32,4 +32,8 @@
 
 .jstree-default-dark .jstree-anchor {
     color: #ffffff;
+}
+
+.tree-icon-class {
+    padding: 2px;
 }
