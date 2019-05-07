@@ -8,6 +8,7 @@ import dateutil.parser
 import random
 import requests
 from gevent.pywsgi import WSGIServer
+import uuid
 
 from flask import  render_template, render_template_string
 from bokeh.client import pull_session
@@ -40,7 +41,7 @@ logger.addHandler(logfile)
 
 
 
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 
 bokehPath = "http://localhost:5006/"
@@ -482,13 +483,26 @@ def all(path):
 
             app_url = data['url']#'http://localhost:5006/bokeh_web'
             try:
-                with pull_session(url=app_url) as session:
-                    # customize session here
-                    #script = server_session(session_id='12345', url=app_url)
-                    script= server_session(session_id=session.id, url=app_url)
-                    #script = server_document('http://localhost:5006/bokeh_web')
+                if 1==0:
+                    #this is the old style pulling the session, both work only for localhost
+                    with pull_session(url=app_url) as session:
+                        # customize session here
+                        #script = server_session(session_id='12345', url=app_url)
+                        logger.debug("bokeh pull_session done")
+                        script= server_session(session_id=session.id, url=app_url)
+                        logger.debug("bokeh server_session() done")
+                        #script = server_document('http://localhost:5006/bokeh_web')
+                        temp = render_template_string(embed, script=script)
+                        response = temp
+                        responseCode = 200
+                        #return temp
+                else:
+                    script = server_session(session_id=str(uuid.uuid4().hex), url=app_url)
                     temp = render_template_string(embed, script=script)
-                    return temp
+                    response = temp
+                    responseCode = 200
+
+
             except Exception as ex:
                 logger.error("pulling session failed"+str(ex)+str(sys.exc_info()[0]))
                 responseCode = 404
@@ -534,7 +548,7 @@ def all(path):
             logger.error("CANNOT HANDLE REQUEST, is unknown"+str(path))
             responseCode = 404
 
-        logger.info("response len is"+str(len(response))+" rspcodecode"+str(responseCode))
+        logger.info("response on " + str(path) + ": " + str(responseCode) + ", len:" + str(len(response)))
         return flask.Response(response, mimetype="text/html"), responseCode
     except Exception as ex:
         logger.error("general error " +str(sys.exc_info()[0])+".."+str(ex))

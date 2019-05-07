@@ -630,6 +630,13 @@ class TimeSeriesWidget():
 
     def __make_tooltips(self):
         #make the hover tool
+        """
+            if we create a hover tool, it only appears if we plot a line, we nned to hook the hover tool to the figure and the toolbar separately:
+            to the figure to get the hover functionality, there we also need to add all renderers to the hover by hand if we create line plots later on
+            still haven't found a way to make the hover tool itself visible when we add it to the toolbar; it does appear when we draw a new line, but then the tool needs to be re-created
+            we also need to make a new hovertool() every time we add renderers, when the renderers are new ( bokeh bug?)
+        """
+
 
         self.logger.info("MAKE TOOLTIPS"+str(self.hoverCounter))
         hover = HoverTool(renderers=[])

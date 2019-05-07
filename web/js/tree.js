@@ -265,18 +265,29 @@ function tree_generate()
                 }
             ],
             'check_callback' : function(operation, node, node_parent, node_position, more) {
-                console.log('check_callback' + operation + " " + node.id + " " + node_parent.text);
+                console.log('check_callback ' + operation + " " + node.id + " " +node.text+ "parent"+node_parent.text);
                 if (operation === "move_node")
                 {
+                    // if the move has actually taken place, we allow the tree to finish it
+                    if (nodesMoving.vakata == "stopped") return true;
+
+                    //the check callback will be called again when we execute the moving, not only during drop, so the "more" might not
+                    // be there on the second cyll
+                    try
+                    {
+                            console.log("jstree.check_callback/move_node:",node.id,"from",node.parent,"=>",node_parent.id,"pos",node_position,"more",more.ref.text);
+                            nodesMoving.newParent = more.ref.id; //store this info for the later execution of the move
+                    }
+                    catch{}
+
                     // This is called when drag and drop action is performed inside the tree
                     // Handle the logic which determines if the source node can be dragged on the destination
-
-                    // Some sanity check can be made here, in case some nodes are not allowed to be dragged and dropped
-                    return true;
+                    // we always return false here; if we return true then the tree will do moves by itself, so we can't avoid
+                    // movings into referencers etc. the actual move will be done inside the dnd_stop.vakata
+                    return false;
                 }
                 return true; //we allow all operations as default
             }
-
         },
         'grid': {
             columns: [
@@ -462,13 +473,16 @@ function tree_generate()
 
     $('#jstree_div').jstree(myTree);
 
+    /*
     // Register a callback for the node move event inside the tree
     $('#jstree_div').on("move_node.jstree", function(e, data) {
         // This event is triggered when a node is dropped on another node inside the tree
         // and initial check from the check callback returned true
-        console.log("TODO: Implement the handling for the node drop inside of the tree");
-
+        // when we are here,the move HAS BEEN performed by the jstree already, so we do is elsewhere:
+        // in the dnd_stop.vakata
+        return false;
     });
+    */
 }
 
 
@@ -710,16 +724,19 @@ function tree_update_cb(status,data,params)
             $('#jstree_div').jstree(true).rename_node(id, newNode.name);
         }
 
-        //check value changes
-        if (newNode.value != oldNode.value)
-        {
-            var tree = $('#jstree_div').jstree(true);
-            var treeNode = tree.get_node(id);
-            //trigger the redraw of the node, unfortunately all other redraw(), refresh() etc. do not trigger the grid refresh
-            treeNode.data.value = JSON.stringify(newNode.value);
-            treeNode["a_attr"]={"title":JSON.stringify(newNode.value),"class":"show_tooltip"};
-            tree.rename_node(id,newNode.name); // same name as it was, this is to trigger the redraw
+        try
+        {   //check value changes: values can be complex, so we stringify them to compare
+            if (JSON.stringify(newNode.value) != JSON.stringify(oldNode.value))
+            {
+                var tree = $('#jstree_div').jstree(true);
+                var treeNode = tree.get_node(id);
+                //trigger the redraw of the node, unfortunately all other redraw(), refresh() etc. do not trigger the grid refresh
+                treeNode.data.value = JSON.stringify(newNode.value);
+                treeNode["a_attr"]={"title":JSON.stringify(newNode.value),"class":"show_tooltip"};
+                tree.rename_node(id,newNode.name); // same name as it was, this is to trigger the redraw
+            }
         }
+        catch{}
 
         //check type changes
         if (newNode.type != oldNode.type)
