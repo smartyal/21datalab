@@ -9,6 +9,8 @@ import pytz
 import json
 import templates
 import time
+from bs4 import BeautifulSoup
+import re
 
 """
  this file contains test functions and helpers to test the model api and functionality
@@ -293,6 +295,106 @@ def test_get_branch():
         print("model untouched")
 
 
+def copy_paste_test():
+    m=model.Model()
+    m.load("occupancydemo")
+
+    #now make 6 identical widgets plus their functions
+    for i in range(6):
+        widgetPath = "root.visualization.self-service.ui_"+str(i)
+        functionPath = "root.ui_function.logisticRegression_"+str(i)
+        m.create_template_from_path(widgetPath, m.get_templates()["templates.timeseriesWidget"])
+        m.create_template_from_path(widgetPath + ".buttons.button1", m.get_templates()["templates.button"])
+
+        m.create_node_from_path("root.annotations", {"type": "referencer"}) # make a global annotations collector
+
+        m.create_template_from_path(functionPath,m.get_templates()["logisticregression.logisticRegressionTemplate"])
+
+
+
+        #copy the referencer settings for the widget which are the same
+        referencers=[".selectableVariables",".selectedVariables",".table",".background"]
+        for referencer in referencers:
+            nodeinfo = m.get_node_info("root.visualization.workbench"+referencer)
+            m.add_forward_refs(widgetPath+referencer,nodeinfo["forwardRefs"])
+
+        # copy the referencer settings for the functions which are the same
+        referencers = [".input", ".output"]
+        for referencer in referencers:
+            nodeinfo = m.get_node_info("root.logisticRegression" + referencer)
+            m.add_forward_refs(functionPath + referencer, nodeinfo["forwardRefs"])
+
+        #copy values for the widget
+        nodes = [".hasAnnotation.tags",".buttons.button1.caption"]
+        for node in nodes:
+            value = m.get_value("root.visualization.workbench"+node)
+            m.set_value(widgetPath+node,value)
+
+        #copy values for the functions
+        nodes = [".categoryMap"]
+        for node in nodes:
+            value = m.get_value("root.logisticRegression"+node)
+            m.set_value(functionPath+node,value)
+
+
+
+
+        #now adjust the equal but individual settings for the widget to the functions
+        referencers  = {".buttons.button1.onClick":"",".observerBackground":".control.executionCounter"}
+        for referencer,target in referencers.items():
+            m.add_forward_refs(widgetPath+referencer,[functionPath+target])
+
+        #now adjust the equal but individual settings for the functios to the widgets
+        referencers  = {".annotations":".hasAnnotation.newAnnotations"}
+        for referencer,target in referencers.items():
+            m.add_forward_refs(functionPath+referencer,[widgetPath+target])
+
+
+
+    m.save("al6_1")
+
+
+    #also adjust some values
+
+
+def html_test():
+    with open(r"../web/customui/selfservice6.html") as fp:
+        soup = BeautifulSoup(fp,"lxml")
+        divs= soup.find_all(id=re.compile("^ui-component")) # find all divs that have a string starting with "ui-component"
+        for div in divs:
+            uiinfo = json.loads(div.attrs['uiinfo'])
+            print(uiinfo)
+        print("out:\n"+str(soup))
+
+    with open(r"../web/customui/selfservice6.html") as fp:
+        soup = BeautifulSoup(fp,"lxml")
+        print("DIV",soup.find('div'))
+
+def more_components():
+    m = model.Model()
+    m.load("al6_2")
+    m.delete_node("root.deployment.ui.components")
+
+
+    for i in range(6):
+        path = "root.deployment.ui.components.selfservice"+str(i)
+        template = {
+            "name": "selfservice",
+            "type": "folder",
+            "children":
+            [
+                {"name":"enabled","type":"const","value":True},
+                {"name":"model","type":"referencer"},
+                {"name":"settings","type":"const","value":{"port":5010+i}}
+            ]
+        }
+        m.create_template_from_path(path,template)
+        m.add_forward_refs(path+".model",["root.visualization.self-service.ui_"+str(i)])
+    m.save("al6_3")
+
+
+
+
 if __name__ == "__main__":
 
     #t = Timer()
@@ -326,7 +428,10 @@ if __name__ == "__main__":
     #adjust()
     #test_move2()
     #test_observer()
-    test_get_branch()
+    #test_get_branch()
+    #copy_paste_test()
+    #html_test()
+    more_components()
 
 
 

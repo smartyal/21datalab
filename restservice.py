@@ -9,6 +9,8 @@ import random
 import requests
 from gevent.pywsgi import WSGIServer
 import uuid
+from bs4 import BeautifulSoup
+import re
 
 from flask import  render_template, render_template_string
 from bokeh.client import pull_session
@@ -83,6 +85,7 @@ GET  /modelinfo      -                           <modelinfo.json>        # get t
 GEt  /embedbokeh     <urlstring>                 <bokeh session>         # pull a bokeh session for forwarding to a div, url string is eg. http://localhost:5006/bokeh_web
 POST /dropnodes      <dropquery.json>                                    # inform that nodes have been dropped on the frontend on a certain widget
 POST /move           <movequery.json>                                    # moves nodes to new parent or/and create new references
+POST /_getlayout     <layoutquery.json>          [html section]          # query the dynamic content of a layout part of the page
 data:
 
 
@@ -184,6 +187,13 @@ dropquery.json
    "nodes": list of node ids
    "path": the widget on which the nodes have been dropped in the ui
 }
+
+layoutquery.json
+{
+    "layoutNode": nodedescriptor of the node in the layout section 
+}
+
+
 '''
 
 
@@ -541,6 +551,45 @@ def all(path):
                 responseCode = 200
             except Exception as ex:
                 logger.error("can't move"+str(ex)+str(sys.exc_info()[0]))
+                responseCode = 404
+
+        elif (str(path)=="_getlayout") and str(flask.request.method) in ["POST","GET"]:
+            logger.debug("get layout")
+            try:
+                fileName = m.get_value(data['layoutNode'])
+                with open("web/customui/"+fileName) as fp:
+                    soup = BeautifulSoup(fp, "lxml")
+                    divs = soup.find_all(
+                        id=re.compile("^ui-component"))  # find all divs that have a string starting with "ui-component"
+                    for div in divs:
+                        uiinfo = json.loads(div.attrs['uiinfo'])
+                        #now find the widget by looking into the model
+                        widgetType = m.get_node(uiinfo['component']+'.model').get_leaves()[0].get_child("widgetType").get_value()
+                        if widgetType == "timeSeriesWidget":
+                            #this is a bokeh time series widget, so we must do some things here
+                            port = m.get_node(uiinfo['component']+'.settings').get_value()["port"]
+                            script = server_session(session_id=str(uuid.uuid4().hex), url="http://localhost:"+str(port)+"/bokeh_web")
+                            #script = script.encode('utf-8') # due to problem with "&"
+                            scriptHtml = BeautifulSoup(script, "lxml")
+                            scriptTag = scriptHtml.find("script")
+                            scriptSource = scriptTag["src"]
+                            scriptId = scriptTag["id"]
+                            scriptinsert = scriptTag.prettify(formatter=None)
+
+                            scriptTag = soup.new_tag("script",src=scriptSource,id=scriptId)
+                            uiinfo["droppath"]=m.get_node(uiinfo['component']+'.model').get_leaves()[0].get_browse_path()
+                            div.append(scriptTag)
+                            div.attrs['uiinfo']=json.dumps(uiinfo)
+                        else:
+                            logger.error("unsupported widget type"+str(widgetType))
+                        print(uiinfo)
+                response = str(soup)
+                response=response.replace('&amp;','&') # hack: can't get beautifulsoup to suppress the conversion
+                logger.debug(response)
+                responseCode = 200
+
+            except Exception as ex:
+                logger.error("can't get layout" + str(ex) + str(sys.exc_info()[0]))
                 responseCode = 404
 
 

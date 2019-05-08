@@ -126,6 +126,27 @@ function drop_nodes(nodeIds,path)
 }
 
 
+function populate_ui()
+{
+    var divs = $("div[id^='ui-layout']"); // all divs starting with "ui-layout"
+
+    for (var div of divs)
+    {
+
+
+        let divTag = $("#"+div.id)
+        var path = JSON.parse(divTag.attr('uiinfo'))['path'];
+        http_post("_getlayout",JSON.stringify({"layoutNode":path}),div.id, function(status,data,params)   {
+            if (status==200)
+            {
+                var id = params;
+                $('#'+id).html(data);
+            }
+        });
+    }
+}
+
+
 function on_first_load () {
 
 	//register menue calls#
@@ -152,6 +173,7 @@ function on_first_load () {
         location.reload();
     });
 
+	/*
 	//load the bokeh widget for the data scientist to the embed, standard on 5006
 	http_post("http://localhost:6001/embedbokeh",JSON.stringify({"url":"http://localhost:5006/bokeh_web"}),null, function(status,data,params)   {
         if (status==200)
@@ -160,7 +182,10 @@ function on_first_load () {
             $('#embed').data('uicomponent', { "engine":"bokeh","path":"root.visualization.workbench"});
         }
     });
+    */
+    populate_ui();
 
+	/*
 	//load the bokeh widget for the self-service to the self-service, for now on 5007
 	http_post("http://localhost:6001/embedbokeh",JSON.stringify({"url":"http://localhost:5007/bokeh_web"}),null, function(status,data,params)   {
         if (status==200)
@@ -169,6 +194,13 @@ function on_first_load () {
         }
     });
 
+    http_post("_getlayout",JSON.stringify({"layoutNode":"root.deployment.ui.layout.selfservice"}),null, function(status,data,params)   {
+        if (status==200)
+        {
+            $('#ui-layout-self-service').html(data);
+        }
+    });
+    */
 
     tree_initialize();
 
@@ -228,10 +260,10 @@ function on_first_load () {
                 // Node is dropped on an allowed element which supports dropping of nodes
 
                 let div = t.closest('.dropnodes')[0];
-                let info = $(div).data('uicomponent');
-                console.log("drop nodes outside of the tree, model path:"+info.path);
+                let droppath = JSON.parse($("#"+div.id).attr('uiinfo'))['droppath'];
+                console.log("drop nodes outside of the tree, model path:"+droppath);
                 //alert("add nodes "+String(nodes) + "to target"+String(info.path));
-                drop_nodes(data.data.nodes,info.path);
+                drop_nodes(data.data.nodes,droppath);
             }
         }
         else
