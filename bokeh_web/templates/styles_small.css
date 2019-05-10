@@ -1,0 +1,49 @@
+
+
+.button_21 button.bk-bs-btn.bk-bs-btn-default {
+	background-color: #b3b3b3;
+	font-weight: bold;
+	border-style:solid;
+	min-width: 150px;
+}
+
+.group_button_21 label.bk-bs-btn.bk-bs-btn-default {
+	background-color: #b3b3b3;
+	font-weight: bold;
+	border-style:solid;
+}
+
+.group_button_21 label.bk-bs-btn.bk-bs-btn-default.bk-bs-active {
+	background-color: #d9d9d9;
+	font-weight: bold;
+	border-style:solid;
+}
+
+.multi_select_21 select.bk-widget-form-input {
+	background-color: #d9d9d9;
+	width:150px;
+	min-width=50%;
+}
+
+
+.widgetbox_21 {
+    width:100;
+    min-width:50%;
+}
+
+.columns_21{
+    width:100;
+    min-width:50%;
+}
+
+
+.tabs_21 .bk-bs-nav-tabs>li>span {
+    background-color: #b3b3b3;
+}
+
+
+
+.tabs_21 .bk-bs-nav {
+    border-color:#1a1a1a;
+    background-color: #ffffff;
+}
