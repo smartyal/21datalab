@@ -393,6 +393,21 @@ def more_components():
     m.save("al6_3")
 
 
+def width_6():
+    #modify the model for width and height
+    m = model.Model()
+    m.load("kna6_4")
+    for i in range(6):
+        path = "root.visualization.self-service.ui_"+str(i)
+        m.create_node_from_path(path + ".width",{"type":"const","value":600})
+        m.create_node_from_path(path + ".height", {"type": "const", "value": 400})
+        m.create_node_from_path(path + ".controlPosition", {"type": "const", "value": "right"})
+        m.set_value(path + ".hasHover", "mouse")
+        m.set_value(path + ".hasReloadButton",False)
+    m.save('kna6_6')
+
+
+
 
 
 if __name__ == "__main__":
@@ -431,7 +446,8 @@ if __name__ == "__main__":
     #test_get_branch()
     #copy_paste_test()
     #html_test()
-    more_components()
+    #more_components()
+    width_6()
 
 
 

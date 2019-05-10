@@ -1,0 +1,4966 @@
+{
+    "1": {
+        "name": "root",
+        "type": "folder",
+        "children": [
+            "13",
+            "114",
+            "218",
+            "264",
+            "265",
+            "490"
+        ],
+        "parent": "0",
+        "id": "1",
+        "backRefs": [],
+        "forwardRefs": [],
+        "browsePath": "root"
+    },
+    "13": {
+        "id": "13",
+        "name": "visualization",
+        "type": "folder",
+        "parent": "1",
+        "children": [
+            "127",
+            "235"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization"
+    },
+    "114": {
+        "id": "114",
+        "name": "occupancyData",
+        "type": "table",
+        "parent": "1",
+        "children": [
+            "115",
+            "116",
+            "117",
+            "118",
+            "126",
+            "188"
+        ],
+        "backRefs": [
+            "138",
+            "249",
+            "293",
+            "335",
+            "377",
+            "419",
+            "461"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.occupancyData"
+    },
+    "115": {
+        "id": "115",
+        "name": "description",
+        "type": "const",
+        "parent": "114",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "this is the occupancy data table",
+        "browsePath": "root.occupancyData.description"
+    },
+    "116": {
+        "id": "116",
+        "name": "columns",
+        "type": "referencer",
+        "parent": "114",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "119",
+            "120",
+            "121",
+            "122",
+            "123",
+            "124",
+            "125",
+            "126"
+        ],
+        "value": null,
+        "browsePath": "root.occupancyData.columns"
+    },
+    "117": {
+        "id": "117",
+        "name": "timeField",
+        "type": "referencer",
+        "parent": "114",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "119"
+        ],
+        "value": null,
+        "browsePath": "root.occupancyData.timeField"
+    },
+    "118": {
+        "id": "118",
+        "name": "variables",
+        "type": "folder",
+        "parent": "114",
+        "children": [
+            "119",
+            "120",
+            "121",
+            "122",
+            "123",
+            "124",
+            "125"
+        ],
+        "backRefs": [
+            "128",
+            "238",
+            "282",
+            "324",
+            "366",
+            "408",
+            "450"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.occupancyData.variables"
+    },
+    "119": {
+        "id": "119",
+        "name": "date",
+        "type": "column",
+        "parent": "118",
+        "children": [],
+        "backRefs": [
+            "116",
+            "117"
+        ],
+        "forwardRefs": [],
+        "value": "len 9752",
+        "browsePath": "root.occupancyData.variables.date"
+    },
+    "120": {
+        "id": "120",
+        "name": "Temperature",
+        "type": "column",
+        "parent": "118",
+        "children": [],
+        "backRefs": [
+            "116",
+            "219",
+            "129",
+            "239",
+            "267",
+            "283",
+            "309",
+            "325",
+            "351",
+            "367",
+            "393",
+            "409",
+            "435",
+            "451",
+            "477"
+        ],
+        "forwardRefs": [],
+        "value": "len 9752",
+        "browsePath": "root.occupancyData.variables.Temperature"
+    },
+    "121": {
+        "id": "121",
+        "name": "Humidity",
+        "type": "column",
+        "parent": "118",
+        "children": [],
+        "backRefs": [
+            "116"
+        ],
+        "forwardRefs": [],
+        "value": "len 9752",
+        "browsePath": "root.occupancyData.variables.Humidity"
+    },
+    "122": {
+        "id": "122",
+        "name": "Light",
+        "type": "column",
+        "parent": "118",
+        "children": [],
+        "backRefs": [
+            "116",
+            "219",
+            "267",
+            "309",
+            "351",
+            "393",
+            "435",
+            "477"
+        ],
+        "forwardRefs": [],
+        "value": "len 9752",
+        "browsePath": "root.occupancyData.variables.Light"
+    },
+    "123": {
+        "id": "123",
+        "name": "CO2",
+        "type": "column",
+        "parent": "118",
+        "children": [],
+        "backRefs": [
+            "116",
+            "219",
+            "267",
+            "309",
+            "351",
+            "393",
+            "435",
+            "477"
+        ],
+        "forwardRefs": [],
+        "value": "len 9752",
+        "browsePath": "root.occupancyData.variables.CO2"
+    },
+    "124": {
+        "id": "124",
+        "name": "HumidityRatio",
+        "type": "column",
+        "parent": "118",
+        "children": [],
+        "backRefs": [
+            "116"
+        ],
+        "forwardRefs": [],
+        "value": "len 9752",
+        "browsePath": "root.occupancyData.variables.HumidityRatio"
+    },
+    "125": {
+        "id": "125",
+        "name": "Occupancy",
+        "type": "column",
+        "parent": "118",
+        "children": [],
+        "backRefs": [
+            "116"
+        ],
+        "forwardRefs": [],
+        "value": "len 9752",
+        "browsePath": "root.occupancyData.variables.Occupancy"
+    },
+    "126": {
+        "id": "126",
+        "name": "classification",
+        "type": "column",
+        "parent": "114",
+        "children": [],
+        "backRefs": [
+            "116",
+            "145",
+            "220",
+            "256",
+            "268",
+            "300",
+            "310",
+            "342",
+            "352",
+            "384",
+            "394",
+            "426",
+            "436",
+            "468",
+            "478"
+        ],
+        "forwardRefs": [],
+        "value": "len 9752",
+        "browsePath": "root.occupancyData.classification"
+    },
+    "127": {
+        "id": "127",
+        "name": "workbench",
+        "type": "widget",
+        "parent": "13",
+        "children": [
+            "128",
+            "129",
+            "130",
+            "131",
+            "132",
+            "133",
+            "138",
+            "139",
+            "140",
+            "141",
+            "142",
+            "144",
+            "145",
+            "146",
+            "189",
+            "217",
+            "232",
+            "233",
+            "234"
+        ],
+        "backRefs": [
+            "526"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench"
+    },
+    "128": {
+        "id": "128",
+        "name": "selectableVariables",
+        "type": "referencer",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "118"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.selectableVariables"
+    },
+    "129": {
+        "id": "129",
+        "name": "selectedVariables",
+        "type": "referencer",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "120"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.selectedVariables"
+    },
+    "130": {
+        "id": "130",
+        "name": "startTime",
+        "type": "variable",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.startTime"
+    },
+    "131": {
+        "id": "131",
+        "name": "endTime",
+        "type": "variable",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.endTime"
+    },
+    "132": {
+        "id": "132",
+        "name": "bins",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 300,
+        "browsePath": "root.visualization.workbench.bins"
+    },
+    "133": {
+        "id": "133",
+        "name": "hasAnnotation",
+        "type": "const",
+        "parent": "127",
+        "children": [
+            "134",
+            "135",
+            "136",
+            "137"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.hasAnnotation"
+    },
+    "134": {
+        "id": "134",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "133",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "135"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.annotations"
+    },
+    "135": {
+        "id": "135",
+        "name": "newAnnotations",
+        "type": "folder",
+        "parent": "133",
+        "children": [],
+        "backRefs": [
+            "134",
+            "221"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations"
+    },
+    "136": {
+        "id": "136",
+        "name": "tags",
+        "type": "const",
+        "parent": "133",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy",
+            "free"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.tags"
+    },
+    "137": {
+        "id": "137",
+        "name": "colors",
+        "type": "const",
+        "parent": "133",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "yellow",
+            "brown",
+            "grey",
+            "green",
+            "red"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.colors"
+    },
+    "138": {
+        "id": "138",
+        "name": "table",
+        "type": "referencer",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "114"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.table"
+    },
+    "139": {
+        "id": "139",
+        "name": "lineColors",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "blue",
+            "yellow",
+            "brown",
+            "grey",
+            "red"
+        ],
+        "browsePath": "root.visualization.workbench.lineColors"
+    },
+    "140": {
+        "id": "140",
+        "name": "observerBackground",
+        "type": "referencer",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "228"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.observerBackground"
+    },
+    "141": {
+        "id": "141",
+        "name": "observerUpdate",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "variables",
+            "background"
+        ],
+        "browsePath": "root.visualization.workbench.observerUpdate"
+    },
+    "142": {
+        "id": "142",
+        "name": "buttons",
+        "type": "folder",
+        "parent": "127",
+        "children": [
+            "143"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.buttons"
+    },
+    "143": {
+        "id": "143",
+        "name": "button1",
+        "type": "folder",
+        "parent": "142",
+        "children": [
+            "147",
+            "148",
+            "149"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.buttons.button1"
+    },
+    "144": {
+        "id": "144",
+        "name": "hasBackground",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.hasBackground"
+    },
+    "145": {
+        "id": "145",
+        "name": "background",
+        "type": "referencer",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "126"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.background"
+    },
+    "146": {
+        "id": "146",
+        "name": "backgroundMap",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "0": "brown",
+            "1": "yellow",
+            "-1": "blue",
+            "default": "white"
+        },
+        "browsePath": "root.visualization.workbench.backgroundMap"
+    },
+    "147": {
+        "id": "147",
+        "name": "caption",
+        "type": "const",
+        "parent": "143",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "learn",
+        "browsePath": "root.visualization.workbench.buttons.button1.caption"
+    },
+    "148": {
+        "id": "148",
+        "name": "counter",
+        "type": "variable",
+        "parent": "143",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.buttons.button1.counter"
+    },
+    "149": {
+        "id": "149",
+        "name": "onClick",
+        "type": "referencer",
+        "parent": "143",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "218"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.buttons.button1.onClick"
+    },
+    "188": {
+        "id": "188",
+        "name": "acknowledgement",
+        "type": "const",
+        "parent": "114",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "I herewith ackknowledge the original authors of the paper:  Accurate occupancy detection of an office room from light, temperature, humidity and CO2 measurements using statistical learning models.  Luis M. Candanedo, Veronique Feldheim. Energy and Buildings. Volume 112, 15 January 2016, Pages 28-39.  for putting the dataset to the public https://archive.ics.uci.edu/ml/datasets/Occupancy+Detection+ This dataset is used here for demo purposes  More datasets are available at UCI Machine Learning Repository [http://archive.ics.uci.edu/ml]. Irvine, CA: University of California, School of Information and Computer Science.",
+        "browsePath": "root.occupancyData.acknowledgement"
+    },
+    "189": {
+        "id": "189",
+        "name": "hasReloadButton",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.hasReloadButton"
+    },
+    "217": {
+        "id": "217",
+        "name": "observerEnabled",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.observerEnabled"
+    },
+    "218": {
+        "id": "218",
+        "name": "logisticRegression",
+        "type": "function",
+        "parent": "1",
+        "children": [
+            "219",
+            "220",
+            "221",
+            "222",
+            "223"
+        ],
+        "backRefs": [
+            "149"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "functionPointer": "logisticregression.logistic_regression",
+        "autoReload": true,
+        "browsePath": "root.logisticRegression"
+    },
+    "219": {
+        "id": "219",
+        "name": "input",
+        "type": "referencer",
+        "parent": "218",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "120",
+            "122",
+            "123"
+        ],
+        "value": null,
+        "browsePath": "root.logisticRegression.input"
+    },
+    "220": {
+        "id": "220",
+        "name": "output",
+        "type": "referencer",
+        "parent": "218",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "126"
+        ],
+        "value": null,
+        "browsePath": "root.logisticRegression.output"
+    },
+    "221": {
+        "id": "221",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "218",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "135"
+        ],
+        "value": null,
+        "browsePath": "root.logisticRegression.annotations"
+    },
+    "222": {
+        "id": "222",
+        "name": "categoryMap",
+        "type": "const",
+        "parent": "218",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "busy": 1,
+            "free": 0
+        },
+        "browsePath": "root.logisticRegression.categoryMap"
+    },
+    "223": {
+        "id": "223",
+        "name": "control",
+        "type": "folder",
+        "parent": "218",
+        "children": [
+            "224",
+            "225",
+            "226",
+            "227",
+            "228",
+            "229",
+            "230",
+            "231"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.logisticRegression.control"
+    },
+    "224": {
+        "id": "224",
+        "name": "status",
+        "type": "variable",
+        "parent": "223",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "finished",
+        "browsePath": "root.logisticRegression.control.status"
+    },
+    "225": {
+        "id": "225",
+        "name": "progress",
+        "type": "variable",
+        "parent": "223",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.logisticRegression.control.progress"
+    },
+    "226": {
+        "id": "226",
+        "name": "result",
+        "type": "variable",
+        "parent": "223",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "error",
+        "browsePath": "root.logisticRegression.control.result"
+    },
+    "227": {
+        "id": "227",
+        "name": "signal",
+        "type": "variable",
+        "parent": "223",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "nosignal",
+        "browsePath": "root.logisticRegression.control.signal"
+    },
+    "228": {
+        "id": "228",
+        "name": "executionCounter",
+        "type": "variable",
+        "parent": "223",
+        "children": [],
+        "backRefs": [
+            "140"
+        ],
+        "forwardRefs": [],
+        "value": 11,
+        "browsePath": "root.logisticRegression.control.executionCounter"
+    },
+    "229": {
+        "id": "229",
+        "name": "lastExecutionDuration",
+        "type": "variable",
+        "parent": "223",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0.385473,
+        "browsePath": "root.logisticRegression.control.lastExecutionDuration"
+    },
+    "230": {
+        "id": "230",
+        "name": "lastStartTime",
+        "type": "variable",
+        "parent": "223",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2019-04-30T11:43:49.502723",
+        "browsePath": "root.logisticRegression.control.lastStartTime"
+    },
+    "231": {
+        "id": "231",
+        "name": "executionType",
+        "type": "const",
+        "parent": "223",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "async",
+        "browsePath": "root.logisticRegression.control.executionType"
+    },
+    "232": {
+        "id": "232",
+        "name": "widgetType",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget",
+        "browsePath": "root.visualization.workbench.widgetType"
+    },
+    "233": {
+        "id": "233",
+        "name": "hasSelection",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.hasSelection"
+    },
+    "234": {
+        "id": "234",
+        "name": "hasHover",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.workbench.hasHover"
+    },
+    "235": {
+        "id": "235",
+        "name": "self-service",
+        "type": "folder",
+        "parent": "13",
+        "children": [
+            "236",
+            "280",
+            "322",
+            "364",
+            "406",
+            "448"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service"
+    },
+    "236": {
+        "id": "236",
+        "name": "ui_0",
+        "type": "widget",
+        "parent": "235",
+        "children": [
+            "237",
+            "238",
+            "239",
+            "240",
+            "241",
+            "242",
+            "243",
+            "244",
+            "249",
+            "250",
+            "251",
+            "252",
+            "253",
+            "254",
+            "255",
+            "256",
+            "257",
+            "258",
+            "259",
+            "528",
+            "529",
+            "530"
+        ],
+        "backRefs": [
+            "502"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_0"
+    },
+    "237": {
+        "id": "237",
+        "name": "widgetType",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget",
+        "browsePath": "root.visualization.self-service.ui_0.widgetType"
+    },
+    "238": {
+        "id": "238",
+        "name": "selectableVariables",
+        "type": "referencer",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "118"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_0.selectableVariables"
+    },
+    "239": {
+        "id": "239",
+        "name": "selectedVariables",
+        "type": "referencer",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "120"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_0.selectedVariables"
+    },
+    "240": {
+        "id": "240",
+        "name": "hasSelection",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_0.hasSelection"
+    },
+    "241": {
+        "id": "241",
+        "name": "startTime",
+        "type": "variable",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_0.startTime"
+    },
+    "242": {
+        "id": "242",
+        "name": "endTime",
+        "type": "variable",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_0.endTime"
+    },
+    "243": {
+        "id": "243",
+        "name": "bins",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 300,
+        "browsePath": "root.visualization.self-service.ui_0.bins"
+    },
+    "244": {
+        "id": "244",
+        "name": "hasAnnotation",
+        "type": "const",
+        "parent": "236",
+        "children": [
+            "245",
+            "246",
+            "247",
+            "248"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_0.hasAnnotation"
+    },
+    "245": {
+        "id": "245",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "244",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "246"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_0.hasAnnotation.annotations"
+    },
+    "246": {
+        "id": "246",
+        "name": "newAnnotations",
+        "type": "folder",
+        "parent": "244",
+        "children": [],
+        "backRefs": [
+            "245",
+            "269"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_0.hasAnnotation.newAnnotations"
+    },
+    "247": {
+        "id": "247",
+        "name": "tags",
+        "type": "const",
+        "parent": "244",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy",
+            "free"
+        ],
+        "browsePath": "root.visualization.self-service.ui_0.hasAnnotation.tags"
+    },
+    "248": {
+        "id": "248",
+        "name": "colors",
+        "type": "const",
+        "parent": "244",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "yellow",
+            "brown",
+            "grey",
+            "green",
+            "red"
+        ],
+        "browsePath": "root.visualization.self-service.ui_0.hasAnnotation.colors"
+    },
+    "249": {
+        "id": "249",
+        "name": "table",
+        "type": "referencer",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "114"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_0.table"
+    },
+    "250": {
+        "id": "250",
+        "name": "lineColors",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "blue",
+            "yellow",
+            "brown",
+            "grey",
+            "red"
+        ],
+        "browsePath": "root.visualization.self-service.ui_0.lineColors"
+    },
+    "251": {
+        "id": "251",
+        "name": "observerBackground",
+        "type": "referencer",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "276"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_0.observerBackground"
+    },
+    "252": {
+        "id": "252",
+        "name": "observerUpdate",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "variables",
+            "background"
+        ],
+        "browsePath": "root.visualization.self-service.ui_0.observerUpdate"
+    },
+    "253": {
+        "id": "253",
+        "name": "observerEnabled",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_0.observerEnabled"
+    },
+    "254": {
+        "id": "254",
+        "name": "buttons",
+        "type": "folder",
+        "parent": "236",
+        "children": [
+            "260"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_0.buttons"
+    },
+    "255": {
+        "id": "255",
+        "name": "hasBackground",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_0.hasBackground"
+    },
+    "256": {
+        "id": "256",
+        "name": "background",
+        "type": "referencer",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "126"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_0.background"
+    },
+    "257": {
+        "id": "257",
+        "name": "backgroundMap",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "1": "yellow",
+            "0": "brown",
+            "-1": "blue",
+            "default": "white"
+        },
+        "browsePath": "root.visualization.self-service.ui_0.backgroundMap"
+    },
+    "258": {
+        "id": "258",
+        "name": "hasReloadButton",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.self-service.ui_0.hasReloadButton"
+    },
+    "259": {
+        "id": "259",
+        "name": "hasHover",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "mouse",
+        "browsePath": "root.visualization.self-service.ui_0.hasHover"
+    },
+    "260": {
+        "id": "260",
+        "name": "button1",
+        "type": "folder",
+        "parent": "254",
+        "children": [
+            "261",
+            "262",
+            "263"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_0.buttons.button1"
+    },
+    "261": {
+        "id": "261",
+        "name": "caption",
+        "type": "const",
+        "parent": "260",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "learn",
+        "browsePath": "root.visualization.self-service.ui_0.buttons.button1.caption"
+    },
+    "262": {
+        "id": "262",
+        "name": "counter",
+        "type": "variable",
+        "parent": "260",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.self-service.ui_0.buttons.button1.counter"
+    },
+    "263": {
+        "id": "263",
+        "name": "onClick",
+        "type": "referencer",
+        "parent": "260",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "266"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_0.buttons.button1.onClick"
+    },
+    "264": {
+        "id": "264",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "1",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.annotations"
+    },
+    "265": {
+        "id": "265",
+        "name": "ui_function",
+        "type": "folder",
+        "parent": "1",
+        "children": [
+            "266",
+            "308",
+            "350",
+            "392",
+            "434",
+            "476"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.ui_function"
+    },
+    "266": {
+        "id": "266",
+        "name": "logisticRegression_0",
+        "type": "function",
+        "parent": "265",
+        "children": [
+            "267",
+            "268",
+            "269",
+            "270",
+            "271"
+        ],
+        "backRefs": [
+            "263"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "functionPointer": "logisticregression.logistic_regression",
+        "autoReload": true,
+        "browsePath": "root.ui_function.logisticRegression_0"
+    },
+    "267": {
+        "id": "267",
+        "name": "input",
+        "type": "referencer",
+        "parent": "266",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "120",
+            "122",
+            "123"
+        ],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_0.input"
+    },
+    "268": {
+        "id": "268",
+        "name": "output",
+        "type": "referencer",
+        "parent": "266",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "126"
+        ],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_0.output"
+    },
+    "269": {
+        "id": "269",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "266",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "246"
+        ],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_0.annotations"
+    },
+    "270": {
+        "id": "270",
+        "name": "categoryMap",
+        "type": "const",
+        "parent": "266",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "busy": 1,
+            "free": 0
+        },
+        "browsePath": "root.ui_function.logisticRegression_0.categoryMap"
+    },
+    "271": {
+        "id": "271",
+        "name": "control",
+        "type": "folder",
+        "parent": "266",
+        "children": [
+            "272",
+            "273",
+            "274",
+            "275",
+            "276",
+            "277",
+            "278",
+            "279"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_0.control"
+    },
+    "272": {
+        "id": "272",
+        "name": "status",
+        "type": "variable",
+        "parent": "271",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "idle",
+        "browsePath": "root.ui_function.logisticRegression_0.control.status"
+    },
+    "273": {
+        "id": "273",
+        "name": "progress",
+        "type": "variable",
+        "parent": "271",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.ui_function.logisticRegression_0.control.progress"
+    },
+    "274": {
+        "id": "274",
+        "name": "result",
+        "type": "variable",
+        "parent": "271",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "ok",
+        "browsePath": "root.ui_function.logisticRegression_0.control.result"
+    },
+    "275": {
+        "id": "275",
+        "name": "signal",
+        "type": "variable",
+        "parent": "271",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "nosignal",
+        "browsePath": "root.ui_function.logisticRegression_0.control.signal"
+    },
+    "276": {
+        "id": "276",
+        "name": "executionCounter",
+        "type": "variable",
+        "parent": "271",
+        "children": [],
+        "backRefs": [
+            "251"
+        ],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.ui_function.logisticRegression_0.control.executionCounter"
+    },
+    "277": {
+        "id": "277",
+        "name": "lastExecutionDuration",
+        "type": "variable",
+        "parent": "271",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.ui_function.logisticRegression_0.control.lastExecutionDuration"
+    },
+    "278": {
+        "id": "278",
+        "name": "lastStartTime",
+        "type": "variable",
+        "parent": "271",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "not yet",
+        "browsePath": "root.ui_function.logisticRegression_0.control.lastStartTime"
+    },
+    "279": {
+        "id": "279",
+        "name": "executionType",
+        "type": "const",
+        "parent": "271",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "async",
+        "browsePath": "root.ui_function.logisticRegression_0.control.executionType"
+    },
+    "280": {
+        "id": "280",
+        "name": "ui_1",
+        "type": "widget",
+        "parent": "235",
+        "children": [
+            "281",
+            "282",
+            "283",
+            "284",
+            "285",
+            "286",
+            "287",
+            "288",
+            "293",
+            "294",
+            "295",
+            "296",
+            "297",
+            "298",
+            "299",
+            "300",
+            "301",
+            "302",
+            "303",
+            "531",
+            "532",
+            "533"
+        ],
+        "backRefs": [
+            "506"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_1"
+    },
+    "281": {
+        "id": "281",
+        "name": "widgetType",
+        "type": "const",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget",
+        "browsePath": "root.visualization.self-service.ui_1.widgetType"
+    },
+    "282": {
+        "id": "282",
+        "name": "selectableVariables",
+        "type": "referencer",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "118"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_1.selectableVariables"
+    },
+    "283": {
+        "id": "283",
+        "name": "selectedVariables",
+        "type": "referencer",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "120"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_1.selectedVariables"
+    },
+    "284": {
+        "id": "284",
+        "name": "hasSelection",
+        "type": "const",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_1.hasSelection"
+    },
+    "285": {
+        "id": "285",
+        "name": "startTime",
+        "type": "variable",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_1.startTime"
+    },
+    "286": {
+        "id": "286",
+        "name": "endTime",
+        "type": "variable",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_1.endTime"
+    },
+    "287": {
+        "id": "287",
+        "name": "bins",
+        "type": "const",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 300,
+        "browsePath": "root.visualization.self-service.ui_1.bins"
+    },
+    "288": {
+        "id": "288",
+        "name": "hasAnnotation",
+        "type": "const",
+        "parent": "280",
+        "children": [
+            "289",
+            "290",
+            "291",
+            "292"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_1.hasAnnotation"
+    },
+    "289": {
+        "id": "289",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "288",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "290"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_1.hasAnnotation.annotations"
+    },
+    "290": {
+        "id": "290",
+        "name": "newAnnotations",
+        "type": "folder",
+        "parent": "288",
+        "children": [],
+        "backRefs": [
+            "289",
+            "311"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_1.hasAnnotation.newAnnotations"
+    },
+    "291": {
+        "id": "291",
+        "name": "tags",
+        "type": "const",
+        "parent": "288",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy",
+            "free"
+        ],
+        "browsePath": "root.visualization.self-service.ui_1.hasAnnotation.tags"
+    },
+    "292": {
+        "id": "292",
+        "name": "colors",
+        "type": "const",
+        "parent": "288",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "yellow",
+            "brown",
+            "grey",
+            "green",
+            "red"
+        ],
+        "browsePath": "root.visualization.self-service.ui_1.hasAnnotation.colors"
+    },
+    "293": {
+        "id": "293",
+        "name": "table",
+        "type": "referencer",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "114"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_1.table"
+    },
+    "294": {
+        "id": "294",
+        "name": "lineColors",
+        "type": "const",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "blue",
+            "yellow",
+            "brown",
+            "grey",
+            "red"
+        ],
+        "browsePath": "root.visualization.self-service.ui_1.lineColors"
+    },
+    "295": {
+        "id": "295",
+        "name": "observerBackground",
+        "type": "referencer",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "318"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_1.observerBackground"
+    },
+    "296": {
+        "id": "296",
+        "name": "observerUpdate",
+        "type": "const",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "variables",
+            "background"
+        ],
+        "browsePath": "root.visualization.self-service.ui_1.observerUpdate"
+    },
+    "297": {
+        "id": "297",
+        "name": "observerEnabled",
+        "type": "const",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_1.observerEnabled"
+    },
+    "298": {
+        "id": "298",
+        "name": "buttons",
+        "type": "folder",
+        "parent": "280",
+        "children": [
+            "304"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_1.buttons"
+    },
+    "299": {
+        "id": "299",
+        "name": "hasBackground",
+        "type": "const",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_1.hasBackground"
+    },
+    "300": {
+        "id": "300",
+        "name": "background",
+        "type": "referencer",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "126"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_1.background"
+    },
+    "301": {
+        "id": "301",
+        "name": "backgroundMap",
+        "type": "const",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "1": "yellow",
+            "0": "brown",
+            "-1": "blue",
+            "default": "white"
+        },
+        "browsePath": "root.visualization.self-service.ui_1.backgroundMap"
+    },
+    "302": {
+        "id": "302",
+        "name": "hasReloadButton",
+        "type": "const",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.self-service.ui_1.hasReloadButton"
+    },
+    "303": {
+        "id": "303",
+        "name": "hasHover",
+        "type": "const",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "mouse",
+        "browsePath": "root.visualization.self-service.ui_1.hasHover"
+    },
+    "304": {
+        "id": "304",
+        "name": "button1",
+        "type": "folder",
+        "parent": "298",
+        "children": [
+            "305",
+            "306",
+            "307"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_1.buttons.button1"
+    },
+    "305": {
+        "id": "305",
+        "name": "caption",
+        "type": "const",
+        "parent": "304",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "learn",
+        "browsePath": "root.visualization.self-service.ui_1.buttons.button1.caption"
+    },
+    "306": {
+        "id": "306",
+        "name": "counter",
+        "type": "variable",
+        "parent": "304",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.self-service.ui_1.buttons.button1.counter"
+    },
+    "307": {
+        "id": "307",
+        "name": "onClick",
+        "type": "referencer",
+        "parent": "304",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "308"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_1.buttons.button1.onClick"
+    },
+    "308": {
+        "id": "308",
+        "name": "logisticRegression_1",
+        "type": "function",
+        "parent": "265",
+        "children": [
+            "309",
+            "310",
+            "311",
+            "312",
+            "313"
+        ],
+        "backRefs": [
+            "307"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "functionPointer": "logisticregression.logistic_regression",
+        "autoReload": true,
+        "browsePath": "root.ui_function.logisticRegression_1"
+    },
+    "309": {
+        "id": "309",
+        "name": "input",
+        "type": "referencer",
+        "parent": "308",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "120",
+            "122",
+            "123"
+        ],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_1.input"
+    },
+    "310": {
+        "id": "310",
+        "name": "output",
+        "type": "referencer",
+        "parent": "308",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "126"
+        ],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_1.output"
+    },
+    "311": {
+        "id": "311",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "308",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "290"
+        ],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_1.annotations"
+    },
+    "312": {
+        "id": "312",
+        "name": "categoryMap",
+        "type": "const",
+        "parent": "308",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "busy": 1,
+            "free": 0
+        },
+        "browsePath": "root.ui_function.logisticRegression_1.categoryMap"
+    },
+    "313": {
+        "id": "313",
+        "name": "control",
+        "type": "folder",
+        "parent": "308",
+        "children": [
+            "314",
+            "315",
+            "316",
+            "317",
+            "318",
+            "319",
+            "320",
+            "321"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_1.control"
+    },
+    "314": {
+        "id": "314",
+        "name": "status",
+        "type": "variable",
+        "parent": "313",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "idle",
+        "browsePath": "root.ui_function.logisticRegression_1.control.status"
+    },
+    "315": {
+        "id": "315",
+        "name": "progress",
+        "type": "variable",
+        "parent": "313",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.ui_function.logisticRegression_1.control.progress"
+    },
+    "316": {
+        "id": "316",
+        "name": "result",
+        "type": "variable",
+        "parent": "313",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "ok",
+        "browsePath": "root.ui_function.logisticRegression_1.control.result"
+    },
+    "317": {
+        "id": "317",
+        "name": "signal",
+        "type": "variable",
+        "parent": "313",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "nosignal",
+        "browsePath": "root.ui_function.logisticRegression_1.control.signal"
+    },
+    "318": {
+        "id": "318",
+        "name": "executionCounter",
+        "type": "variable",
+        "parent": "313",
+        "children": [],
+        "backRefs": [
+            "295"
+        ],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.ui_function.logisticRegression_1.control.executionCounter"
+    },
+    "319": {
+        "id": "319",
+        "name": "lastExecutionDuration",
+        "type": "variable",
+        "parent": "313",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.ui_function.logisticRegression_1.control.lastExecutionDuration"
+    },
+    "320": {
+        "id": "320",
+        "name": "lastStartTime",
+        "type": "variable",
+        "parent": "313",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "not yet",
+        "browsePath": "root.ui_function.logisticRegression_1.control.lastStartTime"
+    },
+    "321": {
+        "id": "321",
+        "name": "executionType",
+        "type": "const",
+        "parent": "313",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "async",
+        "browsePath": "root.ui_function.logisticRegression_1.control.executionType"
+    },
+    "322": {
+        "id": "322",
+        "name": "ui_2",
+        "type": "widget",
+        "parent": "235",
+        "children": [
+            "323",
+            "324",
+            "325",
+            "326",
+            "327",
+            "328",
+            "329",
+            "330",
+            "335",
+            "336",
+            "337",
+            "338",
+            "339",
+            "340",
+            "341",
+            "342",
+            "343",
+            "344",
+            "345",
+            "534",
+            "535",
+            "536"
+        ],
+        "backRefs": [
+            "510"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_2"
+    },
+    "323": {
+        "id": "323",
+        "name": "widgetType",
+        "type": "const",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget",
+        "browsePath": "root.visualization.self-service.ui_2.widgetType"
+    },
+    "324": {
+        "id": "324",
+        "name": "selectableVariables",
+        "type": "referencer",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "118"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_2.selectableVariables"
+    },
+    "325": {
+        "id": "325",
+        "name": "selectedVariables",
+        "type": "referencer",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "120"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_2.selectedVariables"
+    },
+    "326": {
+        "id": "326",
+        "name": "hasSelection",
+        "type": "const",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_2.hasSelection"
+    },
+    "327": {
+        "id": "327",
+        "name": "startTime",
+        "type": "variable",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_2.startTime"
+    },
+    "328": {
+        "id": "328",
+        "name": "endTime",
+        "type": "variable",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_2.endTime"
+    },
+    "329": {
+        "id": "329",
+        "name": "bins",
+        "type": "const",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 300,
+        "browsePath": "root.visualization.self-service.ui_2.bins"
+    },
+    "330": {
+        "id": "330",
+        "name": "hasAnnotation",
+        "type": "const",
+        "parent": "322",
+        "children": [
+            "331",
+            "332",
+            "333",
+            "334"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_2.hasAnnotation"
+    },
+    "331": {
+        "id": "331",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "330",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "332"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_2.hasAnnotation.annotations"
+    },
+    "332": {
+        "id": "332",
+        "name": "newAnnotations",
+        "type": "folder",
+        "parent": "330",
+        "children": [],
+        "backRefs": [
+            "331",
+            "353"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_2.hasAnnotation.newAnnotations"
+    },
+    "333": {
+        "id": "333",
+        "name": "tags",
+        "type": "const",
+        "parent": "330",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy",
+            "free"
+        ],
+        "browsePath": "root.visualization.self-service.ui_2.hasAnnotation.tags"
+    },
+    "334": {
+        "id": "334",
+        "name": "colors",
+        "type": "const",
+        "parent": "330",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "yellow",
+            "brown",
+            "grey",
+            "green",
+            "red"
+        ],
+        "browsePath": "root.visualization.self-service.ui_2.hasAnnotation.colors"
+    },
+    "335": {
+        "id": "335",
+        "name": "table",
+        "type": "referencer",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "114"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_2.table"
+    },
+    "336": {
+        "id": "336",
+        "name": "lineColors",
+        "type": "const",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "blue",
+            "yellow",
+            "brown",
+            "grey",
+            "red"
+        ],
+        "browsePath": "root.visualization.self-service.ui_2.lineColors"
+    },
+    "337": {
+        "id": "337",
+        "name": "observerBackground",
+        "type": "referencer",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "360"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_2.observerBackground"
+    },
+    "338": {
+        "id": "338",
+        "name": "observerUpdate",
+        "type": "const",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "variables",
+            "background"
+        ],
+        "browsePath": "root.visualization.self-service.ui_2.observerUpdate"
+    },
+    "339": {
+        "id": "339",
+        "name": "observerEnabled",
+        "type": "const",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_2.observerEnabled"
+    },
+    "340": {
+        "id": "340",
+        "name": "buttons",
+        "type": "folder",
+        "parent": "322",
+        "children": [
+            "346"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_2.buttons"
+    },
+    "341": {
+        "id": "341",
+        "name": "hasBackground",
+        "type": "const",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_2.hasBackground"
+    },
+    "342": {
+        "id": "342",
+        "name": "background",
+        "type": "referencer",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "126"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_2.background"
+    },
+    "343": {
+        "id": "343",
+        "name": "backgroundMap",
+        "type": "const",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "1": "yellow",
+            "0": "brown",
+            "-1": "blue",
+            "default": "white"
+        },
+        "browsePath": "root.visualization.self-service.ui_2.backgroundMap"
+    },
+    "344": {
+        "id": "344",
+        "name": "hasReloadButton",
+        "type": "const",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.self-service.ui_2.hasReloadButton"
+    },
+    "345": {
+        "id": "345",
+        "name": "hasHover",
+        "type": "const",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "mouse",
+        "browsePath": "root.visualization.self-service.ui_2.hasHover"
+    },
+    "346": {
+        "id": "346",
+        "name": "button1",
+        "type": "folder",
+        "parent": "340",
+        "children": [
+            "347",
+            "348",
+            "349"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_2.buttons.button1"
+    },
+    "347": {
+        "id": "347",
+        "name": "caption",
+        "type": "const",
+        "parent": "346",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "learn",
+        "browsePath": "root.visualization.self-service.ui_2.buttons.button1.caption"
+    },
+    "348": {
+        "id": "348",
+        "name": "counter",
+        "type": "variable",
+        "parent": "346",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.self-service.ui_2.buttons.button1.counter"
+    },
+    "349": {
+        "id": "349",
+        "name": "onClick",
+        "type": "referencer",
+        "parent": "346",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "350"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_2.buttons.button1.onClick"
+    },
+    "350": {
+        "id": "350",
+        "name": "logisticRegression_2",
+        "type": "function",
+        "parent": "265",
+        "children": [
+            "351",
+            "352",
+            "353",
+            "354",
+            "355"
+        ],
+        "backRefs": [
+            "349"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "functionPointer": "logisticregression.logistic_regression",
+        "autoReload": true,
+        "browsePath": "root.ui_function.logisticRegression_2"
+    },
+    "351": {
+        "id": "351",
+        "name": "input",
+        "type": "referencer",
+        "parent": "350",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "120",
+            "122",
+            "123"
+        ],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_2.input"
+    },
+    "352": {
+        "id": "352",
+        "name": "output",
+        "type": "referencer",
+        "parent": "350",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "126"
+        ],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_2.output"
+    },
+    "353": {
+        "id": "353",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "350",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "332"
+        ],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_2.annotations"
+    },
+    "354": {
+        "id": "354",
+        "name": "categoryMap",
+        "type": "const",
+        "parent": "350",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "busy": 1,
+            "free": 0
+        },
+        "browsePath": "root.ui_function.logisticRegression_2.categoryMap"
+    },
+    "355": {
+        "id": "355",
+        "name": "control",
+        "type": "folder",
+        "parent": "350",
+        "children": [
+            "356",
+            "357",
+            "358",
+            "359",
+            "360",
+            "361",
+            "362",
+            "363"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_2.control"
+    },
+    "356": {
+        "id": "356",
+        "name": "status",
+        "type": "variable",
+        "parent": "355",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "idle",
+        "browsePath": "root.ui_function.logisticRegression_2.control.status"
+    },
+    "357": {
+        "id": "357",
+        "name": "progress",
+        "type": "variable",
+        "parent": "355",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.ui_function.logisticRegression_2.control.progress"
+    },
+    "358": {
+        "id": "358",
+        "name": "result",
+        "type": "variable",
+        "parent": "355",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "ok",
+        "browsePath": "root.ui_function.logisticRegression_2.control.result"
+    },
+    "359": {
+        "id": "359",
+        "name": "signal",
+        "type": "variable",
+        "parent": "355",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "nosignal",
+        "browsePath": "root.ui_function.logisticRegression_2.control.signal"
+    },
+    "360": {
+        "id": "360",
+        "name": "executionCounter",
+        "type": "variable",
+        "parent": "355",
+        "children": [],
+        "backRefs": [
+            "337"
+        ],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.ui_function.logisticRegression_2.control.executionCounter"
+    },
+    "361": {
+        "id": "361",
+        "name": "lastExecutionDuration",
+        "type": "variable",
+        "parent": "355",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.ui_function.logisticRegression_2.control.lastExecutionDuration"
+    },
+    "362": {
+        "id": "362",
+        "name": "lastStartTime",
+        "type": "variable",
+        "parent": "355",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "not yet",
+        "browsePath": "root.ui_function.logisticRegression_2.control.lastStartTime"
+    },
+    "363": {
+        "id": "363",
+        "name": "executionType",
+        "type": "const",
+        "parent": "355",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "async",
+        "browsePath": "root.ui_function.logisticRegression_2.control.executionType"
+    },
+    "364": {
+        "id": "364",
+        "name": "ui_3",
+        "type": "widget",
+        "parent": "235",
+        "children": [
+            "365",
+            "366",
+            "367",
+            "368",
+            "369",
+            "370",
+            "371",
+            "372",
+            "377",
+            "378",
+            "379",
+            "380",
+            "381",
+            "382",
+            "383",
+            "384",
+            "385",
+            "386",
+            "387",
+            "537",
+            "538",
+            "539"
+        ],
+        "backRefs": [
+            "514"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_3"
+    },
+    "365": {
+        "id": "365",
+        "name": "widgetType",
+        "type": "const",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget",
+        "browsePath": "root.visualization.self-service.ui_3.widgetType"
+    },
+    "366": {
+        "id": "366",
+        "name": "selectableVariables",
+        "type": "referencer",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "118"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_3.selectableVariables"
+    },
+    "367": {
+        "id": "367",
+        "name": "selectedVariables",
+        "type": "referencer",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "120"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_3.selectedVariables"
+    },
+    "368": {
+        "id": "368",
+        "name": "hasSelection",
+        "type": "const",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_3.hasSelection"
+    },
+    "369": {
+        "id": "369",
+        "name": "startTime",
+        "type": "variable",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_3.startTime"
+    },
+    "370": {
+        "id": "370",
+        "name": "endTime",
+        "type": "variable",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_3.endTime"
+    },
+    "371": {
+        "id": "371",
+        "name": "bins",
+        "type": "const",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 300,
+        "browsePath": "root.visualization.self-service.ui_3.bins"
+    },
+    "372": {
+        "id": "372",
+        "name": "hasAnnotation",
+        "type": "const",
+        "parent": "364",
+        "children": [
+            "373",
+            "374",
+            "375",
+            "376"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_3.hasAnnotation"
+    },
+    "373": {
+        "id": "373",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "372",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "374"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_3.hasAnnotation.annotations"
+    },
+    "374": {
+        "id": "374",
+        "name": "newAnnotations",
+        "type": "folder",
+        "parent": "372",
+        "children": [],
+        "backRefs": [
+            "373",
+            "395"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_3.hasAnnotation.newAnnotations"
+    },
+    "375": {
+        "id": "375",
+        "name": "tags",
+        "type": "const",
+        "parent": "372",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy",
+            "free"
+        ],
+        "browsePath": "root.visualization.self-service.ui_3.hasAnnotation.tags"
+    },
+    "376": {
+        "id": "376",
+        "name": "colors",
+        "type": "const",
+        "parent": "372",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "yellow",
+            "brown",
+            "grey",
+            "green",
+            "red"
+        ],
+        "browsePath": "root.visualization.self-service.ui_3.hasAnnotation.colors"
+    },
+    "377": {
+        "id": "377",
+        "name": "table",
+        "type": "referencer",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "114"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_3.table"
+    },
+    "378": {
+        "id": "378",
+        "name": "lineColors",
+        "type": "const",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "blue",
+            "yellow",
+            "brown",
+            "grey",
+            "red"
+        ],
+        "browsePath": "root.visualization.self-service.ui_3.lineColors"
+    },
+    "379": {
+        "id": "379",
+        "name": "observerBackground",
+        "type": "referencer",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "402"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_3.observerBackground"
+    },
+    "380": {
+        "id": "380",
+        "name": "observerUpdate",
+        "type": "const",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "variables",
+            "background"
+        ],
+        "browsePath": "root.visualization.self-service.ui_3.observerUpdate"
+    },
+    "381": {
+        "id": "381",
+        "name": "observerEnabled",
+        "type": "const",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_3.observerEnabled"
+    },
+    "382": {
+        "id": "382",
+        "name": "buttons",
+        "type": "folder",
+        "parent": "364",
+        "children": [
+            "388"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_3.buttons"
+    },
+    "383": {
+        "id": "383",
+        "name": "hasBackground",
+        "type": "const",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_3.hasBackground"
+    },
+    "384": {
+        "id": "384",
+        "name": "background",
+        "type": "referencer",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "126"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_3.background"
+    },
+    "385": {
+        "id": "385",
+        "name": "backgroundMap",
+        "type": "const",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "1": "yellow",
+            "0": "brown",
+            "-1": "blue",
+            "default": "white"
+        },
+        "browsePath": "root.visualization.self-service.ui_3.backgroundMap"
+    },
+    "386": {
+        "id": "386",
+        "name": "hasReloadButton",
+        "type": "const",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.self-service.ui_3.hasReloadButton"
+    },
+    "387": {
+        "id": "387",
+        "name": "hasHover",
+        "type": "const",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "mouse",
+        "browsePath": "root.visualization.self-service.ui_3.hasHover"
+    },
+    "388": {
+        "id": "388",
+        "name": "button1",
+        "type": "folder",
+        "parent": "382",
+        "children": [
+            "389",
+            "390",
+            "391"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_3.buttons.button1"
+    },
+    "389": {
+        "id": "389",
+        "name": "caption",
+        "type": "const",
+        "parent": "388",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "learn",
+        "browsePath": "root.visualization.self-service.ui_3.buttons.button1.caption"
+    },
+    "390": {
+        "id": "390",
+        "name": "counter",
+        "type": "variable",
+        "parent": "388",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.self-service.ui_3.buttons.button1.counter"
+    },
+    "391": {
+        "id": "391",
+        "name": "onClick",
+        "type": "referencer",
+        "parent": "388",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "392"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_3.buttons.button1.onClick"
+    },
+    "392": {
+        "id": "392",
+        "name": "logisticRegression_3",
+        "type": "function",
+        "parent": "265",
+        "children": [
+            "393",
+            "394",
+            "395",
+            "396",
+            "397"
+        ],
+        "backRefs": [
+            "391"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "functionPointer": "logisticregression.logistic_regression",
+        "autoReload": true,
+        "browsePath": "root.ui_function.logisticRegression_3"
+    },
+    "393": {
+        "id": "393",
+        "name": "input",
+        "type": "referencer",
+        "parent": "392",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "120",
+            "122",
+            "123"
+        ],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_3.input"
+    },
+    "394": {
+        "id": "394",
+        "name": "output",
+        "type": "referencer",
+        "parent": "392",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "126"
+        ],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_3.output"
+    },
+    "395": {
+        "id": "395",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "392",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "374"
+        ],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_3.annotations"
+    },
+    "396": {
+        "id": "396",
+        "name": "categoryMap",
+        "type": "const",
+        "parent": "392",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "busy": 1,
+            "free": 0
+        },
+        "browsePath": "root.ui_function.logisticRegression_3.categoryMap"
+    },
+    "397": {
+        "id": "397",
+        "name": "control",
+        "type": "folder",
+        "parent": "392",
+        "children": [
+            "398",
+            "399",
+            "400",
+            "401",
+            "402",
+            "403",
+            "404",
+            "405"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_3.control"
+    },
+    "398": {
+        "id": "398",
+        "name": "status",
+        "type": "variable",
+        "parent": "397",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "idle",
+        "browsePath": "root.ui_function.logisticRegression_3.control.status"
+    },
+    "399": {
+        "id": "399",
+        "name": "progress",
+        "type": "variable",
+        "parent": "397",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.ui_function.logisticRegression_3.control.progress"
+    },
+    "400": {
+        "id": "400",
+        "name": "result",
+        "type": "variable",
+        "parent": "397",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "ok",
+        "browsePath": "root.ui_function.logisticRegression_3.control.result"
+    },
+    "401": {
+        "id": "401",
+        "name": "signal",
+        "type": "variable",
+        "parent": "397",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "nosignal",
+        "browsePath": "root.ui_function.logisticRegression_3.control.signal"
+    },
+    "402": {
+        "id": "402",
+        "name": "executionCounter",
+        "type": "variable",
+        "parent": "397",
+        "children": [],
+        "backRefs": [
+            "379"
+        ],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.ui_function.logisticRegression_3.control.executionCounter"
+    },
+    "403": {
+        "id": "403",
+        "name": "lastExecutionDuration",
+        "type": "variable",
+        "parent": "397",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.ui_function.logisticRegression_3.control.lastExecutionDuration"
+    },
+    "404": {
+        "id": "404",
+        "name": "lastStartTime",
+        "type": "variable",
+        "parent": "397",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "not yet",
+        "browsePath": "root.ui_function.logisticRegression_3.control.lastStartTime"
+    },
+    "405": {
+        "id": "405",
+        "name": "executionType",
+        "type": "const",
+        "parent": "397",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "async",
+        "browsePath": "root.ui_function.logisticRegression_3.control.executionType"
+    },
+    "406": {
+        "id": "406",
+        "name": "ui_4",
+        "type": "widget",
+        "parent": "235",
+        "children": [
+            "407",
+            "408",
+            "409",
+            "410",
+            "411",
+            "412",
+            "413",
+            "414",
+            "419",
+            "420",
+            "421",
+            "422",
+            "423",
+            "424",
+            "425",
+            "426",
+            "427",
+            "428",
+            "429",
+            "540",
+            "541",
+            "542"
+        ],
+        "backRefs": [
+            "518"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_4"
+    },
+    "407": {
+        "id": "407",
+        "name": "widgetType",
+        "type": "const",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget",
+        "browsePath": "root.visualization.self-service.ui_4.widgetType"
+    },
+    "408": {
+        "id": "408",
+        "name": "selectableVariables",
+        "type": "referencer",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "118"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_4.selectableVariables"
+    },
+    "409": {
+        "id": "409",
+        "name": "selectedVariables",
+        "type": "referencer",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "120"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_4.selectedVariables"
+    },
+    "410": {
+        "id": "410",
+        "name": "hasSelection",
+        "type": "const",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_4.hasSelection"
+    },
+    "411": {
+        "id": "411",
+        "name": "startTime",
+        "type": "variable",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_4.startTime"
+    },
+    "412": {
+        "id": "412",
+        "name": "endTime",
+        "type": "variable",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_4.endTime"
+    },
+    "413": {
+        "id": "413",
+        "name": "bins",
+        "type": "const",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 300,
+        "browsePath": "root.visualization.self-service.ui_4.bins"
+    },
+    "414": {
+        "id": "414",
+        "name": "hasAnnotation",
+        "type": "const",
+        "parent": "406",
+        "children": [
+            "415",
+            "416",
+            "417",
+            "418"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_4.hasAnnotation"
+    },
+    "415": {
+        "id": "415",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "414",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "416"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_4.hasAnnotation.annotations"
+    },
+    "416": {
+        "id": "416",
+        "name": "newAnnotations",
+        "type": "folder",
+        "parent": "414",
+        "children": [],
+        "backRefs": [
+            "415",
+            "437"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_4.hasAnnotation.newAnnotations"
+    },
+    "417": {
+        "id": "417",
+        "name": "tags",
+        "type": "const",
+        "parent": "414",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy",
+            "free"
+        ],
+        "browsePath": "root.visualization.self-service.ui_4.hasAnnotation.tags"
+    },
+    "418": {
+        "id": "418",
+        "name": "colors",
+        "type": "const",
+        "parent": "414",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "yellow",
+            "brown",
+            "grey",
+            "green",
+            "red"
+        ],
+        "browsePath": "root.visualization.self-service.ui_4.hasAnnotation.colors"
+    },
+    "419": {
+        "id": "419",
+        "name": "table",
+        "type": "referencer",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "114"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_4.table"
+    },
+    "420": {
+        "id": "420",
+        "name": "lineColors",
+        "type": "const",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "blue",
+            "yellow",
+            "brown",
+            "grey",
+            "red"
+        ],
+        "browsePath": "root.visualization.self-service.ui_4.lineColors"
+    },
+    "421": {
+        "id": "421",
+        "name": "observerBackground",
+        "type": "referencer",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "444"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_4.observerBackground"
+    },
+    "422": {
+        "id": "422",
+        "name": "observerUpdate",
+        "type": "const",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "variables",
+            "background"
+        ],
+        "browsePath": "root.visualization.self-service.ui_4.observerUpdate"
+    },
+    "423": {
+        "id": "423",
+        "name": "observerEnabled",
+        "type": "const",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_4.observerEnabled"
+    },
+    "424": {
+        "id": "424",
+        "name": "buttons",
+        "type": "folder",
+        "parent": "406",
+        "children": [
+            "430"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_4.buttons"
+    },
+    "425": {
+        "id": "425",
+        "name": "hasBackground",
+        "type": "const",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_4.hasBackground"
+    },
+    "426": {
+        "id": "426",
+        "name": "background",
+        "type": "referencer",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "126"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_4.background"
+    },
+    "427": {
+        "id": "427",
+        "name": "backgroundMap",
+        "type": "const",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "1": "yellow",
+            "0": "brown",
+            "-1": "blue",
+            "default": "white"
+        },
+        "browsePath": "root.visualization.self-service.ui_4.backgroundMap"
+    },
+    "428": {
+        "id": "428",
+        "name": "hasReloadButton",
+        "type": "const",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.self-service.ui_4.hasReloadButton"
+    },
+    "429": {
+        "id": "429",
+        "name": "hasHover",
+        "type": "const",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "mouse",
+        "browsePath": "root.visualization.self-service.ui_4.hasHover"
+    },
+    "430": {
+        "id": "430",
+        "name": "button1",
+        "type": "folder",
+        "parent": "424",
+        "children": [
+            "431",
+            "432",
+            "433"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_4.buttons.button1"
+    },
+    "431": {
+        "id": "431",
+        "name": "caption",
+        "type": "const",
+        "parent": "430",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "learn",
+        "browsePath": "root.visualization.self-service.ui_4.buttons.button1.caption"
+    },
+    "432": {
+        "id": "432",
+        "name": "counter",
+        "type": "variable",
+        "parent": "430",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.self-service.ui_4.buttons.button1.counter"
+    },
+    "433": {
+        "id": "433",
+        "name": "onClick",
+        "type": "referencer",
+        "parent": "430",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "434"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_4.buttons.button1.onClick"
+    },
+    "434": {
+        "id": "434",
+        "name": "logisticRegression_4",
+        "type": "function",
+        "parent": "265",
+        "children": [
+            "435",
+            "436",
+            "437",
+            "438",
+            "439"
+        ],
+        "backRefs": [
+            "433"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "functionPointer": "logisticregression.logistic_regression",
+        "autoReload": true,
+        "browsePath": "root.ui_function.logisticRegression_4"
+    },
+    "435": {
+        "id": "435",
+        "name": "input",
+        "type": "referencer",
+        "parent": "434",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "120",
+            "122",
+            "123"
+        ],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_4.input"
+    },
+    "436": {
+        "id": "436",
+        "name": "output",
+        "type": "referencer",
+        "parent": "434",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "126"
+        ],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_4.output"
+    },
+    "437": {
+        "id": "437",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "434",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "416"
+        ],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_4.annotations"
+    },
+    "438": {
+        "id": "438",
+        "name": "categoryMap",
+        "type": "const",
+        "parent": "434",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "busy": 1,
+            "free": 0
+        },
+        "browsePath": "root.ui_function.logisticRegression_4.categoryMap"
+    },
+    "439": {
+        "id": "439",
+        "name": "control",
+        "type": "folder",
+        "parent": "434",
+        "children": [
+            "440",
+            "441",
+            "442",
+            "443",
+            "444",
+            "445",
+            "446",
+            "447"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_4.control"
+    },
+    "440": {
+        "id": "440",
+        "name": "status",
+        "type": "variable",
+        "parent": "439",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "idle",
+        "browsePath": "root.ui_function.logisticRegression_4.control.status"
+    },
+    "441": {
+        "id": "441",
+        "name": "progress",
+        "type": "variable",
+        "parent": "439",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.ui_function.logisticRegression_4.control.progress"
+    },
+    "442": {
+        "id": "442",
+        "name": "result",
+        "type": "variable",
+        "parent": "439",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "ok",
+        "browsePath": "root.ui_function.logisticRegression_4.control.result"
+    },
+    "443": {
+        "id": "443",
+        "name": "signal",
+        "type": "variable",
+        "parent": "439",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "nosignal",
+        "browsePath": "root.ui_function.logisticRegression_4.control.signal"
+    },
+    "444": {
+        "id": "444",
+        "name": "executionCounter",
+        "type": "variable",
+        "parent": "439",
+        "children": [],
+        "backRefs": [
+            "421"
+        ],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.ui_function.logisticRegression_4.control.executionCounter"
+    },
+    "445": {
+        "id": "445",
+        "name": "lastExecutionDuration",
+        "type": "variable",
+        "parent": "439",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.ui_function.logisticRegression_4.control.lastExecutionDuration"
+    },
+    "446": {
+        "id": "446",
+        "name": "lastStartTime",
+        "type": "variable",
+        "parent": "439",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "not yet",
+        "browsePath": "root.ui_function.logisticRegression_4.control.lastStartTime"
+    },
+    "447": {
+        "id": "447",
+        "name": "executionType",
+        "type": "const",
+        "parent": "439",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "async",
+        "browsePath": "root.ui_function.logisticRegression_4.control.executionType"
+    },
+    "448": {
+        "id": "448",
+        "name": "ui_5",
+        "type": "widget",
+        "parent": "235",
+        "children": [
+            "449",
+            "450",
+            "451",
+            "452",
+            "453",
+            "454",
+            "455",
+            "456",
+            "461",
+            "462",
+            "463",
+            "464",
+            "465",
+            "466",
+            "467",
+            "468",
+            "469",
+            "470",
+            "471",
+            "543",
+            "544",
+            "545"
+        ],
+        "backRefs": [
+            "522"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_5"
+    },
+    "449": {
+        "id": "449",
+        "name": "widgetType",
+        "type": "const",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget",
+        "browsePath": "root.visualization.self-service.ui_5.widgetType"
+    },
+    "450": {
+        "id": "450",
+        "name": "selectableVariables",
+        "type": "referencer",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "118"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_5.selectableVariables"
+    },
+    "451": {
+        "id": "451",
+        "name": "selectedVariables",
+        "type": "referencer",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "120"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_5.selectedVariables"
+    },
+    "452": {
+        "id": "452",
+        "name": "hasSelection",
+        "type": "const",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_5.hasSelection"
+    },
+    "453": {
+        "id": "453",
+        "name": "startTime",
+        "type": "variable",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_5.startTime"
+    },
+    "454": {
+        "id": "454",
+        "name": "endTime",
+        "type": "variable",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_5.endTime"
+    },
+    "455": {
+        "id": "455",
+        "name": "bins",
+        "type": "const",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 300,
+        "browsePath": "root.visualization.self-service.ui_5.bins"
+    },
+    "456": {
+        "id": "456",
+        "name": "hasAnnotation",
+        "type": "const",
+        "parent": "448",
+        "children": [
+            "457",
+            "458",
+            "459",
+            "460"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_5.hasAnnotation"
+    },
+    "457": {
+        "id": "457",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "456",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "458"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_5.hasAnnotation.annotations"
+    },
+    "458": {
+        "id": "458",
+        "name": "newAnnotations",
+        "type": "folder",
+        "parent": "456",
+        "children": [],
+        "backRefs": [
+            "457",
+            "479"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_5.hasAnnotation.newAnnotations"
+    },
+    "459": {
+        "id": "459",
+        "name": "tags",
+        "type": "const",
+        "parent": "456",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy",
+            "free"
+        ],
+        "browsePath": "root.visualization.self-service.ui_5.hasAnnotation.tags"
+    },
+    "460": {
+        "id": "460",
+        "name": "colors",
+        "type": "const",
+        "parent": "456",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "yellow",
+            "brown",
+            "grey",
+            "green",
+            "red"
+        ],
+        "browsePath": "root.visualization.self-service.ui_5.hasAnnotation.colors"
+    },
+    "461": {
+        "id": "461",
+        "name": "table",
+        "type": "referencer",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "114"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_5.table"
+    },
+    "462": {
+        "id": "462",
+        "name": "lineColors",
+        "type": "const",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "blue",
+            "yellow",
+            "brown",
+            "grey",
+            "red"
+        ],
+        "browsePath": "root.visualization.self-service.ui_5.lineColors"
+    },
+    "463": {
+        "id": "463",
+        "name": "observerBackground",
+        "type": "referencer",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "486"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_5.observerBackground"
+    },
+    "464": {
+        "id": "464",
+        "name": "observerUpdate",
+        "type": "const",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "variables",
+            "background"
+        ],
+        "browsePath": "root.visualization.self-service.ui_5.observerUpdate"
+    },
+    "465": {
+        "id": "465",
+        "name": "observerEnabled",
+        "type": "const",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_5.observerEnabled"
+    },
+    "466": {
+        "id": "466",
+        "name": "buttons",
+        "type": "folder",
+        "parent": "448",
+        "children": [
+            "472"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_5.buttons"
+    },
+    "467": {
+        "id": "467",
+        "name": "hasBackground",
+        "type": "const",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.self-service.ui_5.hasBackground"
+    },
+    "468": {
+        "id": "468",
+        "name": "background",
+        "type": "referencer",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "126"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_5.background"
+    },
+    "469": {
+        "id": "469",
+        "name": "backgroundMap",
+        "type": "const",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "1": "yellow",
+            "0": "brown",
+            "-1": "blue",
+            "default": "white"
+        },
+        "browsePath": "root.visualization.self-service.ui_5.backgroundMap"
+    },
+    "470": {
+        "id": "470",
+        "name": "hasReloadButton",
+        "type": "const",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.self-service.ui_5.hasReloadButton"
+    },
+    "471": {
+        "id": "471",
+        "name": "hasHover",
+        "type": "const",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "mouse",
+        "browsePath": "root.visualization.self-service.ui_5.hasHover"
+    },
+    "472": {
+        "id": "472",
+        "name": "button1",
+        "type": "folder",
+        "parent": "466",
+        "children": [
+            "473",
+            "474",
+            "475"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_5.buttons.button1"
+    },
+    "473": {
+        "id": "473",
+        "name": "caption",
+        "type": "const",
+        "parent": "472",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "learn",
+        "browsePath": "root.visualization.self-service.ui_5.buttons.button1.caption"
+    },
+    "474": {
+        "id": "474",
+        "name": "counter",
+        "type": "variable",
+        "parent": "472",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.self-service.ui_5.buttons.button1.counter"
+    },
+    "475": {
+        "id": "475",
+        "name": "onClick",
+        "type": "referencer",
+        "parent": "472",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "476"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.self-service.ui_5.buttons.button1.onClick"
+    },
+    "476": {
+        "id": "476",
+        "name": "logisticRegression_5",
+        "type": "function",
+        "parent": "265",
+        "children": [
+            "477",
+            "478",
+            "479",
+            "480",
+            "481"
+        ],
+        "backRefs": [
+            "475"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "functionPointer": "logisticregression.logistic_regression",
+        "autoReload": true,
+        "browsePath": "root.ui_function.logisticRegression_5"
+    },
+    "477": {
+        "id": "477",
+        "name": "input",
+        "type": "referencer",
+        "parent": "476",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "120",
+            "122",
+            "123"
+        ],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_5.input"
+    },
+    "478": {
+        "id": "478",
+        "name": "output",
+        "type": "referencer",
+        "parent": "476",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "126"
+        ],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_5.output"
+    },
+    "479": {
+        "id": "479",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "476",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "458"
+        ],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_5.annotations"
+    },
+    "480": {
+        "id": "480",
+        "name": "categoryMap",
+        "type": "const",
+        "parent": "476",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "busy": 1,
+            "free": 0
+        },
+        "browsePath": "root.ui_function.logisticRegression_5.categoryMap"
+    },
+    "481": {
+        "id": "481",
+        "name": "control",
+        "type": "folder",
+        "parent": "476",
+        "children": [
+            "482",
+            "483",
+            "484",
+            "485",
+            "486",
+            "487",
+            "488",
+            "489"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.ui_function.logisticRegression_5.control"
+    },
+    "482": {
+        "id": "482",
+        "name": "status",
+        "type": "variable",
+        "parent": "481",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "idle",
+        "browsePath": "root.ui_function.logisticRegression_5.control.status"
+    },
+    "483": {
+        "id": "483",
+        "name": "progress",
+        "type": "variable",
+        "parent": "481",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.ui_function.logisticRegression_5.control.progress"
+    },
+    "484": {
+        "id": "484",
+        "name": "result",
+        "type": "variable",
+        "parent": "481",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "ok",
+        "browsePath": "root.ui_function.logisticRegression_5.control.result"
+    },
+    "485": {
+        "id": "485",
+        "name": "signal",
+        "type": "variable",
+        "parent": "481",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "nosignal",
+        "browsePath": "root.ui_function.logisticRegression_5.control.signal"
+    },
+    "486": {
+        "id": "486",
+        "name": "executionCounter",
+        "type": "variable",
+        "parent": "481",
+        "children": [],
+        "backRefs": [
+            "463"
+        ],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.ui_function.logisticRegression_5.control.executionCounter"
+    },
+    "487": {
+        "id": "487",
+        "name": "lastExecutionDuration",
+        "type": "variable",
+        "parent": "481",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.ui_function.logisticRegression_5.control.lastExecutionDuration"
+    },
+    "488": {
+        "id": "488",
+        "name": "lastStartTime",
+        "type": "variable",
+        "parent": "481",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "not yet",
+        "browsePath": "root.ui_function.logisticRegression_5.control.lastStartTime"
+    },
+    "489": {
+        "id": "489",
+        "name": "executionType",
+        "type": "const",
+        "parent": "481",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "async",
+        "browsePath": "root.ui_function.logisticRegression_5.control.executionType"
+    },
+    "490": {
+        "id": "490",
+        "name": "deployment",
+        "type": "folder",
+        "parent": "1",
+        "children": [
+            "491"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.deployment"
+    },
+    "491": {
+        "id": "491",
+        "name": "ui",
+        "type": "folder",
+        "parent": "490",
+        "children": [
+            "492",
+            "499"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.deployment.ui"
+    },
+    "492": {
+        "id": "492",
+        "name": "layout",
+        "type": "folder",
+        "parent": "491",
+        "children": [
+            "493",
+            "494"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.deployment.ui.layout"
+    },
+    "493": {
+        "id": "493",
+        "name": "workbench",
+        "type": "const",
+        "parent": "492",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "workbench.html",
+        "browsePath": "root.deployment.ui.layout.workbench"
+    },
+    "494": {
+        "id": "494",
+        "name": "selfservice",
+        "type": "const",
+        "parent": "492",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "selfservice6.html",
+        "browsePath": "root.deployment.ui.layout.selfservice"
+    },
+    "499": {
+        "id": "499",
+        "name": "components",
+        "type": "folder",
+        "parent": "491",
+        "children": [
+            "500",
+            "504",
+            "508",
+            "512",
+            "516",
+            "520",
+            "524"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.deployment.ui.components"
+    },
+    "500": {
+        "id": "500",
+        "name": "selfservice0",
+        "type": "folder",
+        "parent": "499",
+        "children": [
+            "501",
+            "502",
+            "503"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.deployment.ui.components.selfservice0"
+    },
+    "501": {
+        "id": "501",
+        "name": "enabled",
+        "type": "const",
+        "parent": "500",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.deployment.ui.components.selfservice0.enabled"
+    },
+    "502": {
+        "id": "502",
+        "name": "model",
+        "type": "referencer",
+        "parent": "500",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "236"
+        ],
+        "value": null,
+        "browsePath": "root.deployment.ui.components.selfservice0.model"
+    },
+    "503": {
+        "id": "503",
+        "name": "settings",
+        "type": "const",
+        "parent": "500",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "port": 5010
+        },
+        "browsePath": "root.deployment.ui.components.selfservice0.settings"
+    },
+    "504": {
+        "id": "504",
+        "name": "selfservice1",
+        "type": "folder",
+        "parent": "499",
+        "children": [
+            "505",
+            "506",
+            "507"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.deployment.ui.components.selfservice1"
+    },
+    "505": {
+        "id": "505",
+        "name": "enabled",
+        "type": "const",
+        "parent": "504",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.deployment.ui.components.selfservice1.enabled"
+    },
+    "506": {
+        "id": "506",
+        "name": "model",
+        "type": "referencer",
+        "parent": "504",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "280"
+        ],
+        "value": null,
+        "browsePath": "root.deployment.ui.components.selfservice1.model"
+    },
+    "507": {
+        "id": "507",
+        "name": "settings",
+        "type": "const",
+        "parent": "504",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "port": 5011
+        },
+        "browsePath": "root.deployment.ui.components.selfservice1.settings"
+    },
+    "508": {
+        "id": "508",
+        "name": "selfservice2",
+        "type": "folder",
+        "parent": "499",
+        "children": [
+            "509",
+            "510",
+            "511"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.deployment.ui.components.selfservice2"
+    },
+    "509": {
+        "id": "509",
+        "name": "enabled",
+        "type": "const",
+        "parent": "508",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.deployment.ui.components.selfservice2.enabled"
+    },
+    "510": {
+        "id": "510",
+        "name": "model",
+        "type": "referencer",
+        "parent": "508",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "322"
+        ],
+        "value": null,
+        "browsePath": "root.deployment.ui.components.selfservice2.model"
+    },
+    "511": {
+        "id": "511",
+        "name": "settings",
+        "type": "const",
+        "parent": "508",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "port": 5012
+        },
+        "browsePath": "root.deployment.ui.components.selfservice2.settings"
+    },
+    "512": {
+        "id": "512",
+        "name": "selfservice3",
+        "type": "folder",
+        "parent": "499",
+        "children": [
+            "513",
+            "514",
+            "515"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.deployment.ui.components.selfservice3"
+    },
+    "513": {
+        "id": "513",
+        "name": "enabled",
+        "type": "const",
+        "parent": "512",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.deployment.ui.components.selfservice3.enabled"
+    },
+    "514": {
+        "id": "514",
+        "name": "model",
+        "type": "referencer",
+        "parent": "512",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "364"
+        ],
+        "value": null,
+        "browsePath": "root.deployment.ui.components.selfservice3.model"
+    },
+    "515": {
+        "id": "515",
+        "name": "settings",
+        "type": "const",
+        "parent": "512",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "port": 5013
+        },
+        "browsePath": "root.deployment.ui.components.selfservice3.settings"
+    },
+    "516": {
+        "id": "516",
+        "name": "selfservice4",
+        "type": "folder",
+        "parent": "499",
+        "children": [
+            "517",
+            "518",
+            "519"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.deployment.ui.components.selfservice4"
+    },
+    "517": {
+        "id": "517",
+        "name": "enabled",
+        "type": "const",
+        "parent": "516",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.deployment.ui.components.selfservice4.enabled"
+    },
+    "518": {
+        "id": "518",
+        "name": "model",
+        "type": "referencer",
+        "parent": "516",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "406"
+        ],
+        "value": null,
+        "browsePath": "root.deployment.ui.components.selfservice4.model"
+    },
+    "519": {
+        "id": "519",
+        "name": "settings",
+        "type": "const",
+        "parent": "516",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "port": 5014
+        },
+        "browsePath": "root.deployment.ui.components.selfservice4.settings"
+    },
+    "520": {
+        "id": "520",
+        "name": "selfservice5",
+        "type": "folder",
+        "parent": "499",
+        "children": [
+            "521",
+            "522",
+            "523"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.deployment.ui.components.selfservice5"
+    },
+    "521": {
+        "id": "521",
+        "name": "enabled",
+        "type": "const",
+        "parent": "520",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.deployment.ui.components.selfservice5.enabled"
+    },
+    "522": {
+        "id": "522",
+        "name": "model",
+        "type": "referencer",
+        "parent": "520",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "448"
+        ],
+        "value": null,
+        "browsePath": "root.deployment.ui.components.selfservice5.model"
+    },
+    "523": {
+        "id": "523",
+        "name": "settings",
+        "type": "const",
+        "parent": "520",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "port": 5015
+        },
+        "browsePath": "root.deployment.ui.components.selfservice5.settings"
+    },
+    "524": {
+        "id": "524",
+        "name": "workbench",
+        "type": "folder",
+        "parent": "499",
+        "children": [
+            "525",
+            "526",
+            "527"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.deployment.ui.components.workbench"
+    },
+    "525": {
+        "id": "525",
+        "name": "enabled",
+        "type": "const",
+        "parent": "524",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.deployment.ui.components.workbench.enabled"
+    },
+    "526": {
+        "id": "526",
+        "name": "model",
+        "type": "referencer",
+        "parent": "524",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "127"
+        ],
+        "value": null,
+        "browsePath": "root.deployment.ui.components.workbench.model"
+    },
+    "527": {
+        "id": "527",
+        "name": "settings",
+        "type": "const",
+        "parent": "524",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "port": 5006
+        },
+        "browsePath": "root.deployment.ui.components.workbench.settings"
+    },
+    "528": {
+        "id": "528",
+        "name": "width",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 600,
+        "browsePath": "root.visualization.self-service.ui_0.width"
+    },
+    "529": {
+        "id": "529",
+        "name": "height",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 400,
+        "browsePath": "root.visualization.self-service.ui_0.height"
+    },
+    "530": {
+        "id": "530",
+        "name": "controlPosition",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "right",
+        "browsePath": "root.visualization.self-service.ui_0.controlPosition"
+    },
+    "531": {
+        "id": "531",
+        "name": "width",
+        "type": "const",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 600,
+        "browsePath": "root.visualization.self-service.ui_1.width"
+    },
+    "532": {
+        "id": "532",
+        "name": "height",
+        "type": "const",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 400,
+        "browsePath": "root.visualization.self-service.ui_1.height"
+    },
+    "533": {
+        "id": "533",
+        "name": "controlPosition",
+        "type": "const",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "right",
+        "browsePath": "root.visualization.self-service.ui_1.controlPosition"
+    },
+    "534": {
+        "id": "534",
+        "name": "width",
+        "type": "const",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 600,
+        "browsePath": "root.visualization.self-service.ui_2.width"
+    },
+    "535": {
+        "id": "535",
+        "name": "height",
+        "type": "const",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 400,
+        "browsePath": "root.visualization.self-service.ui_2.height"
+    },
+    "536": {
+        "id": "536",
+        "name": "controlPosition",
+        "type": "const",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "right",
+        "browsePath": "root.visualization.self-service.ui_2.controlPosition"
+    },
+    "537": {
+        "id": "537",
+        "name": "width",
+        "type": "const",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 600,
+        "browsePath": "root.visualization.self-service.ui_3.width"
+    },
+    "538": {
+        "id": "538",
+        "name": "height",
+        "type": "const",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 400,
+        "browsePath": "root.visualization.self-service.ui_3.height"
+    },
+    "539": {
+        "id": "539",
+        "name": "controlPosition",
+        "type": "const",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "right",
+        "browsePath": "root.visualization.self-service.ui_3.controlPosition"
+    },
+    "540": {
+        "id": "540",
+        "name": "width",
+        "type": "const",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 600,
+        "browsePath": "root.visualization.self-service.ui_4.width"
+    },
+    "541": {
+        "id": "541",
+        "name": "height",
+        "type": "const",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 400,
+        "browsePath": "root.visualization.self-service.ui_4.height"
+    },
+    "542": {
+        "id": "542",
+        "name": "controlPosition",
+        "type": "const",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "right",
+        "browsePath": "root.visualization.self-service.ui_4.controlPosition"
+    },
+    "543": {
+        "id": "543",
+        "name": "width",
+        "type": "const",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 600,
+        "browsePath": "root.visualization.self-service.ui_5.width"
+    },
+    "544": {
+        "id": "544",
+        "name": "height",
+        "type": "const",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 400,
+        "browsePath": "root.visualization.self-service.ui_5.height"
+    },
+    "545": {
+        "id": "545",
+        "name": "controlPosition",
+        "type": "const",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "right",
+        "browsePath": "root.visualization.self-service.ui_5.controlPosition"
+    }
+}

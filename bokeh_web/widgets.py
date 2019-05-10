@@ -23,7 +23,7 @@ from bokeh.models import Range1d,DataRange1d
 from bokeh import events
 from bokeh.models.widgets import RadioButtonGroup, Paragraph, Toggle, MultiSelect, Button
 from bokeh.plotting import figure, curdoc
-from bokeh.layouts import layout,widgetbox
+from bokeh.layouts import layout,widgetbox, column
 from bokeh.models import Range1d, PanTool, WheelZoomTool, ResetTool, ToolbarBox, Toolbar
 
 
@@ -485,6 +485,15 @@ class TimeSeriesWidget():
 
         settings = self.server.get_settings()
 
+        if "width" in settings:
+            self.width = settings["width"]
+        if "height" in settings:
+            self.height = settings["height"]
+        #self.cssClasses = {"button":"button_21","groupButton":"group_button_21","multiSelect":"multi_select_21"}
+        #self.cssClasses = {"button": "button_21_sm", "groupButton": "group_button_21_sm", "multiSelect": "multi_select_21_sm"}
+        #self.layoutSettings = {"controlPosition":"bottom"} #support right and bottom, the location of the buttons and tools
+
+
         #initial values
         self.rangeStart = settings["startTime"]
         self.rangeEnd = settings["endTime"]
@@ -552,13 +561,13 @@ class TimeSeriesWidget():
             #we skip the selection buttons
             pass
         else:
-            options = [(x, x) for x in self.server.get_variables_selectable()]
+            options = [(x, '.'.join(x.split('.')[-2:])) for x in self.server.get_variables_selectable()]  #given as value,label
             self.variablesMultiSelect = MultiSelect(title="Select Variables", value=self.server.get_variables_selected(),
                                                     options=options,size = 5,css_classes=['multi_select_21'])
             self.variablesSelectButton = Button(label="apply",css_classes=['button_21'])
             self.variablesSelectButton.on_click(self.var_select_button_cb)
 
-            selectWidget = widgetbox(self.variablesMultiSelect,self.variablesSelectButton)
+            selectWidget = widgetbox(self.variablesMultiSelect,self.variablesSelectButton,css_classes=['widgetbox_21'])
             layoutControls.append(selectWidget)
 
 
@@ -623,10 +632,23 @@ class TimeSeriesWidget():
         #            subelem.sizing_mode = "scale_both"
         #    else:
         #        elem.sizing_mode = "scale_both"
-        if self.tools:
-            self.layout = layout([[self.plot,self.tools,layoutControls]])#,sizing_mode="scale_width")
+        if "controlPosition" in settings and settings["controlPosition"] == "bottom":
+            if self.tools:
+                if len(layoutControls)>2:
+                    layoutControlsReorder = layoutControls[0:2]
+                    #layoutControlsReorder.append([[layoutControls[2:]]])
+                    layoutControls.append(column(layoutControls[2:],width=100))
+                else:
+                    layoutControlsReorder=layoutControls
+                self.layout = layout([[self.plot,self.tools],layoutControlsReorder])#,sizing_mode="scale_width")
+            else:
+                self.layout = layout([[self.plot, layoutControls]])  # ,sizing_mode="scale_width")
         else:
-            self.layout = layout([[self.plot, layoutControls]])  # ,sizing_mode="scale_width")
+            if self.tools:
+                #self.layout = layout([[self.plot, self.tools, layoutControls]])  # ,sizing_mode="scale_width")
+                self.layout = layout([[self.plot, self.tools,column(layoutControls,css_classes=["columns_21"])]])
+            else:
+                self.layout = layout([[self.plot, layoutControls]])  # ,sizing_mode="scale_width")
 
     def __make_tooltips(self):
         #make the hover tool
