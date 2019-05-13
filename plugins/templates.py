@@ -45,6 +45,9 @@ timeseriesWidget = {
         {"name":"backgroundMap","type": "const", "value": {
             "1": "yellow", "0": "brown", "-1": "blue", "default": "white"}},    # color map for the background
         {"name":"hasReloadButton","type":"const","value":True},                 # show/hide the reload button (show is only for dev-mode)
-        {"name":"hasHover","type":"const","value":False}                        # show/hide the hover-tool of [False, 'mouse','vline','hline'
+        {"name":"hasHover","type":"const","value":False},                       # show/hide the hover-tool of [False, 'mouse','vline','hline'
+        {"name":"width","type":"const","value":900},                            # the display width of the plot in pixel
+        {"name":"height","type":"const","value":600},                           # the display height of the plot in pixel
+        {"name":"controlPosition","type":"const","value":"right"}               # the position of the button controls of ["bottom","right]
     ]
 }
