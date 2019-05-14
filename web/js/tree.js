@@ -917,13 +917,20 @@ class TreeCard
         this.update_on_click(); //start the auto update
 
         //hook the ok buttons
-        try
+
+        if ( $('#'+this.instanceName+'saveModelAsBtnApply') .length )
         {
             $('#'+this.instanceName+'saveModelAsBtnApply').click( () => {
                 this.save_as_on_ok_click();
             });
         }
-        catch{}
+
+        if ( $('#'+this.instanceName+'loadModelBtnApply') .length )
+        {
+            $('#'+this.instanceName+'loadModelBtnApply').click( () => {
+                this.load_on_ok_click();
+            });
+        }
 
     }
 
@@ -975,6 +982,54 @@ class TreeCard
 
     }
 
+    create_load_modal()
+    {
+        var modal = document.createElement('div');
+        modal.id = this.instanceName+"loadModelModal";
+        modal.className = "modal fade";
+        modal.setAttribute("tabindex","-1");
+        modal.setAttribute("role","dialog");
+        var modalCode = `<div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 class="modal-title" id="myModalLabel">Load Model</h4>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <label>Model Name</label>
+                                        <select class="form-control" id="modelSelect"></select>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal" id ="loadModelBtnApply">Load model</button>
+                                </div>
+                            </div>
+                         </div>`;
+        modalCode = modalCode.replace('modelSelect',this.instanceName+'modelSelect');
+        modalCode = modalCode.replace('loadModelBtnApply',this.instanceName+'loadModelBtnApply');
+        modal.innerHTML = modalCode;
+        return modal;
+    }
+
+    update_load_modal()
+    {
+        //get the possible models from the backend
+        let data = http_get("/models");
+        let models = JSON.parse(data);
+
+        $('#'+this.instanceName+'modelSelect').empty();
+
+        $('#'+this.instanceName+'modelSelect').append('<option value="" disabled selected>Choose a model</option>')
+
+        for (let model of models)
+        {
+            $('#'+this.instanceName+'modelSelect').append(`<option>` + model + `</option>`);
+        }
+    }
+
+
 
     create_card()
     {
@@ -1008,8 +1063,7 @@ class TreeCard
                 var newButton = this.make_button("saveModelBtn","save current model","fas fa-save");
                 cardHeaderActions.appendChild(newButton);
                 newButton.onclick = () => {this.save_on_click();}
-                var modal = this.create_save_as_modal();
-                cardHeaderActions.appendChild(modal);
+
                 //we also need the modal
 
             }
@@ -1018,12 +1072,16 @@ class TreeCard
                 var newButton = this.make_button("saveModelAsBtn","save current model as ...","fas fa-file-export");
                 cardHeaderActions.appendChild(newButton);
                 newButton.onclick = () => {this.save_as_on_click();}
+                var modal = this.create_save_as_modal();
+                cardHeaderActions.appendChild(modal);
             }
             else if (button == "load")
             {
                 var newButton = this.make_button("loadModelBtn","load model ...","fas fa-folder-open");
                 cardHeaderActions.appendChild(newButton);
                 newButton.onclick = ()=>{this.load_on_click();}
+                var modal = this.create_load_modal();
+                cardHeaderActions.appendChild(modal);
             }
         }
 
@@ -1072,6 +1130,17 @@ class TreeCard
     load_on_click()
     {
         console.log("load something"+this.instanceName);
+        this.update_load_modal();
+        $('#'+this.instanceName+"loadModelModal").modal();
+    }
+
+    load_on_ok_click()
+    {
+        console.log("load something"+this.instanceName);
+
+        let modelName =  $('#'+this.instanceName+'modelSelect').val();
+        this.modelName = this.myTree.load_tree(modelName);
+        $('#'+this.instanceName+"currentModelName").html(modelName);
     }
 
     save_on_click()
