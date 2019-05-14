@@ -7,7 +7,7 @@ function http_get(myUrl) {
 }
 
 
-function http_post(url, data, params, cb)
+function http_post(url, data, params, obj,cb)
 {
     // construct an HTTP request
     var xhr = new XMLHttpRequest();
@@ -22,7 +22,7 @@ function http_post(url, data, params, cb)
             }
             if (cb != null)
             {
-                cb(xhr.status,xhr.responseText,params);
+                cb(obj,xhr.status,xhr.responseText,params);
             }
         }
     }

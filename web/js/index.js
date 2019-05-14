@@ -2,6 +2,8 @@ var crtModelName = undefined;
 
 var nodesMoving = {}; //here we store information from the tree plugin about the move, we grab in in the dnd_stop event and execute the move
 
+var myTree = new TreeWidget('#jstree_div',{});
+
 
 
 function populate_models() {
@@ -47,18 +49,18 @@ function populate_model_card_header() {
     }
 
 	$('#reloadtreebtn').click( function () {
-		tree_initialize();
+		myTree.tree_initialize();
     });
 
     // Handle the tree auto refresh settings
     let crtTreeAutoRefreshEnabled = localStorage.getItem("21dataTreeAutoRefreshEnabled");
     // Check the current settings and either start or stop the auto update timer and also set the proper icon
     if (crtTreeAutoRefreshEnabled == "true") {
-        start_periodic_tree_update();
+        myTree.start_periodic_tree_update();
         $('#updatetreebtn').html(`<i class="fas fa-sync-alt fa-spin"></i>`);
     }
     else {
-        stop_periodicTreeUpdate();
+        myTree.stop_periodicTreeUpdate();
         $('#updatetreebtn').html(`<i class="fas fa-sync-alt"></i>`);
     }
 
@@ -68,18 +70,18 @@ function populate_model_card_header() {
 
         if (crtTreeAutoRefreshEnabled == "true") {
             localStorage.setItem("21dataTreeAutoRefreshEnabled", false);
-            stop_periodicTreeUpdate();
+            myTree.stop_periodicTreeUpdate();
             $('#updatetreebtn').html(`<i class="fas fa-sync-alt"></i>`);
         }
         else {
             localStorage.setItem("21dataTreeAutoRefreshEnabled", true);
-            start_periodic_tree_update();
+            myTree.start_periodic_tree_update();
             $('#updatetreebtn').html(`<i class="fas fa-sync-alt fa-spin"></i>`);
         }
     });
 
     $('#saveModelBtn').click(() => {
-        save_tree(crtModelName);
+        myTree.save_tree(crtModelName);
     });
 
     // Show the save as modal
@@ -92,7 +94,7 @@ function populate_model_card_header() {
 
         // save_tree(modelName);
         // Trigger a model save and afterwards clear the input for the model name and update the model dropdown
-        http_post('/_save', modelName, null, () => {
+        http_post('/_save', modelName, null, null,() => {
             $('#saveModelAsModelName').val('');
             populate_models();
         });
@@ -108,7 +110,7 @@ function populate_model_card_header() {
         let modelName = $('#modelSelect').val();
 
         if (modelName != "") {
-            load_tree(modelName);
+            myTree.load_tree(modelName);
 
             crtModelName = modelName;
             $('#currentModelName').html(modelName);
@@ -136,7 +138,7 @@ function populate_ui()
 
         let divTag = $("#"+div.id)
         var path = JSON.parse(divTag.attr('uiinfo'))['path'];
-        http_post("_getlayout",JSON.stringify({"layoutNode":path}),div.id, function(status,data,params)   {
+        http_post("_getlayout",JSON.stringify({"layoutNode":path}),div.id, null,function(obj,status,data,params)   {
             if (status==200)
             {
                 var id = params;
@@ -173,36 +175,9 @@ function on_first_load () {
         location.reload();
     });
 
-	/*
-	//load the bokeh widget for the data scientist to the embed, standard on 5006
-	http_post("http://localhost:6001/embedbokeh",JSON.stringify({"url":"http://localhost:5006/bokeh_web"}),null, function(status,data,params)   {
-        if (status==200)
-        {
-            $('#embed').html(data);
-            $('#embed').data('uicomponent', { "engine":"bokeh","path":"root.visualization.workbench"});
-        }
-    });
-    */
     populate_ui();
 
-	/*
-	//load the bokeh widget for the self-service to the self-service, for now on 5007
-	http_post("http://localhost:6001/embedbokeh",JSON.stringify({"url":"http://localhost:5007/bokeh_web"}),null, function(status,data,params)   {
-        if (status==200)
-        {
-            $('#self-service-embed').html(data);
-        }
-    });
-
-    http_post("_getlayout",JSON.stringify({"layoutNode":"root.deployment.ui.layout.selfservice"}),null, function(status,data,params)   {
-        if (status==200)
-        {
-            $('#ui-layout-self-service').html(data);
-        }
-    });
-    */
-
-    tree_initialize();
+    myTree.tree_initialize();
 
     // This callback function is called when a node is dragged around, and moving
     $(document).on('dnd_move.vakata', function (e, data) {
@@ -307,7 +282,11 @@ function on_first_load () {
             http_post("/move",JSON.stringify(query),null,null);//,tree_update);
         }
     });
-}
+
+    var t = new TreeCard("newtree",null);
+
+
+} //on_first_load;
 
 
 
