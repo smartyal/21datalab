@@ -185,133 +185,14 @@
                 </div>
             </div>
             <div id="nav-modelling" class="tab-pane fade active show">
+                <div class="col" id ="ui-layout-workbench"  uiinfo='{"path":"root.deployment.ui.layout.workbench"}'> </div>
+                <!--
                 <div class="container-fluid mt-4">
-
-                    <!-- Modal for saving model -->
-                    <div class="modal fade" id="saveModelAsModal" tabindex="-1" role="dialog">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 class="modal-title">Save Model As</h4>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="form-group">
-                                        <label>Model Name</label>
-                                        <input type="text" class="form-control" id="saveModelAsModelName">
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                    <button type="button" class="btn btn-primary" data-dismiss="modal" id ="saveModelAsBtnApply">Save model</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Modal for loading model -->
-                    <div class="modal fade" id="loadModelModal" tabindex="-1" role="dialog">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 class="modal-title" id="myModalLabel">Load Model</h4>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="form-group">
-                                        <label>Model Name</label>
-                                        <select class="form-control" id="modelSelect"></select>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                    <button type="button" class="btn btn-primary" data-dismiss="modal" id ="loadModelBtnApply">Load model</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
+                   <div class="row">
                         <div class="col-3">
-                            <div class="card">
-                                <div class="card-header">
-                                    <span id="currentModelName"></span>
-                                    <div class="card-header-actions">
-                                        <a id="reloadtreebtn" class="card-header-action" data-toggle="tooltip" data-placement="top" title="Reload tree">
-                                            <i class="fas fa-redo-alt"></i>
-                                        </a>
-                                        <a id="updatetreebtn" class="card-header-action" data-toggle="tooltip" data-placement="top" title="Toggle tree auto-refresh">
-                                            <i class="fas fa-sync-alt"></i>
-                                        </a>
-                                        <a id="saveModelBtn" class="card-header-action" data-toggle="tooltip" data-placement="top" title="Save current tree">
-                                            <i class="fas fa-save"></i>
-                                        </a>
-                                        <a id="saveModelAsBtn" class="card-header-action" data-toggle="tooltip" data-placement="top" title="Save current tree as ...">
-                                            <i class="fas fa-file-export"></i>
-                                        </a>
-                                        <a id="loadModelBtn" class="card-header-action" data-toggle="tooltip" data-placement="top" title="Load tree ...">
-                                            <i class="fas fa-folder-open"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="pre-scrollable" id="jstreeContainer" style="overflow-y: auto;overflow-x: auto;width:100%">
-                                        <div id="jstree_div" class="jstree jstree-default"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div id="navtree">
-
-                                <!-- Modal for value -->
-                                <div class="modal fade" id="editNodeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-                                    <div class="modal-dialog" role="document">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h4 class="modal-title" id="myModalLabel">Edit Node Value</h4>
-                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="form-group">
-                                                    <label id="editNodeModalName">nodePath</label>
-                                                    <label id="editNodeModalId" hidden>id</label>
-                                                    <input type="email" class="form-control" id="editNodeModalValue" aria-describedby="emailHelp" >
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                                                <button type="button" class="btn btn-primary" data-dismiss="modal" id ="editNodeModalButtonSave">Save changes</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div> <!-- modal end -->
-                                <!-- Modal for properties -->
-                                <div class="modal fade" id="advancedEditModal" tabindex="-1" role="dialog" aria-labelledby="advancedEditModalLabel">
-                                    <div class="modal-dialog" role="document">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h4 class="modal-title" id="advancedEditModalLabel">Edit Node Type</h4>
-                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="form-group">
-                                                    <label id="advancedEditModalName">nodePath</label>
-                                                    <label id="advancedEditModalId" hidden>id</label>
-                                                    <input type="email" class="form-control" id="advancedEditModalValue" aria-describedby="emailHelp" >
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                                                <button type="button" class="btn btn-primary" data-dismiss="modal" id ="advancedEditModalButtonSave">Save changes</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div> <!-- modal end -->
-
-                            </div>
+                            <div id = "newtree"></div>
+                            <div id = "ui-tree-22"> tree 22</div>
                         </div>
-
-                        <div id = "newtree"></div>
                         <div class="col-9"  >
                             <div class="card">
                                 <div class="card-header">
@@ -326,6 +207,7 @@
                         </div>
                     </div>
                 </div>
+                -->
             </div>
             <div id="nav-self-service" class="tab-pane fade">
                 <div class="container mt-4">

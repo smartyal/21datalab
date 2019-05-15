@@ -2,8 +2,8 @@ var crtModelName = undefined;
 
 var nodesMoving = {}; //here we store information from the tree plugin about the move, we grab in in the dnd_stop event and execute the move
 
-var myTree = new TreeWidget('#jstree_div',{});
 
+//var myTree = new TreeWidget('jstree_div',{});
 
 
 function populate_models() {
@@ -143,18 +143,35 @@ function populate_ui()
             {
                 var id = params;
                 $('#'+id).html(data);
+
+                //the trees
+                var treeDivs =  $("#"+id+" div[id^='ui-tree']");
+                for (var treeDiv of treeDivs)
+                {
+                    var settings={};//check if there are local settings in the ui
+                    try
+                    {
+                        settings = JSON.parse($("#"+treeDiv.id).attr('uiinfo'))['settings'];
+                    }
+                    catch{}
+                    var tree = new TreeCard(treeDiv.id,settings);
+                }
             }
         });
     }
+
+
+
 }
 
 
 function on_first_load () {
 
-	//register menue calls#
-    $('.selectpicker').selectpicker();
 
-    populate_model_card_header();
+	//register menue calls#
+    //$('.selectpicker').selectpicker();
+
+    //populate_model_card_header();
 
 	//tree_initialize();
 
@@ -177,7 +194,8 @@ function on_first_load () {
 
     populate_ui();
 
-    myTree.tree_initialize();
+
+    //myTree.tree_initialize();
 
     // This callback function is called when a node is dragged around, and moving
     $(document).on('dnd_move.vakata', function (e, data) {
@@ -283,7 +301,7 @@ function on_first_load () {
         }
     });
 
-    var t = new TreeCard("newtree",null);
+    //var t = new TreeCard("newtree",null);
 
 
 } //on_first_load;

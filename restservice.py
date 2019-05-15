@@ -462,7 +462,7 @@ def all(path):
                 #this is for creating a handle
                 curModel = m.get_model_for_web()
                 handle = m.create_differential_handle()
-                logger.debug("get new differential update, return handle:"+handle)
+                logger.debug("create new differential update, return handle:"+handle)
                 res = {"handle":handle,"model":curModel}
                 response = json.dumps(res)
                 responseCode = 200
@@ -475,7 +475,7 @@ def all(path):
                     response = json.dumps(res)
                     responseCode = 200
                 else:
-                    logger.error("requested handle does not exist")
+                    logger.error("requested handle does not exist"+data["handle"])
                     response ="requested handle does not exist"
                     responseCode = 404
 

@@ -9,9 +9,13 @@
 */
 class TreeWidget 
 {
-    constructor (treeDiv,settings) 
+    constructor (treeDivId,settings)
     {
-        this.treeDiv = treeDiv;
+        // we need to make another div in which we produce the js_tree() as this must stay completely under
+        // the control of the js_Tree lib
+
+        this.treeDivId = treeDivId;
+
         this.settings=settings;  //
         this.templates = null; // global list with available templates
         this.treeNodes = {} ; //empty object
@@ -49,7 +53,7 @@ class TreeWidget
             unknown: "fas fa-question-circle tree-icon-class"
         };
 
-         var treeWidgetObject = this; //for usage in deeper object nesting
+        var treeWidgetObject = this; //for usage in deeper object nesting
 
     }
 
@@ -93,11 +97,107 @@ class TreeWidget
     }
 
 
+    //generate all html modals needed for the tree
+    make_edit_modal()
+    {
+        var modal = document.createElement('div');
+        modal.id = this.treeContainerId+"-editNodeModal";
+        modal.className = "modal fade";
+        modal.setAttribute("tabindex","-1");
+        modal.setAttribute("role","dialog");
+        modal.setAttribute("aria-labelledby","myModalLabel");
+        var modalCode = `
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title" id="myModalLabel">Edit Node Valuee</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label id="editNodeModalName">nodePath</label>
+                                <label id="editNodeModalId" hidden>id</label>
+                                <input type="email" class="form-control" id="editNodeModalValue" aria-describedby="emailHelp" >
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal" id ="editNodeModalButtonSave">Save changes</button>
+                        </div>
+                    </div>
+                </div>`;
+        modalCode = modalCode.replace('editNodeModalButtonSave',this.treeContainerId+'-editNodeModalButtonSave');
+        modalCode = modalCode.replace('editNodeModalValue',this.treeContainerId+'-editNodeModalValue');
+        modalCode = modalCode.replace('editNodeModalName',this.treeContainerId+'-editNodeModalName');
+        modalCode = modalCode.replace('editNodeModalId',this.treeContainerId+'-editNodeModalId');
+
+        modal.innerHTML = modalCode;
+        return modal;
+    }
+
+    make_advanced_edit_modal()
+    {
+        var modal = document.createElement('div');
+        modal.id = this.treeContainerId+"-advancedEditModal";
+        modal.className = "modal fade";
+        modal.setAttribute("tabindex","-1");
+        modal.setAttribute("role","dialog");
+        modal.setAttribute("aria-labelledby","advancedEditModalLabel");
+        var modalCode = `
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="advancedEditModalLabel">Edit Node Type</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label id="advancedEditModalName">nodePath</label>
+                            <label id="advancedEditModalId" hidden>id</label>
+                            <input type="email" class="form-control" id="advancedEditModalValue" aria-describedby="emailHelp" >
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" id ="advancedEditModalButtonSave">Save changes</button>
+                    </div>
+                </div>
+            </div>`;
+        modalCode = modalCode.replace('advancedEditModalName',this.treeContainerId+'-advancedEditModalName');
+        modalCode = modalCode.replace('advancedEditModalId',this.treeContainerId+'-advancedEditModalId');
+        modalCode = modalCode.replace('advancedEditModalValue',this.treeContainerId+'-advancedEditModalValue');
+        modalCode = modalCode.replace('advancedEditModalButtonSave',this.treeContainerId+'-advancedEditModalButtonSave');
+        modal.innerHTML = modalCode;
+        return modal;
+    }
+
+
+
+
     tree_initialize()
     {
-        $(this.treeDiv).jstree();
+
+        var treeInner = document.createElement("div");
+        treeInner.id = this.treeDivId+"-treeInner";
+
+        $("#"+this.treeDivId).append(treeInner);
+
+        this.treeContainerId = this.treeDivId; // to append the modals or any other
+        this.treeDiv = "#"+this.treeDivId+"-treeInner"; //the js_tree controls this div completely
+
+
+        $(this.treeDiv).jstree(); //make the divs and scripts
         this.tree_generate();
-    
+
+
+        //bring in the modals
+        var editModal = this.make_edit_modal();
+        $("#"+this.treeContainerId).append(editModal);
+        var advancedEditModal = this.make_advanced_edit_modal();
+        $("#"+this.treeContainerId).append(advancedEditModal);
+        //hook the callbacks
+
+
         //get the templates
         var data = http_get('/templates');
         try
@@ -109,7 +209,7 @@ class TreeWidget
             return;
         }
 
-        $(this.treeDiv).on("select_cell.jstree-grid",function (e,data) {
+        $(this.treeDiv).on("select_cell.jstree-grid", (e,data) => {
             //alert( "The user double clicked a jstreegrid cell"+data.column+"  "+data.value+ );
             var id = data.node.get()[0].id;
             var value = this.treeNodes[id].value;
@@ -117,18 +217,18 @@ class TreeWidget
             if ( (this.treeNodes[id].type == "variable") || (this.treeNodes[id].type == "const") )
             {
                 //only vars and consts can be edited
-                $('#editNodeModalName').text(this.treeNodes[id].browsePath);
-                $('#editNodeModalValue').val(JSON.stringify(this.treeNodes[id].value));
-                $('#editNodeModalId').val(id);
-                $('#editNodeModal').modal('show');
+                $('#'+this.treeContainerId+'-editNodeModalName').text(this.treeNodes[id].browsePath);
+                $('#'+this.treeContainerId+'-editNodeModalValue').val(JSON.stringify(this.treeNodes[id].value));
+                $('#'+this.treeContainerId+'-editNodeModalId').val(id);
+                $('#'+this.treeContainerId+'-editNodeModal').modal('show');
             }
         });
 
 
 
-        $('#editNodeModalButtonSave').click(function(){
-            var id = $('#editNodeModalId').val();
-            var value = JSON.parse($('#editNodeModalValue').val());
+        $('#'+this.treeContainerId+'-editNodeModalButtonSave').click( () => {
+            var id = $('#'+this.treeContainerId+'-editNodeModalId').val();
+            var value = JSON.parse($('#'+this.treeContainerId+'-editNodeModalValue').val());
             var query=[{"id":id,"value":value}];
             http_post("/setProperties",JSON.stringify(query),null,null,null);
         });
@@ -538,10 +638,10 @@ class TreeWidget
             var id = node.id;
             var value = this.treeNodes[id].value;
             //only vars and consts can be edited
-            $('#editNodeModalName').text(this.treeNodes[id].browsePath);
-            $('#editNodeModalValue').val(JSON.stringify(this.treeNodes[id].value));
-            $('#editNodeModalId').val(id);
-            $('#editNodeModal').modal('show');
+            $('#'+this.treeContainerId+'-editNodeModalName').text(this.treeNodes[id].browsePath);
+            $('#'+this.treeContainerId+'-editNodeModalValue').val(JSON.stringify(this.treeNodes[id].value));
+            $('#'+this.treeContainerId+'-editNodeModalId').val(id);
+            $('#'+this.treeContainerId+'-editNodeModal').modal('show');
     }
 
 
@@ -909,7 +1009,7 @@ class TreeCard
         this.targetDiv.append(card);
 
         //now the card was created, we now also create a tree
-        this.myTree = new TreeWidget('#'+this.targetDivId+"-"+"jstree-div",{});
+        this.myTree = new TreeWidget(this.targetDivId+"-"+"jstree-div",{});
         this.myTree.tree_initialize();
 
         //now start automatic updates
@@ -1090,11 +1190,15 @@ class TreeCard
 
         //now the card body
         var cardBody = document.createElement("div");
+        cardBody.className = "card-body";
 
         var treeContainer = document.createElement("div");
         treeContainer.className = "pre-scrollable";
         treeContainer.id="jstreeContainer";
         treeContainer.setAttribute("style","overflow-y: auto;overflow-x: auto;width:100%");
+
+
+
 
         var treeElement = document.createElement("div");
         treeElement.id = this.instanceName+"jstree-div";
