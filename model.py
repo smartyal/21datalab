@@ -13,6 +13,7 @@ import datetime
 import dateutil.parser
 import sys
 import os
+import time
 import uuid
 
 import modeltemplates
@@ -577,7 +578,9 @@ class Model():
         self.templates={} # holding all templates from ./plugins
         self.lock = threading.RLock()
         self.import_plugins()
-        self.differentialHandles ={} # containing handle:model_copy entries to support differential queries
+        self.differentialHandles ={} # containing model_copy entries to support differential queries
+        self.diffHandleCounter = 0  # used only for debugging
+        self.differentialHandlesMaxPerUser = 10
         self.currentModelName = "emptyModel" # the current name of the model
 
     def __init_logger(self, level):
@@ -1952,39 +1955,39 @@ class Model():
                 self.logger.error("problem loading"+str(e))
                 return False
 
-    def create_differential_handle(self):
+
+    def create_differential_handle(self, user = None):
         """
             make a copy of the current model and keep it as copy, create a handle for it and return that handle
+            this new handle is at the same time the id of te new "user", all the following requests for differential updata
+            will be referred to this user id
+
             Returns:
              a hash handle for the current model
         """
         with self.lock:
-            newHandle = str(uuid.uuid4().hex) # make a new unique handle
-            self.differentialHandles[newHandle]= self.get_model_for_web() # make an entry by copying the whole model
+            #newHandle = str(uuid.uuid4().hex) # make a new unique handle
+            newHandle = str(self.diffHandleCounter)
+            self.diffHandleCounter += 1
+            if not user:
+                #also create a new user
+                user = newHandle
+            self.differentialHandles[newHandle]= {"user":user,"model":self.get_model_for_web(),"time": int(time.time())}# make an entry by copying the whole model
             return newHandle
 
-    def remove_differential_handle(self,handle):
-        """
-            removes an entry from the memorized model states of the past identified by the handle
-            Arges: handle (uuid string): the id of the handle
-            Returns (bool) for success
-        """
-        with self.lock:
-            if handle in self.differentialHandles:
-                del self.differentialHandles[handle]
-                return True
-            else:
-                return False # not found
 
-    def get_differential_update(self,oldHandle,newHandle=None,delOld=True):
+    def get_differential_update(self,oldHandle,newHandle=None):
         """
             this function takes the copy of the model (hopefully) held under handle and compares it to the current model:
-            the differences are analyzed and returned, the old copy of the model under "handle" is replaced by
+            the differences are analyzed and returned, t
+            to avoid endless storage of old references, we have the deletin stategy: for every "user" we keep a max of
+            self.differentialHandlesMaxPerUser, if we have more, we delete the oldest
+
             Args:
                 oldHandle (string): the unique id of the old version of the model
                 newHandle (string): the unique id of the new version to compare to, if not given, we take the current
                                     and will automatically make a new entry for the current
-                delOld: if set, we remove the old entry from the memorized models
+                delOld: if set, we remove the old entry from the memorized models with a one step delay
             Returns (dict):
                 containing information about the changes between and old and new version of the model
                 key values:
@@ -1994,46 +1997,63 @@ class Model():
                 "modifiedNodes": (dict) nodes which have changed properties: if so, we give the full updated node back
 
         """
-        diff={"handle":None,"newNodes":{},"deletedNodeIds":[],"modifiedNodes":{}}
-        if newHandle is None:
-            newModel = self.get_model_for_web()
-        else:
-            if newModel in self.differentialHandles:
-                newModel = self.differentialHandles[newModel]
+        with self.lock:
+            diff={"handle":None,"newNodes":{},"deletedNodeIds":[],"modifiedNodes":{}} # the response for web
+
+            if oldHandle not in self.differentialHandles:
+                return None # the old handle does not exist, we can't handle this request
+
+            if newHandle is None:
+                # this is the standard case, we generate the new handle now
+                user = self.differentialHandles[oldHandle]["user"]
+                newHandle = self.create_differential_handle(user=user) # this function also makes a copy of the current tree and puts it in the self.differential handles list
+                newModel = self.differentialHandles[newHandle]["model"]
             else:
-                return None # the newhandle did not exist
-        if oldHandle not in self.differentialHandles:
-            return None # the old handle does not exist
-        oldModel = self.differentialHandles[oldHandle]
+                if newHandle in self.differentialHandles:
+                    newModel = self.differentialHandles[newHandle]
+                else:
+                    return None # the newhandle did not exist
+            oldModel = self.differentialHandles[oldHandle]["model"]
 
-        #now iterate over the nodes
+            # delete strategy: for every "user" we track a maximum of self.differentialHandlesMaxPerUser
+            users={}
+            for handle,entry in self.differentialHandles.items():
+                user = entry["user"]
+                if user not in users:
+                    users[user]={}
+                users[ user][ handle ] = entry["time"]
+            for user,entries in users.items():
+                if len(entries)> self.differentialHandlesMaxPerUser:
+                    #must clean up history of that user, entries is a dict of handle:time
+                    sortedKeys =[key for key, value in sorted(entries.items(), key=lambda item: item[1])]
+                    removeKeys = sortedKeys[:-self.differentialHandlesMaxPerUser]
+                    self.logger.debug("remove handle"+str(removeKeys)+" of user"+user)
+                    for key in removeKeys:
+                        del self.differentialHandles[key]
 
-        #find the changes
-        for newNodeId in newModel:
-            if newNodeId not in oldModel:
-                #this node is not found in the old model, so it is new
-                diff["newNodes"][newNodeId]=copy.deepcopy(newModel[newNodeId])
-            else:
-                #this node is in both models, check if there was a change insight the nodes
-                #for a deep comparison, serialize them
-                newNodeSerialized = json.dumps(newModel[newNodeId],sort_keys=True)
-                oldNodeSerialized = json.dumps(oldModel[newNodeId],sort_keys=True)
-                if newNodeSerialized != oldNodeSerialized:
-                    #something is different, so return that node
-                    diff["modifiedNodes"][newNodeId]=copy.deepcopy(newModel[newNodeId])
 
-        #now check for deleted once, these appear in the old but not in the new
-        diff["deletedNodeIds"]=list(set(oldModel.keys())-set(newModel.keys()))
 
-        if delOld:
-            del self.differentialHandles[oldHandle]
 
-        if not newHandle:
-            #we auto-create a new handle and entry
-            diff["handle"]=self.create_differential_handle()
 
-        return diff
+            #find the changes between the models
+            for newNodeId in newModel:
+                if newNodeId not in oldModel:
+                    #this node is not found in the old model, so it is new
+                    diff["newNodes"][newNodeId]=copy.deepcopy(newModel[newNodeId])
+                else:
+                    #this node is in both models, check if there was a change insight the nodes
+                    #for a deep comparison, serialize them
+                    newNodeSerialized = json.dumps(newModel[newNodeId],sort_keys=True)
+                    oldNodeSerialized = json.dumps(oldModel[newNodeId],sort_keys=True)
+                    if newNodeSerialized != oldNodeSerialized:
+                        #something is different, so return that node
+                        diff["modifiedNodes"][newNodeId]=copy.deepcopy(newModel[newNodeId])
 
+            #now check for deleted once, these appear in the old but not in the new
+            diff["deletedNodeIds"]=list(set(oldModel.keys())-set(newModel.keys()))
+            diff["handle"]=newHandle
+
+            return diff
 
 
 

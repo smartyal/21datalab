@@ -135,8 +135,35 @@ def diff_test():
     diff = m.get_differential_update(handle)
     m.show()
     print(json.dumps(diff,indent =4))
-    print("unchanged")
+    print("unchanged:?")
     print(json.dumps(m.get_differential_update(diff["handle"])))
+
+
+    #now make more complex queries and watch the history
+    m=model.Model()
+
+    #make some nodes
+    for id in range(10):
+        m.create_node("root",name="node"+str(id),type="const",value=id)
+    a = m.create_differential_handle()
+    result=[]
+
+    handle = a
+    for i in range(20):
+        res = m.get_differential_update(handle)
+        result.append(res)
+        time.sleep(1)
+        handle = res["handle"]
+
+    #
+    b = m.get_differential_update(a)['handle']
+    c = m.get_differential_update(b)['handle']
+    d = m.get_differential_update(c)['handle']
+    e = m.get_differential_update(c)['handle']
+    f = m.get_differential_update(c)['handle']
+    g = m.get_differential_update(f)['handle']
+    h = m.get_differential_update(g)['handle']
+    i = m.get_differential_update(c)['handle']
 
 
 def template_test():
@@ -435,7 +462,7 @@ if __name__ == "__main__":
     #t.stop("loading")
     #n.show()
 
-    #diff_test()
+    diff_test()
     #template_test()
     #test_global_id_counter()
     #test_list_dir()
@@ -447,7 +474,7 @@ if __name__ == "__main__":
     #copy_paste_test()
     #html_test()
     #more_components()
-    width_6()
+    #width_6()
 
 
 
