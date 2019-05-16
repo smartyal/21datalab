@@ -539,7 +539,7 @@ class TreeWidget
         console.log("context delete",node);
         //deleting is different for referencee nodes, these are in fact references
         var allNodes = $(this.treeDiv).jstree(true).get_selected();
-        http_post("/_delete",JSON.stringify(allNodes),null,null,null);
+        //http_post("/_delete",JSON.stringify(allNodes),null,null,null);
 
         //now for the referencees here, we remove the refs
         var allRefs={}; //all refs holds the parent:[list of references o delete]

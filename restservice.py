@@ -563,26 +563,29 @@ def all(path):
                         id=re.compile("^ui-component"))  # find all divs that have a string starting with "ui-component"
                     for div in divs:
                         uiinfo = json.loads(div.attrs['uiinfo'])
-                        #now find the widget by looking into the model
-                        widgetType = m.get_node(uiinfo['component']+'.model').get_leaves()[0].get_child("widgetType").get_value()
-                        if widgetType == "timeSeriesWidget":
-                            #this is a bokeh time series widget, so we must do some things here
-                            port = m.get_node(uiinfo['component']+'.settings').get_value()["port"]
-                            script = server_session(session_id=str(uuid.uuid4().hex), url="http://localhost:"+str(port)+"/bokeh_web")
-                            #script = script.encode('utf-8') # due to problem with "&"
-                            scriptHtml = BeautifulSoup(script, "lxml")
-                            scriptTag = scriptHtml.find("script")
-                            scriptSource = scriptTag["src"]
-                            scriptId = scriptTag["id"]
-                            scriptinsert = scriptTag.prettify(formatter=None)
+                        try:
+                            #now find the widget by looking into the model
+                            widgetType = m.get_node(uiinfo['component']+'.model').get_leaves()[0].get_child("widgetType").get_value()
+                            if widgetType == "timeSeriesWidget":
+                                #this is a bokeh time series widget, so we must do some things here
+                                port = m.get_node(uiinfo['component']+'.settings').get_value()["port"]
+                                script = server_session(session_id=str(uuid.uuid4().hex), url="http://localhost:"+str(port)+"/bokeh_web")
+                                #script = script.encode('utf-8') # due to problem with "&"
+                                scriptHtml = BeautifulSoup(script, "lxml")
+                                scriptTag = scriptHtml.find("script")
+                                scriptSource = scriptTag["src"]
+                                scriptId = scriptTag["id"]
+                                scriptinsert = scriptTag.prettify(formatter=None)
 
-                            scriptTag = soup.new_tag("script",src=scriptSource,id=scriptId)
-                            uiinfo["droppath"]=m.get_node(uiinfo['component']+'.model').get_leaves()[0].get_browse_path()
-                            div.append(scriptTag)
-                            div.attrs['uiinfo']=json.dumps(uiinfo)
-                        else:
-                            logger.error("unsupported widget type"+str(widgetType))
-                        print(uiinfo)
+                                scriptTag = soup.new_tag("script",src=scriptSource,id=scriptId)
+                                uiinfo["droppath"]=m.get_node(uiinfo['component']+'.model').get_leaves()[0].get_browse_path()
+                                div.append(scriptTag)
+                                div.attrs['uiinfo']=json.dumps(uiinfo)
+                            else:
+                                logger.error("unsupported widget type"+str(widgetType))
+                            print(uiinfo)
+                        except Exception as ex:
+                            logger.error("can't get layout component" + str(uiinfo['component']))
                 response = str(soup)
                 response=response.replace('&amp;','&') # hack: can't get beautifulsoup to suppress the conversion
                 logger.debug(response)

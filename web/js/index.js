@@ -3,21 +3,6 @@ var crtModelName = undefined;
 var nodesMoving = {}; //here we store information from the tree plugin about the move, we grab in in the dnd_stop event and execute the move
 
 
-//var myTree = new TreeWidget('jstree_div',{});
-
-
-function populate_models() {
-    let data = http_get("/models");
-    let models = JSON.parse(data);
-
-    $('#modelSelect').empty();
-
-    $('#modelSelect').append('<option value="" disabled selected>Choose a model</option>')
-
-    for (let model of models) {
-        $('#modelSelect').append(`<option>` + model + `</option>`);
-    }
-}
 
 function populate_settings() {
     // Try to retrieve the current setting from the local storage
@@ -37,88 +22,6 @@ function populate_settings() {
     }
 }
 
-function populate_model_card_header() {
-    try {
-        let info = http_get('/modelinfo');
-        crtModelName = JSON.parse(info).name;
-
-        $('#currentModelName').html(crtModelName);
-    }
-    catch {
-
-    }
-
-	$('#reloadtreebtn').click( function () {
-		myTree.tree_initialize();
-    });
-
-    // Handle the tree auto refresh settings
-    let crtTreeAutoRefreshEnabled = localStorage.getItem("21dataTreeAutoRefreshEnabled");
-    // Check the current settings and either start or stop the auto update timer and also set the proper icon
-    if (crtTreeAutoRefreshEnabled == "true") {
-        myTree.start_periodic_tree_update();
-        $('#updatetreebtn').html(`<i class="fas fa-sync-alt fa-spin"></i>`);
-    }
-    else {
-        myTree.stop_periodicTreeUpdate();
-        $('#updatetreebtn').html(`<i class="fas fa-sync-alt"></i>`);
-    }
-
-	$('#updatetreebtn').click(() => {
-        // Toggle the automatic tree update functionality
-        let crtTreeAutoRefreshEnabled = localStorage.getItem("21dataTreeAutoRefreshEnabled");
-
-        if (crtTreeAutoRefreshEnabled == "true") {
-            localStorage.setItem("21dataTreeAutoRefreshEnabled", false);
-            myTree.stop_periodicTreeUpdate();
-            $('#updatetreebtn').html(`<i class="fas fa-sync-alt"></i>`);
-        }
-        else {
-            localStorage.setItem("21dataTreeAutoRefreshEnabled", true);
-            myTree.start_periodic_tree_update();
-            $('#updatetreebtn').html(`<i class="fas fa-sync-alt fa-spin"></i>`);
-        }
-    });
-
-    $('#saveModelBtn').click(() => {
-        myTree.save_tree(crtModelName);
-    });
-
-    // Show the save as modal
-    $('#saveModelAsBtn').click(() => {
-        $("#saveModelAsModal").modal();
-    })
-
-    $('#saveModelAsBtnApply').click(() => {
-        let modelName = $('#saveModelAsModelName').val();
-
-        // save_tree(modelName);
-        // Trigger a model save and afterwards clear the input for the model name and update the model dropdown
-        http_post('/_save', modelName, null, null,() => {
-            $('#saveModelAsModelName').val('');
-            populate_models();
-        });
-    });
-
-    populate_models();
-
-    $('#loadModelBtn').click(() => {
-        $('#loadModelModal').modal();
-    });
-
-    $('#loadModelBtnApply').click(() => {
-        let modelName = $('#modelSelect').val();
-
-        if (modelName != "") {
-            myTree.load_tree(modelName);
-
-            crtModelName = modelName;
-            $('#currentModelName').html(modelName);
-        }
-    });
-
-    $('[data-toggle="tooltip"]').tooltip()
-}
 
 
 function drop_nodes(nodeIds,path)
@@ -139,24 +42,32 @@ function populate_ui()
         let divTag = $("#"+div.id)
         var path = JSON.parse(divTag.attr('uiinfo'))['path'];
         http_post("_getlayout",JSON.stringify({"layoutNode":path}),div.id, null,function(obj,status,data,params)   {
+            var id = params;
             if (status==200)
             {
-                var id = params;
                 $('#'+id).html(data);
-
-                //the trees
-                var treeDivs =  $("#"+id+" div[id^='ui-tree']");
-                for (var treeDiv of treeDivs)
+            }
+            else
+            {
+                if (id.includes("workbench"))
                 {
-                    var settings={};//check if there are local settings in the ui
-                    try
-                    {
-                        settings = JSON.parse($("#"+treeDiv.id).attr('uiinfo'))['settings'];
-                    }
-                    catch{}
-                    var tree = new TreeCard(treeDiv.id,settings);
+                    console.log("get layout failed, we take a tree as default fallback")
+                    $('#'+id).html('<div id="ui-tree-'+id+'">(loading of '+id+' failed, we provide the tree to fix things:)</div');
                 }
             }
+            //the trees
+            var treeDivs =  $("#"+id+" div[id^='ui-tree']");
+            for (var treeDiv of treeDivs)
+            {
+                var settings={};//check if there are local settings in the ui
+                try
+                {
+                    settings = JSON.parse($("#"+treeDiv.id).attr('uiinfo'))['settings'];
+                }
+                catch{}
+                var tree = new TreeCard(treeDiv.id,settings);
+            }
+
         });
     }
 
@@ -301,7 +212,6 @@ function on_first_load () {
         }
     });
 
-    //var t = new TreeCard("newtree",null);
 
 
 } //on_first_load;
