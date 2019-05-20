@@ -1,13 +1,8 @@
-
-
-
-
-
 /*
  the TreeWidget is the fully capable tree, can be adjusted with the settings
  the TreeWidget only cares about the tree itself, the control and layout comes from the TreeCard class
 */
-class TreeWidget 
+class TreeWidget
 {
     constructor (treeDivId,settings)
     {
@@ -57,11 +52,12 @@ class TreeWidget
 
     }
 
-
     start_periodic_tree_update()
     {
         this.periodicTreeUpdate = true;
-        window.setTimeout(function(){this.trigger_tree_update();}.bind(this), 1000);
+        window.setTimeout(() => {
+            this.trigger_tree_update();
+        }, 1000);
     }
 
     stop_periodicTreeUpdate()
@@ -74,13 +70,15 @@ class TreeWidget
         if (this.periodicTreeUpdate == true)
         {
             this.tree_update();
-            window.setTimeout(function(){this.trigger_tree_update();}.bind(this), 1000);
+            window.setTimeout(() => {
+                this.trigger_tree_update();
+            }, 1000);
         }
     }
 
     load_tree(name)
     {
-        http_post('/_load',name, null, this, function(obj,status,data,params)   {
+        http_post('/_load',name, null, this, (obj,status,data,params) => {
             if (status!=200)
             {
                 console.log("cant load  model"+name);
@@ -91,11 +89,11 @@ class TreeWidget
             }
         });
     }
+
     save_tree(name)
     {
         http_post('/_save',name, null, null, null);
     }
-
 
     //generate all html modals needed for the tree
     make_edit_modal()
@@ -110,7 +108,7 @@ class TreeWidget
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h4 class="modal-title" id="myModalLabel">Edit Node Valuee</h4>
+                            <h4 class="modal-title" id="myModalLabel">Edit Node Value</h4>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         </div>
                         <div class="modal-body">
@@ -126,6 +124,7 @@ class TreeWidget
                         </div>
                     </div>
                 </div>`;
+
         modalCode = modalCode.replace('editNodeModalButtonSave',this.treeContainerId+'-editNodeModalButtonSave');
         modalCode = modalCode.replace('editNodeModalValue',this.treeContainerId+'-editNodeModalValue');
         modalCode = modalCode.replace('editNodeModalName',this.treeContainerId+'-editNodeModalName');
@@ -150,7 +149,7 @@ class TreeWidget
                         <h4 class="modal-title" id="advancedEditModalLabel">Edit Node Type</h4>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                     </div>
-                    <div class="modal-body">
+                    <div class="modal-body" id="advancedEditModalBody">
                         <div class="form-group">
                             <label id="advancedEditModalName">nodePath</label>
                             <label id="advancedEditModalId" hidden>id</label>
@@ -159,24 +158,22 @@ class TreeWidget
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-secondary" id="advancedEditModalButtonAddPropery">Add Property</button>
                         <button type="button" class="btn btn-primary" data-dismiss="modal" id ="advancedEditModalButtonSave">Save changes</button>
                     </div>
                 </div>
             </div>`;
-        modalCode = modalCode.replace('advancedEditModalName',this.treeContainerId+'-advancedEditModalName');
-        modalCode = modalCode.replace('advancedEditModalId',this.treeContainerId+'-advancedEditModalId');
-        modalCode = modalCode.replace('advancedEditModalValue',this.treeContainerId+'-advancedEditModalValue');
+
+        modalCode = modalCode.replace('advancedEditModalBody',this.treeContainerId+'-advancedEditModalBody');
         modalCode = modalCode.replace('advancedEditModalButtonSave',this.treeContainerId+'-advancedEditModalButtonSave');
+        modalCode = modalCode.replace('advancedEditModalButtonAddPropery',this.treeContainerId+'-advancedEditModalButtonAddPropery');
+
         modal.innerHTML = modalCode;
         return modal;
     }
 
-
-
-
     tree_initialize()
     {
-
         var treeInner = document.createElement("div");
         treeInner.id = this.treeDivId+"-treeInner";
 
@@ -224,8 +221,6 @@ class TreeWidget
             }
         });
 
-
-
         $('#'+this.treeContainerId+'-editNodeModalButtonSave').click( () => {
             var id = $('#'+this.treeContainerId+'-editNodeModalId').val();
             var value = JSON.parse($('#'+this.treeContainerId+'-editNodeModalValue').val());
@@ -233,19 +228,67 @@ class TreeWidget
             http_post("/setProperties",JSON.stringify(query),null,null,null);
         });
 
+        $('#'+this.treeContainerId+'-advancedEditModalButtonSave').click(() => {
+            // var id = $('#advancedEditModalId').val();
+            // var value = JSON.parse($('#advancedEditModalValue').val());
+            // var query=[{"id":id,"type":value}];
+            // http_post("/setProperties",JSON.stringify(query),null,null,null);
 
-        $('#advancedEditModalButtonSave').click(function(){
-            var id = $('#advancedEditModalId').val();
-            var value = JSON.parse($('#advancedEditModalValue').val());
-            var query=[{"id":id,"type":value}];
-            http_post("/setProperties",JSON.stringify(query),null,null,null);
+            let params = {
+                id: $('#'+this.treeContainerId+'-advancedEditModalBody').attr('data-node-id')
+            }
+
+            $('#'+this.treeContainerId+'-advancedEditModalBody').find('.form-group').each((index, el) => {
+                // Get the propery id corresponding to this row in the form
+                let paramKey = $(el).attr("data-property-id");
+                // In case it doesn't have one it means it was a new set of property key value pair
+                if (paramKey != undefined) {
+                    let paramValue = $('input', el).val();
+                    params[paramKey] = paramValue;
+                }
+                else {
+                    // Get the propery id from the
+                    paramKey = $('.property-id', el).val();
+                    let paramValue = $('.property-value', el).val();
+                    params[paramKey] = paramValue;
+                }
+            });
+
+            console.log(params);
+
+            http_post("/setProperties",JSON.stringify([params]),null,null);
+        });
+
+        $('#'+this.treeContainerId+'-advancedEditModalButtonAddPropery').click((event) => {
+            let row = $(`<div class="form-group row">
+                <div class="col-5">
+                    <input type="text" class="form-control property-id" value="">
+                </div>
+                <div class="col-5">
+                    <input type="text" class="form-control property-value" value="">
+                </div>
+                <div class="col-2">
+                    <div class="card-header-actions">
+                        <a class="card-header-action delete-property" data-toggle="tooltip" data-placement="top" title="Delete property">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>`)
+
+            $('.delete-property', row).click((event) => {
+                let formGroupRow = event.target.closest(".form-group");
+                // let propertyID = $(formGroupRow).attr("data-property-id");
+                $(formGroupRow).remove();
+            });
+
+            $('#'+this.treeContainerId+'-advancedEditModalBody').append(row);
         });
 
     }
 
     tree_generate()
     {
-
         var treeWidgetObject = this; //for usage in deeper object nesting
 
         $(this.treeDiv).jstree("destroy");
@@ -262,7 +305,6 @@ class TreeWidget
         {
             return;
         }
-
 
         var nodes = this.create_children(model,'1');
         this.treeNodes = model; //keep a copy in the global
@@ -522,16 +564,47 @@ class TreeWidget
         */
     }
 
-
     context_menu_change_properties(node)
     {
-            var id = node.id;
-            var value = this.treeNodes[id].value;
-            //only vars and consts can be edited
-            $('#advancedEditModalName').text(this.treeNodes[id].browsePath);
-            $('#advancedEditModalValue').val(JSON.stringify(this.treeNodes[id].type));
-            $('#advancedEditModalId').val(id);
-            $('#advancedEditModal').modal('show');
+        var id = node.id;
+        var modelNode = this.treeNodes[id];
+
+        $('#'+this.treeContainerId+'-advancedEditModalBody').empty();
+
+        $('#'+this.treeContainerId+'-advancedEditModalBody').attr("data-node-id", id)
+
+        // Go over the properties of the node and create a form with all the properties that can be edited
+        let keysToIgnore = ["id", "browsePath", "children", "parent", "forwardRefs", "backRefs", "value"];
+
+        for (let key in modelNode) {
+            if (keysToIgnore.indexOf(key) == -1) {
+                console.log("Create entry for: " + key);
+
+                $('#'+this.treeContainerId+'-advancedEditModalBody').append(
+                    `<div class="form-group row" data-property-id="` + key + `">
+                        <label class="col-5"> ` + key + `</label>
+
+                        <div class="col-5">
+                            <input type="text" class="form-control" value="` + modelNode[key] + `">
+                        </div>
+                        <div class="col-2">
+                            <div class="card-header-actions">
+                                <a class="card-header-action delete-property" data-toggle="tooltip" data-placement="top" title="Delete property">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>`);
+            }
+        }
+
+        $('.delete-property').click((event) => {
+            let formGroupRow = event.target.closest(".form-group");
+            // let propertyID = $(formGroupRow).attr("data-property-id");
+            $(formGroupRow).remove();
+        });
+
+        $('#' + this.treeContainerId + "-advancedEditModal").modal('show');
     }
 
     context_menu_delete(node)
@@ -600,10 +673,9 @@ class TreeWidget
 
     context_menu_rename(node)
     {
-        var object = this; //recover context on callback
         //$(this.treeDiv).jstree(true).edit(node,null,this.edit_node_done);
-        $(this.treeDiv).jstree(true).edit(node,null,function(node,status,cancel){
-            object.edit_node_done(node,status,cancel);
+        $(this.treeDiv).jstree(true).edit(node,null, (node,status,cancel) => {
+            this.edit_node_done(node,status,cancel);
         });
     }
 
@@ -632,7 +704,6 @@ class TreeWidget
         http_post("/_references",JSON.stringify(query),null,null);
     }
 
-
     context_menu_change_value(node)
     {
             var id = node.id;
@@ -643,8 +714,6 @@ class TreeWidget
             $('#'+this.treeContainerId+'-editNodeModalId').val(id);
             $('#'+this.treeContainerId+'-editNodeModal').modal('show');
     }
-
-
 
     edit_node_done(node, status, cancel)
     {
@@ -676,196 +745,188 @@ class TreeWidget
         }
         var query=[{id:node.id,name:newName}];
         var params={id:node.id,'originalName':originalName,'newName':newName};
-        http_post('/setProperties',JSON.stringify(query), params, this, function(self,status,data,params)   {
+        http_post('/setProperties',JSON.stringify(query), params, this, (self,status,data,params) => {
             if (status>201)
             {
                 //backend responded bad, we must set the frontend back
-                $(self.treeDiv).jstree(true).rename_node(node,params.originalName);
+                $(this.treeDiv).jstree(true).rename_node(node,params.originalName);
                 console.log("renameing did not work on backend");
             }
             else
             {
                 //all good, we also adjust the settings in our local view
-                self.treeNodes[params.id].name=params.newName;
-                self.treeNodes[params.id].browsePath = (self.treeNodes[params.id].browsePath.split('.').slice(0,-1)).join('.')+'.'+params.newName;
+                this.treeNodes[params.id].name=params.newName;
+                this.treeNodes[params.id].browsePath = (this.treeNodes[params.id].browsePath.split('.').slice(0,-1)).join('.')+'.'+params.newName;
             }
         });
-
 
         console.log("change to new name!", newName);
     }
 
-
-
-
     //get the differential tree
     tree_update()
     {
-
-       var query = {handle: this.diffHandle};
-       http_post('/_diffUpdate/', JSON.stringify(query),null,this,this.tree_update_cb);
-    }
-
-    tree_update_cb(self,status,data,params)
-    {
-        if (status > 201) return;
-
-        try
+        var query = {handle: this.diffHandle};
+        http_post('/_diffUpdate/', JSON.stringify(query),null,this,(self,status,data,params) =>
         {
-            var updateData =JSON.parse(data);
-            self.diffHandle = updateData.handle; //remember self for the next time
-        }
-        catch
-        {
-            return;
-        }
-
-        //remove deleted nodes from the tree
-        for (let i=0;i<updateData.deletedNodeIds.length;i++)
-        {
-            var deleteId = updateData.deletedNodeIds[i];
-            delete self.treeNodes[parseInt(deleteId)]; //remove it from the global tree
-            var res = $(self.treeDiv).jstree().delete_node(deleteId);
-            console.log("deleting id ",deleteId,res);
-            // missing here is the synchronization with the self.treeNodes: the parent still holds the id in it's list,
-            // self will be fixed when we look for the modifications:
-            // the parent will be in the modified nodes list, finally we will take over the new node dict of the parent
-        }
-
-        //add new nodes
-        for (let newNodeId in updateData.newNodes)
-        {
-            var node = updateData.newNodes[newNodeId];
-            console.log("new node",node.id)
-            var treeNode = self.node_to_tree(node);
-            $(self.treeDiv).jstree(true).create_node(node.parent, treeNode);
-            self.treeNodes[newNodeId] = node; //store the nodedict info in the tree
-            // missing here is the synchronization with the self.treeNodes: the parent still holds the id in it's list,
-            // self will be fixed when we look for the modifications:
-            // the parent will be in the modified nodes list, finally we will take over the new node dict of the parent
-
-            // if the new node is a referencer we also must create the referencee nodes, we do self later
-            // as we might reference to nodes that don't exist yet
-        }
-
-        //synchronize modified nodes
-        for (let id in updateData.modifiedNodes)
-        {
-            var newNode = updateData.modifiedNodes[id];
-            var oldNode = self.treeNodes[parseInt(id)];
-
-            // we will take over the full property dictionary, but we also must do some special things
-            // for properties that have an importance for the front end; these are:
-            // name, value, children and references
-            // check if any property relevant for thehas changed
-
-            //check name changes
-            if (newNode.name != oldNode.name)
-            {
-                $(self.treeDiv).jstree(true).rename_node(id, newNode.name);
-            }
+            if (status > 201) return;
 
             try
-            {   //check value changes: values can be complex, so we stringify them to compare
-                if (JSON.stringify(newNode.value) != JSON.stringify(oldNode.value))
-                {
-                    var tree = $(self.treeDiv).jstree(true);
-                    var treeNode = tree.get_node(id);
-                    //trigger the redraw of the node, unfortunately all other redraw(), refresh() etc. do not trigger the grid refresh
-                    treeNode.data.value = JSON.stringify(newNode.value);
-                    treeNode["a_attr"]={"title":JSON.stringify(newNode.value),"class":"show_tooltip"};
-                    tree.rename_node(id,newNode.name); // same name as it was, self is to trigger the redraw
-                }
-            }
-            catch{}
-
-            //check type changes
-            if (newNode.type != oldNode.type)
             {
-                var tree = $(self.treeDiv).jstree(true);
-                var treeNode = tree.get_node(id);
-                if (newNode.type in self.treeIcons)
-                {
-                    var icon = self.treeIcons[newNode.type];
-                }
-                else
-                {
-                    var icon = self.treeIcons["unknown"];
-                }
-                treeNode.icon = icon;
-                tree.rename_node(id,newNode.name);// same name as it was, self is to trigger the redraw
+                var updateData =JSON.parse(data);
+                this.diffHandle = updateData.handle; //remember self for the next time
+            }
+            catch
+            {
+                return;
             }
 
-
-            //check modification of dependencies: children and references
-            if (newNode.children.toString() != oldNode.children.toString())
+            //remove deleted nodes from the tree
+            for (let i=0;i<updateData.deletedNodeIds.length;i++)
             {
-                //iterate over the array
+                var deleteId = updateData.deletedNodeIds[i];
+                delete this.treeNodes[parseInt(deleteId)]; //remove it from the global tree
+                var res = $(this.treeDiv).jstree().delete_node(deleteId);
+                console.log("deleting id ",deleteId,res);
+                // missing here is the synchronization with the self.treeNodes: the parent still holds the id in it's list,
+                // self will be fixed when we look for the modifications:
+                // the parent will be in the modified nodes list, finally we will take over the new node dict of the parent
+            }
 
-                for (let index =0; index < newNode.children.length;index++)
+            //add new nodes
+            for (let newNodeId in updateData.newNodes)
+            {
+                var node = updateData.newNodes[newNodeId];
+                console.log("new node",node.id)
+                var treeNode = this.node_to_tree(node);
+                $(this.treeDiv).jstree(true).create_node(node.parent, treeNode);
+                this.treeNodes[newNodeId] = node; //store the nodedict info in the tree
+                // missing here is the synchronization with the self.treeNodes: the parent still holds the id in it's list,
+                // self will be fixed when we look for the modifications:
+                // the parent will be in the modified nodes list, finally we will take over the new node dict of the parent
+
+                // if the new node is a referencer we also must create the referencee nodes, we do self later
+                // as we might reference to nodes that don't exist yet
+            }
+
+            //synchronize modified nodes
+            for (let id in updateData.modifiedNodes)
+            {
+                var newNode = updateData.modifiedNodes[id];
+                var oldNode = this.treeNodes[parseInt(id)];
+
+                // we will take over the full property dictionary, but we also must do some special things
+                // for properties that have an importance for the front end; these are:
+                // name, value, children and references
+                // check if any property relevant for thehas changed
+
+                //check name changes
+                if (newNode.name != oldNode.name)
                 {
-                    if (newNode.children[index] != oldNode.children[index])
+                    $(this.treeDiv).jstree(true).rename_node(id, newNode.name);
+                }
+
+                try
+                {   //check value changes: values can be complex, so we stringify them to compare
+                    if (JSON.stringify(newNode.value) != JSON.stringify(oldNode.value))
                     {
-                        var result = $(self.treeDiv).jstree(true).move_node(newNode.children[index],newNode.id,index);
-                        console.log("move ",newNode.children[index]," to parent ",newNode.id,"on position ", index,"jstreeresult:",result);
+                        var tree = $(this.treeDiv).jstree(true);
+                        var treeNode = tree.get_node(id);
+                        //trigger the redraw of the node, unfortunately all other redraw(), refresh() etc. do not trigger the grid refresh
+                        treeNode.data.value = JSON.stringify(newNode.value);
+                        treeNode["a_attr"]={"title":JSON.stringify(newNode.value),"class":"show_tooltip"};
+                        tree.rename_node(id,newNode.name); // same name as it was, self is to trigger the redraw
                     }
                 }
-                //children have changed
+                catch{}
+
+                //check type changes
+                if (newNode.type != oldNode.type)
+                {
+                    var tree = $(this.treeDiv).jstree(true);
+                    var treeNode = tree.get_node(id);
+                    if (newNode.type in this.treeIcons)
+                    {
+                        var icon = this.treeIcons[newNode.type];
+                    }
+                    else
+                    {
+                        var icon = this.treeIcons["unknown"];
+                    }
+                    treeNode.icon = icon;
+                    tree.rename_node(id,newNode.name);// same name as it was, self is to trigger the redraw
+                }
+
+
+                //check modification of dependencies: children and references
+                if (newNode.children.toString() != oldNode.children.toString())
+                {
+                    //iterate over the array
+
+                    for (let index =0; index < newNode.children.length;index++)
+                    {
+                        if (newNode.children[index] != oldNode.children[index])
+                        {
+                            var result = $(this.treeDiv).jstree(true).move_node(newNode.children[index],newNode.id,index);
+                            console.log("move ",newNode.children[index]," to parent ",newNode.id,"on position ", index,"jstreeresult:",result);
+                        }
+                    }
+                    //children have changed
+                }
+
+                if (newNode.forwardRefs.toString() != oldNode.forwardRefs.toString())
+                {
+                    //references have changed, we take the brute force by rebuilding all refs from scratch
+                    // for self, we iterate over the children of the referencer - js tree node
+                    // we must use the real node of the jstree, as the reference - node are
+                    // only create on the js tree, not in the models
+                    var children = $(this.treeDiv).jstree(true).get_node(oldNode.id).children;
+                    var result = $(this.treeDiv).jstree(true).delete_node(children);
+                    console.log("deleted reference nodes ",children.toString()," from ",oldNode.id,"result ",result);
+
+                    //now rebuild them
+                    for (let entry in newNode.forwardRefs)
+                    {
+                        var targetId = newNode.forwardRefs[entry];
+                        var referenceeModelNode = {
+                                'type': 'referencee',
+                                'name': this.treeNodes[targetId].browsePath,
+                                'parent': newNode.id,
+                                'targetId' : targetId //for later
+                        };
+                        var referenceeNode = this.node_to_tree(referenceeModelNode);
+                        var result = $(this.treeDiv).jstree(true).create_node(newNode.id,referenceeNode);
+                        console.log("built reference",referenceeModelNode.name,result);
+                    }
+                }
+                this.treeNodes[id] = newNode; // update the new properties including children, refs etc
             }
 
-            if (newNode.forwardRefs.toString() != oldNode.forwardRefs.toString())
+            // now check if a referencer is inside the new nodes so we also need to build the referencee nodes
+            for (let newNodeId in updateData.newNodes)
             {
-                //references have changed, we take the brute force by rebuilding all refs from scratch
-                // for self, we iterate over the children of the referencer - js tree node
-                // we must use the real node of the jstree, as the reference - node are
-                // only create on the js tree, not in the models
-                var children = $(self.treeDiv).jstree(true).get_node(oldNode.id).children;
-                var result = $(self.treeDiv).jstree(true).delete_node(children);
-                console.log("deleted reference nodes ",children.toString()," from ",oldNode.id,"result ",result);
-
-                //now rebuild them
-                for (let entry in newNode.forwardRefs)
+                var node = updateData.newNodes[newNodeId];
+                if (node.type == "referencer")
                 {
-                    var targetId = newNode.forwardRefs[entry];
-                    var referenceeModelNode = {
-                            'type': 'referencee',
-                            'name': self.treeNodes[targetId].browsePath,
-                            'parent': newNode.id,
-                            'targetId' : targetId //for later
-                    };
-                    var referenceeNode = self.node_to_tree(referenceeModelNode);
-                    var result = $(self.treeDiv).jstree(true).create_node(newNode.id,referenceeNode);
-                    console.log("built reference",referenceeModelNode.name,result);
+                    for (let entry in node.forwardRefs)
+                    {
+                        var targetId = node.forwardRefs[entry];
+                        var referenceeModelNode = {
+
+                                'type': 'referencee',
+                                'name': this.treeNodes[targetId].browsePath,
+                                'parent': node.id,
+                                'targetId' : targetId
+                        };
+                        var referenceeNode = this.node_to_tree(referenceeModelNode);
+                        var treeNode = $(this.treeDiv).jstree(true).get_node(node.id);
+                        let result = $(this.treeDiv).jstree(true).create_node(node.id,referenceeNode);
+
+                    }
                 }
             }
-            self.treeNodes[id] = newNode; // update the new properties including children, refs etc
-        }
-
-        // now check if a referencer is inside the new nodes so we also need to build the referencee nodes
-        for (let newNodeId in updateData.newNodes)
-        {
-            var node = updateData.newNodes[newNodeId];
-            if (node.type == "referencer")
-            {
-                for (let entry in node.forwardRefs)
-                {
-                    var targetId = node.forwardRefs[entry];
-                    var referenceeModelNode = {
-
-                            'type': 'referencee',
-                            'name': self.treeNodes[targetId].browsePath,
-                            'parent': node.id,
-                            'targetId' : targetId
-                    };
-                    var referenceeNode = self.node_to_tree(referenceeModelNode);
-                    var treeNode = $(self.treeDiv).jstree(true).get_node(node.id);
-                    let result = $(self.treeDiv).jstree(true).create_node(node.id,referenceeNode);
-
-                }
-            }
-        }
+        });
     }
-
 
     //returns an array of children ready for the tree
     create_children(model,parentNodeId)
@@ -1049,7 +1110,6 @@ class TreeCard
         }
     }
 
-
     create_save_as_modal()
     {
         var modal = document.createElement('div');
@@ -1079,7 +1139,6 @@ class TreeCard
         modalCode = modalCode.replace('saveModelAsBtnApply',this.instanceName+'saveModelAsBtnApply');
         modal.innerHTML = modalCode;
         return modal;
-
     }
 
     create_load_modal()
@@ -1128,8 +1187,6 @@ class TreeCard
             $('#'+this.instanceName+'modelSelect').append(`<option>` + model + `</option>`);
         }
     }
-
-
 
     create_card()
     {
@@ -1193,20 +1250,18 @@ class TreeCard
         cardBody.className = "card-body";
 
         var treeContainer = document.createElement("div");
-        treeContainer.className = "pre-scrollable";
+        // treeContainer.className = "pre-scrollable";
         treeContainer.id="jstreeContainer";
-        treeContainer.setAttribute("style","overflow-y: auto;overflow-x: auto;width:100%");
-
-
-
+        treeContainer.setAttribute("style","overflow: auto; width: 100%;");
 
         var treeElement = document.createElement("div");
         treeElement.id = this.instanceName+"jstree-div";
         treeElement.className = "jstree jstree-default";
+        // TODO: Make this configurable through the options maybe
+        treeElement.setAttribute("style","max-height: 750px;");
 
         treeContainer.appendChild(treeElement);
         cardBody.appendChild(treeContainer);
-
 
         //now the whole card
         var card = document.createElement("div");
