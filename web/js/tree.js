@@ -11,11 +11,15 @@ class TreeWidget
 
         this.treeDivId = treeDivId;
 
-        this.settings=settings;  //
+        this.defaultSettings = {"treeRoot":"root"};
+        this.settings = this.defaultSettings;
+        this.settings = Object.assign(this.defaultSettings, settings); //merge the user settings into the settings
+
         this.templates = null; // global list with available templates
         this.treeNodes = {} ; //empty object
         this.diffHandle = null;   //the handle for the differential updates
         this.periodicTreeUpdate = false; //
+        this.treeRootId = '1'; //default is the "root"
         this.globalCopyBuffer = [];
         this.globalIconType = "standard"; // use to ingest html styles for the icons
         this.treeIcons = {
@@ -287,6 +291,20 @@ class TreeWidget
 
     }
 
+    get_id_from_browse_path(browsePath)
+    {
+        for (var nodeid in this.treeNodes)
+        {
+            var node = this.treeNodes[nodeid]
+            if (node.browsePath == browsePath)
+            {
+                return node.id;
+            }
+        }
+        return null;
+    }
+
+
     tree_generate()
     {
         var treeWidgetObject = this; //for usage in deeper object nesting
@@ -306,8 +324,14 @@ class TreeWidget
             return;
         }
 
-        var nodes = this.create_children(model,'1');
         this.treeNodes = model; //keep a copy in the global
+
+        //find the tree root node id
+        this.treeRootId = this.get_id_from_browse_path(this.settings.treeRoot);
+
+
+        var nodes = this.create_children(model,this.treeRootId);
+
 
         // Depending on the global theme set the default or the default-dark as the tree theme
         let themeToUse = "default";
@@ -330,13 +354,13 @@ class TreeWidget
                 },
                 'data': [
                      {
-                        'text': ' root',
+                        'text': ' '+this.settings.treeRoot,
                         'state': {
                             "opened": true,
                             "selected": false
                         },
-                        'id': '1',
-                        'modelId': '1',
+                        'id': this.treeRootId,
+                        'modelId': this.treeRootId,
                         'type': this.globalIconType,
                         'icon':this.treeIcons["root"],
                         'children': nodes,
@@ -1070,7 +1094,7 @@ class TreeCard
         this.targetDiv.append(card);
 
         //now the card was created, we now also create a tree
-        this.myTree = new TreeWidget(this.targetDivId+"-"+"jstree-div",{});
+        this.myTree = new TreeWidget(this.targetDivId+"-"+"jstree-div",this.settings);
         this.myTree.tree_initialize();
 
         //now start automatic updates

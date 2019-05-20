@@ -405,6 +405,7 @@ class TimeSeriesWidget():
         self.dispatcherRunning = False # set to true if a function is still running
         self.observerThreadRunning = False
         self.annotationTags = []
+        self.hoverTool = None
 
         self.__init_figure() #create the graphical output
 
@@ -480,6 +481,7 @@ class TimeSeriesWidget():
 
         self.hoverCounter = 0
         self.newHover = None
+        self.hoverTool = None # forget the old hovers
         self.showBackgrounds = False
         layoutControls = []# this will later be applied to layout() function
 
@@ -622,8 +624,6 @@ class TimeSeriesWidget():
                 button.on_click(self.reset_all)
                 layoutControls.append(button)
 
-
-
         #apply all to the layout
         #self.plot.sizing_mode = "scale_width"
         #for elem in layoutControls:
@@ -659,20 +659,27 @@ class TimeSeriesWidget():
             we also need to make a new hovertool() every time we add renderers, when the renderers are new ( bokeh bug?)
         """
 
+        if not self.hoverTool:
+            #we do this only once
 
-        self.logger.info("MAKE TOOLTIPS"+str(self.hoverCounter))
-        hover = HoverTool(renderers=[])
-        hover.tooltips = [("name","$name"),("time", "@__time{%Y-%m-%d %H:%M:%S.%3N}"),("value","@$name{0.000}")] #show one digit after dot
-        hover.formatters={'__time': 'datetime'}
-        if self.server.get_settings()["hasHover"] in ['vline','hline','mouse']:
-            hover.mode = self.server.get_settings()["hasHover"]
-        hover.line_policy = 'nearest'
-        for k,v in self.lines.items():
-            hover.renderers.append(v)
-        self.plot.add_tools(hover) # for the figure to make the hovering
-        #self.toolBarBox.toolbar.tools.append(hover) #does not work, the tool stays invisible
+            self.logger.info("MAKE TOOLTIPS"+str(self.hoverCounter))
+            hover = HoverTool(renderers=[])
+            hover.tooltips = [("name","$name"),("time", "@__time{%Y-%m-%d %H:%M:%S.%3N}"),("value","@$name{0.000}")] #show one digit after dot
+            hover.formatters={'__time': 'datetime'}
+            if self.server.get_settings()["hasHover"] in ['vline','hline','mouse']:
+                hover.mode = self.server.get_settings()["hasHover"]
+            hover.line_policy = 'nearest'
+            self.plot.add_tools(hover)
+            self.hoverTool = hover
 
-
+        # we do this every time
+        # reapply the renderers to the hover tool
+        renderers = []
+        self.hoverTool.renderers = []
+        renderers = []
+        for k, v in self.lines.items():
+            renderers.append(v)
+        self.hoverTool.renderers = renderers
 
     def __observer_thread_function(self):
         """ the periodic thread function"""
