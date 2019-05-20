@@ -671,6 +671,7 @@ class TimeSeriesWidget():
             hover.line_policy = 'nearest'
             self.plot.add_tools(hover)
             self.hoverTool = hover
+            self.toolBarBox.toolbar.tools.append(hover)  # apply he hover tool to the toolbar
 
         # we do this every time
         # reapply the renderers to the hover tool
@@ -680,6 +681,8 @@ class TimeSeriesWidget():
         for k, v in self.lines.items():
             renderers.append(v)
         self.hoverTool.renderers = renderers
+
+
 
     def __observer_thread_function(self):
         """ the periodic thread function"""
