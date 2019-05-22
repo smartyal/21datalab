@@ -31,7 +31,7 @@ haveLogger = False
 
 
 
-def setup_logging(loglevel=logging.DEBUG):
+def setup_logging(loglevel=logging.DEBUG,tag = ""):
     global haveLogger
     if not haveLogger:
         # fileName = 'C:/Users/al/devel/ARBEIT/testmyapp.log'
@@ -44,7 +44,10 @@ def setup_logging(loglevel=logging.DEBUG):
         logging.getLogger('').addHandler(console)
 
         #logfile = logging.FileHandler('./log/widget_'+'%08x' % random.randrange(16 ** 8)+".log")
-        logfile = logging.FileHandler('./widget_' + '%08x' % random.randrange(16 ** 8) + ".log")
+        #logfile = logging.FileHandler('./widget_' + '%08x' % random.randrange(16 ** 8) + ".log")
+        if tag == "":
+            tag = '%08x' % random.randrange(16 ** 8)
+        logfile = logging.FileHandler('./widget_' + tag+ ".log")
         logfile.setLevel(loglevel)
         logfile.setFormatter(formatter)
         logging.getLogger('').addHandler(logfile)
@@ -76,10 +79,11 @@ class TimeSeriesWidgetDataServer():
         it also caches settings which don't change over time
     """
     def __init__(self,modelUrl,avatarPath):
-        self.__init_logger()
-        self.__init_proxy()
         self.url = modelUrl # get the data from here
         self.path = avatarPath # here is the struct for the timeserieswidget
+
+        self.__init_logger()
+        self.__init_proxy()
         self.__get_settings()
 
 
@@ -97,7 +101,7 @@ class TimeSeriesWidgetDataServer():
             pass
 
     def __init_logger(self, level=logging.DEBUG):
-        setup_logging()
+        setup_logging(loglevel = level, tag=self.path)
         self.logger = logging.getLogger("TSWidgetDataServer")
         #handler = logging.StreamHandler()
         #formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
@@ -317,6 +321,10 @@ class TimeSeriesWidgetDataServer():
         r=self.__web_call("POST","_getdata",body)
         #convert the time to ms since epoch
         r["__time"]=(numpy.asarray(r["__time"])*1000).tolist()
+        #make them all lists and make all inf/nan etc to nan
+        for k,v in r.items():
+            r[k]=[value if numpy.isfinite(value) else numpy.nan for value in v]
+        #self.logger.debug(str(r))
         return r
 
     def get_time_node(self):
@@ -396,6 +404,7 @@ class TimeSeriesWidget():
         self.height = 600
         self.width = 900
         self.lines = {} #keeping the line objects
+        self.legendItems ={} # keeping the legend items
         self.legend ={}
         self.hasLegend = False
         self.data = None
@@ -864,6 +873,7 @@ class TimeSeriesWidget():
         variablesRequest.append("__time")   #make sure we get the time included
         #self.logger.debug("@__plot_lines:self.variables, bins "+str(variablesRequest)+str( settings["bins"]))
         getData = self.server.get_data(variablesRequest,self.rangeStart,self.rangeEnd,settings["bins"]) # for debug
+        #self.logger.debug("GETDATA:"+str(getData))
 
         if newVars == []:
             self.data.data = getData  # also apply the data to magically update
@@ -887,8 +897,11 @@ class TimeSeriesWidget():
             if variableName != timeNode:
                 self.lines[variableName] = self.plot.line(timeNode, variableName, color=color,
                                                   source=self.data, name=variableName,line_width=2)  # x:"time", y:variableName #the legend must havee different name than the source bug
+                self.legendItems[variableName] = LegendItem(label=variableName,renderers=[self.lines[variableName]])
+
         #now make a legend
-        legendItems=[LegendItem(label=var,renderers=[self.lines[var]]) for var in self.lines]
+        #legendItems=[LegendItem(label=var,renderers=[self.lines[var]]) for var in self.lines]
+        legendItems = [v for k,v in self.legendItems.items()]
         if not self.hasLegend:
             #at the first time, we create the "Legend" object
             self.plot.add_layout(Legend(items=legendItems))
@@ -934,6 +947,11 @@ class TimeSeriesWidget():
         for key in deleteLines:
             self.lines[key].visible = False
             del self.lines[key]
+            del self.legendItems[key]
+        #remove the legend
+        legendItems = [v for k, v in self.legendItems.items()]
+        self.plot.legend.items = legendItems
+        #remove the lines
         self.remove_renderes(deleteLines)
 
 

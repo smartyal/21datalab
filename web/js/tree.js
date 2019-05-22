@@ -805,24 +805,26 @@ class TreeWidget
                 return;
             }
 
-            //remove deleted nodes from the tree
+            // remove deleted nodes from the tree
             for (let i=0;i<updateData.deletedNodeIds.length;i++)
             {
                 var deleteId = updateData.deletedNodeIds[i];
                 delete this.treeNodes[parseInt(deleteId)]; //remove it from the global tree
+                // if the jstree does not have this node (reduced tree), the delete_node will fail with false
                 var res = $(this.treeDiv).jstree().delete_node(deleteId);
                 console.log("deleting id ",deleteId,res);
                 // missing here is the synchronization with the self.treeNodes: the parent still holds the id in it's list,
-                // self will be fixed when we look for the modifications:
+                // this will be fixed when we look for the modifications:
                 // the parent will be in the modified nodes list, finally we will take over the new node dict of the parent
             }
 
-            //add new nodes
+            // add new nodes
             for (let newNodeId in updateData.newNodes)
             {
                 var node = updateData.newNodes[newNodeId];
                 console.log("new node",node.id)
                 var treeNode = this.node_to_tree(node);
+                // if the parent is not part of the jstree, then the create will fail with return false
                 $(this.treeDiv).jstree(true).create_node(node.parent, treeNode);
                 this.treeNodes[newNodeId] = node; //store the nodedict info in the tree
                 // missing here is the synchronization with the self.treeNodes: the parent still holds the id in it's list,
@@ -839,6 +841,16 @@ class TreeWidget
                 var newNode = updateData.modifiedNodes[id];
                 var oldNode = this.treeNodes[parseInt(id)];
 
+                var tree = $(this.treeDiv).jstree(true);
+                var treeNode = tree.get_node(id);
+                if ((treeNode == 'undefined') || (treeNode == false))
+                {
+                    // this can happen if we have a reduced tree e.g. the treeroot that we show is not the "root" but some other branch
+                    // then we do nothing but take the node in
+                    this.treeNodes[id] = newNode;
+                    continue;
+                }
+
                 // we will take over the full property dictionary, but we also must do some special things
                 // for properties that have an importance for the front end; these are:
                 // name, value, children and references
@@ -847,15 +859,13 @@ class TreeWidget
                 //check name changes
                 if (newNode.name != oldNode.name)
                 {
-                    $(this.treeDiv).jstree(true).rename_node(id, newNode.name);
+                    tree.rename_node(id, newNode.name);
                 }
 
                 try
                 {   //check value changes: values can be complex, so we stringify them to compare
                     if (JSON.stringify(newNode.value) != JSON.stringify(oldNode.value))
                     {
-                        var tree = $(this.treeDiv).jstree(true);
-                        var treeNode = tree.get_node(id);
                         //trigger the redraw of the node, unfortunately all other redraw(), refresh() etc. do not trigger the grid refresh
                         treeNode.data.value = JSON.stringify(newNode.value);
                         treeNode["a_attr"]={"title":JSON.stringify(newNode.value),"class":"show_tooltip"};
@@ -867,8 +877,6 @@ class TreeWidget
                 //check type changes
                 if (newNode.type != oldNode.type)
                 {
-                    var tree = $(this.treeDiv).jstree(true);
-                    var treeNode = tree.get_node(id);
                     if (newNode.type in this.treeIcons)
                     {
                         var icon = this.treeIcons[newNode.type];
@@ -886,7 +894,6 @@ class TreeWidget
                 if (newNode.children.toString() != oldNode.children.toString())
                 {
                     //iterate over the array
-
                     for (let index =0; index < newNode.children.length;index++)
                     {
                         if (newNode.children[index] != oldNode.children[index])
@@ -904,7 +911,8 @@ class TreeWidget
                     // for self, we iterate over the children of the referencer - js tree node
                     // we must use the real node of the jstree, as the reference - node are
                     // only create on the js tree, not in the models
-                    var children = $(this.treeDiv).jstree(true).get_node(oldNode.id).children;
+                    var oldTreeNode = $(this.treeDiv).jstree(true).get_node(oldNode.id);
+                    var children = oldTreeNode.children;
                     var result = $(this.treeDiv).jstree(true).delete_node(children);
                     console.log("deleted reference nodes ",children.toString()," from ",oldNode.id,"result ",result);
 
