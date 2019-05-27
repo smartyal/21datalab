@@ -119,7 +119,7 @@ class TreeWidget
                             <div class="form-group">
                                 <label id="editNodeModalName">nodePath</label>
                                 <label id="editNodeModalId" hidden>id</label>
-                                <input type="email" class="form-control" id="editNodeModalValue" aria-describedby="emailHelp" >
+                                <input class="form-control edit-modal-input" id="editNodeModalValue">
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -150,7 +150,7 @@ class TreeWidget
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h4 class="modal-title" id="advancedEditModalLabel">Edit Node Type</h4>
+                        <h4 class="modal-title" id="advancedEditModalLabel">Advanced Edit Node</h4>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <div class="modal-body" id="advancedEditModalBody">
@@ -230,6 +230,15 @@ class TreeWidget
             var value = JSON.parse($('#'+this.treeContainerId+'-editNodeModalValue').val());
             var query=[{"id":id,"value":value}];
             http_post("/setProperties",JSON.stringify(query),null,null,null);
+        });
+
+        // Set a callback for the input in the edit value modal to trigger a save when the Enter key is pressed
+        $('.edit-modal-input').on('keyup', (e) => {
+            // Check if enter was pressed
+            if (e.keyCode == 13) {
+                // Triger the save
+                $('#'+this.treeContainerId+'-editNodeModalButtonSave').click()
+            }
         });
 
         $('#'+this.treeContainerId+'-advancedEditModalButtonSave').click(() => {
@@ -390,7 +399,9 @@ class TreeWidget
                         return false;
                     }
                     return true; //we allow all operations as default
-                }
+                },
+                // Disable the default double click action
+                'dblclick_toggle': false
             },
             'grid': {
                 columns: [
@@ -586,6 +597,15 @@ class TreeWidget
             return false;
         });
         */
+
+        // trigger a rename on node double click
+        $(this.treeDiv).on("dblclick.jstree", (e) => {
+            var instance = $.jstree.reference($(this.treeDiv)),
+            node = instance.get_node(e.target);
+
+            console.log(node);
+            this.context_menu_rename(node);
+        })
     }
 
     context_menu_change_properties(node)
@@ -598,7 +618,8 @@ class TreeWidget
         $('#'+this.treeContainerId+'-advancedEditModalBody').attr("data-node-id", id)
 
         // Go over the properties of the node and create a form with all the properties that can be edited
-        let keysToIgnore = ["id", "browsePath", "children", "parent", "forwardRefs", "backRefs", "value"];
+        // let keysToIgnore = ["id", "browsePath", "children", "parent", "forwardRefs", "backRefs", "value"];
+        let keysToIgnore = ["value"];
 
         for (let key in modelNode) {
             if (keysToIgnore.indexOf(key) == -1) {
