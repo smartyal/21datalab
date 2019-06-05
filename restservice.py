@@ -110,7 +110,8 @@ createnode.json =
 {
   "browsePath":"root.myder..."          #mandatory the path  
   "type":                               #mandatory 
-  "value":                              #optional     
+  "value":                              #optional    
+  "targets: [desc,desc]                 #optional for referencers to create 
   ######  
   dont't put "children"
   
@@ -281,6 +282,13 @@ def all(path):
         elif(str(path) == "_getleaves") and str(flask.request.method) in ["POST", "GET"]:
             logger.debug("execute get forward")
             nodes = m.get_leaves(data)
+            #additionally, we provide browsepaths for the forward ids of referencers
+            for node in nodes:
+                if "forwardRefs" in node:
+                    node["forwardPaths"]=[m.get_browse_path(id) for id in node["forwardRefs"]]
+                if "children" in node:
+                    for child in node["children"]:
+                        child["forwardPaths"] = [m.get_browse_path(id) for id in child["forwardRefs"]]
             response = json.dumps(nodes, indent=4)
             responseCode = 200
 
@@ -406,7 +414,13 @@ def all(path):
             result = []
             responseCode = 201
             for blob in data:
+                targets = []
+                if "targets" in blob:
+                    targets = blob["targets"]
+                    del blob["targets"]
                 newNodeId = m.create_node_from_path(blob["browsePath"],blob)
+                if targets:
+                    m.add_forward_refs(newNodeId,targets)
                 logger.debug('creating'+blob["browsePath"]+', result:'+str(newNodeId))
                 result.append(newNodeId)
                 if not newNodeId:

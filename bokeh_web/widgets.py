@@ -18,7 +18,7 @@ import time
 import threading
 
 
-from bokeh.models import DatetimeTickFormatter, ColumnDataSource, BoxSelectTool, BoxAnnotation, Label, LegendItem, Legend, HoverTool
+from bokeh.models import DatetimeTickFormatter, ColumnDataSource, BoxSelectTool, BoxAnnotation, Label, LegendItem, Legend, HoverTool, BoxEditTool
 from bokeh.models import Range1d,DataRange1d
 from bokeh import events
 from bokeh.models.widgets import RadioButtonGroup, Paragraph, Toggle, MultiSelect, Button
@@ -68,6 +68,10 @@ def get_const_nodes_as_dict(tree):
     for node in tree:
         if node["type"] in ["const","variable"]:
             consts[node["name"]]=node["value"]
+        if node["type"] == "referencer":
+            if "forwardPaths" in node:
+                consts[node["name"]] = node["forwardPaths"]
+
     return consts
 
 
@@ -103,6 +107,7 @@ class TimeSeriesWidgetDataServer():
     def __init_logger(self, level=logging.DEBUG):
         setup_logging(loglevel = level, tag=self.path)
         self.logger = logging.getLogger("TSWidgetDataServer")
+        self.logger.setLevel(level)
         #handler = logging.StreamHandler()
         #formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
         #handler.setFormatter(formatter)
@@ -206,15 +211,21 @@ class TimeSeriesWidgetDataServer():
             self.settings.update(annotationsInfo)
             #now get all annotations
             nodes = self.__web_call("post","_getleaves",self.path+".hasAnnotation.annotations")
-            #
+            self.logger.debug("ANNOTATIONS"+json.dumps(nodes,indent=4))
             #now parse the stuff and build up our information
             self.annotations={}
             for node in nodes:
                 if node["type"]=="annotation":
                     self.annotations[node["browsePath"]]=get_const_nodes_as_dict(node["children"])
-                    self.annotations[node["browsePath"]]["startTime"] = date2secs(self.annotations[node["browsePath"]]["startTime"])*1000
-                    self.annotations[node["browsePath"]]["endTime"] = date2secs(self.annotations[node["browsePath"]]["endTime"]) * 1000
 
+                    if "startTime" in self.annotations[node["browsePath"]]:
+                        self.annotations[node["browsePath"]]["startTime"] = date2secs(self.annotations[node["browsePath"]]["startTime"])*1000
+                    if "endTime" in self.annotations[node["browsePath"]]:
+                        self.annotations[node["browsePath"]]["endTime"] = date2secs(self.annotations[node["browsePath"]]["endTime"]) * 1000
+                    if self.annotations[node["browsePath"]]["type"] == "threshold":
+                        #we also pick the target
+                        self.annotations[node["browsePath"]]["variable"]=self.annotations[node["browsePath"]]["variable"][0]
+            self.logger.debug("server annotations" + json.dumps(self.annotations, indent=4))
         #grab the info for the buttons
         myButtons=[]
         for node in info[0]["children"]:
@@ -343,7 +354,7 @@ class TimeSeriesWidgetDataServer():
         return copy.deepcopy(self.annotations)
 
     #start and end are ms(!) sice epoch, tag is a string
-    def add_annotation(self,start,end,tag):
+    def add_annotation(self,start=0,end=0,tag="unknown",type="time",min=0,max=0):
         """
             add a new user annotation to the model and also add it to the local cache
             Args:
@@ -357,17 +368,29 @@ class TimeSeriesWidgetDataServer():
         #place a new annotation into path
         nodeName = '%08x' % random.randrange(16 ** 8)
         annoPath = self.path + "." + "hasAnnotation.newAnnotations."+nodeName
-        nodesToCreate = [
-            {"browsePath": annoPath,"type":"annotation"},
-            {"browsePath": annoPath + '.startTime',"type":"const","value":secs2dateString(start/1000)},
-            {"browsePath": annoPath + '.endTime', "type": "const", "value":secs2dateString(end/1000)},
-            {"browsePath": annoPath + '.tags', "type": "const", "value": [tag]}
+        if type == "time":
+            nodesToCreate = [
+                {"browsePath": annoPath,"type":"annotation"},
+                {"browsePath": annoPath + '.type',"type":"const","value":"time"},
+                {"browsePath": annoPath + '.startTime',"type":"const","value":secs2dateString(start/1000)},
+                {"browsePath": annoPath + '.endTime', "type": "const", "value":secs2dateString(end/1000)},
+                {"browsePath": annoPath + '.tags', "type": "const", "value": [tag]}
+                ]
+        elif type =="threshold":
+            nodesToCreate = [
+                {"browsePath": annoPath, "type": "annotation"},
+                {"browsePath": annoPath + '.type', "type": "const", "value": "threshold"},
+                {"browsePath": annoPath + '.min', "type": "const", "value": min},
+                {"browsePath": annoPath + '.max', "type": "const", "value": max},
+                {"browsePath": annoPath + '.tags', "type": "const", "value": [tag]},
+                {"browsePath": annoPath + '.variable', "type": "referencer", "targets": [self.get_variables_selected()[0]]}
+
             ]
         self.logger.debug("creating anno %s",str(nodesToCreate))
         res = self.__web_call('POST','_create',nodesToCreate)
 
         #now also update our internal list
-        self.annotations[annoPath] = {"startTime":start,"endTime":end,"tags":[tag]}
+        self.annotations[annoPath] = {"startTime":start,"endTime":end,"tags":[tag],"min":min,"max":max,"type":type,"variable":self.get_variables_selected()[0]}
         return annoPath
 
 
@@ -415,6 +438,7 @@ class TimeSeriesWidget():
         self.observerThreadRunning = False
         self.annotationTags = []
         self.hoverTool = None
+        self.showThresholds = True # initial value to show or not the thresholds (if they are enabled)
 
         self.__init_figure() #create the graphical output
 
@@ -523,13 +547,38 @@ class TimeSeriesWidget():
 
         tools = [WheelZoomTool(dimensions="width"), PanTool(dimensions="width")]
         if settings["hasAnnotation"] == True:
-            tools.append(BoxSelectTool(dimensions="width"))
+            self.boxSelectTool = BoxSelectTool(dimensions="width")
+            tools.append(self.boxSelectTool)
+        elif settings["hasThreshold"] == True:
+            self.boxSelectTool = BoxSelectTool(dimensions="height")
+            tools.append(self.boxSelectTool)
         tools.append(ResetTool())
+
+
+        #for limit annotations
+        #tools.append(BoxSelectTool(dimensions="height"))#,callback=self.threshold_cb))
 
         fig = figure(toolbar_location=None, plot_height=self.height,
                      plot_width=self.width,
                      sizing_mode="scale_width",
                      x_axis_type='datetime', y_range=Range1d())
+        self.plot = fig
+
+        # limit selector
+        #self.BoxEditSource = ColumnDataSource({'x': [], 'y': [], 'width': [], 'height': [], 'alpha': []})
+        #self.BoxEditSource.on_change('data',self.testCb)
+        #self.BoxEditRenderer = self.plot.rect('x', 'y', 'width', 'height', source=self.BoxEditSource, alpha='alpha')
+        #draw_tool = BoxEditTool(renderers=[self.BoxEditRenderer], empty_value=1)
+        #tools.append(draw_tool)
+        #make a test annotation
+        #newBack = BoxAnnotation(top=23,bottom=22,
+        #                        fill_color="green",
+        #                        fill_alpha=0.2,
+         #                       name="test")  # +"_annotaion
+        #self.plot.add_layout(newBack)
+
+
+
         for tool in tools:
             fig.add_tools(tool) # must assign them to the layout to have the actual use hooked
         toolBarBox = ToolbarBox()  #we need the strange creation of the tools to avoid the toolbar to disappear after
@@ -537,9 +586,10 @@ class TimeSeriesWidget():
         toolBarBox.toolbar = Toolbar(tools=tools)
         toolBarBox.toolbar_location = "right"
         toolBarBox.toolbar.logo = None # no bokeh logo
-        self.plot = fig
+
         self.tools = toolBarBox
         self.toolBarBox = toolBarBox
+
 
         datetimeFormat = ["%Y-%m-%d %H:%M:%S"]
         datetimeTickFormat = DatetimeTickFormatter(
@@ -582,21 +632,35 @@ class TimeSeriesWidget():
             layoutControls.append(selectWidget)
 
 
-
         #make the annotation controls
+        labels =[]
         if settings["hasAnnotation"] == True:
-            #self.plot.add_tools(BoxSelectTool(dimensions="width"))
-            #also add a drop down for the creation
             labels = settings["tags"]
             labels.append("-erase-")
+        if settings["hasThreshold"] == True:
+            labels.extend(["threshold","-erase threshold-"])
+        if labels:
             self.annotationTags=copy.deepcopy(labels)
             print("HAVE SET ANNOT"+str(labels)+"   "+str(self.annotationTags))
             self.annotationButtons = RadioButtonGroup(labels=labels,active=0,css_classes=['group_button_21'])
             self.annotationOptions = widgetbox(Paragraph(text="Select Annotation Tag"),self.annotationButtons)
-            self.showAnnotationToggle = Toggle(label="hide Annotations", active=True,css_classes=['button_21'])#, button_type="success")
-            self.showAnnotationToggle.on_click(self.annotation_toggle_click_cb)
-            annoWidget = widgetbox(Paragraph(text="Select Annotation Tag"),self.annotationButtons,self.showAnnotationToggle)
-            layoutControls.append(annoWidget)
+            self.annotationButtons.on_click(self.annotations_radio_group_cb)
+
+            controls = [Paragraph(text="Select Annotation Tag"),self.annotationButtons]
+            if settings["hasAnnotation"] == True:
+                self.showAnnotationToggle = Toggle(label="hide Annotations", active=True,css_classes=['button_21'])#, button_type="success")
+                self.showAnnotationToggle.on_click(self.annotation_toggle_click_cb)
+                controls.append(self.showAnnotationToggle)
+            if settings["hasThreshold"] == True:
+                self.showThresholdToggle = Toggle(label="hide Thresholds", active=True,css_classes=['button_21'])
+                self.showThresholdToggle.on_click(self.threshold_toggle_click_cb)
+                controls.append(self.showThresholdToggle)
+
+            #annoWidget = widgetbox(Paragraph(text="Select Annotation Tag"),self.annotationButtons,self.showAnnotationToggle)
+            #layoutControls.append(annoWidget)
+            layoutControls.append(widgetbox(controls))
+
+
         #now do the annotations
         for anno in self.server.get_annotations():
             self.draw_annotation(anno)
@@ -633,6 +697,10 @@ class TimeSeriesWidget():
                 button.on_click(self.reset_all)
                 layoutControls.append(button)
 
+        button = Button(label="test", css_classes=['button_21'])
+        button.on_click(self.test_button_cb)
+        layoutControls.append(button)
+
         #apply all to the layout
         #self.plot.sizing_mode = "scale_width"
         #for elem in layoutControls:
@@ -659,13 +727,35 @@ class TimeSeriesWidget():
             else:
                 self.layout = layout([[self.plot, layoutControls]])  # ,sizing_mode="scale_width")
 
+    def annotations_radio_group_cb(self,args):
+        """called when a selection is done on the radio button for the annoations"""
+        option = self.annotationButtons.active  # gives a 0,1 list, get the label now
+        # tags = self.server.get_settings()["tags"]
+        mytag = self.annotationTags[option]
+        self.logger.debug("annotations_radio_group_cb "+str(mytag))
+        if "threshold" in mytag:
+            #we do a a threshold annotation, adjust the tool
+            self.boxSelectTool.dimensions = "height"
+        else:
+            self.boxSelectTool.dimensions = "width"
+
+    def testCb(self, attr, old, new):
+        self.logger.debug("testCB "+"attr"+str(attr)+"\n old"+str(old)+"\n new"+str(new))
+        self.logger.debug("ACTIVE: "+str(self.plot.toolbar.active_drag))
+
+    def threshold_cb(self,data):
+        self.logger.debug("THESH"+str(data))
+    def test_button_cb(self):
+        self.boxSelectTool.dimensions="height"
+
     def __make_tooltips(self):
         #make the hover tool
         """
-            if we create a hover tool, it only appears if we plot a line, we nned to hook the hover tool to the figure and the toolbar separately:
+            if we create a hover tool, it only appears if we plot a line, we need to hook the hover tool to the figure and the toolbar separately:
             to the figure to get the hover functionality, there we also need to add all renderers to the hover by hand if we create line plots later on
-            still haven't found a way to make the hover tool itself visible when we add it to the toolbar; it does appear when we draw a new line, but then the tool needs to be re-created
-            we also need to make a new hovertool() every time we add renderers, when the renderers are new ( bokeh bug?)
+            still haven't found a way to make the hover tool itself visible when we add it to the toolbar; it does appear when we draw a new line,
+            if we change edit/del and add lines, (including their renderers, we need to del/add those renderes to the hover tools as well
+
         """
 
         if not self.hoverTool:
@@ -898,6 +988,8 @@ class TimeSeriesWidget():
                 self.lines[variableName] = self.plot.line(timeNode, variableName, color=color,
                                                   source=self.data, name=variableName,line_width=2)  # x:"time", y:variableName #the legend must havee different name than the source bug
                 self.legendItems[variableName] = LegendItem(label=variableName,renderers=[self.lines[variableName]])
+                if self.showThresholds:
+                    self.show_thresholds_of_line(variableName)
 
         #now make a legend
         #legendItems=[LegendItem(label=var,renderers=[self.lines[var]]) for var in self.lines]
@@ -953,6 +1045,9 @@ class TimeSeriesWidget():
         self.plot.legend.items = legendItems
         #remove the lines
         self.remove_renderes(deleteLines)
+        #remove the according thresholds if any
+        for lin in deleteLines:
+            self.remove_renderes(self.find_thresholds_of_line(lin))
 
 
         #create the new ones
@@ -1011,7 +1106,7 @@ class TimeSeriesWidget():
             #tags = self.server.get_settings()["tags"]
             mytag = self.annotationTags[option]
             self.logger.info("TAGS"+str(self.annotationTags)+"   "+str(option))
-            self.edit_annotation_cb(event.__dict__["geometry"]["x0"],event.__dict__["geometry"]["x1"],mytag)
+            self.edit_annotation_cb(event.__dict__["geometry"]["x0"],event.__dict__["geometry"]["x1"],mytag,event.__dict__["geometry"]["y0"],event.__dict__["geometry"]["y1"])
 
     def reset_plot_cb(self):
         self.logger.debug("reset plot")
@@ -1054,6 +1149,46 @@ class TimeSeriesWidget():
             self.showAnnotationToggle.label = "show Annotations"
             self.hide_annotations()
 
+    def threshold_toggle_click_cb(self,toggleState):
+        """
+            callback from ui for turning on/off the threshold annotations
+            Args:
+                toggleState (bool): true for set, false for unset
+        """
+        if toggleState:
+            self.showThresholdToggle.label = "hide Thresholds"
+            self.showThresholds = True
+            self.show_thresholds()
+        else:
+            #remove all annotations from plot
+            self.showThresholdToggle.label = "show Thresholds"
+            self.showThresholds = False
+            self.hide_thresholds()
+
+    def show_thresholds(self):
+        """
+            check which lines are currently shown and show their thresholds as well
+        """
+        if not self.showThresholds:
+            return
+
+        for annoName,anno in self.server.get_annotations().items():
+            self.logger.debug("@show_thresholds "+annoName+" "+anno["type"])
+            if anno["type"]=="threshold":
+                # we only show the annotations where the lines are also there
+                self.logger.debug("and the lines are currently"+str(list(self.lines.keys())))
+                if anno["variable"] in self.lines:
+                    self.draw_threshold(annoName,anno["variable"])
+
+
+    def hide_thresholds(self):
+        """ hide the current annotatios in the widget of type time"""
+        annotations = self.server.get_annotations()
+        timeAnnos = [anno for anno in annotations.keys() if annotations[anno]["type"]=="threshold" ]
+        self.remove_renderes(deleteList=timeAnnos)
+        pass
+
+
     def backgroundbutton_cb(self,toggleState):
         """
             event callback function triggered by the UI
@@ -1070,13 +1205,17 @@ class TimeSeriesWidget():
 
 
     def show_annotations(self):
-        """ show the current annotatios in the widget """
-        for anno in self.server.get_annotations():
-            self.draw_annotation(anno)
+        """ show the current annotatios in the widget of type time """
+        for annoname,anno in self.server.get_annotations().items():
+            if "type" in anno and anno["type"]!="time":
+                continue
+            self.draw_annotation(annoname)
 
     def hide_annotations(self):
-        """ hide the current annotatios in the widget """
-        self.remove_renderes(deleteList=(self.server.get_annotations().keys()))
+        """ hide the current annotatios in the widget of type time"""
+        annotations = self.server.get_annotations()
+        timeAnnos = [anno  for anno in annotations.keys() if annotations[anno]["type"]=="time" ]
+        self.remove_renderes(deleteList=timeAnnos)
 
     def get_layout(self):
         """ return the inner layout, used by the main"""
@@ -1086,33 +1225,99 @@ class TimeSeriesWidget():
 
     def draw_annotation(self, modelPath):
         """
-            draw one annotation on the plot
+            draw one time annotation on the plot
             Args:
              modelPath(string): the path to the annotation, the modelPath-node must contain children startTime, endTime, colors, tags
         """
-        annotations = self.server.get_annotations()
-        #now get the first tag, we only use the first
-        tag = annotations[modelPath]["tags"][0]
+        try:
+            annotations = self.server.get_annotations()
+            if annotations[modelPath]["type"]!= "time":
+                return # we only want the time annotations
 
-        settings = self.server.get_settings()
-        tagIndex = settings["tags"].index(tag)
-        color = settings["colors"][tagIndex]
-        start = annotations[modelPath]["startTime"]
-        end = annotations[modelPath]["endTime"]
+            #now get the first tag, we only use the first
+            tag = annotations[modelPath]["tags"][0]
 
-        #print("draw new anno",color,start,end,modelPath)
+            settings = self.server.get_settings()
+            tagIndex = settings["tags"].index(tag)
+            color = settings["colors"][tagIndex]
+            start = annotations[modelPath]["startTime"]
+            end = annotations[modelPath]["endTime"]
 
-        newAnno = BoxAnnotation(left=start,right=end,
-                            fill_color=color,
-                            fill_alpha=0.2,
-                            name=modelPath) #+"_annotaion
+            #print("draw new anno",color,start,end,modelPath)
 
-        self.plot.add_layout(newAnno)
+            newAnno = BoxAnnotation(left=start,right=end,
+                                fill_color=color,
+                                fill_alpha=0.2,
+                                name=modelPath) #+"_annotaion
+
+            self.plot.add_layout(newAnno)
+        except Exception as ex:
+            self.logger.error("error draw annotatino ",str(ex))
 
         #this is an example for labelling
         #label = Label(x=((end-start)*0.25+start), y=50, y_units='screen', text=modelPath,text_font_size='0.8em', angle=3.1415/2)
         #self.plot.add_layout(label)
 
+
+    def find_thresholds_of_line(self,path):
+        """
+            find the hreshold annotations that belong to a line given as model path
+            Args:
+                path: the path to the variable
+            Returns:
+                (list of strings of the threshold sannotations that belong to this variable
+        """
+        result = []
+        for k,v in self.server.get_annotations().items():
+            if v["type"] == "threshold":
+                if v["variable"] == path:
+                    result.append(k)
+        self.logger.debug("@find_thresholds of line returns "+path+" => "+str(result))
+        return result
+
+    def show_thresholds_of_line(self,path):
+        self.logger.debug("@show_threasholds_of_line "+path)
+        thresholds = self.find_thresholds_of_line(path)
+        for threshold in thresholds:
+            self.draw_threshold(threshold,path)
+
+    def hide_thresholds_of_line(self,path):
+        thresholds = self.find_thresholds_of_line(path)
+        self.remove_renderes(deleteList=thresholds)
+
+    def draw_threshold(self, modelPath, linePath=None):
+        """ draw the boxannotation for a threshold
+            Args:
+                 modelPath(string): the path to the annotation, the modelPath-node must contain children startTime, endTime, colors, tags
+        """
+
+        try:
+            annotations = self.server.get_annotations()
+            # now get the first tag, we only use the first
+            tag = annotations[modelPath]["tags"][0]
+
+
+
+            if linePath:
+                color = self.lines[linePath].glyph.line_color
+            else:
+                color ="blue"
+
+            min = annotations[modelPath]["min"]
+            max = annotations[modelPath]["max"]
+            if min>max:
+                max,min = min,max # swap them
+
+            # print("draw new anno",color,start,end,modelPath)
+
+            newAnno = BoxAnnotation(top=max, bottom=min,
+                                    fill_color=color,
+                                    fill_alpha=0.1,
+                                    name=modelPath)  # +"_annotaion
+
+            self.plot.add_layout(newAnno)
+        except Exception as ex:
+            self.logger.error("error draw threshold "+str(modelPath)+ " "+linePath+" "+str(ex))
 
     def show_backgrounds(self,data=None):
         """
@@ -1177,7 +1382,7 @@ class TimeSeriesWidget():
 
 
     #called when the user dreates/removes annotations
-    def edit_annotation_cb(self,start,end,tag):
+    def edit_annotation_cb(self,start,end,tag,min,max):
         """
             call as a callback from the UI when a user adds or removes an annotation
             Args:
@@ -1187,23 +1392,43 @@ class TimeSeriesWidget():
         """
         self.logger.debug("edit anno %s %s %s",str(start),str(end),str(tag))
         if tag == '-erase-':
-            #remove all annotations which are inside
+            #remove all annotations which are inside the time
             deleteList = []
             annotations=self.server.get_annotations()
             for annoPath,annotation in annotations.items():
-                if annotation["startTime"]>start and annotation["startTime"]<end:
-                    self.logger.debug("delete "+annoPath)
-                    deleteList.append(annoPath)
+                if annotation["type"] == "time":
+                    if annotation["startTime"]>start and annotation["startTime"]<end:
+                        self.logger.debug("delete "+annoPath)
+                        deleteList.append(annoPath)
             #now hide the boxes
             self.remove_renderes(deleteList=deleteList)
             self.server.delete_annotations(deleteList)
-        else:
-            #create a new one
+        elif tag =="-erase threshold-":
+            # remove all annotations which are inside the limits are are currently visible
+            deleteList = []
+            annotations = self.server.get_annotations()
+            for annoPath, annotation in annotations.items():
+                if annotation["type"] == "threshold":
+                   pass
 
-            newAnnotationPath = self.server.add_annotation(start,end,tag)
+        elif "threshold" not in tag:
+            #create a time annotation one
+
+            newAnnotationPath = self.server.add_annotation(start,end,tag,type="time")
             #print("\n now draw"+newAnnotationPath)
             self.draw_annotation(newAnnotationPath)
             #print("\n draw done")
+        else:
+            #create a threshold annotation, but only if ONE variable is currently selected
+            variable = self.server.get_variables_selected()
+            if len(variable) != 1:
+                self.logger.error("can't create threshold anno, len(vars"+str(len(variable)))
+                return
+
+
+            newAnnotationPath = self.server.add_annotation(start,end,tag,type ="threshold",min=min,max=max)
+            self.draw_threshold(newAnnotationPath,variable[0])
+
 
 
 if __name__ == '__main__':
