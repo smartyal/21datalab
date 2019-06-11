@@ -533,6 +533,27 @@ class Node():
         else:
             return None
 
+    def get_table_len(self):
+        """
+            if the current node is a type "table", we get the current len
+            Return:
+                 the len of the columns of the table
+        """
+        return self.model.get_table_len(self.id)
+
+    def get_table_node(self):
+        """
+            if the current node is a column of a time series table, we get the according table node of type "table"
+            Return:
+                a Node() of type "table" which is the table of the current node
+        """
+        tableId = self.model.find_table_node(self.id)
+        if tableId:
+            return self.model.get_node(tableId)
+        else:
+            return None
+
+
 
     def get_time_indices(self,startTime,endTime):
         """ works only for "column" nodes, it looks to find the timeField node of the table to which the node belongs
@@ -559,6 +580,8 @@ class Node():
         return self.model.execute_function(self.id)
 
 
+    def get_logger(self):
+        return self.model.logger
 
 class Model():
     nodeTemplate = {"id": None, "name": None, "type": "folder", "parent": None, "children": [], "backRefs": [],"forwardRefs":[],"value":None}
@@ -586,11 +609,17 @@ class Model():
 
     def __init_logger(self, level):
         """setup the logger object"""
-        self.logger = logging.getLogger("Table()")
+        self.logger = logging.getLogger("Model")
         handler = logging.StreamHandler()
         formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
+
+        logfile = logging.FileHandler("./log/model.log")
+        logfile.setFormatter(formatter)
+        self.logger.addHandler(logfile)
+
+
         self.logger.setLevel(level)
 
     def __get_id(self, id):
@@ -1365,6 +1394,65 @@ class Model():
             timeColumnId = self.get_leaves(pathToTimeIndex)[0]['id'] # this referencer must point to only one node
             return timeColumnId
 
+    def find_table_node(self,desc):
+        """
+            get the node id of a table giving a column node of the table as input
+            Args
+                desc[string]: a node descriptor of a column node belonging to the table
+            Returns:
+                the node id of the table node
+
+        """
+        with self.lock:
+            return self.__find_table(desc)
+
+    def get_child(self,desc,childName):
+        """
+            get a child based on the name given
+            Args:
+                desc: node descriptor of the node under which we look for children
+                name: the child name to look for
+            Returns:
+                a nodeid if we find the child with "name" under the desc or none if not found
+        :return:
+        """
+        with self.lock:
+            nodeInfo = self.get_node_info(desc)
+            if nodeInfo:
+                for childId in nodeInfo['children']:
+                    childInfo = self.get_node_info(childId)
+                    if childInfo["name"] == childName:
+                        return childId
+        return None
+
+
+
+
+    def get_table_len(self,desc):
+        """
+            get the current length of a table
+            Args:
+                desc: the node descriptor of type table
+            Returns:
+                the current length of the columns of the table, none if error
+        """
+        with self.lock:
+
+            tableId = self.get_id(desc)
+            if not tableId: return None
+            if not self.model[tableId]["type"]=="table": return None
+
+            try:
+                columnid = self.get_child(tableId,"columns")
+                if not columnid: return None
+                columnIds = self.get_leaves_ids(columnid)
+                if columnIds:
+                    return len(self.model[columnIds[0]]["value"])
+            except:
+                return None
+
+
+
     def get_timeseries_table(self,variables,startTime=None,endTime=None,noBins=None,agg="sample",includeTimeStamps=None,format="array",includeBackGround=None):
         """
             get a time series table from variables. The table is returned as a list[list] object
@@ -1826,8 +1914,8 @@ class Model():
                     pass
 
             return result
-        except:
-            self.logger.error("error inside execution thread, id " +str(id)+" functionname"+str(functionName)+str(sys.exc_info()[1]))
+        except Exception as ex:
+            self.logger.error("error inside execution thread, id " +str(id)+" functionname"+str(functionName)+str(sys.exc_info()[1])+" "+str(ex))
             controlNode.get_child("status").set_value("interrupted")
             controlNode.get_child("result").set_value("error")
             return False

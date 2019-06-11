@@ -429,7 +429,8 @@
         "forwardRefs": [],
         "value": [
             "busy",
-            "free"
+            "free",
+            "region"
         ],
         "browsePath": "root.visualization.workbench.hasAnnotation.tags"
     },
@@ -747,7 +748,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "finished",
+        "value": "interrupted",
         "browsePath": "root.logisticRegression.control.status"
     },
     "225": {
@@ -815,7 +816,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-04-30T11:43:49.502723",
+        "value": "2019-06-11T12:24:09.980559",
         "browsePath": "root.logisticRegression.control.lastStartTime"
     },
     "231": {

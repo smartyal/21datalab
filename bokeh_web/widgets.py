@@ -1321,28 +1321,46 @@ class TimeSeriesWidget():
 
         #now make the new backgrounds
         # we create a list of dicts containing annotation-style info: start
-        startTime = data["__time"][0] # initialize with the first time
+        #startTime = data["__time"][0] # initialize with the first time
+        startTime = None
         currentBackGroundValue = data[backGroundNodeId][0]
+
+        startTime = None
         backgrounds = []
         colorMap = self.server.get_settings()["background"]["backgroundMap"]
         for value,time in zip(data[backGroundNodeId],data["__time"]):
-            if value != currentBackGroundValue:
-                #a new entry starts, finish the last and add it to the list of background
-                try:
-                    color = colorMap[str(int(currentBackGroundValue))]
-                except:
-                    color = "red"
-                entry = {"start":startTime,"end":time,"value":currentBackGroundValue,"color":color}
-                backgrounds.append(entry)
-                currentBackGroundValue = value
-                startTime = time
-        #now also add  the last
-        try:
-            color = colorMap[str(int(currentBackGroundValue))]
-        except:
-            color = "red"
-        entry = {"start": startTime, "end": time, "value": currentBackGroundValue, "color": color}
-        backgrounds.append(entry)
+            #must set the startTime?
+            if not startTime:
+                if not numpy.isfinite(value):
+                    continue # can't use inf/nan
+                else:
+                    startTime = time
+                    currentBackGroundValue = value
+            else:
+                #now we are inside a region, let's see when it ends
+                 if value != currentBackGroundValue:
+                    #a new entry starts, finish the last and add it to the list of background
+                    try:
+                        color = colorMap[str(int(currentBackGroundValue))]
+                    except:
+                        color = "red"
+                    entry = {"start":startTime,"end":time,"value":currentBackGroundValue,"color":color}
+                    self.logger.debug("ENTRY"+json.dumps(entry))
+                    backgrounds.append(entry)
+                    #now check if current value is finite, then we can start
+                    if numpy.isfinite(value):
+                        currentBackGroundValue = value
+                        startTime = time
+                    else:
+                        startTime = None # look for the next start
+        #now also add the last, if we have one running
+        if startTime:
+            try:
+                color = colorMap[str(int(currentBackGroundValue))]
+            except:
+                color = "red"
+            entry = {"start": startTime, "end": time, "value": currentBackGroundValue, "color": color}
+            backgrounds.append(entry)
         #now we have a list of backgrounds
         self.logger.info("have %i background entries",len(backgrounds))
         #now plot them
