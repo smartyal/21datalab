@@ -434,6 +434,42 @@ def width_6():
     m.save('kna6_6')
 
 
+def dates():
+    s = "2018-1-1T08:15:00+02:00"
+    s2 = "2018-1-1T06:15:00+00:00"
+    print(model.date2secs(s),model.date2secs(s2))
+
+
+def update_widgets(fileName):
+
+    m=model.Model()
+    temp = m.get_templates()
+    m.load(fileName)
+    #now go throught the widget and update all according the template
+    #now find all type widget
+    newNodes ={}
+    for id,props in m.model.items():
+        if props["type"] == "widget":
+            widget = m.get_node(id)
+            print("found widget ",widget.get_browse_path())
+            #now go through all first level properties and bring them in if they are missing
+            for entry in m.get_templates()['templates.timeseriesWidget']["children"]:
+                name = entry["name"]
+                if not widget.get_child(name):
+                    print("missing " +name + " in "+widget.get_browse_path())
+                    newNodes[widget.get_browse_path()+"."+name]=entry
+
+    for k,v in newNodes.items():
+        m.create_node_from_path(k, properties=v)
+    m.show()
+    m.save(fileName+"_adj")
+
+
+
+
+
+
+
 
 
 
@@ -462,7 +498,7 @@ if __name__ == "__main__":
     #t.stop("loading")
     #n.show()
 
-    diff_test()
+    #diff_test()
     #template_test()
     #test_global_id_counter()
     #test_list_dir()
@@ -475,6 +511,8 @@ if __name__ == "__main__":
     #html_test()
     #more_components()
     #width_6()
+    #dates()
+    update_widgets('hybif6_2')
 
 
 

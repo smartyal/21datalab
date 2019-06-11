@@ -25,6 +25,8 @@ from bokeh.models.widgets import RadioButtonGroup, Paragraph, Toggle, MultiSelec
 from bokeh.plotting import figure, curdoc
 from bokeh.layouts import layout,widgetbox, column
 from bokeh.models import Range1d, PanTool, WheelZoomTool, ResetTool, ToolbarBox, Toolbar
+from bokeh.models import FuncTickFormatter, CustomJSHover, SingleIntervalTicker, DatetimeTicker
+from pytz import timezone
 
 
 haveLogger = False
@@ -85,6 +87,7 @@ class TimeSeriesWidgetDataServer():
     def __init__(self,modelUrl,avatarPath):
         self.url = modelUrl # get the data from here
         self.path = avatarPath # here is the struct for the timeserieswidget
+        #self.timeOffset = 0 # the timeoffset of display in seconds (from ".displayTimeZone)
 
         self.__init_logger()
         self.__init_proxy()
@@ -353,6 +356,11 @@ class TimeSeriesWidgetDataServer():
     def get_annotations(self):
         return copy.deepcopy(self.annotations)
 
+    def bokeh_time_to_string(self,epoch):
+        localtz =  timezone(self.settings["timeZone"])
+        dt = datetime.datetime.fromtimestamp(epoch/1000, localtz)
+        return dt.isoformat()
+
     #start and end are ms(!) sice epoch, tag is a string
     def add_annotation(self,start=0,end=0,tag="unknown",type="time",min=0,max=0):
         """
@@ -372,8 +380,8 @@ class TimeSeriesWidgetDataServer():
             nodesToCreate = [
                 {"browsePath": annoPath,"type":"annotation"},
                 {"browsePath": annoPath + '.type',"type":"const","value":"time"},
-                {"browsePath": annoPath + '.startTime',"type":"const","value":secs2dateString(start/1000)},
-                {"browsePath": annoPath + '.endTime', "type": "const", "value":secs2dateString(end/1000)},
+                {"browsePath": annoPath + '.startTime',"type":"const","value":self.bokeh_time_to_string(start)},
+                {"browsePath": annoPath + '.endTime', "type": "const", "value":self.bokeh_time_to_string(end)},
                 {"browsePath": annoPath + '.tags', "type": "const", "value": [tag]}
                 ]
         elif type =="threshold":
@@ -554,30 +562,11 @@ class TimeSeriesWidget():
             tools.append(self.boxSelectTool)
         tools.append(ResetTool())
 
-
-        #for limit annotations
-        #tools.append(BoxSelectTool(dimensions="height"))#,callback=self.threshold_cb))
-
         fig = figure(toolbar_location=None, plot_height=self.height,
                      plot_width=self.width,
                      sizing_mode="scale_width",
                      x_axis_type='datetime', y_range=Range1d())
         self.plot = fig
-
-        # limit selector
-        #self.BoxEditSource = ColumnDataSource({'x': [], 'y': [], 'width': [], 'height': [], 'alpha': []})
-        #self.BoxEditSource.on_change('data',self.testCb)
-        #self.BoxEditRenderer = self.plot.rect('x', 'y', 'width', 'height', source=self.BoxEditSource, alpha='alpha')
-        #draw_tool = BoxEditTool(renderers=[self.BoxEditRenderer], empty_value=1)
-        #tools.append(draw_tool)
-        #make a test annotation
-        #newBack = BoxAnnotation(top=23,bottom=22,
-        #                        fill_color="green",
-        #                        fill_alpha=0.2,
-         #                       name="test")  # +"_annotaion
-        #self.plot.add_layout(newBack)
-
-
 
         for tool in tools:
             fig.add_tools(tool) # must assign them to the layout to have the actual use hooked
@@ -590,20 +579,13 @@ class TimeSeriesWidget():
         self.tools = toolBarBox
         self.toolBarBox = toolBarBox
 
+        self.plot.xaxis.formatter = FuncTickFormatter(code = """ 
+            let local = moment(tick).tz('%s');
+            let datestring =  local.format();
+            return datestring.slice(0,-6);
+            """%settings["timeZone"])
 
-        datetimeFormat = ["%Y-%m-%d %H:%M:%S"]
-        datetimeTickFormat = DatetimeTickFormatter(
-            years=datetimeFormat,
-            months=datetimeFormat,
-            days=datetimeFormat,
-            hourmin=datetimeFormat,
-            hours=datetimeFormat,
-            minutes=datetimeFormat,
-            minsec=datetimeFormat,
-            seconds=datetimeFormat,
-            milliseconds=datetimeFormat
-        )  # use the same time legend style for all zoom levels
-        self.plot.xaxis.formatter = datetimeTickFormat
+        self.plot.xaxis.ticker = DatetimeTicker(desired_num_ticks=4)# give more room for the date time string (default was 6)
         self.refresh_plot()
 
         #hook in the callback of the figure
@@ -698,8 +680,8 @@ class TimeSeriesWidget():
                 layoutControls.append(button)
 
         button = Button(label="test", css_classes=['button_21'])
-        button.on_click(self.test_button_cb)
-        layoutControls.append(button)
+        #button.on_click(self.test_button_cb)
+        #layoutControls.append(button)
 
         #apply all to the layout
         #self.plot.sizing_mode = "scale_width"
@@ -743,11 +725,6 @@ class TimeSeriesWidget():
         self.logger.debug("testCB "+"attr"+str(attr)+"\n old"+str(old)+"\n new"+str(new))
         self.logger.debug("ACTIVE: "+str(self.plot.toolbar.active_drag))
 
-    def threshold_cb(self,data):
-        self.logger.debug("THESH"+str(data))
-    def test_button_cb(self):
-        self.boxSelectTool.dimensions="height"
-
     def __make_tooltips(self):
         #make the hover tool
         """
@@ -763,8 +740,12 @@ class TimeSeriesWidget():
 
             self.logger.info("MAKE TOOLTIPS"+str(self.hoverCounter))
             hover = HoverTool(renderers=[])
-            hover.tooltips = [("name","$name"),("time", "@__time{%Y-%m-%d %H:%M:%S.%3N}"),("value","@$name{0.000}")] #show one digit after dot
-            hover.formatters={'__time': 'datetime'}
+            #hover.tooltips = [("name","$name"),("time", "@__time{%Y-%m-%d %H:%M:%S.%3N}"),("value","@$name{0.000}")] #show one digit after dot
+            hover.tooltips = [("name", "$name"), ("time", "@{__time}{%f}"),
+                             ("value", "@$name{0.000}")]  # show one digit after dot
+            #hover.formatters={'__time': 'datetime'}
+            custom = """var local = moment(value).tz('%s'); return local.format();"""%self.server.get_settings()["timeZone"]
+            hover.formatters = {'__time': CustomJSHover(code=custom)}
             if self.server.get_settings()["hasHover"] in ['vline','hline','mouse']:
                 hover.mode = self.server.get_settings()["hasHover"]
             hover.line_policy = 'nearest'
@@ -1407,9 +1388,28 @@ class TimeSeriesWidget():
             # remove all annotations which are inside the limits are are currently visible
             deleteList = []
             annotations = self.server.get_annotations()
-            for annoPath, annotation in annotations.items():
-                if annotation["type"] == "threshold":
-                   pass
+            currentThresholds = [] # the list of threshold annotation currently visible
+            for r in self.plot.renderers:
+                if r.name in annotations:
+                    #this annotation is currenlty visible
+                    if annotations[r.name]["type"] == "threshold":
+                        #this annotation is a threshold
+                        currentThresholds.append(r.name)
+
+            #now check if we have to delete it
+            deleteList =[]
+            for threshold in currentThresholds:
+                tMin = annotations[threshold]["min"]
+                tMax = annotations[threshold]["max"]
+                if tMin>tMax:
+                    tMin,tMax = tMax,tMin
+                if tMax<=max and tMax>=min: # we check against the top line of the annotation
+                    #must delete this one
+                    deleteList.append(threshold)
+            # now hide the boxes
+            self.remove_renderes(deleteList=deleteList)
+            self.server.delete_annotations(deleteList)
+
 
         elif "threshold" not in tag:
             #create a time annotation one

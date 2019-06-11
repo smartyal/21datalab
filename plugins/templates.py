@@ -48,6 +48,9 @@ timeseriesWidget = {
         {"name":"hasHover","type":"const","value":False},                       # show/hide the hover-tool of [False, 'mouse','vline','hline'
         {"name":"width","type":"const","value":900},                            # the display width of the plot in pixel
         {"name":"height","type":"const","value":600},                           # the display height of the plot in pixel
-        {"name":"controlPosition","type":"const","value":"right"}               # the position of the button controls of ["bottom","right]
+        {"name":"controlPosition","type":"const","value":"right"}  ,            # the position of the button controls of ["bottom","right]
+        {"name":"timeZone","type":"const","value":"Europe/Berlin"},             # the timezone of the display
+        {"name":"hasThreshold","type":"const","value":False}                    # horizontal thresholds (min/max) are supported for the annotations
+
     ]
 }

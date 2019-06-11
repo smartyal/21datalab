@@ -56,6 +56,7 @@ def date2secs(value):
     else:
         return value
 
+
 def date2msecs(value):
     """
         converst a timestamp in to ms since epoch
@@ -66,7 +67,7 @@ def secs2date(epoch):
     """ converts float seconds since epoch into datetime object with UTC timezone """
     return datetime.datetime(1970, 1, 1, 0, 0,tzinfo=pytz.UTC) + datetime.timedelta(seconds=epoch)
 
-def secs2dateString(epoch):
+def secs2dateString(epoch,tz="+00:00"):
     """ converts seconds since epoch into a datetime iso string format 2009-06-30T18:30:00.123456+02:00 """
     try:
         stri = secs2date(epoch).isoformat()

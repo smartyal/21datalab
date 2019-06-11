@@ -500,6 +500,8 @@ def all(path):
                 <!doctype html>
                 <body>
                   <link rel="stylesheet" href="templates/styles.css">
+                  <script>{% include 'moment.min.js.js' %}</script>
+                  <script>{% include 'moment-timezone-with-data.min.js' %} </script>
                   {{ script|safe }}
                 </body>
                 </html>
