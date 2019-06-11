@@ -26,6 +26,9 @@ The framework is prepared to run on edge, desktop or cloud and is a microservice
   * web/modules/jsree-grid (MIT License) https://github.com/deitch/jstree-grid
   * web/modules/other contains:
     * popper.js (MIT License) https://popper.js.org/
+  * web/modules/moment (MIT License) contains 
+    * moment.min.js https://momentjs.com/
+    * moment-timezone-with-data.min.js https://momentjs.com/timezone/
 
 ## demo
 * under windows: start the model rest services with "occupancydemo.bat" 
