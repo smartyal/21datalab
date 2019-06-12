@@ -31,7 +31,7 @@ def logistic_regression(functionNode):
     #now get the input and outputs
     inputNodes = functionNode.get_child("input").get_leaves()
     for node in inputNodes:
-        logger.debug("input node",node.get_browse_path())
+        logger.debug("input node"+node.get_browse_path())
 
     outputNode = functionNode.get_child("output").get_leaves()[0]
     logger.debug("outputnode "+outputNode.get_browse_path())

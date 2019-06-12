@@ -466,7 +466,9 @@ def update_widgets(fileName):
 
 
 
+def import_annotations():
 
+    files= {""}
 
 
 
@@ -512,7 +514,9 @@ if __name__ == "__main__":
     #more_components()
     #width_6()
     #dates()
-    update_widgets('hybif6_2')
+    #update_widgets('hybif6_2')
+    import_annotations()
+
 
 
 

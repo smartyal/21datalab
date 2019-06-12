@@ -32,6 +32,7 @@ palette = {
 
     #from https://www.w3schools.com/colors/colors_picker.asp
     'bw00%':'#000000',
+    'bw05%': '#0a0a0a',
     'bw10%': '#1a1a1a',
     'bw20%': '#333333',
     'bw30%': '#4d4d4d',
@@ -41,6 +42,7 @@ palette = {
     'bw70%': '#b3b3b3',
     'bw80%': '#cccccc',
     'bw90%': '#e6e6e6',
+    'bw95%': '#f9f9f9',
     'bw100%': '#ffffff',  #full white
 
     '21yellow': '#d9b100',  ## equals 43% RGB = 217,177,0
@@ -109,7 +111,7 @@ whiteTheme ={
             'text_color': palette['bw30%']
         },
         'Legend':{
-            'background_fill_color': palette['bw90%'],
+            'background_fill_color': palette['bw95%'],
             'label_text_color': palette['bw20%']
         }
     }

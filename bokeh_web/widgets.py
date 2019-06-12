@@ -21,9 +21,9 @@ import threading
 from bokeh.models import DatetimeTickFormatter, ColumnDataSource, BoxSelectTool, BoxAnnotation, Label, LegendItem, Legend, HoverTool, BoxEditTool
 from bokeh.models import Range1d,DataRange1d
 from bokeh import events
-from bokeh.models.widgets import RadioButtonGroup, Paragraph, Toggle, MultiSelect, Button
+from bokeh.models.widgets import RadioButtonGroup, Paragraph, Toggle, MultiSelect, Button, Select, CheckboxButtonGroup,Dropdown
 from bokeh.plotting import figure, curdoc
-from bokeh.layouts import layout,widgetbox, column
+from bokeh.layouts import layout,widgetbox, column, row, Spacer
 from bokeh.models import Range1d, PanTool, WheelZoomTool, ResetTool, ToolbarBox, Toolbar
 from bokeh.models import FuncTickFormatter, CustomJSHover, SingleIntervalTicker, DatetimeTicker
 from pytz import timezone
@@ -329,7 +329,7 @@ class TimeSeriesWidgetDataServer():
             "nodes": varList,
              "startTime" : start,
              "endTime" :   end,
-            "bins": self.settings["bins"],
+            "bins":bins,
             "includeTimeStamps": "02:00",
         }
         r=self.__web_call("POST","_getdata",body)
@@ -524,7 +524,10 @@ class TimeSeriesWidget():
         self.newHover = None
         self.hoverTool = None # forget the old hovers
         self.showBackgrounds = False
-        layoutControls = []# this will later be applied to layout() function
+        self.showThresholds = False
+        self.buttonWidth = 160
+
+        #layoutControls = []# this will later be applied to layout() function
 
         settings = self.server.get_settings()
 
@@ -599,115 +602,104 @@ class TimeSeriesWidget():
         self.plot.on_event(events.SelectionGeometry, self.event_cb)
 
 
-        # make the variableSelector
-        if "hasSelection" in settings and settings["hasSelection"] == False:
-            #we skip the selection buttons
-            pass
-        else:
-            options = [(x, '.'.join(x.split('.')[-2:])) for x in self.server.get_variables_selectable()]  #given as value,label
-            self.variablesMultiSelect = MultiSelect(title="Select Variables", value=self.server.get_variables_selected(),
-                                                    options=options,size = 5,css_classes=['multi_select_21'])
-            self.variablesSelectButton = Button(label="apply",css_classes=['button_21'])
-            self.variablesSelectButton.on_click(self.var_select_button_cb)
+        #make the controls
+        layoutControls =[]
 
-            selectWidget = widgetbox(self.variablesMultiSelect,self.variablesSelectButton,css_classes=['widgetbox_21'])
-            layoutControls.append(selectWidget)
-
-
-        #make the annotation controls
-        labels =[]
+        #Annotation drop down
+        labels=[]
         if settings["hasAnnotation"] == True:
             labels = settings["tags"]
             labels.append("-erase-")
         if settings["hasThreshold"] == True:
             labels.extend(["threshold","-erase threshold-"])
         if labels:
-            self.annotationTags=copy.deepcopy(labels)
-            print("HAVE SET ANNOT"+str(labels)+"   "+str(self.annotationTags))
-            self.annotationButtons = RadioButtonGroup(labels=labels,active=0,css_classes=['group_button_21'])
-            self.annotationOptions = widgetbox(Paragraph(text="Select Annotation Tag"),self.annotationButtons)
-            self.annotationButtons.on_click(self.annotations_radio_group_cb)
+            menu = [(label,label) for label in labels]
+            self.annotationDropDown = Dropdown(label="Annotate: "+str(labels[0]), menu=menu,width=self.buttonWidth)
+            self.currentAnnotationTag = labels[0]
+            self.annotationDropDown.on_change('value', self.annotation_drop_down_on_change_cb)
+            #self.annotation_drop_down_on_change_cb() #call it to set the box select tool right and the label
+            layoutControls.append(self.annotationDropDown)
 
-            controls = [Paragraph(text="Select Annotation Tag"),self.annotationButtons]
-            if settings["hasAnnotation"] == True:
-                self.showAnnotationToggle = Toggle(label="hide Annotations", active=True,css_classes=['button_21'])#, button_type="success")
-                self.showAnnotationToggle.on_click(self.annotation_toggle_click_cb)
-                controls.append(self.showAnnotationToggle)
-            if settings["hasThreshold"] == True:
-                self.showThresholdToggle = Toggle(label="hide Thresholds", active=True,css_classes=['button_21'])
-                self.showThresholdToggle.on_click(self.threshold_toggle_click_cb)
-                controls.append(self.showThresholdToggle)
-
-            #annoWidget = widgetbox(Paragraph(text="Select Annotation Tag"),self.annotationButtons,self.showAnnotationToggle)
-            #layoutControls.append(annoWidget)
-            layoutControls.append(widgetbox(controls))
-
-
-        #now do the annotations
-        for anno in self.server.get_annotations():
-            self.draw_annotation(anno)
-
+        # show Buttons
+        # initially everything is disabled
+        # check background, threshold, annotation
+        self.showGroupLabels = []
+        self.showGroupLabelsDisplay=[]
+        if self.server.get_settings()["hasAnnotation"] == True:
+            self.showGroupLabels.append("Annotation")
+            self.showGroupLabelsDisplay.append("Anno")
         if self.server.get_settings()["background"]["hasBackground"]:
-            #create the controls and plot the backgrounds as boxannotations
-            self.backgroundbutton = Toggle(label="show Backgrounds",css_classes=['button_21'],active=False)
-            self.backgroundbutton.on_click(self.backgroundbutton_cb)
-            self.showBackgrounds = False
-            layoutControls.append(self.backgroundbutton)
-            self.refresh_backgrounds()  #draw the backgrounds or not (check if needed)
-
+            self.showGroupLabels.append("Background")
+            self.showGroupLabelsDisplay.append("Back")
+            self.showBackgrounds = False # initially off
+        if self.server.get_settings()["hasThreshold"] == True:
+            self.showGroupLabels.append("Threshold")
+            self.showGroupLabelsDisplay.append("Thre")
+            self.showThresholds = False # initially off
+        self.showGroup = CheckboxButtonGroup(labels=self.showGroupLabelsDisplay)
+        self.showGroup.on_change("active",self.show_group_on_click_cb)
+        layoutControls.append(self.showGroup)
 
         #make the custom buttons
-        self.customButtonsWidgets=[]
         self.customButtonsInstances = []
         if "buttons" in settings:
             self.logger.debug("create user buttons")
             #create the buttons
             for entry in settings["buttons"]:
-                button = Button(label=entry["name"],css_classes=['button_21'])
+                button = Button(label=entry["name"],width=self.buttonWidth)#,css_classes=['button_21'])
                 instance = self.ButtonCb(self,entry["targets"])
                 button.on_click(instance.cb)
+                layoutControls.append(button)
                 self.customButtonsInstances.append(instance)
-                self.customButtonsWidgets.append(button)
-
-            layoutControls.extend(self.customButtonsWidgets)
 
         #make the debug button
         if "hasReloadButton" in self.server.get_settings():
             if self.server.get_settings()["hasReloadButton"] == True:
                 #we must create a reload button
-                button = Button(label="reload widget", css_classes=['button_21'])
+                button = Button(label="reload",width=self.buttonWidth)#, css_classes=['button_21'])
                 button.on_click(self.reset_all)
                 layoutControls.append(button)
 
-        button = Button(label="test", css_classes=['button_21'])
-        #button.on_click(self.test_button_cb)
-        #layoutControls.append(button)
+        #build the layout
+        self.layout = layout( [row(children=[self.plot,self.tools],sizing_mode="fixed")],row(layoutControls,width=self.width ,sizing_mode="scale_width"))
 
-        #apply all to the layout
-        #self.plot.sizing_mode = "scale_width"
-        #for elem in layoutControls:
-        #    if type(elem) is list:
-        #        for subelem in elem:
-        #            subelem.sizing_mode = "scale_both"
-        #    else:
-        #        elem.sizing_mode = "scale_both"
-        if "controlPosition" in settings and settings["controlPosition"] == "bottom":
-            if self.tools:
-                if len(layoutControls)>2:
-                    layoutControlsReorder = layoutControls[0:2]
-                    #layoutControlsReorder.append([[layoutControls[2:]]])
-                    layoutControls.append(column(layoutControls[2:],width=100))
-                else:
-                    layoutControlsReorder=layoutControls
-                self.layout = layout([[self.plot,self.tools],layoutControlsReorder])#,sizing_mode="scale_width")
-            else:
-                self.layout = layout([[self.plot, layoutControls]])  # ,sizing_mode="scale_width")
+    def show_group_on_click_cb(self,attr,old,new):
+        # in old, new we get a list of indices which are active
+        self.logger.debug("show_group_on_click_cb "+str(attr)+str(old)+str(new))
+        turnOn = [self.showGroupLabels[index] for index in (set(new)-set(old))]
+        turnOff = [self.showGroupLabels[index] for index in (set(old)-set(new))]
+        if "Background" in turnOn:
+            self.showBackgrounds = True
+            self.refresh_backgrounds()
+        if "Background" in turnOff:
+            self.showBackgrounds = False
+            self.refresh_backgrounds()
+        if "Annotation" in turnOn:
+            self.show_annotations()
+        if "Annotation" in turnOff:
+            self.hide_annotations()
+        if "Threshold" in turnOn:
+            self.showThresholds = True
+            self.show_thresholds()
+        if "Threshold" in turnOff:
+            self.showThresholds = False
+            self.hide_thresholds()
+
+
+
+
+
+    def annotation_drop_down_on_change_cb(self,attr,old,new):
+        mytag = self.annotationDropDown.value
+        self.logger.debug("annotation_drop_down_on_change_cb " + str(mytag))
+        self.annotationDropDown.label = "Annotate: "+mytag
+        self.currentAnnotationTag = mytag
+        if "threshold" in mytag:
+            #we do a a threshold annotation, adjust the tool
+            self.boxSelectTool.dimensions = "height"
         else:
-            if self.tools:
-                #self.layout = layout([[self.plot, self.tools, layoutControls]])  # ,sizing_mode="scale_width")
-                self.layout = layout([[self.plot, self.tools,column(layoutControls,css_classes=["columns_21"])]])
-            else:
-                self.layout = layout([[self.plot, layoutControls]])  # ,sizing_mode="scale_width")
+            self.boxSelectTool.dimensions = "width"
+
 
     def annotations_radio_group_cb(self,args):
         """called when a selection is done on the radio button for the annoations"""
@@ -1083,10 +1075,11 @@ class TimeSeriesWidget():
             self.reset_plot_cb()
 
         if eventType == "SelectionGeometry":
-            option = self.annotationButtons.active # gives a 0,1 list, get the label now
+            #option = self.annotationButtons.active # gives a 0,1 list, get the label now
             #tags = self.server.get_settings()["tags"]
-            mytag = self.annotationTags[option]
-            self.logger.info("TAGS"+str(self.annotationTags)+"   "+str(option))
+            #mytag = self.annotationTags[option]
+            mytag =self.currentAnnotationTag
+            #self.logger.info("TAGS"+str(self.annotationTags)+"   "+str(option))
             self.edit_annotation_cb(event.__dict__["geometry"]["x0"],event.__dict__["geometry"]["x1"],mytag,event.__dict__["geometry"]["y0"],event.__dict__["geometry"]["y1"])
 
     def reset_plot_cb(self):
@@ -1187,10 +1180,16 @@ class TimeSeriesWidget():
 
     def show_annotations(self):
         """ show the current annotatios in the widget of type time """
+        mylist = []
         for annoname,anno in self.server.get_annotations().items():
             if "type" in anno and anno["type"]!="time":
                 continue
-            self.draw_annotation(annoname)
+            mylist.append(self.draw_annotation(annoname,add_layout=False))
+
+        #getattr(self.plot,'center').extend(mylist)
+        self.plot.renderers.extend(mylist)
+        #for anno in mylist:
+        #    self.plot.add_layout(anno)
 
     def hide_annotations(self):
         """ hide the current annotatios in the widget of type time"""
@@ -1204,13 +1203,14 @@ class TimeSeriesWidget():
     def set_curdoc(self,curdoc):
         self.curdoc = curdoc
 
-    def draw_annotation(self, modelPath):
+    def draw_annotation(self, modelPath, add_layout = True):
         """
             draw one time annotation on the plot
             Args:
              modelPath(string): the path to the annotation, the modelPath-node must contain children startTime, endTime, colors, tags
         """
         try:
+            #self.logger.debug("draw_annotation "+modelPath)
             annotations = self.server.get_annotations()
             if annotations[modelPath]["type"]!= "time":
                 return # we only want the time annotations
@@ -1231,7 +1231,10 @@ class TimeSeriesWidget():
                                 fill_alpha=0.2,
                                 name=modelPath) #+"_annotaion
 
-            self.plot.add_layout(newAnno)
+            if add_layout:
+                self.plot.add_layout(newAnno)
+            else:
+                return newAnno
         except Exception as ex:
             self.logger.error("error draw annotatino ",str(ex))
 
@@ -1315,6 +1318,8 @@ class TimeSeriesWidget():
             #we have to pick up the background data first
             self.logger.debug("get fresh background data from the model server %s",backGroundNodeId)
             bins = self.server.get_settings()["bins"]
+            #bins = 30
+            #bins = 30
             getData = self.server.get_data([backGroundNodeId], start=self.rangeStart, end=self.rangeEnd,
                                            bins=bins)  # for debug
             data = getData
