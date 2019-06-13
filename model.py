@@ -606,6 +606,7 @@ class Model():
         self.diffHandleCounter = 0  # used only for debugging
         self.differentialHandlesMaxPerUser = 10
         self.currentModelName = "emptyModel" # the current name of the model
+        self.modelUpdateCounter = 0 #this is for the tree observer, on any change, we update the counter
 
     def __init_logger(self, level):
         """setup the logger object"""
@@ -893,6 +894,7 @@ class Model():
                 newNode["value"]=value
             self.model[parentId]["children"].append(newId)
             self.model[newId]=newNode
+            self.__notify_observers(parentId,"children")
             return newNode["id"]
 
     def create_node_from_path(self,path,properties={"type":"variable"}):
@@ -1054,6 +1056,7 @@ class Model():
                     continue
                 self.model[toId]["backRefs"].append(fromId)
                 self.model[fromId]["forwardRefs"].append(toId)
+            self.__notify_observers(fromId,"forwardRefs")
             return True
 
     def get_model(self):
@@ -1120,6 +1123,7 @@ class Model():
                     continue # we skip Nones coming from the get_id
                 self.model[fromId]["forwardRefs"].remove(toId)
                 self.model[toId]["backRefs"].remove(fromId)
+            self.__notify_observers(fromId,"forwardRefs")
         return True
 
 
@@ -1142,6 +1146,7 @@ class Model():
             try:
                 self.model[fromId]["forwardRefs"].remove(toId)
                 self.model[toId]["backRefs"].remove(fromId)
+                self.__notify_observers(fromId, "forwardRefs")
                 return True
             except:
                 return False
@@ -1179,6 +1184,7 @@ class Model():
             if property in self.model[id]:
                 return False # have this property already
             self.model[id][property]=value
+            self.__notify_observers(id, property)
             return True
 
     def set_properties(self,properties={},nodeDesc=None):
@@ -1205,6 +1211,7 @@ class Model():
                 if k in ["id","browsePath","children","parent","forwardRefs","backRefs"]:
                     continue # we ignore these entries
                 self.model[id][k]=v # overwrite or set new
+            self.__notify_observers(id,list(properties.keys()))
             return True
 
 
@@ -1241,6 +1248,7 @@ class Model():
                 self.remove_back_ref(id,backRefId)
             #now remove me from the parent
             self.model[self.model[id]["parent"]]["children"].remove(id)
+            self.__notify_observers(id,"children")
             #now remove me
             del self.model[id]
             return True
@@ -1258,6 +1266,7 @@ class Model():
             id = self.get_id(desc)
             if not id: return None
             self.model[id]["value"] = value
+            self.__notify_observers(id,"value")
             return True
 
     def get_value(self,desc):
@@ -2001,6 +2010,9 @@ class Model():
                         self.model[parentId]["children"].insert(newIndex,id) # at specific index
                     else:
                         self.model[parentId]["children"].append(id)    # at the end
+                    self.__notify_observers(oldParent, "children")
+                    self.__notify_observers(parentId, "children")
+
             except:
                 self.logger.error("problem moving "+str(nodeIds)+" to new parent"+ parentId+".. this is critical, the model can be messed up")
             return True
@@ -2061,7 +2073,12 @@ class Model():
             if not user:
                 #also create a new user
                 user = newHandle
-            self.differentialHandles[newHandle]= {"user":user,"model":self.get_model_for_web(),"time": int(time.time())}# make an entry by copying the whole model
+            self.differentialHandles[newHandle]= {
+                "user":user,
+                "model":self.get_model_for_web(),
+                "time": int(time.time()),
+                "updateCounter": self.modelUpdateCounter
+            }# make an entry by copying the whole model
             return newHandle
 
 
@@ -2095,6 +2112,11 @@ class Model():
             if newHandle is None:
                 # this is the standard case, we generate the new handle now
                 user = self.differentialHandles[oldHandle]["user"]
+                # we make a quick check if the model has changed at all, if not we simply return the old handle
+                if self.differentialHandles[oldHandle]["updateCounter"] == self.modelUpdateCounter:
+                    self.logger.debug("get_differential_update: shortcut for no changes")
+                    diff["handle"] = oldHandle
+                    return diff
                 newHandle = self.create_differential_handle(user=user) # this function also makes a copy of the current tree and puts it in the self.differential handles list
                 newModel = self.differentialHandles[newHandle]["model"]
             else:
@@ -2143,6 +2165,45 @@ class Model():
             diff["handle"]=newHandle
 
             return diff
+
+    def __notify_observers(self,nodeId, property=None):
+        """
+            this function is called internally when nodes or properties have changed. Then, we look if any
+            observer has to be triggered
+            we also increase the counter and time on the root.observers.modelObserver
+            Args:
+                nodeId: the nodeId where a change occurred
+                property: the property that has changed
+        """
+
+        # for now we only do the tree update thing
+        with self.lock:
+
+            # this is for the tree updates, any change is taken
+            self.modelUpdateCounter = self.modelUpdateCounter +1
+
+            if property:
+                if type(property) is not list:
+                    property = [property]
+                #now check if we are observed, we do everything over ids to have max speed
+                for id in self.model[nodeId]["backRefs"]:
+                    if self.model[self.model[id]["parent"]]["type"] == "observer":
+                        #this node is being observed, now check if a property matches
+                        observablesId = self.get_child(self.model[id]["parent"],"observable")
+                        propertiesToWatch = self.model[observablesId]["value"]
+                        if any(prop in propertiesToWatch for prop in property):
+                            #this is a match
+                            self.logger.debug("observer triggered!")
+                            updateCounterId = self.get_child(self.model[id]["parent"],"updateCounter")
+                            self.set_value(updateCounterId, self.get_value(updateCounterId)+1)
+                            timeId = self.get_child(self.model[id]["parent"],"lastUpdateTime")
+                            self.set_value(timeId,datetime.datetime.now().isoformat())
+                            eventId = self.get_child(self.model[id]["parent"],"hasEvent")
+                            if self.get_value(eventId)==True:
+                                #must send event
+                                self.logger.debug("event on "+self.get_browse_path(self.model[id]["parent"]))
+
+
 
 
 

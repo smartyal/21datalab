@@ -49,7 +49,8 @@ class TreeWidget
             copy:"far fa-copy tree-icon-class",
             paste: "fas fa-paint-roller tree-icon-class",
             toolbox: "fas fa-toolbox tree-icon-class",
-            unknown: "fas fa-question-circle tree-icon-class"
+            unknown: "fas fa-question-circle tree-icon-class",
+            observer: "far fa-eye"
         };
 
         var treeWidgetObject = this; //for usage in deeper object nesting

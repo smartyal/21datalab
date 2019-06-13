@@ -202,6 +202,8 @@ layoutquery.json
 #@web.route('/',defaults={'path':''},methods=['GET','POST'])
 @web.route('/<path:path>', methods=['GET', 'POST'])
 def all(path):
+
+    requestStartTime = datetime.datetime.now()
     #print("here")
     logger.info("http request "+str(flask.request.method) +"'"+str(path)+"'" +" DATA="+str(flask.request.data))
     data = None
@@ -616,7 +618,8 @@ def all(path):
             logger.error("CANNOT HANDLE REQUEST, is unknown"+str(path))
             responseCode = 404
 
-        logger.info("response on " + str(path) + ": " + str(responseCode) + ", len:" + str(len(response)))
+        timeElapsed = (datetime.datetime.now() - requestStartTime).total_seconds()
+        logger.info("response on " + str(path) + ": " + str(responseCode) + ", len:" + str(len(response)) + " duration:"+str(timeElapsed))
         return flask.Response(response, mimetype="text/html"), responseCode
     except Exception as ex:
         logger.error("general error " +str(sys.exc_info()[0])+".."+str(ex))

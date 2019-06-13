@@ -471,6 +471,22 @@ def import_annotations():
     files= {""}
 
 
+def new_observer():
+    m = model.Model()
+    m.load("occupancydemo")
+    m.create_node_from_path("root.var")
+    handle = m.create_differential_handle()
+    diff = m.get_differential_update(handle)
+    m.logger.debug(diff)
+    diff = m.get_differential_update(diff["handle"])
+    m.logger.debug(diff)
+
+
+    m.set_value("root.var",5)
+    diff = m.get_differential_update(diff["handle"])
+    m.logger.debug(diff)
+    diff = m.get_differential_update(diff["handle"])
+    m.logger.debug(diff)
 
 
 
@@ -515,7 +531,9 @@ if __name__ == "__main__":
     #width_6()
     #dates()
     #update_widgets('hybif6_2')
-    import_annotations()
+    #import_annotations()
+    new_observer()
+
 
 
 
