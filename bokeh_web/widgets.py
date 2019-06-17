@@ -18,7 +18,7 @@ import time
 import threading
 
 
-from bokeh.models import DatetimeTickFormatter, ColumnDataSource, BoxSelectTool, BoxAnnotation, Label, LegendItem, Legend, HoverTool, BoxEditTool
+from bokeh.models import DatetimeTickFormatter, ColumnDataSource, BoxSelectTool, BoxAnnotation, Label, LegendItem, Legend, HoverTool, BoxEditTool, TapTool
 from bokeh.models import Range1d,DataRange1d
 from bokeh import events
 from bokeh.models.widgets import RadioButtonGroup, Paragraph, Toggle, MultiSelect, Button, Select, CheckboxButtonGroup,Dropdown
@@ -49,7 +49,7 @@ def setup_logging(loglevel=logging.DEBUG,tag = ""):
         #logfile = logging.FileHandler('./widget_' + '%08x' % random.randrange(16 ** 8) + ".log")
         if tag == "":
             tag = '%08x' % random.randrange(16 ** 8)
-        logfile = logging.FileHandler('./widget_' + tag+ ".log")
+        logfile = logging.FileHandler('./log/widget_' + tag+ ".log")
         logfile.setLevel(loglevel)
         logfile.setFormatter(formatter)
         logging.getLogger('').addHandler(logfile)
@@ -214,7 +214,7 @@ class TimeSeriesWidgetDataServer():
             self.settings.update(annotationsInfo)
             #now get all annotations
             nodes = self.__web_call("post","_getleaves",self.path+".hasAnnotation.annotations")
-            self.logger.debug("ANNOTATIONS"+json.dumps(nodes,indent=4))
+            #self.logger.debug("ANNOTATIONS"+json.dumps(nodes,indent=4))
             #now parse the stuff and build up our information
             self.annotations={}
             for node in nodes:
@@ -228,7 +228,7 @@ class TimeSeriesWidgetDataServer():
                     if self.annotations[node["browsePath"]]["type"] == "threshold":
                         #we also pick the target
                         self.annotations[node["browsePath"]]["variable"]=self.annotations[node["browsePath"]]["variable"][0]
-            self.logger.debug("server annotations" + json.dumps(self.annotations, indent=4))
+            #self.logger.debug("server annotations" + json.dumps(self.annotations, indent=4))
         #grab the info for the buttons
         myButtons=[]
         for node in info[0]["children"]:

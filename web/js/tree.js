@@ -844,7 +844,7 @@ class TreeWidget
             for (let newNodeId in updateData.newNodes)
             {
                 var node = updateData.newNodes[newNodeId];
-                console.log("new node",node.id)
+                console.log("new node",node.id,node.name)
                 var treeNode = this.node_to_tree(node);
                 // if the parent is not part of the jstree, then the create will fail with return false
                 $(this.treeDiv).jstree(true).create_node(node.parent, treeNode);
