@@ -487,7 +487,7 @@ def all(path):
                 logger.debug("get differential update with handle:"+data["handle"])
                 res = m.get_differential_update(data["handle"])
                 if res:
-                    logger.debug("return handle:" + res["handle"])
+                    logger.debug("return diff update from :"+data["handle"]+"=>" + res["handle"]+"data"+json.dumps(res))
                     response = json.dumps(res)
                     responseCode = 200
                 else:

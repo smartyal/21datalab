@@ -75,9 +75,10 @@ class TreeWidget
         if (this.periodicTreeUpdate == true)
         {
             this.tree_update();
-            window.setTimeout(() => {
+            /*window.setTimeout(() => {
                 this.trigger_tree_update();
             }, 1000);
+            */
         }
     }
 
@@ -729,7 +730,7 @@ class TreeWidget
     {
         var newBrowsePath = this.treeNodes[parseInt(node.id)].browsePath+".new_"+type+"_"+Math.random().toString(16).substring(2,6);
         var query=[{"browsePath":newBrowsePath,"type":type}];
-        console.log("create ",newBrowsePath);
+        console.log("context_menu_create",newBrowsePath);
         http_post('/_create',JSON.stringify(query),node,null);
     }
 
@@ -815,17 +816,36 @@ class TreeWidget
         var query = {handle: this.diffHandle};
         http_post('/_diffUpdate/', JSON.stringify(query),null,this,(self,status,data,params) =>
         {
-            if (status > 201) return;
+            if (status > 201)
+            {
+                //error case
+                if (this.periodicTreeUpdate == true)
+                {
+                    window.setTimeout(() => {
+                        this.trigger_tree_update();
+                    }, 1000);
+                }
+                return;
+            }
 
             try
             {
                 var updateData =JSON.parse(data);
+                console.log("diffupdate resp myhandle, their handle ", this.diffHandle, updateData.handle);
                 this.diffHandle = updateData.handle; //remember self for the next time
             }
             catch
             {
+                // we exit here and start again
+                if (this.periodicTreeUpdate == true)
+                {
+                    window.setTimeout(() => {
+                        this.trigger_tree_update();
+                    }, 1000);
+                }
                 return;
             }
+
 
             // remove deleted nodes from the tree
             for (let i=0;i<updateData.deletedNodeIds.length;i++)
@@ -979,6 +999,16 @@ class TreeWidget
                     }
                 }
             }
+
+        // start again
+        if (this.periodicTreeUpdate == true)
+        {
+            window.setTimeout(() => {
+                this.trigger_tree_update();
+            }, 1000);
+        }
+
+
         });
     }
 
