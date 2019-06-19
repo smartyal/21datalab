@@ -35,8 +35,15 @@ haveLogger = False
 
 def setup_logging(loglevel=logging.DEBUG,tag = ""):
     global haveLogger
+    print("setup_logging",haveLogger)
     if not haveLogger:
         # fileName = 'C:/Users/al/devel/ARBEIT/testmyapp.log'
+        #logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s', level=loglevel)
+
+        #remove all initial handlers, e.g. console
+        allHandlers = logging.getLogger('').handlers
+        for h in allHandlers:
+            logging.getLogger('').removeHandler(h)
 
 
         formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
@@ -429,6 +436,7 @@ class TimeSeriesWidgetDataServer():
 
 class TimeSeriesWidget():
     def __init__(self, dataserver):
+        self.id = "id#"+str('%8x'%random.randrange(16**8))
         self.__init_logger()
         self.logger.debug("__init TimeSeriesWidget()")
         self.server = dataserver
@@ -447,6 +455,7 @@ class TimeSeriesWidget():
         self.annotationTags = []
         self.hoverTool = None
         self.showThresholds = True # initial value to show or not the thresholds (if they are enabled)
+        self.annotations = {} #   holding the bokeh objects of the annotations
 
         self.__init_figure() #create the graphical output
 
@@ -484,13 +493,14 @@ class TimeSeriesWidget():
         if self.observerThreadRunning:
             self.observerThreadRunning = False
             self.observerThread.join()  # wait for finish
-            self.logger.debug("joined")
+            self.logger.debug("joined observer thread")
 
     def __init_observer(self):
         """
         # the widget.observer (referencer) points to the variables to watch, if they change (increase), we reload
         # the elements given in widget.observerUpdate
         """
+        
         settings = self.server.get_settings()
         if "observer" in settings:
             self.logger.info("must observ %s",settings["observer"]["observerUpdate"])
@@ -663,6 +673,8 @@ class TimeSeriesWidget():
         #build the layout
         self.layout = layout( [row(children=[self.plot,self.tools],sizing_mode="fixed")],row(layoutControls,width=self.width ,sizing_mode="scale_width"))
 
+        self.init_annotations() # we create all annotations that we have into self.annotations
+
     def show_group_on_click_cb(self,attr,old,new):
         # in old, new we get a list of indices which are active
         self.logger.debug("show_group_on_click_cb "+str(attr)+str(old)+str(new))
@@ -684,8 +696,6 @@ class TimeSeriesWidget():
         if "Threshold" in turnOff:
             self.showThresholds = False
             self.hide_thresholds()
-
-
 
 
 
@@ -886,6 +896,7 @@ class TimeSeriesWidget():
 
         """
         executelist=[]
+        #self.logger.debug("periodic_cb"+self.id)
         #first copy over the dispatch list, this #todo: this must be done under lock
         with self.dispatchLock:
             if not self.dispatcherRunning:
@@ -1017,10 +1028,10 @@ class TimeSeriesWidget():
         legendItems = [v for k, v in self.legendItems.items()]
         self.plot.legend.items = legendItems
         #remove the lines
-        self.remove_renderes(deleteLines)
+        self.remove_renderers(deleteLines)
         #remove the according thresholds if any
         for lin in deleteLines:
-            self.remove_renderes(self.find_thresholds_of_line(lin))
+            self.remove_renderers(self.find_thresholds_of_line(lin))
 
 
         #create the new ones
@@ -1089,7 +1100,7 @@ class TimeSeriesWidget():
         self.refresh_plot()
 
 
-    def remove_renderes(self,deleteList=[],deleteMatch=""):
+    def remove_renderers(self,deleteList=[],deleteMatch=""):
         """
          this functions removes renderers (plotted elements from the widget), we find the ones to delete based on their name attribute
          Args:
@@ -1147,10 +1158,10 @@ class TimeSeriesWidget():
             return
 
         for annoName,anno in self.server.get_annotations().items():
-            self.logger.debug("@show_thresholds "+annoName+" "+anno["type"])
+            #self.logger.debug("@show_thresholds "+annoName+" "+anno["type"])
             if anno["type"]=="threshold":
                 # we only show the annotations where the lines are also there
-                self.logger.debug("and the lines are currently"+str(list(self.lines.keys())))
+                self.logger.debug("@show_thresholds "+annoName+" "+anno["type"]+"and the lines are currently"+str(list(self.lines.keys())))
                 if anno["variable"] in self.lines:
                     self.draw_threshold(annoName,anno["variable"])
 
@@ -1159,7 +1170,7 @@ class TimeSeriesWidget():
         """ hide the current annotatios in the widget of type time"""
         annotations = self.server.get_annotations()
         timeAnnos = [anno for anno in annotations.keys() if annotations[anno]["type"]=="threshold" ]
-        self.remove_renderes(deleteList=timeAnnos)
+        self.remove_renderers(deleteList=timeAnnos)
         pass
 
 
@@ -1178,30 +1189,53 @@ class TimeSeriesWidget():
             self.showBackgrounds = False
 
 
-    def show_annotations(self):
-        """ show the current annotatios in the widget of type time """
-        mylist = []
-        for annoname,anno in self.server.get_annotations().items():
-            if "type" in anno and anno["type"]!="time":
-                continue
-            mylist.append(self.draw_annotation(annoname,add_layout=False))
 
-        #getattr(self.plot,'center').extend(mylist)
-        self.plot.renderers.extend(mylist)
-        #for anno in mylist:
-        #    self.plot.add_layout(anno)
+    def init_annotations(self):
+        """
+            chreate the actual bokeh objects based on existing annotations, this speeds up the process a lot when show
+            ing the annotations later, we will keep the created objecs in the self.annotations list and apply it to
+            the renderes later, this will only be used for "time" annotations, the others are called thresholds
+        """
+        self.annotations={}
+        self.logger.debug("init_annotations..")
+        for annoname, anno in self.server.get_annotations().items():
+            if "type" in anno and anno["type"] != "time":
+                continue # ignore any other type
+            self.draw_annotation(annoname,add_layout=False)
+        #now we have all bokeh objects in the self.annotations
+        self.logger.debug("init_annotations.. done")
+
+    def show_annotations(self):
+        self.plot.renderers.extend([v for k,v in self.annotations.items()])
+
 
     def hide_annotations(self):
         """ hide the current annotatios in the widget of type time"""
         annotations = self.server.get_annotations()
         timeAnnos = [anno  for anno in annotations.keys() if annotations[anno]["type"]=="time" ]
-        self.remove_renderes(deleteList=timeAnnos)
+        #self.logger.debug("hide_annotations "+str(timeAnnos))
+        self.remove_renderers(deleteList=timeAnnos)
 
     def get_layout(self):
         """ return the inner layout, used by the main"""
         return self.layout
     def set_curdoc(self,curdoc):
         self.curdoc = curdoc
+
+    def remove_annotations(self,deleteList):
+        """
+            remove annotation from plot, object list and from the server
+            modelPath(list of string): the model path of the annotation, the modelPath-node must contain children startTime, endTime, colors, tags
+        """
+        self.remove_renderers(deleteList=deleteList)
+        self.server.delete_annotations(deleteList)
+        for anno in deleteList:
+            if anno in self.annotations:
+                del self.annotations[anno]
+
+
+
+
 
     def draw_annotation(self, modelPath, add_layout = True):
         """
@@ -1210,7 +1244,7 @@ class TimeSeriesWidget():
              modelPath(string): the path to the annotation, the modelPath-node must contain children startTime, endTime, colors, tags
         """
         try:
-            #self.logger.debug("draw_annotation "+modelPath)
+            #self.logger.debug("draw_annotation "+modelPath+str(add_layout))
             annotations = self.server.get_annotations()
             if annotations[modelPath]["type"]!= "time":
                 return # we only want the time annotations
@@ -1230,6 +1264,8 @@ class TimeSeriesWidget():
                                 fill_color=color,
                                 fill_alpha=0.2,
                                 name=modelPath) #+"_annotaion
+
+            self.annotations[modelPath]=newAnno # put it in the annotation store for later
 
             if add_layout:
                 self.plot.add_layout(newAnno)
@@ -1267,7 +1303,7 @@ class TimeSeriesWidget():
 
     def hide_thresholds_of_line(self,path):
         thresholds = self.find_thresholds_of_line(path)
-        self.remove_renderes(deleteList=thresholds)
+        self.remove_renderers(deleteList=thresholds)
 
     def draw_threshold(self, modelPath, linePath=None):
         """ draw the boxannotation for a threshold
@@ -1380,7 +1416,7 @@ class TimeSeriesWidget():
 
     def hide_backgrounds(self):
         """ remove all background from the plot """
-        self.remove_renderes(deleteMatch="__background")
+        self.remove_renderers(deleteMatch="__background")
 
 
 
@@ -1405,8 +1441,7 @@ class TimeSeriesWidget():
                         self.logger.debug("delete "+annoPath)
                         deleteList.append(annoPath)
             #now hide the boxes
-            self.remove_renderes(deleteList=deleteList)
-            self.server.delete_annotations(deleteList)
+            self.remove_annotations(deleteList)
         elif tag =="-erase threshold-":
             # remove all annotations which are inside the limits are are currently visible
             deleteList = []
@@ -1430,7 +1465,7 @@ class TimeSeriesWidget():
                     #must delete this one
                     deleteList.append(threshold)
             # now hide the boxes
-            self.remove_renderes(deleteList=deleteList)
+            self.remove_renderers(deleteList=deleteList)
             self.server.delete_annotations(deleteList)
 
 
@@ -1452,6 +1487,12 @@ class TimeSeriesWidget():
             newAnnotationPath = self.server.add_annotation(start,end,tag,type ="threshold",min=min,max=max)
             self.draw_threshold(newAnnotationPath,variable[0])
 
+    def session_destroyed_cb(self,context):
+        # this still doesn't work
+        self.id=self.id+"destroyed"
+        self.logger.debug("SEESION_DETROYEd CB")
+        print("DESTROYED")
+        self.__stop_observer()
 
 
 if __name__ == '__main__':
