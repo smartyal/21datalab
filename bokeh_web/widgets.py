@@ -141,7 +141,7 @@ class TimeSeriesWidgetDataServer():
         response = None
         now = datetime.datetime.now()
         if method.upper() == "GET":
-            for timeout in [0.001, 0.1, 1, 10]:
+            for timeout in [0.001, 0.1, 1, 10, 50]:
                 try:
                     response = requests.get(self.url + path, timeout=timeout,proxies=self.proxySetting)
                     break
@@ -150,7 +150,7 @@ class TimeSeriesWidgetDataServer():
                     continue
         elif method.upper() == "POST":
             now = datetime.datetime.now()
-            for timeout in [0.1, 0.1, 1, 10]:
+            for timeout in [0.1, 0.1, 1, 10, 90]:
                 try:
                     response = requests.post(self.url + path, data=json.dumps(reqData), timeout=timeout,
                                              proxies=self.proxySetting)
@@ -1406,13 +1406,16 @@ class TimeSeriesWidget():
         self.logger.info("have %i background entries",len(backgrounds))
         #now plot them
 
+        boxes =[]
         for back in backgrounds:
             name = "__background"+str('%8x'%random.randrange(16**8))
             newBack = BoxAnnotation(left=back["start"], right=back["end"],
                                     fill_color=back["color"],
                                     fill_alpha=0.2,
                                     name=name)  # +"_annotaion
-            self.plot.add_layout(newBack)
+            boxes.append(newBack)
+            #self.plot.add_layout(newBack)
+        self.plot.renderers.extend(boxes)
 
     def hide_backgrounds(self):
         """ remove all background from the plot """

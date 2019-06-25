@@ -86,6 +86,7 @@ GEt  /embedbokeh     <urlstring>                 <bokeh session>         # pull 
 POST /dropnodes      <dropquery.json>                                    # inform that nodes have been dropped on the frontend on a certain widget
 POST /move           <movequery.json>                                    # moves nodes to new parent or/and create new references
 POST /_getlayout     <layoutquery.json>          [html section]          # query the dynamic content of a layout part of the page
+POST /_setlen        <setlenquery.json>           -                      # adjust the len of a column, extensions are inf-padded
 data:
 
 
@@ -193,6 +194,13 @@ layoutquery.json
 {
     "layoutNode": nodedescriptor of the node in the layout section 
 }
+
+setlenquery.json
+{
+    <desc>:len,     # a nodedescriptor and the new len to set
+    <desc>:len,     
+}
+
 
 
 '''
@@ -613,13 +621,21 @@ def all(path):
                 logger.error("can't get layout" + str(ex) + str(sys.exc_info()[0]))
                 responseCode = 404
 
+        elif (str(path)=="_setlen") and str(flask.request.method) in ["POST"]:
+            logger.debug("setlen of column")
+            result = {}
+            for descriptor,newLen in data.items():
+                result[descriptor] = m.set_column_len(descriptor,newLen)
+            responseCode = 200
+            response = json.dumps(result)
+
 
         else:
             logger.error("CANNOT HANDLE REQUEST, is unknown"+str(path))
             responseCode = 404
 
         timeElapsed = (datetime.datetime.now() - requestStartTime).total_seconds()
-        logger.info("response on " + str(path) + ": " + str(responseCode) + ", len:" + str(len(response)) + " duration:"+str(timeElapsed))
+        logger.info("response on " + str(path) + ": " + str(responseCode) + ", len:" + str( len(response)) + " duration:"+str(timeElapsed))
         return flask.Response(response, mimetype="text/html"), responseCode
     except Exception as ex:
         logger.error("general error " +str(sys.exc_info()[0])+".."+str(ex))
@@ -640,7 +656,7 @@ if __name__ == '__main__':
     else:
         m.create_test(1)
 
-    web.run(host='0.0.0.0', port=6001, debug=False)#, threaded = False)
+    web.run(host='0.0.0.0', port=6001, debug=False, threaded = False)
 
     #enable this to use wsgi web server instead
     #http_server = WSGIServer(('0.0.0.0', 6001), web)

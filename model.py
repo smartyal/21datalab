@@ -2203,6 +2203,37 @@ class Model():
                                 #must send event
                                 self.logger.debug("event on "+self.get_browse_path(self.model[id]["parent"]))
 
+    def set_column_len(self,nodeDescriptor,newLen):
+        """
+            adjust the len of a colum, extension are inf-padded,
+            Args: nodeDescriptor: the node
+                    newLen (int) the new lenth of the column
+            Returns:
+                    the new value set or none if problem
+        """
+        with self.lock:
+            id = self.get_id(nodeDescriptor)
+            if not id: return None
+            if self.model[id]["type"] != "column":
+                self.logger.error("set_column_len: not a column")
+                return None
+            #now make the adjustments
+            if type(self.model[id]['value']) != numpy.ndarray:
+                self.model[id]['value'] = numpy.full(newLen, numpy.nan)
+            else:
+                #is already an array
+                if len(self.model[id]['value']) == newLen:
+                    #nothing to do
+                    pass
+                if len(self.model[id]['value']) > newLen:
+                    self.model[id]['value'] = self.model[id]['value'][0:newLen]
+                elif len(self.model[id]['value']) < newLen:
+                    self.model[id]['value'] = numpy.append(self.model[id]['value'], numpy.full(dataLen-len(self.model[id]['value']), numpy.nan))
+                else:
+                    #same len
+                    pass
+                return newLen
+
 
 
 

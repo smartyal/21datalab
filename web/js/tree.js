@@ -50,7 +50,8 @@ class TreeWidget
             paste: "fas fa-paint-roller tree-icon-class",
             toolbox: "fas fa-toolbox tree-icon-class",
             unknown: "fas fa-question-circle tree-icon-class",
-            observer: "far fa-eye"
+            observer: "far fa-eye",
+            setlen: "fas fa-arrows-alt-h"
         };
 
         var treeWidgetObject = this; //for usage in deeper object nesting
@@ -178,6 +179,48 @@ class TreeWidget
         return modal;
     }
 
+    make_column_modal()
+    {
+        var modal = document.createElement('div');
+        modal.id = this.treeContainerId+"-editColumnModal";
+        modal.className = "modal fade";
+        modal.setAttribute("tabindex","-1");
+        modal.setAttribute("role","dialog");
+        modal.setAttribute("aria-labelledby","editColumnModal");
+        var modalCode = `
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="editColumnModalLabel">Edit Column Length</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body" id="editColumnModalBody">
+                        <div class="form-group">
+                            <label id="editColumnModalName">nodePath</label>
+                            <label id="editColumnModalId" hidden>id</label>
+                            <input class="form-control edit-modal-input" id="editColumnModalValue">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" id ="editColumnModalButtonSave">Save changes</button>
+                    </div>
+                </div>
+            </div>`;
+
+        modalCode = modalCode.replace('editColumnModalBody',this.treeContainerId+'-editColumnModalBody');
+        modalCode = modalCode.replace('editColumnModalButtonSave',this.treeContainerId+'-editColumnModalButtonSave');
+        modalCode = modalCode.replace('editColumnModalValue',this.treeContainerId+'-editColumnModalValue');
+        modalCode = modalCode.replace('editColumnModalName',this.treeContainerId+'-editColumnModalName');
+        modalCode = modalCode.replace('editColumnModalId',this.treeContainerId+'-editColumnModalId');
+
+
+
+        modal.innerHTML = modalCode;
+        return modal;
+
+    }
+
     tree_initialize()
     {
         var treeInner = document.createElement("div");
@@ -198,6 +241,8 @@ class TreeWidget
         $("#"+this.treeContainerId).append(editModal);
         var advancedEditModal = this.make_advanced_edit_modal();
         $("#"+this.treeContainerId).append(advancedEditModal);
+        var editColumnModal = this.make_column_modal();
+        $("#"+this.treeContainerId).append(editColumnModal);
         //hook the callbacks
 
 
@@ -299,6 +344,17 @@ class TreeWidget
 
             $('#'+this.treeContainerId+'-advancedEditModalBody').append(row);
         });
+
+
+        $('#'+this.treeContainerId+'-editColumnModalButtonSave').click( () => {
+            var id = $('#'+this.treeContainerId+'-editColumnModalId').val();
+            var value = JSON.parse($('#'+this.treeContainerId+'-editColumnModalValue').val());
+            var query= new Object;
+            query[id]=value;
+            http_post("/_setlen",JSON.stringify(query),null,null,null);
+        });
+
+
 
     }
 
@@ -558,6 +614,16 @@ class TreeWidget
                         }
                     }
 
+                    //for columns, set len is possible
+                    if(node.original.nodeType == "column")
+                    {
+                        menuObject["setlength"] = {
+                            "label" : "set length",
+                            "action": function(obj){treeWidgetObject.context_menu_set_len(node);},
+                            "icon" : treeWidgetObject.treeIcons["setlen"]
+                        }
+                    }
+
                     //advanced menu
                     menuObject["advanced"] = {
                         "label":"advanced",
@@ -753,13 +819,25 @@ class TreeWidget
 
     context_menu_change_value(node)
     {
-            var id = node.id;
-            var value = this.treeNodes[id].value;
-            //only vars and consts can be edited
-            $('#'+this.treeContainerId+'-editNodeModalName').text(this.treeNodes[id].browsePath);
-            $('#'+this.treeContainerId+'-editNodeModalValue').val(JSON.stringify(this.treeNodes[id].value));
-            $('#'+this.treeContainerId+'-editNodeModalId').val(id);
-            $('#'+this.treeContainerId+'-editNodeModal').modal('show');
+        var id = node.id;
+        var value = this.treeNodes[id].value;
+        //only vars and consts can be edited
+        $('#'+this.treeContainerId+'-editNodeModalName').text(this.treeNodes[id].browsePath);
+        $('#'+this.treeContainerId+'-editNodeModalValue').val(JSON.stringify(this.treeNodes[id].value));
+        $('#'+this.treeContainerId+'-editNodeModalId').val(id);
+        $('#'+this.treeContainerId+'-editNodeModal').modal('show');
+    }
+
+    context_menu_set_len(node)
+    {
+        var id = node.id;
+        var value = this.treeNodes[id].value;
+        //only vars and consts can be edited
+        $('#'+this.treeContainerId+'-editColumnModalName').text(this.treeNodes[id].browsePath);
+        $('#'+this.treeContainerId+'-editColumnModalId').val(id);
+        $('#'+this.treeContainerId+'-editColumnModalValue').val(0);
+        $('#'+this.treeContainerId+'-editColumnModal').modal('show');
+
     }
 
     edit_node_done(node, status, cancel)
