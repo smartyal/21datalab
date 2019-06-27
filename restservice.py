@@ -364,7 +364,7 @@ def all(path):
                     responseCode = 400
                     break
             responseCode = 200
-            m.show()
+            #m.show()
 
 
         elif (str(path)=="_getdata"):

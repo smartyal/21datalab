@@ -1,0 +1,1206 @@
+{
+    "1": {
+        "name": "root",
+        "type": "folder",
+        "children": [
+            "13",
+            "490",
+            "569",
+            "572"
+        ],
+        "parent": "0",
+        "id": "1",
+        "backRefs": [],
+        "forwardRefs": [],
+        "browsePath": "root"
+    },
+    "13": {
+        "id": "13",
+        "name": "visualization",
+        "type": "folder",
+        "parent": "1",
+        "children": [
+            "127",
+            "236"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization"
+    },
+    "127": {
+        "id": "127",
+        "name": "workbench",
+        "type": "widget",
+        "parent": "13",
+        "children": [
+            "128",
+            "129",
+            "130",
+            "131",
+            "132",
+            "133",
+            "138",
+            "139",
+            "140",
+            "141",
+            "142",
+            "144",
+            "145",
+            "146",
+            "189",
+            "217",
+            "232",
+            "233",
+            "234",
+            "546",
+            "547",
+            "554",
+            "555",
+            "556",
+            "577"
+        ],
+        "backRefs": [
+            "526"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench"
+    },
+    "128": {
+        "id": "128",
+        "name": "selectableVariables",
+        "type": "referencer",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "572"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.selectableVariables"
+    },
+    "129": {
+        "id": "129",
+        "name": "selectedVariables",
+        "type": "referencer",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "573",
+            "574"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.selectedVariables"
+    },
+    "130": {
+        "id": "130",
+        "name": "startTime",
+        "type": "variable",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.startTime"
+    },
+    "131": {
+        "id": "131",
+        "name": "endTime",
+        "type": "variable",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.endTime"
+    },
+    "132": {
+        "id": "132",
+        "name": "bins",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 300,
+        "browsePath": "root.visualization.workbench.bins"
+    },
+    "133": {
+        "id": "133",
+        "name": "hasAnnotation",
+        "type": "const",
+        "parent": "127",
+        "children": [
+            "134",
+            "135",
+            "136",
+            "137"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.workbench.hasAnnotation"
+    },
+    "134": {
+        "id": "134",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "133",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "135"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.annotations"
+    },
+    "135": {
+        "id": "135",
+        "name": "newAnnotations",
+        "type": "folder",
+        "parent": "133",
+        "children": [],
+        "backRefs": [
+            "134"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations"
+    },
+    "136": {
+        "id": "136",
+        "name": "tags",
+        "type": "const",
+        "parent": "133",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy",
+            "free",
+            "region"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.tags"
+    },
+    "137": {
+        "id": "137",
+        "name": "colors",
+        "type": "const",
+        "parent": "133",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "yellow",
+            "brown",
+            "grey",
+            "green",
+            "red"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.colors"
+    },
+    "138": {
+        "id": "138",
+        "name": "table",
+        "type": "referencer",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "569"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.table"
+    },
+    "139": {
+        "id": "139",
+        "name": "lineColors",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "blue",
+            "yellow",
+            "brown",
+            "grey",
+            "red"
+        ],
+        "browsePath": "root.visualization.workbench.lineColors"
+    },
+    "140": {
+        "id": "140",
+        "name": "observerBackground",
+        "type": "referencer",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.observerBackground"
+    },
+    "141": {
+        "id": "141",
+        "name": "observerUpdate",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "variables",
+            "background"
+        ],
+        "browsePath": "root.visualization.workbench.observerUpdate"
+    },
+    "142": {
+        "id": "142",
+        "name": "buttons",
+        "type": "folder",
+        "parent": "127",
+        "children": [
+            "143"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.buttons"
+    },
+    "143": {
+        "id": "143",
+        "name": "button1",
+        "type": "folder",
+        "parent": "142",
+        "children": [
+            "147",
+            "148",
+            "149"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.buttons.button1"
+    },
+    "144": {
+        "id": "144",
+        "name": "hasBackground",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.workbench.hasBackground"
+    },
+    "145": {
+        "id": "145",
+        "name": "background",
+        "type": "referencer",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.background"
+    },
+    "146": {
+        "id": "146",
+        "name": "backgroundMap",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "0": "brown",
+            "1": "yellow",
+            "-1": "blue",
+            "default": "white"
+        },
+        "browsePath": "root.visualization.workbench.backgroundMap"
+    },
+    "147": {
+        "id": "147",
+        "name": "caption",
+        "type": "const",
+        "parent": "143",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "learn",
+        "browsePath": "root.visualization.workbench.buttons.button1.caption"
+    },
+    "148": {
+        "id": "148",
+        "name": "counter",
+        "type": "variable",
+        "parent": "143",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.buttons.button1.counter"
+    },
+    "149": {
+        "id": "149",
+        "name": "onClick",
+        "type": "referencer",
+        "parent": "143",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.buttons.button1.onClick"
+    },
+    "189": {
+        "id": "189",
+        "name": "hasReloadButton",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.hasReloadButton"
+    },
+    "217": {
+        "id": "217",
+        "name": "observerEnabled",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.observerEnabled"
+    },
+    "232": {
+        "id": "232",
+        "name": "widgetType",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget",
+        "browsePath": "root.visualization.workbench.widgetType"
+    },
+    "233": {
+        "id": "233",
+        "name": "hasSelection",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.hasSelection"
+    },
+    "234": {
+        "id": "234",
+        "name": "hasHover",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "vline",
+        "browsePath": "root.visualization.workbench.hasHover"
+    },
+    "236": {
+        "id": "236",
+        "name": "selfservice0",
+        "type": "widget",
+        "parent": "13",
+        "children": [
+            "237",
+            "238",
+            "239",
+            "240",
+            "241",
+            "242",
+            "243",
+            "244",
+            "249",
+            "250",
+            "251",
+            "252",
+            "253",
+            "254",
+            "255",
+            "256",
+            "257",
+            "258",
+            "259",
+            "528",
+            "529",
+            "530",
+            "557",
+            "558"
+        ],
+        "backRefs": [
+            "502"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0"
+    },
+    "237": {
+        "id": "237",
+        "name": "widgetType",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget",
+        "browsePath": "root.visualization.selfservice0.widgetType"
+    },
+    "238": {
+        "id": "238",
+        "name": "selectableVariables",
+        "type": "referencer",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.selectableVariables"
+    },
+    "239": {
+        "id": "239",
+        "name": "selectedVariables",
+        "type": "referencer",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.selectedVariables"
+    },
+    "240": {
+        "id": "240",
+        "name": "hasSelection",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice0.hasSelection"
+    },
+    "241": {
+        "id": "241",
+        "name": "startTime",
+        "type": "variable",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.startTime"
+    },
+    "242": {
+        "id": "242",
+        "name": "endTime",
+        "type": "variable",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.endTime"
+    },
+    "243": {
+        "id": "243",
+        "name": "bins",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 300,
+        "browsePath": "root.visualization.selfservice0.bins"
+    },
+    "244": {
+        "id": "244",
+        "name": "hasAnnotation",
+        "type": "const",
+        "parent": "236",
+        "children": [
+            "245",
+            "246",
+            "247",
+            "248"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice0.hasAnnotation"
+    },
+    "245": {
+        "id": "245",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "244",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "246"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.annotations"
+    },
+    "246": {
+        "id": "246",
+        "name": "newAnnotations",
+        "type": "folder",
+        "parent": "244",
+        "children": [],
+        "backRefs": [
+            "245"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations"
+    },
+    "247": {
+        "id": "247",
+        "name": "tags",
+        "type": "const",
+        "parent": "244",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy",
+            "free"
+        ],
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.tags"
+    },
+    "248": {
+        "id": "248",
+        "name": "colors",
+        "type": "const",
+        "parent": "244",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "yellow",
+            "brown",
+            "grey",
+            "green",
+            "red"
+        ],
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.colors"
+    },
+    "249": {
+        "id": "249",
+        "name": "table",
+        "type": "referencer",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.table"
+    },
+    "250": {
+        "id": "250",
+        "name": "lineColors",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "blue",
+            "yellow",
+            "brown",
+            "grey",
+            "red"
+        ],
+        "browsePath": "root.visualization.selfservice0.lineColors"
+    },
+    "251": {
+        "id": "251",
+        "name": "observerBackground",
+        "type": "referencer",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.observerBackground"
+    },
+    "252": {
+        "id": "252",
+        "name": "observerUpdate",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "variables",
+            "background"
+        ],
+        "browsePath": "root.visualization.selfservice0.observerUpdate"
+    },
+    "253": {
+        "id": "253",
+        "name": "observerEnabled",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice0.observerEnabled"
+    },
+    "254": {
+        "id": "254",
+        "name": "buttons",
+        "type": "folder",
+        "parent": "236",
+        "children": [
+            "260"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.buttons"
+    },
+    "255": {
+        "id": "255",
+        "name": "hasBackground",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice0.hasBackground"
+    },
+    "256": {
+        "id": "256",
+        "name": "background",
+        "type": "referencer",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.background"
+    },
+    "257": {
+        "id": "257",
+        "name": "backgroundMap",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "1": "yellow",
+            "0": "brown",
+            "-1": "blue",
+            "default": "white"
+        },
+        "browsePath": "root.visualization.selfservice0.backgroundMap"
+    },
+    "258": {
+        "id": "258",
+        "name": "hasReloadButton",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice0.hasReloadButton"
+    },
+    "259": {
+        "id": "259",
+        "name": "hasHover",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "mouse",
+        "browsePath": "root.visualization.selfservice0.hasHover"
+    },
+    "260": {
+        "id": "260",
+        "name": "button1",
+        "type": "folder",
+        "parent": "254",
+        "children": [
+            "261",
+            "262",
+            "263"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.buttons.button1"
+    },
+    "261": {
+        "id": "261",
+        "name": "caption",
+        "type": "const",
+        "parent": "260",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "learn",
+        "browsePath": "root.visualization.selfservice0.buttons.button1.caption"
+    },
+    "262": {
+        "id": "262",
+        "name": "counter",
+        "type": "variable",
+        "parent": "260",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.selfservice0.buttons.button1.counter"
+    },
+    "263": {
+        "id": "263",
+        "name": "onClick",
+        "type": "referencer",
+        "parent": "260",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.buttons.button1.onClick"
+    },
+    "490": {
+        "id": "490",
+        "name": "deployment",
+        "type": "folder",
+        "parent": "1",
+        "children": [
+            "491"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.deployment"
+    },
+    "491": {
+        "id": "491",
+        "name": "ui",
+        "type": "folder",
+        "parent": "490",
+        "children": [
+            "492",
+            "499"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.deployment.ui"
+    },
+    "492": {
+        "id": "492",
+        "name": "layout",
+        "type": "folder",
+        "parent": "491",
+        "children": [
+            "493",
+            "494"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.deployment.ui.layout"
+    },
+    "493": {
+        "id": "493",
+        "name": "workbench",
+        "type": "const",
+        "parent": "492",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "workbench.html",
+        "browsePath": "root.deployment.ui.layout.workbench"
+    },
+    "494": {
+        "id": "494",
+        "name": "selfservice",
+        "type": "const",
+        "parent": "492",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "selfservice6.html",
+        "browsePath": "root.deployment.ui.layout.selfservice"
+    },
+    "499": {
+        "id": "499",
+        "name": "components",
+        "type": "folder",
+        "parent": "491",
+        "children": [
+            "500",
+            "524"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.deployment.ui.components"
+    },
+    "500": {
+        "id": "500",
+        "name": "selfservice0",
+        "type": "folder",
+        "parent": "499",
+        "children": [
+            "501",
+            "502",
+            "503"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.deployment.ui.components.selfservice0"
+    },
+    "501": {
+        "id": "501",
+        "name": "enabled",
+        "type": "const",
+        "parent": "500",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.deployment.ui.components.selfservice0.enabled"
+    },
+    "502": {
+        "id": "502",
+        "name": "model",
+        "type": "referencer",
+        "parent": "500",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "236"
+        ],
+        "value": null,
+        "browsePath": "root.deployment.ui.components.selfservice0.model"
+    },
+    "503": {
+        "id": "503",
+        "name": "settings",
+        "type": "const",
+        "parent": "500",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "port": 5010
+        },
+        "browsePath": "root.deployment.ui.components.selfservice0.settings"
+    },
+    "524": {
+        "id": "524",
+        "name": "workbench",
+        "type": "folder",
+        "parent": "499",
+        "children": [
+            "525",
+            "526",
+            "527"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.deployment.ui.components.workbench"
+    },
+    "525": {
+        "id": "525",
+        "name": "enabled",
+        "type": "const",
+        "parent": "524",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.deployment.ui.components.workbench.enabled"
+    },
+    "526": {
+        "id": "526",
+        "name": "model",
+        "type": "referencer",
+        "parent": "524",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "127"
+        ],
+        "value": null,
+        "browsePath": "root.deployment.ui.components.workbench.model"
+    },
+    "527": {
+        "id": "527",
+        "name": "settings",
+        "type": "const",
+        "parent": "524",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "port": 5006
+        },
+        "browsePath": "root.deployment.ui.components.workbench.settings"
+    },
+    "528": {
+        "id": "528",
+        "name": "width",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 600,
+        "browsePath": "root.visualization.selfservice0.width"
+    },
+    "529": {
+        "id": "529",
+        "name": "height",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 400,
+        "browsePath": "root.visualization.selfservice0.height"
+    },
+    "530": {
+        "id": "530",
+        "name": "controlPosition",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "right",
+        "browsePath": "root.visualization.selfservice0.controlPosition"
+    },
+    "546": {
+        "id": "546",
+        "name": "timeZone",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "Europe/Berlin",
+        "browsePath": "root.visualization.workbench.timeZone"
+    },
+    "547": {
+        "id": "547",
+        "name": "hasThreshold",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.hasThreshold"
+    },
+    "554": {
+        "id": "554",
+        "name": "width",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 900,
+        "browsePath": "root.visualization.workbench.width"
+    },
+    "555": {
+        "id": "555",
+        "name": "height",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 600,
+        "browsePath": "root.visualization.workbench.height"
+    },
+    "556": {
+        "id": "556",
+        "name": "controlPosition",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "right",
+        "browsePath": "root.visualization.workbench.controlPosition"
+    },
+    "557": {
+        "id": "557",
+        "name": "timeZone",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "Europe/Berlin",
+        "browsePath": "root.visualization.selfservice0.timeZone"
+    },
+    "558": {
+        "id": "558",
+        "name": "hasThreshold",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice0.hasThreshold"
+    },
+    "569": {
+        "id": "569",
+        "name": "folder_autotable",
+        "type": "table",
+        "parent": "1",
+        "children": [
+            "570",
+            "571"
+        ],
+        "backRefs": [
+            "138"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.folder_autotable"
+    },
+    "570": {
+        "id": "570",
+        "name": "columns",
+        "type": "referencer",
+        "parent": "569",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "573",
+            "574",
+            "575",
+            "576"
+        ],
+        "value": null,
+        "browsePath": "root.folder_autotable.columns"
+    },
+    "571": {
+        "id": "571",
+        "name": "timeField",
+        "type": "referencer",
+        "parent": "569",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "576"
+        ],
+        "value": null,
+        "browsePath": "root.folder_autotable.timeField"
+    },
+    "572": {
+        "id": "572",
+        "name": "folder",
+        "type": "folder",
+        "parent": "1",
+        "children": [
+            "573",
+            "574",
+            "575",
+            "576"
+        ],
+        "backRefs": [
+            "128"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.folder"
+    },
+    "573": {
+        "id": "573",
+        "name": "sin",
+        "type": "column",
+        "parent": "572",
+        "children": [],
+        "backRefs": [
+            "570",
+            "129"
+        ],
+        "forwardRefs": [],
+        "value": "len 92",
+        "browsePath": "root.folder.sin"
+    },
+    "574": {
+        "id": "574",
+        "name": "cos",
+        "type": "column",
+        "parent": "572",
+        "children": [],
+        "backRefs": [
+            "570",
+            "129"
+        ],
+        "forwardRefs": [],
+        "value": "len 92",
+        "browsePath": "root.folder.cos"
+    },
+    "575": {
+        "id": "575",
+        "name": "step",
+        "type": "column",
+        "parent": "572",
+        "children": [],
+        "backRefs": [
+            "570"
+        ],
+        "forwardRefs": [],
+        "value": "len 92",
+        "browsePath": "root.folder.step"
+    },
+    "576": {
+        "id": "576",
+        "name": "time",
+        "type": "column",
+        "parent": "572",
+        "children": [],
+        "backRefs": [
+            "570",
+            "571"
+        ],
+        "forwardRefs": [],
+        "value": "len 92",
+        "browsePath": "root.folder.time"
+    },
+    "577": {
+        "id": "577",
+        "name": "hasStreaming",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.hasStreaming"
+    }
+}

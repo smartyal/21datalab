@@ -1359,7 +1359,7 @@ class Model():
                    folders and referencers inside the folder are not taken into account
             doing so, hierarchies of referencers are unlimited, hierarchies of folders are only of depth 1
             Returns:
-                all nodes which are considered leaves as a list of node dicts
+                all node dicts which are considered leaves as a list of node dicts
         """
         with self.lock:
             id = self.__get_id(desc)
@@ -1472,6 +1472,8 @@ class Model():
             Args:
                 variables (list(nodedescriptors)): nodes to be part the data table requested (ordered!)
                 startime, endTime: the start and endtime of the table given as seconds since epoch
+                                #we also allow the special case of endTime = 0 and startTime = -interval
+                                # we also allow the special case of startTime given and end time= 0
                 noBins(int): the number of samples to be returned inside the table between start end endtime,
                              if None is given, we return all samples (rows) we have in the table and to not aggregate
                 agg(string): the aggregation function to be used when we downsample the data,
@@ -1503,6 +1505,17 @@ class Model():
                 times = numpy.asarray(self.model[timeColumnId]["value"])
                 indices = numpy.where((times>=startTime) & (times<=endTime))[0]
                 #xxx todo find the right index
+            elif startTime and not endTime:
+                #special cases for [-startTime:] and [startTime:] requests
+                if startTime < 0:
+                    #this is the special case that we take an interval from the end
+                    endTime = self.model[timeColumnId]["value"][-1]# the last
+                    startTime = endTime +startTime # as startTime is negative this is actually substraction
+                else:
+                    #starttime is positive
+                    pass
+                times = numpy.asarray(self.model[timeColumnId]["value"])
+                indices = numpy.where(times >= startTime)[0]
             else:
                 indices = numpy.arange(0,len(self.model[timeColumnId]["value"])) ## all indices
 
@@ -1703,22 +1716,16 @@ class Model():
         return True
 
 
-
-    def append_rows_to_table(self,dataRow):
-        """
-            this function takes one data row and adds it to a table
-        """
-        pass
-
-
     def append_table(self,blob,autocreate=True,autopad=True):
         """
             this function accepts a dictionary containing paths and values and adds them as a row to a table
-             if autoPad is True: it is allowed to leave our columns, those will be padded with NaN,
+             if autoPad is True: it is allowed to leave out columns, those will be padded with NaN,
              if autocreate is True: it is allowed to add unknown colums, those will be added automatically under the given name
 
             Args:
-                blob(dict): keys: node descriptors, values: value to be appended to the table (only one scalar per variable at a time)
+                blob(dict):
+                    keys: node descriptors, values: value to be appended to the table (only one scalar per variable at a time)
+                    the times should be given in a variable ending with .time
                 autocreate(bool): if set to true and the nodes or table in the dict do not exist yet, we autocreate a table
                 autopad(bool) if set to true, we automatically pad values in an existing table if variables of the table are not part of the blob
                                 doing so, we keep consistent lenght for all columns of a table
@@ -1768,29 +1775,22 @@ class Model():
 
                 for path in autocreates:
                     id = self.create_node_from_path(path,properties={"type":"column"})
-                    self.model[id]["value"]=[None]*numberOfRows
+                    self.model[id]["value"]=numpy.full(numberOfRows,numpy.inf)
                     self.add_forward_refs(columnsId,[id])
                     if path.split('.')[-1]=="time":
                         #we just created the time field, we must also give the table struct the info
                         self.add_forward_refs(timeId,[id])
 
             #now insert data: prepare a row that contains values for all columns in the right order
-            row = []
-            for id in self.model[columnsId]["forwardRefs"]:
-                path = self.get_browse_path(id)
-                if path in blob:
-                    row.append(blob[path])
-                else:
-                    #table variable is missing in the incoming data
-                    if autopad:
-                        row.append(None)
-                    else:
-                        self.logger.warn("variable missing in row append"+path)
-                        return False
+            tableColumnIds = self.get_leaves_ids(columnsId) # a list of the ids of the columns
+            for path in blob:
+                id = self.get_id(path)
+                self.model[id]["value"]=numpy.append(self.model[id]["value"],blob[path]) #todo: this is a very inefficient copy and reallocate
+                tableColumnIds.remove(id)
+                #append this value
+            for id in tableColumnIds:
+                numpy.append(self.model[id]["value"],numpy.inf) # pad the remainings with inf
 
-            #here, we have all prepared, let's write the data finally
-            for (id,value) in zip(self.model[columnsId]["forwardRefs"],row):
-                self.model[id]["value"].append(value)
             return True
 
 

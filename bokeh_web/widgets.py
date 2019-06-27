@@ -25,7 +25,7 @@ from bokeh.models.widgets import RadioButtonGroup, Paragraph, Toggle, MultiSelec
 from bokeh.plotting import figure, curdoc
 from bokeh.layouts import layout,widgetbox, column, row, Spacer
 from bokeh.models import Range1d, PanTool, WheelZoomTool, ResetTool, ToolbarBox, Toolbar
-from bokeh.models import FuncTickFormatter, CustomJSHover, SingleIntervalTicker, DatetimeTicker
+from bokeh.models import FuncTickFormatter, CustomJSHover, SingleIntervalTicker, DatetimeTicker, CustomJS
 from pytz import timezone
 
 
@@ -455,6 +455,7 @@ class TimeSeriesWidget():
         self.annotationTags = []
         self.hoverTool = None
         self.showThresholds = True # initial value to show or not the thresholds (if they are enabled)
+        self.streamingMode = False # is set to true if streaming mode is on
         self.annotations = {} #   holding the bokeh objects of the annotations
 
         self.__init_figure() #create the graphical output
@@ -592,7 +593,8 @@ class TimeSeriesWidget():
         self.tools = toolBarBox
         self.toolBarBox = toolBarBox
 
-        self.plot.xaxis.formatter = FuncTickFormatter(code = """ 
+
+        self.plot.xaxis.formatter = FuncTickFormatter(code = """
             let local = moment(tick).tz('%s');
             let datestring =  local.format();
             return datestring.slice(0,-6);
@@ -632,7 +634,7 @@ class TimeSeriesWidget():
 
         # show Buttons
         # initially everything is disabled
-        # check background, threshold, annotation
+        # check background, threshold, annotation, streaming
         self.showGroupLabels = []
         self.showGroupLabelsDisplay=[]
         if self.server.get_settings()["hasAnnotation"] == True:
@@ -646,6 +648,10 @@ class TimeSeriesWidget():
             self.showGroupLabels.append("Threshold")
             self.showGroupLabelsDisplay.append("Thre")
             self.showThresholds = False # initially off
+        if self.server.get_settings()["hasStreaming"] == True:
+            self.showGroupLabels.append("Streaming")
+            self.showGroupLabelsDisplay.append("Stream")
+            self.streamingMode = False # initially off
         self.showGroup = CheckboxButtonGroup(labels=self.showGroupLabelsDisplay)
         self.showGroup.on_change("active",self.show_group_on_click_cb)
         layoutControls.append(self.showGroup)
@@ -673,7 +679,8 @@ class TimeSeriesWidget():
         #build the layout
         self.layout = layout( [row(children=[self.plot,self.tools],sizing_mode="fixed")],row(layoutControls,width=self.width ,sizing_mode="scale_width"))
 
-        self.init_annotations() # we create all annotations that we have into self.annotations
+        if self.server.get_settings()["hasAnnotation"] == True:
+            self.init_annotations() # we create all annotations that we have into self.annotations
 
     def show_group_on_click_cb(self,attr,old,new):
         # in old, new we get a list of indices which are active
@@ -696,6 +703,22 @@ class TimeSeriesWidget():
         if "Threshold" in turnOff:
             self.showThresholds = False
             self.hide_thresholds()
+        if "Streaming" in turnOn:
+            self.start_streaming()
+        if "Streaming" in turnOff:
+            self.stop_streaming()
+
+    def start_streaming(self):
+        self.logger.debug(f"start_streaming {self.rangeEnd-self.rangeStart}")
+        #get data every second and push it to the graph
+        self.streamingInterval = self.rangeEnd-self.rangeStart # this is the currently selected "zoom"
+        self.streamingUpdateData = None
+        self.streamingMode = True
+
+
+    def stop_streaming(self):
+        self.logger.debug("stop streaming")
+        self.streamingMode = False
 
 
 
@@ -769,12 +792,37 @@ class TimeSeriesWidget():
     def __observer_thread_function(self):
         """ the periodic thread function"""
         self.logger.info("starting observer thread functino")
-        counter = 0 # for debugging
+        counter = 0
         while (self.observerThreadRunning):
             counter+=1
             self.__check_observed(counter)
             time.sleep(0.5)
+            if self.streamingMode and not self.streamingUpdateData:
+                self.logger.debug("get stream data")
+                #we update the streaming every second
+                #get fresh data, store it into a variable and make the update on dispatch in the context of bokeh
+                variables = self.server.get_variables_selected()
+                variablesRequest = variables.copy()
+                variablesRequest.append("__time")  # make sure we get the time included
+                self.logger.debug(f"request stream data{self.streamingInterval}")
+                self.streamingUpdateData = self.server.get_data(variablesRequest, -self.streamingInterval, None,
+                                                                self.server.get_settings()["bins"])  # for debug
+                self.__dispatch_function(self.stream_update)
+
+
+
+
+
         self.logger.debug("exit observer thread")
+
+    def stream_update(self):
+        self.logger.debug("stream update")#+str(self.streamingUpdateData))
+        if self.streamingUpdateData:
+            #if we have new data picked, we can now savely push them
+            self.data.data = self.streamingUpdateData# #update the plot
+            self.plot.x_range.start = self.data.data["__time"][0]
+            self.plot.x_range.end = self.data.data["__time"][-1]
+            self.streamingUpdateData = None #the thread can get new data
 
     def __check_observed(self,counter):
         """
@@ -1080,6 +1128,9 @@ class TimeSeriesWidget():
             #self.refresh_plot()
             pass
         if eventType == "LODEnd":
+            if self.streamingMode:
+                # also update the zoom level during streaming
+                self.streamingInterval = self.rangeEnd - self.rangeStart
             self.refresh_plot()
 
         if eventType == "Reset":
