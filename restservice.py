@@ -656,7 +656,7 @@ if __name__ == '__main__':
     else:
         m.create_test(1)
 
-    web.run(host='0.0.0.0', port=6001, debug=False, threaded = False)
+    web.run(host='0.0.0.0', port=6001, debug=False)#, threaded = False)
 
     #enable this to use wsgi web server instead
     #http_server = WSGIServer(('0.0.0.0', 6001), web)
