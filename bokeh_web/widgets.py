@@ -447,6 +447,7 @@ class TimeSeriesWidget():
         self.legend ={}
         self.hasLegend = False
         self.data = None
+        self.inPeriodicCb = False # avoid reentrance of the bokeh app loop callback
         self.dispatchList = [] # a list of function to be executed in the bokeh app look context
                                 # this is needed e.g. to assign values to renderes etc
         self.dispatchLock = threading.Lock() # need a lock for the dispatch list
@@ -457,6 +458,8 @@ class TimeSeriesWidget():
         self.showThresholds = True # initial value to show or not the thresholds (if they are enabled)
         self.streamingMode = False # is set to true if streaming mode is on
         self.annotations = {} #   holding the bokeh objects of the annotations
+        self.userZoomRunning = False # set to true during user pan/zoom to avoid stream updates at that time
+        self.inStreamUpdate = False # set true inside the execution of the stream update
 
         self.__init_figure() #create the graphical output
 
@@ -805,6 +808,7 @@ class TimeSeriesWidget():
                 variablesRequest = variables.copy()
                 variablesRequest.append("__time")  # make sure we get the time included
                 self.logger.debug(f"request stream data{self.streamingInterval}")
+                self.streamingUpdateDataInterval = self.streamingInterval #store this to check later if it has changed
                 self.streamingUpdateData = self.server.get_data(variablesRequest, -self.streamingInterval, None,
                                                                 self.server.get_settings()["bins"])  # for debug
                 self.__dispatch_function(self.stream_update)
@@ -816,14 +820,26 @@ class TimeSeriesWidget():
         self.logger.debug("exit observer thread")
 
     def stream_update(self):
+        self.inStreamUpdate = True # to tell the range_cb that the range adjustment was not from the user
         self.logger.debug("stream update")#+str(self.streamingUpdateData))
         if self.streamingUpdateData:
-            #if we have new data picked, we can now savely push them
-            self.data.data = self.streamingUpdateData# #update the plot
-            self.plot.x_range.start = self.data.data["__time"][0]
-            self.plot.x_range.end = self.data.data["__time"][-1]
-            self.streamingUpdateData = None #the thread can get new data
-
+            if not self.userZoomRunning:
+                if not self.streamingUpdateDataInterval == self.streamingInterval:
+                    #the interval has changed in the meantime due to user pan/zoom, we skip this data, get fresh one
+                    self.streamingUpdateData = None
+                    self.inStreamUpdate = False
+                    self.logger.debug("interval has changed")
+                    return
+                #, we can now savely push them
+                self.data.data = self.streamingUpdateData# #update the plot
+                self.plot.x_range.start = self.data.data["__time"][0]
+                self.plot.x_range.end = self.data.data["__time"][-1]
+                self.streamingUpdateData = None #the thread can get new data
+            else:
+                self.logger.info("user zoom running, try later")
+                #user is panning, zooming, we should wait and try again later
+                self.__dispatch_function(self.stream_update)
+        self.inStreamUpdate = False
     def __check_observed(self,counter):
         """
             this function is periodically called from a threading.thread
@@ -943,21 +959,26 @@ class TimeSeriesWidget():
             are only possible withing the bokeh thread, not from any other.
 
         """
-        executelist=[]
-        #self.logger.debug("periodic_cb"+self.id)
-        #first copy over the dispatch list, this #todo: this must be done under lock
-        with self.dispatchLock:
-            if not self.dispatcherRunning:
-                if self.dispatchList:
-                    executelist = self.dispatchList.copy()
-                    self.dispatchList = []
-                self.dispatcherRunning = True
+        if not self.inPeriodicCb: # avoid reentrance
+            self.inPeriodicCb = True
+            self.logger.debug("enter periodic_cb")
+            executelist=[]
+            #self.logger.debug("periodic_cb"+self.id)
+            #first copy over the dispatch list, this #todo: this must be done under lock
+            with self.dispatchLock:
+                if not self.dispatcherRunning:
+                    if self.dispatchList:
+                        executelist = self.dispatchList.copy()
+                        self.dispatchList = []
+                    self.dispatcherRunning = True
 
-        for fkt in executelist:
-            self.logger.info("now executing dispatched %s",str(fkt))
-            fkt() # execute the functions which wait for execution and must be executed from this context
-        with self.dispatchLock:
-            self.dispatcherRunning = False # free this to run the next
+            for fkt in executelist:
+                self.logger.info("now executing dispatched %s",str(fkt))
+                fkt() # execute the functions which wait for execution and must be executed from this context
+                self.logger.debug("leaving periodic_cb")
+            with self.dispatchLock:
+                self.dispatcherRunning = False # free this to run the next
+            self.inPeriodicCb = False
 
     def __get_free_color(self):
         """
@@ -996,7 +1017,9 @@ class TimeSeriesWidget():
         #self.logger.debug("@__plot_lines:self.variables, bins "+str(variablesRequest)+str( settings["bins"]))
         getData = self.server.get_data(variablesRequest,self.rangeStart,self.rangeEnd,settings["bins"]) # for debug
         #self.logger.debug("GETDATA:"+str(getData))
-
+        if not getData:
+            self.logger.error(f"no data received")
+            return
         if newVars == []:
             self.data.data = getData  # also apply the data to magically update
         else:
@@ -1043,11 +1066,15 @@ class TimeSeriesWidget():
             callback by bokeh system when the scaling have changed (roll the mouse wheel), see bokeh documentation
         """
         #we only store the range, and wait for an LOD or PANEnd event to refresh
+        #self.logger.debug(f"range_cb {attribute}")
         if attribute == "start":
             self.rangeStart = new
         if attribute == "end":
             self.rangeEnd = new
+        if self.streamingMode == True and not self.inStreamUpdate:
+            self.userZoomRunning = True
         #print("range cb"+str(attribute),self.rangeStart,self.rangeEnd)
+        #self.logger.debug(f"leaving range_cb with userzoom running {self.userZoomRunning}")
 
     def refresh_plot(self):
         """
@@ -1124,11 +1151,18 @@ class TimeSeriesWidget():
         self.logger.debug("event " + eventType + msg)
         #print("event " + eventType + msg)
 
+        if eventType in ["PanStart","Pan"]:
+            if self.streamingMode:
+                self.userZoomRunning = True # the user is starting with pannin, we old the ui updates during user pan
+
         if eventType == "PanEnd":
             #self.refresh_plot()
+            if self.streamingMode:
+                self.userZoomRunning = False # the user is finished with zooming, we can now push data to the UI again
             pass
         if eventType == "LODEnd":
             if self.streamingMode:
+                self.userZoomRunning = False # the user is finished with zooming, we can now push data to the UI again
                 # also update the zoom level during streaming
                 self.streamingInterval = self.rangeEnd - self.rangeStart
             self.refresh_plot()
@@ -1144,6 +1178,7 @@ class TimeSeriesWidget():
             #self.logger.info("TAGS"+str(self.annotationTags)+"   "+str(option))
             self.edit_annotation_cb(event.__dict__["geometry"]["x0"],event.__dict__["geometry"]["x1"],mytag,event.__dict__["geometry"]["y0"],event.__dict__["geometry"]["y1"])
 
+        self.logger.debug(f"leave event with user zomm running{self.userZoomRunning}")
     def reset_plot_cb(self):
         self.logger.debug("reset plot")
         self.rangeStart = None
