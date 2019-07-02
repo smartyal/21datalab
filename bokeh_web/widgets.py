@@ -95,6 +95,7 @@ class TimeSeriesWidgetDataServer():
         self.url = modelUrl # get the data from here
         self.path = avatarPath # here is the struct for the timeserieswidget
         #self.timeOffset = 0 # the timeoffset of display in seconds (from ".displayTimeZone)
+        self.annotations = {}
 
         self.__init_logger()
         self.__init_proxy()
@@ -116,7 +117,7 @@ class TimeSeriesWidgetDataServer():
 
     def __init_logger(self, level=logging.DEBUG):
         setup_logging(loglevel = level, tag=self.path)
-        self.logger = logging.getLogger("TSWidgetDataServer")
+        self.logger = logging.getLogger("TSServer")
         self.logger.setLevel(level)
         #handler = logging.StreamHandler()
         #formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
@@ -961,24 +962,30 @@ class TimeSeriesWidget():
         """
         if not self.inPeriodicCb: # avoid reentrance
             self.inPeriodicCb = True
-            self.logger.debug("enter periodic_cb")
-            executelist=[]
-            #self.logger.debug("periodic_cb"+self.id)
-            #first copy over the dispatch list, this #todo: this must be done under lock
-            with self.dispatchLock:
-                if not self.dispatcherRunning:
-                    if self.dispatchList:
-                        executelist = self.dispatchList.copy()
-                        self.dispatchList = []
-                    self.dispatcherRunning = True
+            try: # we need this, otherwise the inPeriodicCb will not be reset
+                self.logger.debug("enter periodic_cb")
+                executelist=[]
+                #self.logger.debug("periodic_cb"+self.id)
+                #first copy over the dispatch list, this #todo: this must be done under lock
+                with self.dispatchLock:
+                    if not self.dispatcherRunning:
+                        if self.dispatchList:
+                            executelist = self.dispatchList.copy()
+                            self.dispatchList = []
+                        self.dispatcherRunning = True
 
-            for fkt in executelist:
-                self.logger.info("now executing dispatched %s",str(fkt))
-                fkt() # execute the functions which wait for execution and must be executed from this context
-                self.logger.debug("leaving periodic_cb")
-            with self.dispatchLock:
-                self.dispatcherRunning = False # free this to run the next
+                for fkt in executelist:
+                    self.logger.info("now executing dispatched %s",str(fkt))
+                    fkt() # execute the functions which wait for execution and must be executed from this context
+                    self.logger.debug("leaving periodic_cb")
+                with self.dispatchLock:
+                    self.dispatcherRunning = False # free this to run the next
+            except Exception as ex:
+                self.logger.error(f"Error in periodic callback {ex}")
+
             self.inPeriodicCb = False
+        else:
+            self.logger.error("periodic CB reentrance avoided")
 
     def __get_free_color(self):
         """

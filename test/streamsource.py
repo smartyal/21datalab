@@ -9,11 +9,26 @@ import requests
 sys.path.append('..')
 from model import date2secs
 
+lastTimeStamp = None
 
-def make_blob(epoch):
+
+def make_blob(epoch, includeOutlier=True):
+    outlier = 0
+    if includeOutlier:
+        global lastTimeStamp
+        if not lastTimeStamp:
+            lastTimeStamp = epoch
+        else:
+            if epoch > lastTimeStamp + 7:
+                lastTimeStamp = epoch
+                #every 5 seconds an outlier
+                print("outlier!")
+                outlier = 1
+
+
     blob = {
         "root.folder.sin": numpy.sin(2*numpy.pi*(1/20)*epoch),
-        "root.folder.cos": numpy.cos(2*numpy.pi*(1/20)*epoch),
+        "root.folder.cos": numpy.cos(2*numpy.pi*(1/20)*epoch)+outlier,
         "root.folder.step": round(epoch%20),
         "root.folder.time": epoch
     }
