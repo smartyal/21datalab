@@ -654,6 +654,7 @@ if __name__ == '__main__':
             print("load model from disk: "+sys.argv[1])
             m.load(sys.argv[1])
     else:
+        print("no model - create standard test model")
         m.create_test(1)
 
     web.run(host='0.0.0.0', port=6001, debug=False)#, threaded = False)

@@ -51,18 +51,24 @@ counter = {
 
 observer = {
     "name":"observer",
-    "type":"function",
-    "functionPointer":"system.observer_function",
-    "autoReload":False,
+    "type":"observer",
     "children":[
-        {"name":"subject","type":"referencer"},
-        {"name":"properties","type":"const","value":["leaves"]},   #properties to observe ["value","children","leaves"]
-        {"name":"updateCounter","type":"variable","value":0},
-        {"name":"onUpdate","type":"referencer"},                     #the function(s) to be called when triggering
-        {"name":"lastStatus","type":"variable","value":None},                    #the storage for the fuction to keep the last status
-        __functioncontrolfolder
+        {"name": "enabled", "type": "const", "value": False},         # turn on/off the observer
+        {"name": "triggerCounter","type":"variable","value":0},      #  increased on each trigger
+        {"name": "lastTriggerTime","type":"variable","value":""},    #  last datetime when it was triggered
+        {"name": "targets","type":"referencer"},                     #  pointing to the nodes observed
+        {"name": "properties","type":"const","value":["value"]},     #  properties to observe [“children”,“value”, “forwardRefs”]
+        {"name": "onTriggerFunction","type":"referencer"},           #  the function(s) to be called when triggering
+        {"name": "hasEvent","type":"const","value":False},     # set to event string iftrue if we want an event as well
+        {"name": "eventString","type":"const","value":"observerdefaultevent"}       # the string of the event
     ]
 }
+
+
+
+
+
+
 
 
 def counter_f(functionNode):

@@ -308,7 +308,8 @@
             "547",
             "554",
             "555",
-            "556"
+            "556",
+            "569"
         ],
         "backRefs": [
             "526"
@@ -892,7 +893,8 @@
             "529",
             "530",
             "557",
-            "558"
+            "558",
+            "570"
         ],
         "backRefs": [
             "502"
@@ -1493,7 +1495,8 @@
             "532",
             "533",
             "559",
-            "560"
+            "560",
+            "571"
         ],
         "backRefs": [
             "506"
@@ -2065,7 +2068,8 @@
             "535",
             "536",
             "561",
-            "562"
+            "562",
+            "572"
         ],
         "backRefs": [
             "510"
@@ -2637,7 +2641,8 @@
             "538",
             "539",
             "563",
-            "564"
+            "564",
+            "573"
         ],
         "backRefs": [
             "514"
@@ -3209,7 +3214,8 @@
             "541",
             "542",
             "565",
-            "566"
+            "566",
+            "574"
         ],
         "backRefs": [
             "518"
@@ -3781,7 +3787,8 @@
             "544",
             "545",
             "567",
-            "568"
+            "568",
+            "575"
         ],
         "backRefs": [
             "522"
@@ -5154,5 +5161,82 @@
         "forwardRefs": [],
         "value": false,
         "browsePath": "root.visualization.selfservice5.hasThreshold"
+    },
+    "569": {
+        "id": "569",
+        "name": "hasStreaming",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.workbench.hasStreaming"
+    },
+    "570": {
+        "id": "570",
+        "name": "hasStreaming",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice0.hasStreaming"
+    },
+    "571": {
+        "id": "571",
+        "name": "hasStreaming",
+        "type": "const",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice1.hasStreaming"
+    },
+    "572": {
+        "id": "572",
+        "name": "hasStreaming",
+        "type": "const",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice2.hasStreaming"
+    },
+    "573": {
+        "id": "573",
+        "name": "hasStreaming",
+        "type": "const",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice3.hasStreaming"
+    },
+    "574": {
+        "id": "574",
+        "name": "hasStreaming",
+        "type": "const",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice4.hasStreaming"
+    },
+    "575": {
+        "id": "575",
+        "name": "hasStreaming",
+        "type": "const",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice5.hasStreaming"
     }
 }

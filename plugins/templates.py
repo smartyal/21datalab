@@ -50,7 +50,9 @@ timeseriesWidget = {
         {"name":"height","type":"const","value":600},                           # the display height of the plot in pixel
         {"name":"controlPosition","type":"const","value":"right"}  ,            # the position of the button controls of ["bottom","right]
         {"name":"timeZone","type":"const","value":"Europe/Berlin"},             # the timezone of the display
-        {"name":"hasThreshold","type":"const","value":False}                    # horizontal thresholds (min/max) are supported for the annotations
+        {"name":"hasThreshold","type":"const","value":False},                   # horizontal thresholds (min/max) are supported for the annotations
+        {"name":"hasStreaming", "type": "const", "value": False}                # horizontal thresholds (min/max) are supported for the annotations
+
 
     ]
 }

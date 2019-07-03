@@ -607,6 +607,7 @@ class Model():
         self.differentialHandlesMaxPerUser = 10
         self.currentModelName = "emptyModel" # the current name of the model
         self.modelUpdateCounter = 0 #this is for the tree observer, on any change, we update the counter
+        self.observerStatus = {} # a dict holding the key = observerid and value : the needed status of an observer processing
 
     def __init_logger(self, level):
         """setup the logger object"""
@@ -1434,6 +1435,24 @@ class Model():
                         return childId
         return None
 
+    def get_children_dict(self,desc):
+        """
+            create a dictionary with key= childName and value = nodedict
+            Args:
+                desc: the nodedescriptor
+            Returns:
+                a dict
+        """
+        with self.lock:
+            childrenDic={}
+            id = self.get_id(desc)
+            if not id:
+                return None
+
+            for childId in self.model[id]["children"]:
+                child = self.get_node_info(childId)
+                childrenDic[child["name"]]=child
+            return childrenDic
 
 
 
@@ -1881,7 +1900,7 @@ class Model():
         """
         try:
             with self.lock:
-                print("in exec Thread")
+                self.logger.info(f"in execution Thread, executing {id}")
                 #check the function
                 functionName = self.model[id]["functionPointer"]
                 if not functionName in self.functions:
@@ -2166,14 +2185,15 @@ class Model():
 
             return diff
 
-    def __notify_observers(self,nodeId, property=None):
+    def __notify_observers(self, nodeId, properties ):
         """
             this function is called internally when nodes or properties have changed. Then, we look if any
             observer has to be triggered
             we also increase the counter and time on the root.observers.modelObserver
             Args:
                 nodeId: the nodeId where a change occurred
-                property: the property that has changed
+                properties: the property or list of properties of the node that has changed
+
         """
 
         # for now we only do the tree update thing
@@ -2182,26 +2202,28 @@ class Model():
             # this is for the tree updates, any change is taken
             self.modelUpdateCounter = self.modelUpdateCounter +1
 
-            if property:
-                if type(property) is not list:
-                    property = [property]
-                #now check if we are observed, we do everything over ids to have max speed
-                for id in self.model[nodeId]["backRefs"]:
-                    if self.model[self.model[id]["parent"]]["type"] == "observer":
-                        #this node is being observed, now check if a property matches
-                        observablesId = self.get_child(self.model[id]["parent"],"observable")
-                        propertiesToWatch = self.model[observablesId]["value"]
-                        if any(prop in propertiesToWatch for prop in property):
-                            #this is a match
-                            self.logger.debug("observer triggered!")
-                            updateCounterId = self.get_child(self.model[id]["parent"],"updateCounter")
-                            self.set_value(updateCounterId, self.get_value(updateCounterId)+1)
-                            timeId = self.get_child(self.model[id]["parent"],"lastUpdateTime")
-                            self.set_value(timeId,datetime.datetime.now().isoformat())
-                            eventId = self.get_child(self.model[id]["parent"],"hasEvent")
-                            if self.get_value(eventId)==True:
-                                #must send event
-                                self.logger.debug("event on "+self.get_browse_path(self.model[id]["parent"]))
+            if type(properties) is not list:
+                properties = [properties]
+
+            #now check if the node is being observed, we do everything over ids to have max speed
+            for id in self.model[nodeId]["backRefs"]:
+                if self.model[self.model[id]["parent"]]["type"] == "observer":
+                    # this node is being observed,
+                    observerId = self.model[id]["parent"]
+                    observer = self.get_children_dict(observerId)
+                    # check if trigger
+                    if observer["enabled"]["value"] == True:
+                        for property in properties:
+                            if property in observer["properties"]["value"]:
+                                self.logger.debug(f"event trigger on {self.get_browse_path(observerId)} for change in {property}")
+                                self.model[observer["triggerCounter"]["id"]]["value"] = self.model[observer["triggerCounter"]["id"]]["value"]+1
+                                self.model[observer["lastTriggerTime"]["id"]]["value"] = datetime.datetime.now().isoformat()
+                                for funcNodeId in self.get_leaves_ids(observer["onTriggerFunction"]["id"]):
+                                    self.logger.debug(f"execute ontrigger function {funcNodeId}")
+                                    self.execute_function(funcNodeId)
+                                if observer["hasEvent"] == True:
+                                    self.logger.debug(f"send event {observer['hasEvent']['value']}")
+                                    #also send the real event
 
     def set_column_len(self,nodeDescriptor,newLen):
         """

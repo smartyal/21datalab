@@ -462,7 +462,7 @@ def update_widgets(fileName):
     for k,v in newNodes.items():
         m.create_node_from_path(k, properties=v)
     m.show()
-    m.save(fileName+"_adj")
+    m.save(fileName+"_update")
 
 
 
