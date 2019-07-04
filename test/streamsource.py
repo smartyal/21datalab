@@ -45,8 +45,10 @@ def write_test(rate):
         blob = make_blob(epoch)
         body = [blob]
         try:
-            r = requests.post("http://localhost:6001/_appendRow", data=json.dumps(body),timeout=0.1)
-            print(f"sent {json.dumps(body)} with result {r.status_code}")
+            startTime = datetime.datetime.now()
+            r = requests.post("http://localhost:6001/_appendRow", data=json.dumps(body),timeout=0.5)
+            diff = (datetime.datetime.now()-startTime).total_seconds()
+            print(f"sent {json.dumps(body)} with result {r.status_code} difftime{diff}")
         except Exception as ex:
             print(f"sent {json.dumps(body)} with exception {ex}")
 

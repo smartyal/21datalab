@@ -27,7 +27,7 @@ logisticRegressionTemplate= {
 def logistic_regression(functionNode):
 
     logger = functionNode.get_logger()
-    logger.info("==>>>> in logisticregression 2: "+functionNode.get_browse_path())
+    logger.info("==>>>> in logisticregression_ "+functionNode.get_browse_path())
 
     #now get the input and outputs
     inputNodes = functionNode.get_child("input").get_leaves()
@@ -69,9 +69,13 @@ def logistic_regression(functionNode):
             hasRegion = True
             break # only one supported
 
+
+
     indices = [] # a list of indices which give the points in time that were labelled
     training =[]   #the training values are the tags from the annoations translated via the tagsmap
     for anno in annotations:
+        if anno.get_child("type").get_value() !="time":
+            continue # we only take time annotations, ignore thresholds etc
         startTime = anno.get_child("startTime").get_value()
         endTime = anno.get_child("endTime").get_value()
         if anno.get_child('tags').get_value()[0] == "region":
