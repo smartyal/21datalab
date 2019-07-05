@@ -26,6 +26,7 @@ from bokeh.plotting import figure, curdoc
 from bokeh.layouts import layout,widgetbox, column, row, Spacer
 from bokeh.models import Range1d, PanTool, WheelZoomTool, ResetTool, ToolbarBox, Toolbar, Selection
 from bokeh.models import FuncTickFormatter, CustomJSHover, SingleIntervalTicker, DatetimeTicker, CustomJS
+from bokeh.themes import Theme
 from pytz import timezone
 
 
@@ -580,8 +581,8 @@ class TimeSeriesWidget():
            3) assign them to the figure with add_tools()
            4) create a toolbar and add it to the layout by hand
         """
-
-        tools = [WheelZoomTool(dimensions="width"), PanTool(dimensions="width")]
+        self.wheelZoomTool = WheelZoomTool(dimensions="width")
+        tools = [self.wheelZoomTool, PanTool(dimensions="width")]
         if settings["hasAnnotation"] == True:
             self.boxSelectTool = BoxSelectTool(dimensions="width")
             tools.append(self.boxSelectTool)
@@ -600,7 +601,11 @@ class TimeSeriesWidget():
             fig.add_tools(tool) # must assign them to the layout to have the actual use hooked
         toolBarBox = ToolbarBox()  #we need the strange creation of the tools to avoid the toolbar to disappear after
                                    # reload of widget, then drawing an annotations (bokeh bug?)
-        toolBarBox.toolbar = Toolbar(tools=tools)
+        toolBarBox.toolbar = Toolbar(tools=tools,active_inspect=None,active_scroll=self.wheelZoomTool)
+        #active_inspect = [crosshair],
+        # active_drag =                         # here you can assign the defaults
+        # active_scroll =                       # wheel_zoom sometimes is not working if it is set here
+        # active_tap
         toolBarBox.toolbar_location = "right"
         toolBarBox.toolbar.logo = None # no bokeh logo
 
@@ -691,9 +696,9 @@ class TimeSeriesWidget():
                 layoutControls.append(button)
 
         if 0: # turn this helper button on to put some debug code
-            debugButton= Button(label="debug",width=self.buttonWidth)
-            debugButton.on_click(self.debug_button_cb)
-            layoutControls.append(debugButton)
+            self.debugButton= Button(label="debug",width=self.buttonWidth)
+            self.debugButton.on_click(self.debug_button_cb)
+            layoutControls.append(self.debugButton)
 
         #build the layout
         self.layout = layout( [row(children=[self.plot,self.tools],sizing_mode="fixed")],row(layoutControls,width=self.width ,sizing_mode="scale_width"))
@@ -702,7 +707,7 @@ class TimeSeriesWidget():
             self.init_annotations() # we create all annotations that we have into self.annotations
 
     def debug_button_cb(self):
-        self.data.selected = Selection(indices = [])
+        self.debugButton.css_classes = ['button_21']
 
 
 
@@ -1354,6 +1359,7 @@ class TimeSeriesWidget():
         return self.layout
     def set_curdoc(self,curdoc):
         self.curdoc = curdoc
+        #curdoc().theme = Theme(json=themes.defaultTheme) # this is to switch the theme
 
     def remove_annotations(self,deleteList):
         """
