@@ -488,6 +488,24 @@ def new_observer():
     diff = m.get_differential_update(diff["handle"])
     m.logger.debug(diff)
 
+def test_referencer_lookback():
+
+    m = model.Model()
+    m.create_node_from_path("root.ref1", {"type": "referencer"})
+    m.create_node_from_path("root.ref2", {"type": "referencer"})
+    m.create_node_from_path("root.ref3", {"type": "referencer"})
+    m.create_node_from_path("root.ref4", {"type": "referencer"})
+    m.create_node_from_path("root.folder.var")
+    m.create_node_from_path("root.var2")
+    m.add_forward_refs("root.ref1","root.folder")
+    m.add_forward_refs("root.ref2","root.ref1")
+    m.add_forward_refs("root.ref3","root.ref2")
+    m.add_forward_refs("root.ref4","root.var2")
+    m.show()
+    print(f"refs of rootfoldervar {m.get_referencers('root.folder.var')}")
+    print(f"refs of root.var2 {m.get_referencers('root.var2')}")
+
+
 
 
 
@@ -532,7 +550,8 @@ if __name__ == "__main__":
     #dates()
     #update_widgets('hybif6_2')
     #import_annotations()
-    new_observer()
+    #new_observer()
+    test_referencer_lookback()
 
 
 

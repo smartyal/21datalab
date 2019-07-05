@@ -24,7 +24,7 @@ from bokeh import events
 from bokeh.models.widgets import RadioButtonGroup, Paragraph, Toggle, MultiSelect, Button, Select, CheckboxButtonGroup,Dropdown
 from bokeh.plotting import figure, curdoc
 from bokeh.layouts import layout,widgetbox, column, row, Spacer
-from bokeh.models import Range1d, PanTool, WheelZoomTool, ResetTool, ToolbarBox, Toolbar
+from bokeh.models import Range1d, PanTool, WheelZoomTool, ResetTool, ToolbarBox, Toolbar, Selection
 from bokeh.models import FuncTickFormatter, CustomJSHover, SingleIntervalTicker, DatetimeTicker, CustomJS
 from pytz import timezone
 
@@ -96,6 +96,7 @@ class TimeSeriesWidgetDataServer():
         self.path = avatarPath # here is the struct for the timeserieswidget
         #self.timeOffset = 0 # the timeoffset of display in seconds (from ".displayTimeZone)
         self.annotations = {}
+        self.scoreVariables = []
 
         self.__init_logger()
         self.__init_proxy()
@@ -204,7 +205,6 @@ class TimeSeriesWidgetDataServer():
         self.selectableVariables = []
         for node in nodes:
             self.selectableVariables.append(node["browsePath"])
-
         #also remeber the timefield as path
         request = self.path+".table"
         nodes = self.__web_call("post","_getleaves",request)
@@ -213,10 +213,13 @@ class TimeSeriesWidgetDataServer():
         #another call to get it right
         nodes = self.__web_call("post", "_getleaves", timerefpath)
         self.timeNode = nodes[0]["browsePath"]
+        #get the score nodes if any
+        nodes = self.__web_call('POST', "_getleaves", self.path + '.scoreVariables')
+        self.scoreVariables = [node["browsePath"] for node in nodes]
 
 
         #now grab more infor for annotations if needed:
-        if self.settings["hasAnnotation"] == True:
+        if (self.settings["hasAnnotation"] == True) or (self.settings["hasThreshold"] == True):
             response = self.__web_call("post","_get",[self.path+"."+"hasAnnotation"])
             annotationsInfo = get_const_nodes_as_dict(response[0]["children"])
             self.settings.update(annotationsInfo)
@@ -368,6 +371,13 @@ class TimeSeriesWidgetDataServer():
         localtz =  timezone(self.settings["timeZone"])
         dt = datetime.datetime.fromtimestamp(epoch/1000, localtz)
         return dt.isoformat()
+
+    def get_score_variables(self):
+        return copy.deepcopy(self.scoreVariables)
+
+    def is_score_variable(self,variableBrowsePath):
+        return (variableBrowsePath in self.scoreVariables)
+
 
     #start and end are ms(!) sice epoch, tag is a string
     def add_annotation(self,start=0,end=0,tag="unknown",type="time",min=0,max=0):
@@ -680,11 +690,21 @@ class TimeSeriesWidget():
                 button.on_click(self.reset_all)
                 layoutControls.append(button)
 
+        if 0: # turn this helper button on to put some debug code
+            debugButton= Button(label="debug",width=self.buttonWidth)
+            debugButton.on_click(self.debug_button_cb)
+            layoutControls.append(debugButton)
+
         #build the layout
         self.layout = layout( [row(children=[self.plot,self.tools],sizing_mode="fixed")],row(layoutControls,width=self.width ,sizing_mode="scale_width"))
 
         if self.server.get_settings()["hasAnnotation"] == True:
             self.init_annotations() # we create all annotations that we have into self.annotations
+
+    def debug_button_cb(self):
+        self.data.selected = Selection(indices = [])
+
+
 
     def show_group_on_click_cb(self,attr,old,new):
         # in old, new we get a list of indices which are active
@@ -788,7 +808,10 @@ class TimeSeriesWidget():
         self.hoverTool.renderers = []
         renderers = []
         for k, v in self.lines.items():
-            renderers.append(v)
+
+            if not self.server.is_score_variable(k):
+                self.logger.debug(f"add line {k} t hover")
+                renderers.append(v)
         self.hoverTool.renderers = renderers
 
 
@@ -835,6 +858,7 @@ class TimeSeriesWidget():
                 self.data.data = self.streamingUpdateData# #update the plot
                 self.plot.x_range.start = self.data.data["__time"][0]
                 self.plot.x_range.end = self.data.data["__time"][-1]
+                self.adjust_y_axis_limits()
                 self.streamingUpdateData = None #the thread can get new data
             else:
                 self.logger.info("user zoom running, try later")
@@ -1047,8 +1071,21 @@ class TimeSeriesWidget():
             color = self.__get_free_color()
             self.logger.debug("new color ist"+color)
             if variableName != timeNode:
-                self.lines[variableName] = self.plot.line(timeNode, variableName, color=color,
+                self.logger.debug(f"plotting line {variableName}, is score: {self.server.is_score_variable(variableName)}")
+                if self.server.is_score_variable(variableName):
+                    self.lines[variableName] = self.plot.circle(timeNode, variableName, color="red",
+                                                  source=self.data, name=variableName,size=7)  # x:"time", y:variableName #the legend must havee different name than the source bug
+
+
+
+                else:
+                    self.lines[variableName] = self.plot.line(timeNode, variableName, color=color,
                                                   source=self.data, name=variableName,line_width=2)  # x:"time", y:variableName #the legend must havee different name than the source bug
+
+                #we set the lines and glypsh to no change their behaviour when selections are done, unfortunately, this doesn't work, instead we now explicitly unselect in the columndatasource
+                self.lines[variableName].nonselection_glyph = None  # autofading of not selected lines/glyphs is suppressed
+                self.lines[variableName].selection_glyph = None     # self.data.selected = Selection(indices = [])
+
                 self.legendItems[variableName] = LegendItem(label=variableName,renderers=[self.lines[variableName]])
                 if self.showThresholds:
                     self.show_thresholds_of_line(variableName)
@@ -1183,7 +1220,9 @@ class TimeSeriesWidget():
             #mytag = self.annotationTags[option]
             mytag =self.currentAnnotationTag
             #self.logger.info("TAGS"+str(self.annotationTags)+"   "+str(option))
+            self.data.selected = Selection(indices=[])  # suppress real selection
             self.edit_annotation_cb(event.__dict__["geometry"]["x0"],event.__dict__["geometry"]["x1"],mytag,event.__dict__["geometry"]["y0"],event.__dict__["geometry"]["y1"])
+
 
         self.logger.debug(f"leave event with user zomm running{self.userZoomRunning}")
     def reset_plot_cb(self):
@@ -1204,6 +1243,7 @@ class TimeSeriesWidget():
         for r in self.plot.renderers:
             if r.name:
                 if r.name in deleteList:
+                    self.logger.debug(f"remove_renderers {r.name}")
                     pass  # we ignore this one and do NOT add it to the renderers, this will hide the object
                 elif deleteMatch != "" and deleteMatch in r.name:
                     pass  # we ignore this one and do NOT add it to the renderers, this will hide the object
@@ -1561,6 +1601,7 @@ class TimeSeriesWidget():
                     #must delete this one
                     deleteList.append(threshold)
             # now hide the boxes
+            self.logger.debug(f"deletelist {deleteList}")
             self.remove_renderers(deleteList=deleteList)
             self.server.delete_annotations(deleteList)
 
@@ -1574,14 +1615,16 @@ class TimeSeriesWidget():
             #print("\n draw done")
         else:
             #create a threshold annotation, but only if ONE variable is currently selected
-            variable = self.server.get_variables_selected()
-            if len(variable) != 1:
+            variables = self.server.get_variables_selected()
+            scoreVariables = self.server.get_score_variables()
+            vars=list(set(variables)-set(scoreVariables))
+            if len(vars) != 1:
                 self.logger.error("can't create threshold anno, len(vars"+str(len(variable)))
                 return
 
 
             newAnnotationPath = self.server.add_annotation(start,end,tag,type ="threshold",min=min,max=max)
-            self.draw_threshold(newAnnotationPath,variable[0])
+            self.draw_threshold(newAnnotationPath,vars[0])
 
     def session_destroyed_cb(self,context):
         # this still doesn't work

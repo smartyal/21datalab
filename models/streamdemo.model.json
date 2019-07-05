@@ -6,7 +6,9 @@
             "13",
             "490",
             "569",
-            "572"
+            "572",
+            "580",
+            "589"
         ],
         "parent": "0",
         "id": "1",
@@ -58,7 +60,9 @@
             "554",
             "555",
             "556",
-            "577"
+            "577",
+            "609",
+            "610"
         ],
         "backRefs": [
             "526"
@@ -75,7 +79,8 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [
-            "572"
+            "572",
+            "570"
         ],
         "value": null,
         "browsePath": "root.visualization.workbench.selectableVariables"
@@ -88,7 +93,6 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [
-            "573",
             "574"
         ],
         "value": null,
@@ -161,9 +165,12 @@
         "name": "newAnnotations",
         "type": "folder",
         "parent": "133",
-        "children": [],
+        "children": [
+            "603"
+        ],
         "backRefs": [
-            "134"
+            "134",
+            "593"
         ],
         "forwardRefs": [],
         "value": null,
@@ -1081,7 +1088,9 @@
         "parent": "1",
         "children": [
             "570",
-            "571"
+            "571",
+            "579",
+            "578"
         ],
         "backRefs": [
             "138"
@@ -1096,12 +1105,16 @@
         "type": "referencer",
         "parent": "569",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "128"
+        ],
         "forwardRefs": [
             "573",
             "574",
             "575",
-            "576"
+            "576",
+            "578",
+            "579"
         ],
         "value": null,
         "browsePath": "root.folder_autotable.columns"
@@ -1131,7 +1144,8 @@
             "576"
         ],
         "backRefs": [
-            "128"
+            "128",
+            "584"
         ],
         "forwardRefs": [],
         "value": null,
@@ -1144,11 +1158,10 @@
         "parent": "572",
         "children": [],
         "backRefs": [
-            "570",
-            "129"
+            "570"
         ],
         "forwardRefs": [],
-        "value": "len 92",
+        "value": "len 904",
         "browsePath": "root.folder.sin"
     },
     "574": {
@@ -1159,10 +1172,12 @@
         "children": [],
         "backRefs": [
             "570",
+            "590",
+            "608",
             "129"
         ],
         "forwardRefs": [],
-        "value": "len 92",
+        "value": "len 904",
         "browsePath": "root.folder.cos"
     },
     "575": {
@@ -1175,7 +1190,7 @@
             "570"
         ],
         "forwardRefs": [],
-        "value": "len 92",
+        "value": "len 904",
         "browsePath": "root.folder.step"
     },
     "576": {
@@ -1189,7 +1204,7 @@
             "571"
         ],
         "forwardRefs": [],
-        "value": "len 92",
+        "value": "len 904",
         "browsePath": "root.folder.time"
     },
     "577": {
@@ -1202,5 +1217,424 @@
         "forwardRefs": [],
         "value": true,
         "browsePath": "root.visualization.workbench.hasStreaming"
+    },
+    "578": {
+        "id": "578",
+        "name": "score_sin",
+        "type": "column",
+        "parent": "569",
+        "children": [],
+        "backRefs": [
+            "570",
+            "609"
+        ],
+        "forwardRefs": [],
+        "value": "len 904",
+        "browsePath": "root.folder_autotable.score_sin"
+    },
+    "579": {
+        "id": "579",
+        "name": "score_cos",
+        "type": "column",
+        "parent": "569",
+        "children": [],
+        "backRefs": [
+            "591",
+            "570",
+            "609"
+        ],
+        "forwardRefs": [],
+        "value": "len 904",
+        "browsePath": "root.folder_autotable.score_cos"
+    },
+    "580": {
+        "id": "580",
+        "name": "new_observer_f788",
+        "type": "observer",
+        "parent": "1",
+        "children": [
+            "581",
+            "582",
+            "583",
+            "584",
+            "585",
+            "586",
+            "587",
+            "588"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.new_observer_f788"
+    },
+    "581": {
+        "id": "581",
+        "name": "enabled",
+        "type": "const",
+        "parent": "580",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.new_observer_f788.enabled"
+    },
+    "582": {
+        "id": "582",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "580",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.new_observer_f788.triggerCounter"
+    },
+    "583": {
+        "id": "583",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "580",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.new_observer_f788.lastTriggerTime"
+    },
+    "584": {
+        "id": "584",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "580",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "572"
+        ],
+        "value": null,
+        "browsePath": "root.new_observer_f788.targets"
+    },
+    "585": {
+        "id": "585",
+        "name": "properties",
+        "type": "const",
+        "parent": "580",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.new_observer_f788.properties"
+    },
+    "586": {
+        "id": "586",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "580",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.new_observer_f788.onTriggerFunction"
+    },
+    "587": {
+        "id": "587",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "580",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.new_observer_f788.hasEvent"
+    },
+    "588": {
+        "id": "588",
+        "name": "eventString",
+        "type": "const",
+        "parent": "580",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "observerdefaultevent",
+        "browsePath": "root.new_observer_f788.eventString"
+    },
+    "589": {
+        "id": "589",
+        "name": "new_thresholdScorer_09fe",
+        "type": "function",
+        "parent": "1",
+        "children": [
+            "590",
+            "591",
+            "592",
+            "593",
+            "594"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "functionPointer": "threshold.threshold_scorer",
+        "autoReload": true,
+        "browsePath": "root.new_thresholdScorer_09fe"
+    },
+    "590": {
+        "id": "590",
+        "name": "input",
+        "type": "referencer",
+        "parent": "589",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "574"
+        ],
+        "value": null,
+        "browsePath": "root.new_thresholdScorer_09fe.input"
+    },
+    "591": {
+        "id": "591",
+        "name": "output",
+        "type": "referencer",
+        "parent": "589",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "579"
+        ],
+        "value": null,
+        "browsePath": "root.new_thresholdScorer_09fe.output"
+    },
+    "592": {
+        "id": "592",
+        "name": "streaming",
+        "type": "const",
+        "parent": "589",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.new_thresholdScorer_09fe.streaming"
+    },
+    "593": {
+        "id": "593",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "589",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "135"
+        ],
+        "value": null,
+        "browsePath": "root.new_thresholdScorer_09fe.annotations"
+    },
+    "594": {
+        "id": "594",
+        "name": "control",
+        "type": "folder",
+        "parent": "589",
+        "children": [
+            "595",
+            "596",
+            "597",
+            "598",
+            "599",
+            "600",
+            "601",
+            "602"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.new_thresholdScorer_09fe.control"
+    },
+    "595": {
+        "id": "595",
+        "name": "status",
+        "type": "variable",
+        "parent": "594",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "finished",
+        "browsePath": "root.new_thresholdScorer_09fe.control.status"
+    },
+    "596": {
+        "id": "596",
+        "name": "progress",
+        "type": "variable",
+        "parent": "594",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.new_thresholdScorer_09fe.control.progress"
+    },
+    "597": {
+        "id": "597",
+        "name": "result",
+        "type": "variable",
+        "parent": "594",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "ok",
+        "browsePath": "root.new_thresholdScorer_09fe.control.result"
+    },
+    "598": {
+        "id": "598",
+        "name": "signal",
+        "type": "variable",
+        "parent": "594",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "nosignal",
+        "browsePath": "root.new_thresholdScorer_09fe.control.signal"
+    },
+    "599": {
+        "id": "599",
+        "name": "executionCounter",
+        "type": "variable",
+        "parent": "594",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 3,
+        "browsePath": "root.new_thresholdScorer_09fe.control.executionCounter"
+    },
+    "600": {
+        "id": "600",
+        "name": "lastExecutionDuration",
+        "type": "variable",
+        "parent": "594",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0.002514,
+        "browsePath": "root.new_thresholdScorer_09fe.control.lastExecutionDuration"
+    },
+    "601": {
+        "id": "601",
+        "name": "lastStartTime",
+        "type": "variable",
+        "parent": "594",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2019-07-04T12:08:45.018982",
+        "browsePath": "root.new_thresholdScorer_09fe.control.lastStartTime"
+    },
+    "602": {
+        "id": "602",
+        "name": "executionType",
+        "type": "const",
+        "parent": "594",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "async",
+        "browsePath": "root.new_thresholdScorer_09fe.control.executionType"
+    },
+    "603": {
+        "id": "603",
+        "name": "2a43d378",
+        "type": "annotation",
+        "parent": "135",
+        "children": [
+            "604",
+            "605",
+            "606",
+            "607",
+            "608"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.2a43d378"
+    },
+    "604": {
+        "id": "604",
+        "name": "type",
+        "type": "const",
+        "parent": "603",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "threshold",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.2a43d378.type"
+    },
+    "605": {
+        "id": "605",
+        "name": "min",
+        "type": "const",
+        "parent": "603",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": -0.795365920607194,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.2a43d378.min"
+    },
+    "606": {
+        "id": "606",
+        "name": "max",
+        "type": "const",
+        "parent": "603",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0.8783253899354307,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.2a43d378.max"
+    },
+    "607": {
+        "id": "607",
+        "name": "tags",
+        "type": "const",
+        "parent": "603",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "threshold"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.2a43d378.tags"
+    },
+    "608": {
+        "id": "608",
+        "name": "variable",
+        "type": "referencer",
+        "parent": "603",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "574"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.2a43d378.variable"
+    },
+    "609": {
+        "id": "609",
+        "name": "scoreVariables",
+        "type": "referencer",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "578",
+            "579"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.scoreVariables"
+    },
+    "610": {
+        "id": "610",
+        "name": "scoreMap",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.scoreMap"
     }
 }

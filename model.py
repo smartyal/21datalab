@@ -1046,6 +1046,10 @@ class Model():
             if not fromId:
                 self.logger.error("can't set forward ref on "+str(referencerDesc))
                 return False
+
+            if type(targets) is not list:
+                targets = [targets]
+
             if not self.model[fromId]["type"]=="referencer":
                 self.logger.error("can't set forward ref on "+str(referencerDesc)+ "is not type referencer, is type"+self.model[fromId]["type"])
                 return False
@@ -1371,6 +1375,38 @@ class Model():
                 #this can happen if the node is not a folder, ref and had no children
                 targets.pop(0)
             return targets
+
+
+    def __get_referencer_parents(self,ids):
+        backRefs = []
+        #we look back from this node
+
+        for id in ids:
+            if self.model[id]["type"] == "referencer":
+                #we take this one in
+                backRefs.append(id)
+            #plus we look further up
+            thisBackRefs = self.model[id]["backRefs"]
+            if thisBackRefs:
+                backRefs.extend(self.__get_referencer_parents(thisBackRefs))
+        return backRefs
+
+
+    def get_referencers(self,desc):
+        """
+            find the referencers pointing to a node via the "leaves algorithm"
+            initially, we take the parent and the backref referencers
+        """
+        with self.lock:
+            id = self.__get_id(desc)
+            if not id:return None
+
+            ids = [self.model[id]["parent"]]
+            if self.model[id]["backRefs"]:
+                ids.extend(self.model[id]["backRefs"])
+
+            referencers = self.__get_referencer_parents(ids)
+            return referencers
 
 
     #get a table with values like in the table stored, start and end times are optional
@@ -1781,7 +1817,7 @@ class Model():
                                     return None
 
 
-            self.logger.debug("table "+str(tableId)+" autocreates "+str(autocreates))
+            self.logger.debug("append table "+str(tableId)+" and autocreates "+str(autocreates))
             if autocreates and autocreate:
                 #do we even have to create our table?
                 if not tableId:
@@ -1804,12 +1840,14 @@ class Model():
             tableColumnIds = self.get_leaves_ids(columnsId) # a list of the ids of the columns
             for path in blob:
                 id = self.get_id(path)
-                self.model[id]["value"]=numpy.append(self.model[id]["value"],blob[path]) #todo: this is a very inefficient copy and reallocate
+                self.model[id]["value"] = numpy.append(self.model[id]["value"],blob[path]) #todo: this is a very inefficient copy and reallocate
                 tableColumnIds.remove(id)
                 #append this value
             for id in tableColumnIds:
-                numpy.append(self.model[id]["value"],numpy.inf) # pad the remainings with inf
+                self.model[id]["value"] = numpy.append(self.model[id]["value"],numpy.inf) # pad the remainings with inf
 
+            #now trigger observser
+            self.__notify_observers(self.get_leaves_ids(columnsId),"value")
             return True
 
 
@@ -2185,7 +2223,7 @@ class Model():
 
             return diff
 
-    def __notify_observers(self, nodeId, properties ):
+    def __notify_observers(self, nodeIds, properties ):
         """
             this function is called internally when nodes or properties have changed. Then, we look if any
             observer has to be triggered
@@ -2204,26 +2242,36 @@ class Model():
 
             if type(properties) is not list:
                 properties = [properties]
+            if type(nodeIds) is  not list:
+                nodeIds = [nodeIds]
 
-            #now check if the node is being observed, we do everything over ids to have max speed
-            for id in self.model[nodeId]["backRefs"]:
-                if self.model[self.model[id]["parent"]]["type"] == "observer":
-                    # this node is being observed,
-                    observerId = self.model[id]["parent"]
-                    observer = self.get_children_dict(observerId)
-                    # check if trigger
-                    if observer["enabled"]["value"] == True:
-                        for property in properties:
-                            if property in observer["properties"]["value"]:
-                                self.logger.debug(f"event trigger on {self.get_browse_path(observerId)} for change in {property}")
-                                self.model[observer["triggerCounter"]["id"]]["value"] = self.model[observer["triggerCounter"]["id"]]["value"]+1
-                                self.model[observer["lastTriggerTime"]["id"]]["value"] = datetime.datetime.now().isoformat()
-                                for funcNodeId in self.get_leaves_ids(observer["onTriggerFunction"]["id"]):
-                                    self.logger.debug(f"execute ontrigger function {funcNodeId}")
-                                    self.execute_function(funcNodeId)
-                                if observer["hasEvent"] == True:
-                                    self.logger.debug(f"send event {observer['hasEvent']['value']}")
-                                    #also send the real event
+            triggeredObservers=[] # we use this to suppress multiple triggers of the same observer
+            for nodeId in nodeIds:
+                #now check if the node is being observed, we do everything over ids to have max speed
+                #for id in self.model[nodeId]["backRefs"]:
+                for id in self.get_referencers(nodeId):
+                    if self.model[id]["name"] == "targets" and self.model[self.model[id]["parent"]]["type"] == "observer":
+                        # this node is being observed,
+                        observerId = self.model[id]["parent"]
+                        observer = self.get_children_dict(observerId)
+                        # check if trigger
+                        if observer["enabled"]["value"] == True:
+                            if observerId in triggeredObservers:
+                                self.logger.debug(f"we have triggered the observer {self.get_browse_path(observerId)} in this call already, pass")
+                                continue
+                            for property in properties:
+                                if property in observer["properties"]["value"]:
+                                    self.logger.debug(f"event trigger on {self.get_browse_path(observerId)} for change in {property}")
+                                    self.model[observer["triggerCounter"]["id"]]["value"] = self.model[observer["triggerCounter"]["id"]]["value"]+1
+                                    self.model[observer["lastTriggerTime"]["id"]]["value"] = datetime.datetime.now().isoformat()
+                                    for funcNodeId in self.get_leaves_ids(observer["onTriggerFunction"]["id"]):
+                                        self.logger.debug(f"execute ontrigger function {funcNodeId}")
+                                        self.execute_function(funcNodeId)
+                                    if observer["hasEvent"] == True:
+                                        self.logger.debug(f"send event {observer['hasEvent']['value']}")
+                                        #also send the real event
+                                    triggeredObservers.append(observerId)
+                                    break # leave the properties, we only trigger once
 
     def set_column_len(self,nodeDescriptor,newLen):
         """

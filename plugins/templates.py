@@ -51,7 +51,10 @@ timeseriesWidget = {
         {"name":"controlPosition","type":"const","value":"right"}  ,            # the position of the button controls of ["bottom","right]
         {"name":"timeZone","type":"const","value":"Europe/Berlin"},             # the timezone of the display
         {"name":"hasThreshold","type":"const","value":False},                   # horizontal thresholds (min/max) are supported for the annotations
-        {"name":"hasStreaming", "type": "const", "value": False}                # horizontal thresholds (min/max) are supported for the annotations
+        {"name":"hasStreaming", "type": "const", "value": False},                # horizontal thresholds (min/max) are supported for the annotations
+        {"name":"scoreVariables", "type": "referencer"},                         # pointing to variables which are scores, (they are rendered with markers)
+        {"name": "scoreMap", "type": "const","value":{                          #color map for score markers
+            "0": "green", "1": "red", "default": "blue"}}
 
 
     ]
