@@ -67,6 +67,16 @@ whiteLineColors =[
 palette['alarm']
 ]
 
+darkLineColors = [
+palette["color-primary-0"],
+'#eba4fc',
+'#92d6ce',
+'#ffe1bd',
+'#93fa93',
+palette['alarm']
+
+]
+
 defaultLineColors=[
 palette['21yellow'],
 palette["21yellow20%"],
@@ -77,7 +87,7 @@ palette['alarm']
 ]
 
 
-defaultTheme = {
+darkTheme = {
     'attrs' : {
         'Figure' : {
                 'background_fill_color': palette['bw10%'],

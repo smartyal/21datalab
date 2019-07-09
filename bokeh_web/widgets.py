@@ -447,7 +447,8 @@ class TimeSeriesWidgetDataServer():
 
 
 class TimeSeriesWidget():
-    def __init__(self, dataserver):
+    def __init__(self, dataserver,curdoc=None):
+        self.curdoc = curdoc
         self.id = "id#"+str('%8x'%random.randrange(16**8))
         self.__init_logger()
         self.logger.debug("__init TimeSeriesWidget()")
@@ -561,6 +562,15 @@ class TimeSeriesWidget():
             self.width = settings["width"]
         if "height" in settings:
             self.height = settings["height"]
+
+        #set the theme
+        if settings["theme"] == "dark":
+            self.curdoc().theme = Theme(json=themes.darkTheme)
+            self.lineColors = themes.darkLineColors
+        else:
+            self.curdoc().theme = Theme(json=themes.whiteTheme)
+            self.lineColors = themes.whiteLineColors
+
         #self.cssClasses = {"button":"button_21","groupButton":"group_button_21","multiSelect":"multi_select_21"}
         #self.cssClasses = {"button": "button_21_sm", "groupButton": "group_button_21_sm", "multiSelect": "multi_select_21_sm"}
         #self.layoutSettings = {"controlPosition":"bottom"} #support right and bottom, the location of the buttons and tools
@@ -1026,7 +1036,7 @@ class TimeSeriesWidget():
 
         """
         usedColors =  [self.lines[lin].glyph.line_color for lin in self.lines]
-        for color in themes.lineColors:
+        for color in self.lineColors:
             if color not in usedColors:
                 return color
         return "green" # as default
@@ -1078,7 +1088,7 @@ class TimeSeriesWidget():
             if variableName != timeNode:
                 self.logger.debug(f"plotting line {variableName}, is score: {self.server.is_score_variable(variableName)}")
                 if self.server.is_score_variable(variableName):
-                    self.lines[variableName] = self.plot.circle(timeNode, variableName, color="red",
+                    self.lines[variableName] = self.plot.circle(timeNode, variableName, line_color="red", fill_color=None,
                                                   source=self.data, name=variableName,size=7)  # x:"time", y:variableName #the legend must havee different name than the source bug
 
 

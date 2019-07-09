@@ -13,12 +13,10 @@ print("modelurl and path",modelUrl,modelPath,type(modelUrl),type('http://localho
 
 
 ts_server = TimeSeriesWidgetDataServer(str(modelUrl),str(modelPath))
-t = TimeSeriesWidget(ts_server)
-
+t = TimeSeriesWidget(ts_server,curdoc)
 curdoc().add_root(t.get_layout())
+
 curdoc().add_periodic_callback(t.periodic_cb, 500)
 curdoc().on_session_destroyed(t.session_destroyed_cb)
-#curdoc().theme = Theme(json=themes.defaultTheme)
-curdoc().theme = Theme(json=themes.whiteTheme)
-t.set_curdoc(curdoc)
+
 

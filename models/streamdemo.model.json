@@ -62,7 +62,8 @@
             "556",
             "577",
             "609",
-            "610"
+            "610",
+            "617"
         ],
         "backRefs": [
             "526"
@@ -93,7 +94,8 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [
-            "574"
+            "574",
+            "579"
         ],
         "value": null,
         "browsePath": "root.visualization.workbench.selectedVariables"
@@ -166,7 +168,7 @@
         "type": "folder",
         "parent": "133",
         "children": [
-            "603"
+            "611"
         ],
         "backRefs": [
             "134",
@@ -1161,7 +1163,7 @@
             "570"
         ],
         "forwardRefs": [],
-        "value": "len 904",
+        "value": "len 5678",
         "browsePath": "root.folder.sin"
     },
     "574": {
@@ -1173,11 +1175,11 @@
         "backRefs": [
             "570",
             "590",
-            "608",
-            "129"
+            "129",
+            "616"
         ],
         "forwardRefs": [],
-        "value": "len 904",
+        "value": "len 5678",
         "browsePath": "root.folder.cos"
     },
     "575": {
@@ -1190,7 +1192,7 @@
             "570"
         ],
         "forwardRefs": [],
-        "value": "len 904",
+        "value": "len 5678",
         "browsePath": "root.folder.step"
     },
     "576": {
@@ -1204,7 +1206,7 @@
             "571"
         ],
         "forwardRefs": [],
-        "value": "len 904",
+        "value": "len 5678",
         "browsePath": "root.folder.time"
     },
     "577": {
@@ -1229,7 +1231,7 @@
             "609"
         ],
         "forwardRefs": [],
-        "value": "len 904",
+        "value": "len 5678",
         "browsePath": "root.folder_autotable.score_sin"
     },
     "579": {
@@ -1241,10 +1243,11 @@
         "backRefs": [
             "591",
             "570",
-            "609"
+            "609",
+            "129"
         ],
         "forwardRefs": [],
-        "value": "len 904",
+        "value": "len 5678",
         "browsePath": "root.folder_autotable.score_cos"
     },
     "580": {
@@ -1286,7 +1289,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0,
+        "value": 4778,
         "browsePath": "root.new_observer_f788.triggerCounter"
     },
     "583": {
@@ -1297,7 +1300,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "",
+        "value": "2019-07-09T23:51:00.644265",
         "browsePath": "root.new_observer_f788.lastTriggerTime"
     },
     "584": {
@@ -1333,7 +1336,9 @@
         "parent": "580",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [],
+        "forwardRefs": [
+            "589"
+        ],
         "value": null,
         "browsePath": "root.new_observer_f788.onTriggerFunction"
     },
@@ -1371,7 +1376,9 @@
             "593",
             "594"
         ],
-        "backRefs": [],
+        "backRefs": [
+            "586"
+        ],
         "forwardRefs": [],
         "value": null,
         "functionPointer": "threshold.threshold_scorer",
@@ -1500,7 +1507,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 3,
+        "value": 4463,
         "browsePath": "root.new_thresholdScorer_09fe.control.executionCounter"
     },
     "600": {
@@ -1511,7 +1518,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.002514,
+        "value": 0.0,
         "browsePath": "root.new_thresholdScorer_09fe.control.lastExecutionDuration"
     },
     "601": {
@@ -1522,7 +1529,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-07-04T12:08:45.018982",
+        "value": "2019-07-09T23:51:00.652155",
         "browsePath": "root.new_thresholdScorer_09fe.control.lastStartTime"
     },
     "602": {
@@ -1535,82 +1542,6 @@
         "forwardRefs": [],
         "value": "async",
         "browsePath": "root.new_thresholdScorer_09fe.control.executionType"
-    },
-    "603": {
-        "id": "603",
-        "name": "2a43d378",
-        "type": "annotation",
-        "parent": "135",
-        "children": [
-            "604",
-            "605",
-            "606",
-            "607",
-            "608"
-        ],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.2a43d378"
-    },
-    "604": {
-        "id": "604",
-        "name": "type",
-        "type": "const",
-        "parent": "603",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "threshold",
-        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.2a43d378.type"
-    },
-    "605": {
-        "id": "605",
-        "name": "min",
-        "type": "const",
-        "parent": "603",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": -0.795365920607194,
-        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.2a43d378.min"
-    },
-    "606": {
-        "id": "606",
-        "name": "max",
-        "type": "const",
-        "parent": "603",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 0.8783253899354307,
-        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.2a43d378.max"
-    },
-    "607": {
-        "id": "607",
-        "name": "tags",
-        "type": "const",
-        "parent": "603",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": [
-            "threshold"
-        ],
-        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.2a43d378.tags"
-    },
-    "608": {
-        "id": "608",
-        "name": "variable",
-        "type": "referencer",
-        "parent": "603",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "574"
-        ],
-        "value": null,
-        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.2a43d378.variable"
     },
     "609": {
         "id": "609",
@@ -1636,5 +1567,92 @@
         "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.workbench.scoreMap"
+    },
+    "611": {
+        "id": "611",
+        "name": "16f1c618",
+        "type": "annotation",
+        "parent": "135",
+        "children": [
+            "612",
+            "613",
+            "614",
+            "615",
+            "616"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.16f1c618"
+    },
+    "612": {
+        "id": "612",
+        "name": "type",
+        "type": "const",
+        "parent": "611",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "threshold",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.16f1c618.type"
+    },
+    "613": {
+        "id": "613",
+        "name": "min",
+        "type": "const",
+        "parent": "611",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": -1.059573704238034,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.16f1c618.min"
+    },
+    "614": {
+        "id": "614",
+        "name": "max",
+        "type": "const",
+        "parent": "611",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 1.3183284873787562,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.16f1c618.max"
+    },
+    "615": {
+        "id": "615",
+        "name": "tags",
+        "type": "const",
+        "parent": "611",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "threshold"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.16f1c618.tags"
+    },
+    "616": {
+        "id": "616",
+        "name": "variable",
+        "type": "referencer",
+        "parent": "611",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "574"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.16f1c618.variable"
+    },
+    "617": {
+        "id": "617",
+        "name": "theme",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "dark",
+        "browsePath": "root.visualization.workbench.theme"
     }
 }
