@@ -18,6 +18,9 @@ import uuid
 
 import modeltemplates
 
+# for Observer
+from queue import Queue
+from queue import Empty
 
 
 """
@@ -583,6 +586,103 @@ class Node():
     def get_logger(self):
         return self.model.logger
 
+
+class Observer:
+    # The observer needs a reference to the model, because the rest service is not able to detect
+    # when the client connection is closed, but the observer message handling loop can detect it
+    # this way the observer can detach itself from the model, when the client is disconnected
+    def __init__(self, model):
+        self.model = model
+
+        # Message queues to store the new events and last time stamps
+        self.updateQueue = Queue()
+        self.eventQueues = {} # k,v = event:{"lasttimestamp":datetime,"queue":Queue()
+        self.minWaitTime = 0.500 #in seconds float
+
+        # use the logger of th model
+        self.logger = self.model.logger
+
+        #preload queue: this is a workaround as the browser does not get the first 2 events immideately
+        for i in range(2):
+            self.updateQueue.put({"event":"tree.update"})
+
+    def update(self, event):
+        """
+            inform about the occurrence of an event
+            Args:
+                event "string": the
+        :param event:
+        :return:
+        """
+        self.updateQueue.put(event)
+        #self.logger.debug("Qup")
+
+
+
+    def get_event(self):
+        # This flag shows when to stop the event processing
+        stop_event_processing = False
+
+        while not stop_event_processing:
+            try:
+                # Try to retrieve an item from the queue
+                event = self.updateQueue.get(block=True,timeout=self.minWaitTime)
+                #self.logger.debug("Qget")
+
+
+                eventType=event["event"]
+                if eventType not in self.eventQueues:
+                    #put the event in the queue and make the last timestamp so that we send it out now
+                    self.eventQueues[eventType]={"lastTimeStamp":0,"queue":Queue()}
+                    self.logger.debug("new entry")
+
+
+
+                self.eventQueues[eventType]["queue"].put(event)
+                #self.logger.debug(f"queuesize now {self.eventQueues[eventType]['queue'].qsize()}")
+            except Exception as ex:
+                #self.logger.error(f"Exception while handling event:{id(self)}: {ex}")
+                pass
+
+                #now check what to send out:
+            try:
+                now = time.time()
+                for eventType,entry in self.eventQueues.items():
+                    #self.logger.debug(f"for check {entry['queue'].qsize()},{entry['lastTimeStamp']}")
+                    if (not entry["queue"].empty()) and (now > (entry["lastTimeStamp"]+self.minWaitTime)):
+                        self.eventQueues[eventType]["lastTimeStamp"]=now
+                        #send out this event
+                        event_string = "id: 1" + "\n" + \
+                                       "event: " + event["event"] + "\n" + \
+                                       "data: " + "\n\n"
+                        self.logger.debug(f'Observer {id(self)} sending event: {eventType}')
+
+                        #pull empty the queue
+                        while not self.eventQueues[eventType]["queue"].empty():
+                            #self.logger.debug(f"Qtrash {self.eventQueues[eventType]['queue'].qsize()}")
+                            self.eventQueues[eventType]["queue"].get(False)
+
+                        yield event_string
+
+            #except:
+            #    continue
+
+
+            # This exception is raised when the generator function is exited, which means that the
+            # client side connection to the SSE stream was close, thus the observer could be removed
+            except GeneratorExit:
+                self.logger.warning(f"Observer {id(self)} connection closed.")
+                stop_event_processing = True
+
+
+
+
+        self.logger.debug(f"Observer {id(self)} exiting event processing.")
+
+        # Detach this observer from the model
+        self.model.detach_observer(self)
+
+
 class Model():
     nodeTemplate = {"id": None, "name": None, "type": "folder", "parent": None, "children": [], "backRefs": [],"forwardRefs":[],"value":None}
 
@@ -608,6 +708,9 @@ class Model():
         self.currentModelName = "emptyModel" # the current name of the model
         self.modelUpdateCounter = 0 #this is for the tree observer, on any change, we update the counter
         self.observerStatus = {} # a dict holding the key = observerid and value : the needed status of an observer processing
+
+        self.observers = []
+        self.sse_event_id = 1
 
     def __init_logger(self, level):
         """setup the logger object"""
@@ -1404,6 +1507,8 @@ class Model():
             ids = [self.model[id]["parent"]]
             if self.model[id]["backRefs"]:
                 ids.extend(self.model[id]["backRefs"])
+            if "0" in ids:
+                ids.remove("0")
 
             referencers = self.__get_referencer_parents(ids)
             return referencers
@@ -2238,7 +2343,14 @@ class Model():
         with self.lock:
 
             # this is for the tree updates, any change is taken
-            self.modelUpdateCounter = self.modelUpdateCounter +1
+            self.modelUpdateCounter = self.modelUpdateCounter + 1
+            # Notify all observers about the tree update
+            event = {
+                "id": self.modelUpdateCounter,
+                "event": "tree.update",
+                "data": ""}
+            for observer in self.observers:
+                observer.update(event)
 
             if type(properties) is not list:
                 properties = [properties]
@@ -2273,6 +2385,29 @@ class Model():
                                     triggeredObservers.append(observerId)
                                     break # leave the properties, we only trigger once
 
+    def create_observer(self):
+        # Instantiate a new observer
+        observer = Observer(self)
+        # attach it to the model
+        self.attach_observer(observer)
+        # return the observer
+        return observer
+
+    def attach_observer(self, observer):
+        # Add a new observer
+        self.logger.debug(f"Adding new observer: {id(observer)}")
+        with self.lock:
+            self.observers.append(observer)
+
+    def detach_observer(self, observer):
+        with self.lock:
+            try:
+                self.observers.remove(observer)
+                self.logger.debug(f"Removing observer: {id(observer)}")
+
+            except ValueError:
+                self.logger.exception("Trying to remove an observer which doesn't exist in the list of observers.")
+  
     def set_column_len(self,nodeDescriptor,newLen):
         """
             adjust the len of a colum, extension are inf-padded,
@@ -2303,11 +2438,6 @@ class Model():
                     #same len
                     pass
                 return newLen
-
-
-
-
-
 
     def create_test(self,testNo=1):
         """
@@ -2620,7 +2750,6 @@ class Model():
 
             self.testThread = threading.Thread(target=__update_tree)
             self.testThread.start()
-
 
 
 
@@ -2941,6 +3070,7 @@ if __name__ == '__main__':
         pkl_file.close()
 
         print("compare after pickle restre",restore==m.get_model())
+
 
 if __name__ == '__main__':
     #############

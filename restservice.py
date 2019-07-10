@@ -205,7 +205,14 @@ setlenquery.json
 
 '''
 
+# Special handler for Server Sent Events
+@web.route('/event/stream')
+def event_stream_handler():
+    # Create a new Observer
+    observer = m.create_observer()
 
+    # Start processing the new events and send them to the client
+    return flask.Response(observer.get_event(), mimetype="text/event-stream")
 
 #@web.route('/',defaults={'path':''},methods=['GET','POST'])
 @web.route('/<path:path>', methods=['GET', 'POST'])

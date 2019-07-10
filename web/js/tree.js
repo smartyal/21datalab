@@ -54,6 +54,10 @@ class TreeWidget
             setlen: "fas fa-arrows-alt-h"
         };
 
+        this.eventSource = undefined;
+        this.treeUpdateRunning = false; //set true if a request is running for tree update
+        this.treeUpdateQueued = false; // set true if there is a next tree update waiting
+
         var treeWidgetObject = this; //for usage in deeper object nesting
 
     }
@@ -61,14 +65,43 @@ class TreeWidget
     start_periodic_tree_update()
     {
         this.periodicTreeUpdate = true;
-        window.setTimeout(() => {
-            this.trigger_tree_update();
-        }, 1000);
+
+        // Instead of starting a timer, an event source is set up to monitor the observer
+        this.eventSource = new EventSource('/event/stream');
+
+        // This callback handles messages that have no event field set, should not be used in our case
+        this.eventSource.onmessage = (e) => {
+            // Do something - event data etc will be in e.data
+            console.log("event",e,e.data);
+        };
+
+        // Handler for events of type 'tree.update' only
+        this.eventSource.addEventListener('tree.update', (e) => {
+            // Do something - event data will be in e.data,
+            // message will be of type 'eventType'
+
+            let diffUpdate = e.data;
+            if (this.treeUpdateRunning == true)
+            {
+                this.treeUpdateQueued = true;
+            }
+            else
+            {
+                this.treeUpdateRunning = true;
+                console.log("EVENT tree.update" + e.lastEventId + " - " + e.data);
+                // Trigger a tree update
+                this.trigger_tree_update();
+            }
+
+
+        });
     }
 
     stop_periodicTreeUpdate()
     {
         this.periodicTreeUpdate = false;
+
+        this.eventSource.close()
     }
 
     trigger_tree_update()
@@ -76,10 +109,6 @@ class TreeWidget
         if (this.periodicTreeUpdate == true)
         {
             this.tree_update();
-            /*window.setTimeout(() => {
-                this.trigger_tree_update();
-            }, 1000);
-            */
         }
     }
 
@@ -899,9 +928,13 @@ class TreeWidget
                 //error case
                 if (this.periodicTreeUpdate == true)
                 {
-                    window.setTimeout(() => {
-                        this.trigger_tree_update();
-                    }, 1000);
+                    // Try to reload the whole tree
+                }
+                this.treeUpdateRunning = false;
+                if (this.treeUpdateQueued)
+                {
+                    this.treeUpdateQueued = false;
+                    this.trigger_tree_update();
                 }
                 return;
             }
@@ -917,11 +950,16 @@ class TreeWidget
                 // we exit here and start again
                 if (this.periodicTreeUpdate == true)
                 {
-                    window.setTimeout(() => {
-                        this.trigger_tree_update();
-                    }, 1000);
+                    // Try to reload the whole tree
+                }
+                this.treeUpdateRunning = false;
+                if (this.treeUpdateQueued)
+                {
+                    this.treeUpdateQueued = false;
+                    this.trigger_tree_update();
                 }
                 return;
+
             }
 
 
@@ -1077,16 +1115,13 @@ class TreeWidget
                     }
                 }
             }
-
-        // start again
-        if (this.periodicTreeUpdate == true)
-        {
-            window.setTimeout(() => {
+            this.treeUpdateRunning = false;
+            if (this.treeUpdateQueued)
+            {
+                this.treeUpdateQueued = false;
                 this.trigger_tree_update();
-            }, 1000);
-        }
-
-
+            }
+            return;
         });
     }
 
