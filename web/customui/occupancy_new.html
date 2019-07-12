@@ -1,9 +1,22 @@
 <html>
 <body>
-    Self-Service Area
     <link rel="stylesheet" href="templates/styles.css">
-
-    <div id="ui-component-self-service0" uiinfo = '{"component": "root.deployment.ui.components.selfservice0"}', class = "dropnodes"></div>
-
+    <div class="row">
+        <div class="col-3">
+            <div id="ui-tree-self" uiinfo='{"settings":{"standardButtons":["reload","update"], "treeRoot":"root.occupancyData.variables"  }}'></div>
+        </div>
+        <div class="col-9">
+            <div class="card">
+                <div class="card-header">
+                    Time Series View
+                </div>
+                <div class="card-body">
+                    <div id="ui-component-self-service0" uiinfo = '{"component": "root.deployment.ui.components.selfservice0"}', class = "dropnodes"></div>
+                </div>
+            </div>       
+        </div>
+    </div>
 </body>
 </html>
+
+ 

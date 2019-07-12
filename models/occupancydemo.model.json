@@ -156,7 +156,6 @@
             "116",
             "219",
             "129",
-            "239",
             "267",
             "283",
             "309",
@@ -220,7 +219,8 @@
             "351",
             "393",
             "435",
-            "477"
+            "477",
+            "239"
         ],
         "forwardRefs": [],
         "value": "len 9752",
@@ -309,7 +309,10 @@
             "554",
             "555",
             "556",
-            "569"
+            "569",
+            "576",
+            "577",
+            "578"
         ],
         "backRefs": [
             "526"
@@ -411,7 +414,13 @@
         "name": "newAnnotations",
         "type": "folder",
         "parent": "133",
-        "children": [],
+        "children": [
+            "597",
+            "602",
+            "607",
+            "612",
+            "617"
+        ],
         "backRefs": [
             "134",
             "221"
@@ -749,7 +758,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "interrupted",
+        "value": "finished",
         "browsePath": "root.logisticRegression.control.status"
     },
     "225": {
@@ -795,7 +804,7 @@
             "140"
         ],
         "forwardRefs": [],
-        "value": 11,
+        "value": 17,
         "browsePath": "root.logisticRegression.control.executionCounter"
     },
     "229": {
@@ -806,7 +815,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.385473,
+        "value": 0.045915,
         "browsePath": "root.logisticRegression.control.lastExecutionDuration"
     },
     "230": {
@@ -817,7 +826,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-06-11T12:24:09.980559",
+        "value": "2019-07-12T09:05:24.373188",
         "browsePath": "root.logisticRegression.control.lastStartTime"
     },
     "231": {
@@ -894,7 +903,10 @@
             "530",
             "557",
             "558",
-            "570"
+            "570",
+            "579",
+            "580",
+            "581"
         ],
         "backRefs": [
             "502"
@@ -935,7 +947,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [
-            "120"
+            "123"
         ],
         "value": null,
         "browsePath": "root.visualization.selfservice0.selectedVariables"
@@ -1018,7 +1030,12 @@
         "name": "newAnnotations",
         "type": "folder",
         "parent": "244",
-        "children": [],
+        "children": [
+            "622",
+            "627",
+            "632",
+            "637"
+        ],
         "backRefs": [
             "245",
             "269"
@@ -1384,7 +1401,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "idle",
+        "value": "finished",
         "browsePath": "root.ui_function.logisticRegression_0.control.status"
     },
     "273": {
@@ -1406,7 +1423,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "ok",
+        "value": "error",
         "browsePath": "root.ui_function.logisticRegression_0.control.result"
     },
     "275": {
@@ -1430,7 +1447,7 @@
             "251"
         ],
         "forwardRefs": [],
-        "value": 0,
+        "value": 1,
         "browsePath": "root.ui_function.logisticRegression_0.control.executionCounter"
     },
     "277": {
@@ -1441,7 +1458,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0,
+        "value": 0.036307,
         "browsePath": "root.ui_function.logisticRegression_0.control.lastExecutionDuration"
     },
     "278": {
@@ -1452,7 +1469,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "not yet",
+        "value": "2019-07-12T09:26:12.592485",
         "browsePath": "root.ui_function.logisticRegression_0.control.lastStartTime"
     },
     "279": {
@@ -1496,7 +1513,10 @@
             "533",
             "559",
             "560",
-            "571"
+            "571",
+            "582",
+            "583",
+            "584"
         ],
         "backRefs": [
             "506"
@@ -2069,7 +2089,10 @@
             "536",
             "561",
             "562",
-            "572"
+            "572",
+            "585",
+            "586",
+            "587"
         ],
         "backRefs": [
             "510"
@@ -2642,7 +2665,10 @@
             "539",
             "563",
             "564",
-            "573"
+            "573",
+            "588",
+            "589",
+            "590"
         ],
         "backRefs": [
             "514"
@@ -3215,7 +3241,10 @@
             "542",
             "565",
             "566",
-            "574"
+            "574",
+            "591",
+            "592",
+            "593"
         ],
         "backRefs": [
             "518"
@@ -3788,7 +3817,10 @@
             "545",
             "567",
             "568",
-            "575"
+            "575",
+            "594",
+            "595",
+            "596"
         ],
         "backRefs": [
             "522"
@@ -4391,7 +4423,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "selfservice6.html",
+        "value": "occupancy_new.html",
         "browsePath": "root.deployment.ui.layout.selfservice"
     },
     "499": {
@@ -4785,7 +4817,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 600,
+        "value": 900,
         "browsePath": "root.visualization.selfservice0.width"
     },
     "529": {
@@ -4796,7 +4828,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 400,
+        "value": 600,
         "browsePath": "root.visualization.selfservice0.height"
     },
     "530": {
@@ -5238,5 +5270,822 @@
         "forwardRefs": [],
         "value": false,
         "browsePath": "root.visualization.selfservice5.hasStreaming"
+    },
+    "576": {
+        "id": "576",
+        "name": "scoreVariables",
+        "type": "referencer",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.scoreVariables"
+    },
+    "577": {
+        "id": "577",
+        "name": "scoreMap",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "0": "green",
+            "1": "red",
+            "default": "blue"
+        },
+        "browsePath": "root.visualization.workbench.scoreMap"
+    },
+    "578": {
+        "id": "578",
+        "name": "theme",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "dark",
+        "browsePath": "root.visualization.workbench.theme"
+    },
+    "579": {
+        "id": "579",
+        "name": "scoreVariables",
+        "type": "referencer",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.scoreVariables"
+    },
+    "580": {
+        "id": "580",
+        "name": "scoreMap",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "0": "green",
+            "1": "red",
+            "default": "blue"
+        },
+        "browsePath": "root.visualization.selfservice0.scoreMap"
+    },
+    "581": {
+        "id": "581",
+        "name": "theme",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "dark",
+        "browsePath": "root.visualization.selfservice0.theme"
+    },
+    "582": {
+        "id": "582",
+        "name": "scoreVariables",
+        "type": "referencer",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice1.scoreVariables"
+    },
+    "583": {
+        "id": "583",
+        "name": "scoreMap",
+        "type": "const",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "0": "green",
+            "1": "red",
+            "default": "blue"
+        },
+        "browsePath": "root.visualization.selfservice1.scoreMap"
+    },
+    "584": {
+        "id": "584",
+        "name": "theme",
+        "type": "const",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "dark",
+        "browsePath": "root.visualization.selfservice1.theme"
+    },
+    "585": {
+        "id": "585",
+        "name": "scoreVariables",
+        "type": "referencer",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice2.scoreVariables"
+    },
+    "586": {
+        "id": "586",
+        "name": "scoreMap",
+        "type": "const",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "0": "green",
+            "1": "red",
+            "default": "blue"
+        },
+        "browsePath": "root.visualization.selfservice2.scoreMap"
+    },
+    "587": {
+        "id": "587",
+        "name": "theme",
+        "type": "const",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "dark",
+        "browsePath": "root.visualization.selfservice2.theme"
+    },
+    "588": {
+        "id": "588",
+        "name": "scoreVariables",
+        "type": "referencer",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice3.scoreVariables"
+    },
+    "589": {
+        "id": "589",
+        "name": "scoreMap",
+        "type": "const",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "0": "green",
+            "1": "red",
+            "default": "blue"
+        },
+        "browsePath": "root.visualization.selfservice3.scoreMap"
+    },
+    "590": {
+        "id": "590",
+        "name": "theme",
+        "type": "const",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "dark",
+        "browsePath": "root.visualization.selfservice3.theme"
+    },
+    "591": {
+        "id": "591",
+        "name": "scoreVariables",
+        "type": "referencer",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice4.scoreVariables"
+    },
+    "592": {
+        "id": "592",
+        "name": "scoreMap",
+        "type": "const",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "0": "green",
+            "1": "red",
+            "default": "blue"
+        },
+        "browsePath": "root.visualization.selfservice4.scoreMap"
+    },
+    "593": {
+        "id": "593",
+        "name": "theme",
+        "type": "const",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "dark",
+        "browsePath": "root.visualization.selfservice4.theme"
+    },
+    "594": {
+        "id": "594",
+        "name": "scoreVariables",
+        "type": "referencer",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice5.scoreVariables"
+    },
+    "595": {
+        "id": "595",
+        "name": "scoreMap",
+        "type": "const",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "0": "green",
+            "1": "red",
+            "default": "blue"
+        },
+        "browsePath": "root.visualization.selfservice5.scoreMap"
+    },
+    "596": {
+        "id": "596",
+        "name": "theme",
+        "type": "const",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "dark",
+        "browsePath": "root.visualization.selfservice5.theme"
+    },
+    "597": {
+        "id": "597",
+        "name": "5a69d628",
+        "type": "annotation",
+        "parent": "135",
+        "children": [
+            "598",
+            "599",
+            "600",
+            "601"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.5a69d628"
+    },
+    "598": {
+        "id": "598",
+        "name": "type",
+        "type": "const",
+        "parent": "597",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "time",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.5a69d628.type"
+    },
+    "599": {
+        "id": "599",
+        "name": "startTime",
+        "type": "const",
+        "parent": "597",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-12T09:05:19.171067+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.5a69d628.startTime"
+    },
+    "600": {
+        "id": "600",
+        "name": "endTime",
+        "type": "const",
+        "parent": "597",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-12T18:42:09.086108+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.5a69d628.endTime"
+    },
+    "601": {
+        "id": "601",
+        "name": "tags",
+        "type": "const",
+        "parent": "597",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.5a69d628.tags"
+    },
+    "602": {
+        "id": "602",
+        "name": "b44ad65e",
+        "type": "annotation",
+        "parent": "135",
+        "children": [
+            "603",
+            "604",
+            "605",
+            "606"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.b44ad65e"
+    },
+    "603": {
+        "id": "603",
+        "name": "type",
+        "type": "const",
+        "parent": "602",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "time",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.b44ad65e.type"
+    },
+    "604": {
+        "id": "604",
+        "name": "startTime",
+        "type": "const",
+        "parent": "602",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-14T07:43:34.078071+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.b44ad65e.startTime"
+    },
+    "605": {
+        "id": "605",
+        "name": "endTime",
+        "type": "const",
+        "parent": "602",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-14T16:06:45.706084+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.b44ad65e.endTime"
+    },
+    "606": {
+        "id": "606",
+        "name": "tags",
+        "type": "const",
+        "parent": "602",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.b44ad65e.tags"
+    },
+    "607": {
+        "id": "607",
+        "name": "74535582",
+        "type": "annotation",
+        "parent": "135",
+        "children": [
+            "608",
+            "609",
+            "610",
+            "611"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.74535582"
+    },
+    "608": {
+        "id": "608",
+        "name": "type",
+        "type": "const",
+        "parent": "607",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "time",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.74535582.type"
+    },
+    "609": {
+        "id": "609",
+        "name": "startTime",
+        "type": "const",
+        "parent": "607",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-15T22:35:26.500574+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.74535582.startTime"
+    },
+    "610": {
+        "id": "610",
+        "name": "endTime",
+        "type": "const",
+        "parent": "607",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-16T05:44:59.841561+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.74535582.endTime"
+    },
+    "611": {
+        "id": "611",
+        "name": "tags",
+        "type": "const",
+        "parent": "607",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "free"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.74535582.tags"
+    },
+    "612": {
+        "id": "612",
+        "name": "8358abc4",
+        "type": "annotation",
+        "parent": "135",
+        "children": [
+            "613",
+            "614",
+            "615",
+            "616"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.8358abc4"
+    },
+    "613": {
+        "id": "613",
+        "name": "type",
+        "type": "const",
+        "parent": "612",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "time",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.8358abc4.type"
+    },
+    "614": {
+        "id": "614",
+        "name": "startTime",
+        "type": "const",
+        "parent": "612",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-16T23:57:17.765786+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.8358abc4.startTime"
+    },
+    "615": {
+        "id": "615",
+        "name": "endTime",
+        "type": "const",
+        "parent": "612",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-17T10:10:56.824339+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.8358abc4.endTime"
+    },
+    "616": {
+        "id": "616",
+        "name": "tags",
+        "type": "const",
+        "parent": "612",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "free"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.8358abc4.tags"
+    },
+    "617": {
+        "id": "617",
+        "name": "8bf24891",
+        "type": "annotation",
+        "parent": "135",
+        "children": [
+            "618",
+            "619",
+            "620",
+            "621"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.8bf24891"
+    },
+    "618": {
+        "id": "618",
+        "name": "type",
+        "type": "const",
+        "parent": "617",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "time",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.8bf24891.type"
+    },
+    "619": {
+        "id": "619",
+        "name": "startTime",
+        "type": "const",
+        "parent": "617",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-17T11:49:07.873708+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.8bf24891.startTime"
+    },
+    "620": {
+        "id": "620",
+        "name": "endTime",
+        "type": "const",
+        "parent": "617",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-17T21:01:25.026406+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.8bf24891.endTime"
+    },
+    "621": {
+        "id": "621",
+        "name": "tags",
+        "type": "const",
+        "parent": "617",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.8bf24891.tags"
+    },
+    "622": {
+        "id": "622",
+        "name": "d0a55aea",
+        "type": "annotation",
+        "parent": "246",
+        "children": [
+            "623",
+            "624",
+            "625",
+            "626"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.d0a55aea"
+    },
+    "623": {
+        "id": "623",
+        "name": "type",
+        "type": "const",
+        "parent": "622",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "time",
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.d0a55aea.type"
+    },
+    "624": {
+        "id": "624",
+        "name": "startTime",
+        "type": "const",
+        "parent": "622",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-13T09:04:19.863376+01:00",
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.d0a55aea.startTime"
+    },
+    "625": {
+        "id": "625",
+        "name": "endTime",
+        "type": "const",
+        "parent": "622",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-13T17:27:31.491390+01:00",
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.d0a55aea.endTime"
+    },
+    "626": {
+        "id": "626",
+        "name": "tags",
+        "type": "const",
+        "parent": "622",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy"
+        ],
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.d0a55aea.tags"
+    },
+    "627": {
+        "id": "627",
+        "name": "73706494",
+        "type": "annotation",
+        "parent": "246",
+        "children": [
+            "628",
+            "629",
+            "630",
+            "631"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.73706494"
+    },
+    "628": {
+        "id": "628",
+        "name": "type",
+        "type": "const",
+        "parent": "627",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "time",
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.73706494.type"
+    },
+    "629": {
+        "id": "629",
+        "name": "startTime",
+        "type": "const",
+        "parent": "627",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-15T06:53:29.245695+01:00",
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.73706494.startTime"
+    },
+    "630": {
+        "id": "630",
+        "name": "endTime",
+        "type": "const",
+        "parent": "627",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-15T16:30:19.160735+01:00",
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.73706494.endTime"
+    },
+    "631": {
+        "id": "631",
+        "name": "tags",
+        "type": "const",
+        "parent": "627",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy"
+        ],
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.73706494.tags"
+    },
+    "632": {
+        "id": "632",
+        "name": "6474530e",
+        "type": "annotation",
+        "parent": "246",
+        "children": [
+            "633",
+            "634",
+            "635",
+            "636"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.6474530e"
+    },
+    "633": {
+        "id": "633",
+        "name": "type",
+        "type": "const",
+        "parent": "632",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "time",
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.6474530e.type"
+    },
+    "634": {
+        "id": "634",
+        "name": "startTime",
+        "type": "const",
+        "parent": "632",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-14T00:37:04.832377+01:00",
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.6474530e.startTime"
+    },
+    "635": {
+        "id": "635",
+        "name": "endTime",
+        "type": "const",
+        "parent": "632",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-14T09:12:32.841562+01:00",
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.6474530e.endTime"
+    },
+    "636": {
+        "id": "636",
+        "name": "tags",
+        "type": "const",
+        "parent": "632",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "free"
+        ],
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.6474530e.tags"
+    },
+    "637": {
+        "id": "637",
+        "name": "ce9b2d09",
+        "type": "annotation",
+        "parent": "246",
+        "children": [
+            "638",
+            "639",
+            "640",
+            "641"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.ce9b2d09"
+    },
+    "638": {
+        "id": "638",
+        "name": "type",
+        "type": "const",
+        "parent": "637",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "time",
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.ce9b2d09.type"
+    },
+    "639": {
+        "id": "639",
+        "name": "startTime",
+        "type": "const",
+        "parent": "637",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-14T19:26:11.900115+01:00",
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.ce9b2d09.startTime"
+    },
+    "640": {
+        "id": "640",
+        "name": "endTime",
+        "type": "const",
+        "parent": "637",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-15T03:12:34.384616+01:00",
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.ce9b2d09.endTime"
+    },
+    "641": {
+        "id": "641",
+        "name": "tags",
+        "type": "const",
+        "parent": "637",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "free"
+        ],
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.ce9b2d09.tags"
     }
 }

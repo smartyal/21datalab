@@ -216,7 +216,10 @@ class TimeSeriesWidgetDataServer():
         self.timeNode = nodes[0]["browsePath"]
         #get the score nodes if any
         nodes = self.__web_call('POST', "_getleaves", self.path + '.scoreVariables')
-        self.scoreVariables = [node["browsePath"] for node in nodes]
+        if not nodes:
+            self.scoreVariables = []
+        else:
+            self.scoreVariables = [node["browsePath"] for node in nodes]
 
 
         #now grab more infor for annotations if needed:

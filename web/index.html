@@ -16,13 +16,18 @@
         var datalabGlobalTheme = localStorage.getItem("21datalabTheme");
 
         // Set the default path to the light theme
-        let pageThemePath = "/modules/bootswatch/dist/flatly/bootstrap.min.css";
-        let treeThemePath = "/modules/jstree/dist/themes/default/style.min.css";
+        let pageThemePath = "/modules/bootswatch/dist/darkly/bootstrap.min.css"
+        let treeThemePath = "/modules/jstree/dist/themes/default-dark/style.min.css";
         // In case the theme is set to dark, set the proper paths
         if (datalabGlobalTheme == "dark") {
             pageThemePath = "/modules/bootswatch/dist/darkly/bootstrap.min.css"
             treeThemePath = "/modules/jstree/dist/themes/default-dark/style.min.css";
         }
+        if (datalabGlobalTheme == "light") {
+            pageThemePath = "/modules/bootswatch/dist/flatly/bootstrap.min.css";
+            treeThemePath = "/modules/jstree/dist/themes/default/style.min.css";
+        }
+
         // Apply the themes
         $('#bootstrap_theme').attr('href', pageThemePath);
         $('#jstree_theme').attr('href', treeThemePath);
@@ -156,13 +161,7 @@
                 <div class="col" id ="ui-layout-workbench"  uiinfo='{"path":"root.deployment.ui.layout.workbench"}'> </div>
             </div>
             <div id="nav-self-service" class="tab-pane fade">
-                <div class="container mt-4">
-                    <div class="row">
-                        <div class="col" id ="ui-layout-self-service"  uiinfo='{"path":"root.deployment.ui.layout.selfservice"}'>
-                            <h5>Self-service</h5>
-                        </div>
-                    </div>
-                </div>
+                <div class="col" id ="ui-layout-self-service"  uiinfo='{"path":"root.deployment.ui.layout.selfservice"}'> </div>
             </div>
             <div id="nav-deployment" class="tab-pane fade">
                 <div class="container mt-4">
