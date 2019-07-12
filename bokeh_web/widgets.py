@@ -476,6 +476,7 @@ class TimeSeriesWidget():
         self.annotations = {} #   holding the bokeh objects of the annotations
         self.userZoomRunning = False # set to true during user pan/zoom to avoid stream updates at that time
         self.inStreamUpdate = False # set true inside the execution of the stream update
+        self.backgrounds = [] #list of current boxannotations dict entries: these are not the renderers
 
         self.__init_figure() #create the graphical output
 
@@ -856,10 +857,68 @@ class TimeSeriesWidget():
                 self.__dispatch_function(self.stream_update)
 
 
+    def stream_update_backgrounds(self):
+        """ we update the background by following this algo:
+            - take the last existing entry in the backgrounds
+            - do we have a new one which starts inside the last existing?
+              NO: find the
+        """
+        #make current backgrounds from the latest data and check against the existing backgrounds, put those which we need to append
+        newBackgrounds = self.make_background_entries(self.streamingUpdateData)
+        addBackgrounds = [] # the backgrounds to be created new
+        self.logger.debug("stream_update_backgrounds")
+        if self.backgrounds == []:
+            #we don't have backgrounds yet, make them
+            self.hide_backgrounds()
+        else:
+            # we have backgrounds
+            # now see if we have to adjust the last background
+            for entry in newBackgrounds:
+                if entry["start"] < self.backgrounds[-1]["end"] and entry["end"]> self.backgrounds[-1]["end"]:
+                    #this is the first to show, an overlapping one
+                    addEntry = {"start": self.backgrounds[-1]["end"], "end": entry["end"], "value":entry["value"], "color": entry["color"]}
+                    addBackgrounds.append(addEntry)
+                if entry["start"] > self.backgrounds[-1]["end"] and entry["end"]> self.backgrounds[-1]["end"]:
+                    #these are on the right side of the old ones, just add them
+                    addBackgrounds.append(entry)
+
+        boxes =[]
+
+        for back in addBackgrounds:
+            name = "__background"+str('%8x'%random.randrange(16**8))
+            newBack = BoxAnnotation(left=back["start"], right=back["end"],
+                                    fill_color=back["color"],
+                                    fill_alpha=0.2,
+                                    name=name)  # +"_annotaion
+            boxes.append(newBack)
+
+
+        self.backgrounds.extend(addBackgrounds)
+        self.plot.renderers.extend(boxes)
+
+        #remove renderes out of sight
+        deleteList = []
+        for r in self.plot.renderers:
+            if r.name and "__background" in r.name:
+                #self.logger.debug(f"check {r.name}, is is {r.right} vs starttime {self.plot.x_range.start}")
+                #this is a background, so let's see if it is out of sight
+                if r.right < self.plot.x_range.start:
+                    #this one can go, we can't see it anymore
+                    deleteList.append(r.name)
+        self.logger.debug(f"remove background renderes out of sight{deleteList}")
+        if deleteList:
+            self.remove_renderers(deleteList=deleteList)
+
+
+        #newBackgrounds = self.make_background_entries(self.streamingUpdateData)
+        #self.hide_backgrounds()
+        #self.show_backgrounds()
+
+
+        return
 
 
 
-        self.logger.debug("exit observer thread")
 
     def stream_update(self):
         self.inStreamUpdate = True # to tell the range_cb that the range adjustment was not from the user
@@ -877,6 +936,10 @@ class TimeSeriesWidget():
                 self.plot.x_range.start = self.data.data["__time"][0]
                 self.plot.x_range.end = self.data.data["__time"][-1]
                 self.adjust_y_axis_limits()
+                if self.showBackgrounds:
+                    #we also try to update the backgrounds here
+                    self.stream_update_backgrounds()
+
                 self.streamingUpdateData = None #the thread can get new data
             else:
                 self.logger.info("user zoom running, try later")
@@ -1491,6 +1554,60 @@ class TimeSeriesWidget():
         except Exception as ex:
             self.logger.error("error draw threshold "+str(modelPath)+ " "+linePath+" "+str(ex))
 
+    def make_background_entries(self, data):
+        """
+            create background entries from background colum of a table:
+            we iterate through the data and create a list of entries
+            {"start":startTime,"end":time,"value":value of the data,"color":color from the colormap}
+            those entries can directly be used to draw backgrounds
+            Args:
+                data: dict with {backgroundId: list of data , __time: list of data
+            Returns:
+                list of dict entries derived from the data
+        """
+        backGroundNodeId = self.server.get_settings()["background"]["background"]
+        colorMap = self.server.get_settings()["background"]["backgroundMap"]
+
+        startTime = None
+        backgrounds = []
+        defaultColor = "grey"
+        for value, time in zip(data[backGroundNodeId], data["__time"]):
+            # must set the startTime?
+            if not startTime:
+                if not numpy.isfinite(value):
+                    continue  # can't use inf/nan
+                else:
+                    startTime = time
+                    currentBackGroundValue = value
+            else:
+                # now we are inside a region, let's see when it ends
+                if value != currentBackGroundValue:
+                    # a new entry starts, finish the last and add it to the list of background
+                    try:
+                        color = colorMap[str(int(currentBackGroundValue))]
+                    except:
+                        color = defaultColor
+                    entry = {"start": startTime, "end": time, "value": currentBackGroundValue, "color": color}
+                    self.logger.debug("ENTRY" + json.dumps(entry))
+                    backgrounds.append(entry)
+                    # now check if current value is finite, then we can start
+                    if numpy.isfinite(value):
+                        currentBackGroundValue = value
+                        startTime = time
+                    else:
+                        startTime = None  # look for the next start
+        # now also add the last, if we have one running
+        if startTime:
+            try:
+                color = colorMap[str(int(currentBackGroundValue))]
+            except:
+                color = defaultColor
+            entry = {"start": startTime, "end": time, "value": currentBackGroundValue, "color": color}
+            backgrounds.append(entry)
+
+        return copy.deepcopy(backgrounds)
+
+
     def show_backgrounds(self,data=None):
         """
             show the current backgrounds
@@ -1513,52 +1630,13 @@ class TimeSeriesWidget():
             data = getData
 
         #now make the new backgrounds
-        # we create a list of dicts containing annotation-style info: start
-        #startTime = data["__time"][0] # initialize with the first time
-        startTime = None
-        currentBackGroundValue = data[backGroundNodeId][0]
-
-        startTime = None
-        backgrounds = []
-        colorMap = self.server.get_settings()["background"]["backgroundMap"]
-        for value,time in zip(data[backGroundNodeId],data["__time"]):
-            #must set the startTime?
-            if not startTime:
-                if not numpy.isfinite(value):
-                    continue # can't use inf/nan
-                else:
-                    startTime = time
-                    currentBackGroundValue = value
-            else:
-                #now we are inside a region, let's see when it ends
-                 if value != currentBackGroundValue:
-                    #a new entry starts, finish the last and add it to the list of background
-                    try:
-                        color = colorMap[str(int(currentBackGroundValue))]
-                    except:
-                        color = "red"
-                    entry = {"start":startTime,"end":time,"value":currentBackGroundValue,"color":color}
-                    self.logger.debug("ENTRY"+json.dumps(entry))
-                    backgrounds.append(entry)
-                    #now check if current value is finite, then we can start
-                    if numpy.isfinite(value):
-                        currentBackGroundValue = value
-                        startTime = time
-                    else:
-                        startTime = None # look for the next start
-        #now also add the last, if we have one running
-        if startTime:
-            try:
-                color = colorMap[str(int(currentBackGroundValue))]
-            except:
-                color = "red"
-            entry = {"start": startTime, "end": time, "value": currentBackGroundValue, "color": color}
-            backgrounds.append(entry)
+        backgrounds = self.make_background_entries(data)
         #now we have a list of backgrounds
         self.logger.info("have %i background entries",len(backgrounds))
         #now plot them
 
         boxes =[]
+
         for back in backgrounds:
             name = "__background"+str('%8x'%random.randrange(16**8))
             newBack = BoxAnnotation(left=back["start"], right=back["end"],
@@ -1567,6 +1645,7 @@ class TimeSeriesWidget():
                                     name=name)  # +"_annotaion
             boxes.append(newBack)
             #self.plot.add_layout(newBack)
+        self.backgrounds = backgrounds # keep them for later look up for streaming
         self.plot.renderers.extend(boxes)
 
     def hide_backgrounds(self):
