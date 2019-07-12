@@ -1424,7 +1424,7 @@ class TimeSeriesWidget():
             else:
                 return newAnno
         except Exception as ex:
-            self.logger.error("error draw annotatino ",str(ex))
+            self.logger.error("error draw annotation"+modelPath+" : "+str(ex))
 
         #this is an example for labelling
         #label = Label(x=((end-start)*0.25+start), y=50, y_units='screen', text=modelPath,text_font_size='0.8em', angle=3.1415/2)
