@@ -27,7 +27,7 @@ function populate_settings() {
 function drop_nodes(nodeIds,path)
 {
     let query={"nodes":nodeIds,"path":path};
-    http_post("http://localhost:6001/dropnodes",JSON.stringify(query),null,null);
+    http_post("/dropnodes",JSON.stringify(query),null,null);
 }
 
 

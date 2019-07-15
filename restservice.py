@@ -602,7 +602,11 @@ def all(path):
                             if widgetType == "timeSeriesWidget":
                                 #this is a bokeh time series widget, so we must do some things here
                                 port = m.get_node(uiinfo['component']+'.settings').get_value()["port"]
-                                script = server_session(session_id=str(uuid.uuid4().hex), url="http://localhost:"+str(port)+"/bokeh_web")
+                                #now get the host under which the client sees me:
+                                host = flask.request.host.split(':')[0]
+                                #script = server_session(session_id=str(uuid.uuid4().hex), url="http://localhost:"+str(port)+"/bokeh_web")
+                                script = server_document(url="http://"+host+":"+str(port)+"/bokeh_web", relative_urls=False, resources='default',
+                                                arguments=None)
                                 #script = script.encode('utf-8') # due to problem with "&"
                                 scriptHtml = BeautifulSoup(script, "lxml")
                                 scriptTag = scriptHtml.find("script")
