@@ -31,7 +31,8 @@ from pytz import timezone
 
 
 haveLogger = False
-
+globalAlpha = 0.3
+globalRESTTimeout = 60
 
 
 def setup_logging(loglevel=logging.DEBUG,tag = ""):
@@ -144,29 +145,24 @@ class TimeSeriesWidgetDataServer():
         response = None
         now = datetime.datetime.now()
         if method.upper() == "GET":
-            for timeout in [0.001, 0.1, 1, 10, 50]:
-                try:
-                    response = requests.get(self.url + path, timeout=timeout,proxies=self.proxySetting)
-                    break
-                except Exception as ex:
-                    #self.logger.error("requests.get"+str(timeout)+" msg:"+str(ex))
-                    continue
+            try:
+                response = requests.get(self.url + path, timeout=globalRESTTimeout,proxies=self.proxySetting)
+            except Exception as ex:
+                self.logger.error("requests.get"+str(timeout)+" msg:"+str(ex))
+
         elif method.upper() == "POST":
             now = datetime.datetime.now()
-            for timeout in [0.1, 0.1, 1, 10, 90]:
-                try:
-                    response = requests.post(self.url + path, data=json.dumps(reqData), timeout=timeout,
-                                             proxies=self.proxySetting)
-                    break
-                except Exception as ex:
-                    #self.logger.error("requets.post" + str(timeout) + " msg:" + str(ex))
-                    continue
+            try:
+                response = requests.post(self.url + path, data=json.dumps(reqData), timeout=globalRESTTimeout,
+                                         proxies=self.proxySetting)
+            except Exception as ex:
+                self.logger.error("requets.post" + str(timeout) + " msg:" + str(ex))
+
         after = datetime.datetime.now()
         diff = (after-now).total_seconds()
-        self.logger.info("response "+str(response)+" took "+ str(diff)+"@ my timeout"+str(timeout))
+        self.logger.info("response "+str(response)+" took "+ str(diff))
         if not response:
-            #print("no ressponse")
-            self.logger.error("Error calling web " + path + str(timeout))
+            self.logger.error("Error calling web " + path )
             return None
         else:
             rData = json.loads(response.content.decode("utf-8"))
@@ -888,7 +884,7 @@ class TimeSeriesWidget():
             name = "__background"+str('%8x'%random.randrange(16**8))
             newBack = BoxAnnotation(left=back["start"], right=back["end"],
                                     fill_color=back["color"],
-                                    fill_alpha=0.2,
+                                    fill_alpha=globalAlpha,
                                     name=name)  # +"_annotaion
             boxes.append(newBack)
 
@@ -1477,7 +1473,7 @@ class TimeSeriesWidget():
 
             newAnno = BoxAnnotation(left=start,right=end,
                                 fill_color=color,
-                                fill_alpha=0.2,
+                                fill_alpha=globalAlpha,
                                 name=modelPath) #+"_annotaion
 
             self.annotations[modelPath]=newAnno # put it in the annotation store for later
@@ -1547,7 +1543,7 @@ class TimeSeriesWidget():
 
             newAnno = BoxAnnotation(top=max, bottom=min,
                                     fill_color=color,
-                                    fill_alpha=0.1,
+                                    fill_alpha=alpha,
                                     name=modelPath)  # +"_annotaion
 
             self.plot.add_layout(newAnno)
@@ -1641,7 +1637,7 @@ class TimeSeriesWidget():
             name = "__background"+str('%8x'%random.randrange(16**8))
             newBack = BoxAnnotation(left=back["start"], right=back["end"],
                                     fill_color=back["color"],
-                                    fill_alpha=0.2,
+                                    fill_alpha=globalAlpha,
                                     name=name)  # +"_annotaion
             boxes.append(newBack)
             #self.plot.add_layout(newBack)

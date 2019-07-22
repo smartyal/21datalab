@@ -11,6 +11,9 @@ import templates
 import time
 from bs4 import BeautifulSoup
 import re
+import requests
+import threading
+import sseclient
 
 """
  this file contains test functions and helpers to test the model api and functionality
@@ -505,8 +508,106 @@ def test_referencer_lookback():
     print(f"refs of rootfoldervar {m.get_referencers('root.folder.var')}")
     print(f"refs of root.var2 {m.get_referencers('root.var2')}")
 
+def req_test():
+
+    while True:
+        time.sleep(1)
+        now = datetime.datetime.now(pytz.timezone("Europe/Berlin"))
+        try:
+            startTime = datetime.datetime.now()
+            r = requests.get("http://www.google.com",timeout=1.7)
+            diff = (datetime.datetime.now()-startTime).total_seconds()
+            print(f" result {r.status_code} difftime{diff}")
+        except Exception as ex:
+            print(f"sent {json.dumps(body)} with exception {ex}")
 
 
+
+class SSE():
+    def __init__(self,url,callback=None):
+        self.url = url
+        self.callback = callback
+
+    def start(self):
+        self.running = True
+        self.msgs = sseclient.SSEClient(self.url)
+
+        while self.running:
+            try:
+                nextEvent = next(self.msgs)
+                if not self.running:
+                    #the thread was cancelled in the meantime
+                    break
+                print(nextEvent.event)
+                if self.callback:
+                    self.callback(nextEvent.event)
+            except Exception as ex:
+                print(f"except {ex}")
+        print("out")
+
+
+    def stop(self):
+        print("class stop")
+        self.running = False
+
+
+
+def sse_client_test():
+    import sseclient
+
+    def with_urllib3(url):
+        """Get a streaming response for the given event feed using urllib3."""
+        import urllib3
+        http = urllib3.PoolManager()
+        return http.request('GET', url, preload_content=False)
+
+    def with_requests(url):
+        """Get a streaming response for the given event feed using requests."""
+        import requests
+        return requests.get(url, stream=True)
+
+    def stop_function(arg):
+        print("start stop fkt")
+        print(arg)
+        time.sleep(5)
+        print("timeout")
+        arg["this"] = None
+        arg["stop"] = False
+
+    url = 'http://127.0.0.1:6001/event/stream'
+    #response = with_requests(url)  # or with_requests(url)
+
+
+
+
+    msgs = sseclient.SSEClient(url)
+    running = True
+    arg={"this":msgs,"stop":running}
+    thre = threading.Thread(target = stop_function,args = [arg])
+    thre.start()
+    print("hier")
+
+    while running:
+        try:
+            mynext = next(msgs)
+            print(mynext.event)
+        except Exception as ex:
+            print(f"no {ex}")
+            time.sleep(0.2)
+    print("fini")
+
+    for event in msgs:
+        print(event.event)
+
+
+def sse_test_2():
+    def cb(event):
+        print(f"callback event:{event}")
+
+    sse = SSE('http://127.0.0.1:6001/event/stream',cb)
+    t=threading.Timer(2,sse.stop)
+    t.start()
+    sse.start()
 
 
 if __name__ == "__main__":
@@ -551,7 +652,10 @@ if __name__ == "__main__":
     #update_widgets('hybif6_2')
     #import_annotations()
     #new_observer()
-    test_referencer_lookback()
+    #test_referencer_lookback()
+    #req_test()
+    #sse_client_test()
+    sse_test_2()
 
 
 
