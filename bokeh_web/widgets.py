@@ -16,6 +16,7 @@ import copy
 import random
 import time
 import threading
+import sse
 
 
 from bokeh.models import DatetimeTickFormatter, ColumnDataSource, BoxSelectTool, BoxAnnotation, Label, LegendItem, Legend, HoverTool, BoxEditTool, TapTool
@@ -99,11 +100,30 @@ class TimeSeriesWidgetDataServer():
         #self.timeOffset = 0 # the timeoffset of display in seconds (from ".displayTimeZone)
         self.annotations = {}
         self.scoreVariables = []
+        self.sseCb = None # the callbackfunction on event
 
         self.__init_logger()
         self.__init_proxy()
         self.__get_settings()
+        self.__init_sse()
 
+
+    def __init_sse(self):
+        self.sse = sse.SSEReceiver(f'{self.url}event/stream',self.sse_cb)
+        self.sse.start()
+
+    def sse_cb(self,data):
+        self.logger.debug(f'sse {data}, {self.settings["observerIds"]}')
+        #now we filter out the events which are for me
+        if data["data"] in self.settings["observerIds"]:
+            self.logger.info("sse match")
+            if self.sseCb:
+                self.sseCb(data)
+
+    def sse_stop(self):
+        self.sse.stop()
+    def sse_register_cb(self,cb):
+        self.sseCb = cb
 
     def __init_proxy(self):
         """
@@ -272,11 +292,25 @@ class TimeSeriesWidgetDataServer():
                     observ["observerBackground"]=node["forwardRefs"].copy()
                 if node["name"] == "observerUpdate":
                     observ["observerUpdate"]=node["value"].copy()
+                if node["name"] == "observerBack":
+                    observ["observerBack"] = node["id"]
+                if node["name"] == "observerVariables":
+                    observ["observerVariables"] = node["id"]
             if observ!={}:
                 self.settings["observer"]=copy.deepcopy(observ)
+
         else:
             #we dont't put the "observer" key in the settings, so the widget knows, there is not observer
             pass
+
+        #now compile info for the observer #new observers
+        # we remeber all ids of observers in our widget
+        self.settings["observerIds"]=[]
+        for node in info[0]["children"]:
+            if node["type"]=="observer":
+                self.settings["observerIds"].append(node["id"])
+
+
 
 
         background={}
@@ -473,10 +507,12 @@ class TimeSeriesWidget():
         self.userZoomRunning = False # set to true during user pan/zoom to avoid stream updates at that time
         self.inStreamUpdate = False # set true inside the execution of the stream update
         self.backgrounds = [] #list of current boxannotations dict entries: these are not the renderers
+        self.threadsRunning = True # the threads are running: legend watch
 
         self.__init_figure() #create the graphical output
 
-        self.__init_observer() #create the observer: do we need to watch something periodically?
+        #self.__init_observer() #create the observer: do we need to watch something periodically?
+        self.__init_new_observer()
 
     class ButtonCb():
         """
@@ -512,12 +548,73 @@ class TimeSeriesWidget():
             self.observerThread.join()  # wait for finish
             self.logger.debug("joined observer thread")
 
+    def observer_cb(self,data):
+        #this comes when we have a plot or background change
+        self.logger.debug("observer_cb")
+        if data["event"] == "timeSeriesWidget.variables":
+            #refresh the lines
+            self.server.get_selected_variables_sync() # get the new set of lines
+            self.logger.debug("dispatch the refresh lines")
+            self.__dispatch_function(self.refresh_plot)
+        elif data["event"] == "timeSeriesWidget.background":
+            self.logger.debug("dispatch the refresh background")
+            self.__dispatch_function(self.refresh_backgrounds)
+        elif data["event"] == "timeSeriesWidget.stream":
+            self.logger.debug(f"must stream update {self.streamingMode}")
+            if self.streamingMode and not self.streamingUpdateData:
+                self.logger.debug("get stream data")
+                #we update the streaming every second
+                #get fresh data, store it into a variable and make the update on dispatch in the context of bokeh
+                variables = self.server.get_variables_selected()
+                variablesRequest = variables.copy()
+                variablesRequest.append("__time")  # make sure we get the time included
+                self.logger.debug(f"request stream data{self.streamingInterval}")
+                self.streamingUpdateDataInterval = self.streamingInterval #store this to check later if it has changed
+                self.streamingUpdateData = self.server.get_data(variablesRequest, -self.streamingInterval, None,
+                                                                self.server.get_settings()["bins"])  # for debug
+                self.__dispatch_function(self.stream_update)
+
+
+    def __legend_thread(self):
+        while self.threadsRunning:
+            time.sleep(0.2)
+            try:
+                # now we also check if we have a legend click which means that we must delete a variable from the selection
+                #self.logger.debug("RENDERERS CHECK --------------------------")
+                deleteList = []
+                for r in self.plot.renderers:
+                    if r.name and r.name in self.server.get_variables_selected() and r.visible == False:
+                        # there was a click on the legend to hide the variables
+                        self.logger.debug("=>>>>>>>>>>>>>>>>>DELETE FROM plot:" + r.name)
+                        deleteList.append(r.name)
+                if deleteList != []:
+                    # now prepare the new list:
+                    newVariablesSelected = [var for var in self.server.get_variables_selected() if var not in deleteList]
+                    self.logger.debug("new var list" + str(newVariablesSelected))
+                    self.server.set_variables_selected(newVariablesSelected)
+                    # self.__dispatch_function(self.refresh_plot)
+            except Exception as ex:
+                self.logger.error("problem during __legend_thread" + str(ex))
+
+
+    def __init_new_observer(self):
+        self.server.sse_register_cb(self.observer_cb)
+
+        #also start the watch on the legend
+        self.legendWatchThread = threading.Thread(target=self.__legend_thread)
+        self.legendWatchThread.start()
+
+        #xxx todo: streaming?
+
+
     def __init_observer(self):
         """
         # the widget.observer (referencer) points to the variables to watch, if they change (increase), we reload
         # the elements given in widget.observerUpdate
         """
-        
+
+
+
         settings = self.server.get_settings()
         if "observer" in settings:
             self.logger.info("must observ %s",settings["observer"]["observerUpdate"])
@@ -949,6 +1046,7 @@ class TimeSeriesWidget():
         """
         self.logger.debug("enter __check_observed() "+str(counter))
         try:
+            """
             #now see what we have to do
             if "background" in self.observerStatus:
                 #check the background counter for update
@@ -966,7 +1064,7 @@ class TimeSeriesWidget():
                     self.logger.debug("variables selection observer changed"+str(self.observerStatus["variables"] )+"=>"+str(variables))
                     self.__dispatch_function(self.refresh_plot)
                 self.observerStatus["variables"] = variables
-
+            """
             #now we also check if we have a legend click which means that we must delete a variable from the selection
             self.logger.debug("RENDERERS CHECK --------------------------")
             deleteList=[]
@@ -980,7 +1078,7 @@ class TimeSeriesWidget():
                 newVariablesSelected = [var for var in self.server.get_variables_selected() if var not in deleteList]
                 self.logger.debug("new var list"+str(newVariablesSelected))
                 self.server.set_variables_selected(newVariablesSelected)
-                self.__dispatch_function(self.refresh_plot)
+                #self.__dispatch_function(self.refresh_plot)
         except Exception as ex:
             self.logger.error("problem during __check_observed"+str(ex)+str(sys.exc_info()[0]))
 
@@ -1005,6 +1103,8 @@ class TimeSeriesWidget():
 
         self.__init_figure()
         self.__init_observer()
+        self.__init_new_observer()
+
         self.curdoc().clear()
         self.curdoc().add_root(self.get_layout())
 
@@ -1061,24 +1161,27 @@ class TimeSeriesWidget():
             are only possible withing the bokeh thread, not from any other.
 
         """
-        if not self.inPeriodicCb: # avoid reentrance
+        if not 0:#self.inPeriodicCb: # avoid reentrance
             self.inPeriodicCb = True
+
             try: # we need this, otherwise the inPeriodicCb will not be reset
                 self.logger.debug("enter periodic_cb")
+
                 executelist=[]
                 #self.logger.debug("periodic_cb"+self.id)
                 #first copy over the dispatch list, this #todo: this must be done under lock
                 with self.dispatchLock:
-                    if not self.dispatcherRunning:
+                    if not 0:#self.dispatcherRunning:
                         if self.dispatchList:
                             executelist = self.dispatchList.copy()
                             self.dispatchList = []
                         self.dispatcherRunning = True
 
-                for fkt in executelist:
+                for fkt in set(executelist): # avoid double execution
                     self.logger.info("now executing dispatched %s",str(fkt))
                     fkt() # execute the functions which wait for execution and must be executed from this context
-                    self.logger.debug("leaving periodic_cb")
+                #time.sleep(1)
+                self.logger.debug("leaving periodic_cb")
                 with self.dispatchLock:
                     self.dispatcherRunning = False # free this to run the next
             except Exception as ex:
@@ -1543,7 +1646,7 @@ class TimeSeriesWidget():
 
             newAnno = BoxAnnotation(top=max, bottom=min,
                                     fill_color=color,
-                                    fill_alpha=alpha,
+                                    fill_alpha=globalAlpha,
                                     name=modelPath)  # +"_annotaion
 
             self.plot.add_layout(newAnno)

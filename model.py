@@ -601,10 +601,11 @@ class Observer:
 
         # use the logger of th model
         self.logger = self.model.logger
+        self.lock = threading.RLock()
 
         #preload queue: this is a workaround as the browser does not get the first 2 events immideately
         for i in range(2):
-            self.updateQueue.put({"event":"tree.update"})
+            self.updateQueue.put({"event":"tree.update","id":"","data":""})
 
     def update(self, event):
         """
@@ -614,8 +615,11 @@ class Observer:
         :param event:
         :return:
         """
-        self.updateQueue.put(event)
-        #self.logger.debug("Qup")
+
+        defaultEvent = {"data":"","id":"","event":""}
+        defaultEvent.update(event)
+        self.updateQueue.put(defaultEvent)
+        #self.logger.debug(f"Qup {id(self)} {defaultEvent['event']}, {defaultEvent['id']}")
 
 
 
@@ -627,14 +631,15 @@ class Observer:
             try:
                 # Try to retrieve an item from the queue
                 event = self.updateQueue.get(block=True,timeout=self.minWaitTime)
-                #self.logger.debug("Qget")
+
+                #self.logger.debug(f"Qget {id(self)} {event['event']},{event['id']}")
 
 
                 eventType=event["event"]
                 if eventType not in self.eventQueues:
                     #put the event in the queue and make the last timestamp so that we send it out now
                     self.eventQueues[eventType]={"lastTimeStamp":0,"queue":Queue()}
-                    self.logger.debug("new entry")
+                    #self.logger.debug("new entry")
 
 
 
@@ -642,30 +647,26 @@ class Observer:
                 #self.logger.debug(f"queuesize now {self.eventQueues[eventType]['queue'].qsize()}")
             except Exception as ex:
                 #self.logger.error(f"Exception while handling event:{id(self)}: {ex}")
-                pass
+                continue
 
                 #now check what to send out:
             try:
                 now = time.time()
-                for eventType,entry in self.eventQueues.items():
-                    #self.logger.debug(f"for check {entry['queue'].qsize()},{entry['lastTimeStamp']}")
+                for eventType,entry in self.eventQueues.items(): # entry is {"lasttimestampe": "queue":
+                    #self.logger.debug(f"for check {id(self)} {eventType} size: {entry['queue'].qsize()},last:{entry['lastTimeStamp']}, now:{now}")
                     if (not entry["queue"].empty()) and (now > (entry["lastTimeStamp"]+self.minWaitTime)):
                         self.eventQueues[eventType]["lastTimeStamp"]=now
                         #send out this event
-                        event_string = "id: 1" + "\n" + \
-                                       "event: " + event["event"] + "\n" + \
-                                       "data: " + "\n\n"
-                        self.logger.debug(f'Observer {id(self)} sending event: {eventType}')
+                        myEvent = self.eventQueues[eventType]["queue"].get()
+                        event_string = f"id:{myEvent['id']}\nevent: {myEvent['event']}\ndata: {myEvent['data']}\n\n"
+                        #self.logger.debug(f'Observer {id(self)} sending event: {myEvent["event"]}')
 
                         #pull empty the queue
+                        #self.logger.debug(f"Qtrash {id(self)} {self.eventQueues[eventType]['queue'].qsize()}")
                         while not self.eventQueues[eventType]["queue"].empty():
-                            #self.logger.debug(f"Qtrash {self.eventQueues[eventType]['queue'].qsize()}")
-                            self.eventQueues[eventType]["queue"].get(False)
-
+                           self.eventQueues[eventType]["queue"].get(False)
+                        #self.logger.debug(f"Qyield {id(self)} {myEvent['event']} {myEvent['id']}")
                         yield event_string
-
-            #except:
-            #    continue
 
 
             # This exception is raised when the generator function is exited, which means that the
@@ -1504,9 +1505,8 @@ class Model():
             id = self.__get_id(desc)
             if not id:return None
 
-            ids = [self.model[id]["parent"]]
-            if self.model[id]["backRefs"]:
-                ids.extend(self.model[id]["backRefs"])
+            ids = [self.model[id]["parent"],id]
+
             if "0" in ids:
                 ids.remove("0")
 
@@ -2341,9 +2341,9 @@ class Model():
 
         # for now we only do the tree update thing
         with self.lock:
-
+            self.logger.debug(f"__notify_observers {nodeIds}: {properties}")
             # this is for the tree updates, any change is taken
-            self.modelUpdateCounter = self.modelUpdateCounter + 1
+            # self.modelUpdateCounter = self.modelUpdateCounter + 1
             # Notify all observers about the tree update
             event = {
                 "id": self.modelUpdateCounter,
@@ -2351,16 +2351,25 @@ class Model():
                 "data": ""}
             for observer in self.observers:
                 observer.update(event)
+                pass
 
             if type(properties) is not list:
                 properties = [properties]
             if type(nodeIds) is  not list:
                 nodeIds = [nodeIds]
 
-            triggeredObservers=[] # we use this to suppress multiple triggers of the same observer
+            #if "value" in properties:
+            #    print("value")
+
+            triggeredObservers=[] # we use this to suppress multiple triggers of the same observer, the list holds the observerIds to be triggered
             for nodeId in nodeIds:
                 #now check if the node is being observed, we do everything over ids to have max speed
                 #for id in self.model[nodeId]["backRefs"]:
+                #paths = [ self.model[id]['browsePath'] for id in self.get_referencers(nodeId)] # this one might not work because browsepath is not available always
+                #self.logger.debug(f"nodeId {nodeId} {self.get_browse_path(nodeId)}:{paths}")
+                #if self.model[nodeId]["browsePath"]=="root.folder.cos":
+                #    print("debug cos")
+
                 for id in self.get_referencers(nodeId):
                     if self.model[id]["name"] == "targets" and self.model[self.model[id]["parent"]]["type"] == "observer":
                         # this node is being observed,
@@ -2369,20 +2378,27 @@ class Model():
                         # check if trigger
                         if observer["enabled"]["value"] == True:
                             if observerId in triggeredObservers:
-                                self.logger.debug(f"we have triggered the observer {self.get_browse_path(observerId)} in this call already, pass")
+                                #self.logger.debug(f"we have triggered the observer {self.get_browse_path(observerId)} in this call already, pass")
                                 continue
                             for property in properties:
                                 if property in observer["properties"]["value"]:
-                                    self.logger.debug(f"event trigger on {self.get_browse_path(observerId)} for change in {property}")
+                                    #self.logger.debug(f"event trigger on {self.get_browse_path(observerId)} for change in {property}")
                                     self.model[observer["triggerCounter"]["id"]]["value"] = self.model[observer["triggerCounter"]["id"]]["value"]+1
                                     self.model[observer["lastTriggerTime"]["id"]]["value"] = datetime.datetime.now().isoformat()
                                     for funcNodeId in self.get_leaves_ids(observer["onTriggerFunction"]["id"]):
                                         self.logger.debug(f"execute ontrigger function {funcNodeId}")
                                         self.execute_function(funcNodeId)
-                                    if observer["hasEvent"] == True:
-                                        self.logger.debug(f"send event {observer['hasEvent']['value']}")
+                                    if observer["hasEvent"]["value"] == True:
+                                        self.logger.debug(f"send event {observer['eventString']['value']}")
                                         #also send the real event
-                                    triggeredObservers.append(observerId)
+                                        self.modelUpdateCounter = self.modelUpdateCounter+1
+                                        event = {
+                                            "id": self.modelUpdateCounter,
+                                            "event": observer["eventString"]["value"],
+                                            "data": observerId}
+                                        for observerObject in self.observers:
+                                            observerObject.update(event)
+                                    triggeredObservers.append(observerId)# next time, we don't trigger
                                     break # leave the properties, we only trigger once
 
     def create_observer(self):
