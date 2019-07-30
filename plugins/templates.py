@@ -36,9 +36,6 @@ timeseriesWidget = {
         {"name":"table","type":"referencer"},                                   # the data table where the time series data resides to be used in this widget (it must be only one)
         {"name":"lineColors","type": "const", "value": [
             "blue", "yellow", "brown", "grey", "red"]},                         # colors of the lines
-        {"name":"observerBackground","type":"referencer"},                      # the location of the variable to watch to find out the change of the background (typically a function execution counter)
-        {"name":"observerUpdate","type": "const","value":["variables","background"]}, #content to be watched by the observer, select from ["variables", "background"]
-        {"name":"observerEnabled","type":"const","value":True},                 # enable/disable the observer
         {"name":"buttons","type":"folder"},                                     # user buttons, place buttons-templates here
         {"name":"hasBackground","type": "const", "value": True},                # use background coloring or not
         {"name":"background","type":"referencer"},                              # the location of the background column (must be part of the table as well)
@@ -57,6 +54,39 @@ timeseriesWidget = {
             "0": "green", "1": "red", "default": "blue"}},
         {"name": "theme", "type": "const", "value": "dark"},                    # the theme color
 
+        {"name":"observerVariables","type": "observer", "children": [           # observer for the selected variables (not the values)
+            {"name": "enabled", "type": "const", "value": True},                # on by default to enable drag + drop
+            {"name": "triggerCounter", "type": "variable", "value": 0},         # increased on each trigger
+            {"name": "lastTriggerTime", "type": "variable", "value": ""},       # last datetime when it was triggered
+            {"name": "targets", "type": "referencer", "references":["timeseriesWidget.selectedVariables"]},  # pointing to the nodes observed
+            {"name": "properties", "type": "const", "value": ["forwardRefs"]},  # properties to observe [“children”,“value”, “forwardRefs”]
+            {"name": "onTriggerFunction", "type": "referencer"},                # the function(s) to be called when triggering
+            {"name": "hasEvent", "type": "const", "value": True},               # set to true if we want an event as well
+            {"name": "eventString", "type": "const", "value": "timeSeriesWidget.variables"}  # the string of the event
+            ]
+        },
+        {"name": "observerBack", "type": "observer", "children": [              # observer for the change of the background value
+            {"name": "enabled", "type": "const", "value": False},                # turn on/off the observer
+            {"name": "triggerCounter", "type": "variable", "value": 0},         # increased on each trigger
+            {"name": "lastTriggerTime", "type": "variable", "value": ""},       # last datetime when it was triggered
+            {"name": "targets", "type": "referencer","references":["timeseriesWidget.background"]},                          # pointing to the nodes observed, must be set correctly, typically the execution counter of the function
+            {"name": "properties", "type": "const", "value": ["value"]},        # properties to observe [“children”,“value”, “forwardRefs”]
+            {"name": "onTriggerFunction", "type": "referencer"},                # the function(s) to be called when triggering
+            {"name": "hasEvent", "type": "const", "value": True},               # set to true if we want an event as well
+            {"name": "eventString", "type": "const", "value": "timeSeriesWidget.background"}  # the string of the event
+            ]
+        },
+        {"name": "observerStream", "type": "observer", "children": [            # observer for the value change of selected vars (especialy for streaming)
+            {"name": "enabled", "type": "const", "value": False},                # turn on/off the observer
+            {"name": "triggerCounter", "type": "variable", "value": 0},         # increased on each trigger
+            {"name": "lastTriggerTime", "type": "variable", "value": ""},       # last datetime when it was triggered
+            {"name": "targets", "type": "referencer","references":["timeseriesWidget.selectableVariables"]},    # pointing to the all nodes,
+            {"name": "properties", "type": "const", "value": ["value"]},        # look for value change properties to observe [“children”,“value”, “forwardRefs”]
+            {"name": "onTriggerFunction", "type": "referencer"},                # the function(s) to be called when triggering
+            {"name": "hasEvent", "type": "const", "value": True},               # set to true if we want an event as well
+            {"name": "eventString", "type": "const", "value": "timeSeriesWidget.stream"}  # the string of the event
+            ]
+        }
 
     ]
 }

@@ -591,6 +591,8 @@ class Observer:
     # The observer needs a reference to the model, because the rest service is not able to detect
     # when the client connection is closed, but the observer message handling loop can detect it
     # this way the observer can detach itself from the model, when the client is disconnected
+    # there are two queues involved: the updateQueue holding events pushed by the observers from the model
+    # and the eventQueues which is the filtered updateQueue (filtering avoids sending multiple identical events in short time
     def __init__(self, model):
         self.model = model
 
@@ -609,7 +611,7 @@ class Observer:
 
     def update(self, event):
         """
-            inform about the occurrence of an event
+            inform about the occurrence of an event,
             Args:
                 event "string": the
         :param event:
@@ -624,47 +626,50 @@ class Observer:
 
 
     def get_event(self):
-        # This flag shows when to stop the event processing
-        stop_event_processing = False
+        """
+            get the next event from the observerclass, this is used a generator for the webserver
+            we also filter out events to avoid a train of identical events
+            the filtering uses the self.minWaitTime, within that period we don't sent identical event;
+            events are "identical", if they have the same "event" and "data"
+        """
+
+        stop_event_processing = False # This flag shows when to stop the event processing
 
         while not stop_event_processing:
             try:
-                # Try to retrieve an item from the queue
+                # Try to retrieve an item from the update queue
                 event = self.updateQueue.get(block=True,timeout=self.minWaitTime)
+                eventIdentification = event["event"]+str(event["data"])
+                #now sort this event into the queues of eventids
+                if eventIdentification not in self.eventQueues:
+                    # this is a new type/identificatin of event, create an entry in the event  queue
+                    # put the event in the queue and make the last timestamp so that we send it out now
+                    self.eventQueues[eventIdentification]={"lastTimeStamp":0,"queue":Queue()}
+                self.eventQueues[eventIdentification]["queue"].put(event)
 
-                #self.logger.debug(f"Qget {id(self)} {event['event']},{event['id']}")
-
-
-                eventType=event["event"]
-                if eventType not in self.eventQueues:
-                    #put the event in the queue and make the last timestamp so that we send it out now
-                    self.eventQueues[eventType]={"lastTimeStamp":0,"queue":Queue()}
-                    #self.logger.debug("new entry")
-
-
-
-                self.eventQueues[eventType]["queue"].put(event)
-                #self.logger.debug(f"queuesize now {self.eventQueues[eventType]['queue'].qsize()}")
             except Exception as ex:
+                # this happens if we time out the queue get, no problem, just continue
                 #self.logger.error(f"Exception while handling event:{id(self)}: {ex}")
-                continue
+                 continue
 
-                #now check what to send out:
+            #now go over all the sorted event queues and check what to send out:
             try:
                 now = time.time()
-                for eventType,entry in self.eventQueues.items(): # entry is {"lasttimestampe": "queue":
+                for eventIdentification,entry in self.eventQueues.items(): # entry is {"lasttimestampe": "queue":
                     #self.logger.debug(f"for check {id(self)} {eventType} size: {entry['queue'].qsize()},last:{entry['lastTimeStamp']}, now:{now}")
                     if (not entry["queue"].empty()) and (now > (entry["lastTimeStamp"]+self.minWaitTime)):
-                        self.eventQueues[eventType]["lastTimeStamp"]=now
+                        #send this event, the timeout was met, we pull the first event from the queue, trash the remaining ones
+                        self.eventQueues[eventIdentification]["lastTimeStamp"]=now
                         #send out this event
-                        myEvent = self.eventQueues[eventType]["queue"].get()
+                        myEvent = self.eventQueues[eventIdentification]["queue"].get()
                         event_string = f"id:{myEvent['id']}\nevent: {myEvent['event']}\ndata: {myEvent['data']}\n\n"
                         #self.logger.debug(f'Observer {id(self)} sending event: {myEvent["event"]}')
 
                         #pull empty the queue
-                        #self.logger.debug(f"Qtrash {id(self)} {self.eventQueues[eventType]['queue'].qsize()}")
-                        while not self.eventQueues[eventType]["queue"].empty():
-                           self.eventQueues[eventType]["queue"].get(False)
+                        if self.eventQueues[eventIdentification]['queue'].qsize():
+                            self.logger.debug(f"Qtrash observerinstance{id(self)} eventident {eventIdentification} size {self.eventQueues[eventIdentification]['queue'].qsize()}")
+                            while not self.eventQueues[eventIdentification]["queue"].empty():
+                               self.eventQueues[eventIdentification]["queue"].get(False)
                         #self.logger.debug(f"Qyield {id(self)} {myEvent['event']} {myEvent['id']}")
                         yield event_string
 
@@ -675,10 +680,7 @@ class Observer:
                 self.logger.warning(f"Observer {id(self)} connection closed.")
                 stop_event_processing = True
 
-
-
-
-        self.logger.debug(f"Observer {id(self)} exiting event processing.")
+        self.logger.warning(f"Observer {id(self)} exiting event processing.")
 
         # Detach this observer from the model
         self.model.detach_observer(self)
@@ -696,6 +698,7 @@ class Model():
             a model holds all modelling information and data to work on
         """
         self.model = {"1":{"name":"root","type":"folder","children":[],"parent":"0","id":"1","backRefs":[],"forwardRefs":[]}}
+        self.observersEnabled = True
         self.__init_logger(logging.DEBUG)
         self.globalIdCounter=1 # increased on every creation of a node, it holds the last inserted node id
         self.timeSeriesTables = TimeSeriesTables()
@@ -1324,8 +1327,68 @@ class Model():
             return True
 
 
+    def find_all_children_recursive(self,nodeIds):
+        """ find all children recursively, give a list of  """
+        with self.lock:
+            children = []
+            for id in nodeIds:
+                if self.model[id]["children"]:
+                    children.extend(self.find_all_children_recursive(self.model[id]["children"]))
+                children.append(id)
+            return children
+
+
     #delete node and all subnodes
     def delete_node(self,desc):
+        """
+            delete a node and all its recursive children;
+            flow:
+            1) make a list of all nodes to be deleted
+            2) rip off all references to /from delete nodes
+            3) delete all nodes
+            4) notify observers about children change on the delete nodes
+
+             desc(string): the descriptor of the node
+            Returns:
+                True for success
+                False for node not found
+        """
+        with self.lock:
+            id = self.get_id(desc)
+            if not id:
+                return False
+
+            nodesToDelete = self.find_all_children_recursive([id])
+            self.logger.debug(f"delete nodes {nodesToDelete}")
+            childNotify = []
+            #first rip off all references
+            for id in nodesToDelete:
+                forwards = self.model[id]["forwardRefs"].copy()
+                backwards = self.model[id]["backRefs"].copy()
+                for forward in forwards:
+                    self.remove_forward_ref(id,forward) # this will also trigger observers
+                for backward in backwards:
+                    self.remove_back_ref(id,backward) # this will also trigger observers
+
+            #now delete the acutal nodes
+            for id in nodesToDelete:
+                parentId = self.model[id]["parent"]
+                if parentId in self.model:
+                    self.model[parentId]["children"].remove(id)
+                    childNotify.append(parentId)
+                del self.model[id]
+
+            #now notify only those who still exist
+            goodNotify=[]
+            for id in childNotify:
+                if id in self.model:
+                    goodNotify.append(id)
+            if goodNotify:
+                self.__notify_observers(goodNotify, "children") # make ONE call for the observers
+
+            return True
+
+    def delete_node_old(self,desc):
         """
             delete a node and all its recursive children; if we have referencer nodes on the way which have to be deleted, then
             we also remove their references in the model
@@ -1339,6 +1402,8 @@ class Model():
             id = self.get_id(desc)
             if not id:
                 return False
+
+            nodesToDelete = self.find_all_children_recursive([id])
 
             nodesToDelete = self.model[id]["children"].copy()
             print("remove",id,"and children",nodesToDelete)
@@ -1361,7 +1426,6 @@ class Model():
             #now remove me
             del self.model[id]
             return True
-
     # if desc.type is a var, function then we just set the value
     # if it's a timeseries" then we set a column in a table, padded if needed
     def set_value(self,desc,value):
@@ -2190,6 +2254,7 @@ class Model():
                 includeData bool: if set to false, the values for tables and files will NOT be loaded
         """
         with self.lock:
+            self.observersEnabled = False
             try:
                 if type(fileName) is str:
                     f = open("./models/"+fileName+".model.json","r")
@@ -2213,9 +2278,11 @@ class Model():
                             for id, column in zip(ids, data):
                                 self.set_value(id,column)
 
+                self.observersEnabled = True
                 return True
             except Exception as e:
                 self.logger.error("problem loading"+str(e))
+                self.observersEnabled = True
                 return False
 
 
@@ -2328,6 +2395,11 @@ class Model():
 
             return diff
 
+    def disable_observers(self):
+        self.observersEnabled = False
+    def enable_observers(self):
+        self.observersEnabled = True
+
     def __notify_observers(self, nodeIds, properties ):
         """
             this function is called internally when nodes or properties have changed. Then, we look if any
@@ -2340,10 +2412,13 @@ class Model():
         """
 
         # for now we only do the tree update thing
+        if not self.observersEnabled:
+            return
+        #  tree update thing
         with self.lock:
             self.logger.debug(f"__notify_observers {nodeIds}: {properties}")
             # this is for the tree updates, any change is taken
-            # self.modelUpdateCounter = self.modelUpdateCounter + 1
+            self.modelUpdateCounter = self.modelUpdateCounter + 1 #this is used by the diff update function and model copies
             # Notify all observers about the tree update
             event = {
                 "id": self.modelUpdateCounter,
@@ -2391,7 +2466,7 @@ class Model():
                                     if observer["hasEvent"]["value"] == True:
                                         self.logger.debug(f"send event {observer['eventString']['value']}")
                                         #also send the real event
-                                        self.modelUpdateCounter = self.modelUpdateCounter+1
+                                        #self.modelUpdateCounter = self.modelUpdateCounter+1
                                         event = {
                                             "id": self.modelUpdateCounter,
                                             "event": observer["eventString"]["value"],
