@@ -155,7 +155,6 @@
         "backRefs": [
             "116",
             "219",
-            "129",
             "267",
             "283",
             "309",
@@ -166,7 +165,8 @@
             "409",
             "435",
             "451",
-            "477"
+            "477",
+            "129"
         ],
         "forwardRefs": [],
         "value": "len 9752",
@@ -199,7 +199,8 @@
             "351",
             "393",
             "435",
-            "477"
+            "477",
+            "239"
         ],
         "forwardRefs": [],
         "value": "len 9752",
@@ -293,14 +294,11 @@
             "133",
             "138",
             "139",
-            "140",
-            "141",
             "142",
             "144",
             "145",
             "146",
             "189",
-            "217",
             "232",
             "233",
             "234",
@@ -312,7 +310,10 @@
             "569",
             "576",
             "577",
-            "578"
+            "578",
+            "642",
+            "651",
+            "660"
         ],
         "backRefs": [
             "526"
@@ -327,7 +328,9 @@
         "type": "referencer",
         "parent": "127",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "664"
+        ],
         "forwardRefs": [
             "118"
         ],
@@ -340,7 +343,9 @@
         "type": "referencer",
         "parent": "127",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "646"
+        ],
         "forwardRefs": [
             "120"
         ],
@@ -416,10 +421,11 @@
         "parent": "133",
         "children": [
             "597",
-            "602",
             "607",
             "612",
-            "617"
+            "617",
+            "861",
+            "866"
         ],
         "backRefs": [
             "134",
@@ -491,33 +497,6 @@
         ],
         "browsePath": "root.visualization.workbench.lineColors"
     },
-    "140": {
-        "id": "140",
-        "name": "observerBackground",
-        "type": "referencer",
-        "parent": "127",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "228"
-        ],
-        "value": null,
-        "browsePath": "root.visualization.workbench.observerBackground"
-    },
-    "141": {
-        "id": "141",
-        "name": "observerUpdate",
-        "type": "const",
-        "parent": "127",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": [
-            "variables",
-            "background"
-        ],
-        "browsePath": "root.visualization.workbench.observerUpdate"
-    },
     "142": {
         "id": "142",
         "name": "buttons",
@@ -563,7 +542,9 @@
         "type": "referencer",
         "parent": "127",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "655"
+        ],
         "forwardRefs": [
             "126"
         ],
@@ -642,17 +623,6 @@
         "forwardRefs": [],
         "value": true,
         "browsePath": "root.visualization.workbench.hasReloadButton"
-    },
-    "217": {
-        "id": "217",
-        "name": "observerEnabled",
-        "type": "const",
-        "parent": "127",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": true,
-        "browsePath": "root.visualization.workbench.observerEnabled"
     },
     "218": {
         "id": "218",
@@ -800,11 +770,9 @@
         "type": "variable",
         "parent": "223",
         "children": [],
-        "backRefs": [
-            "140"
-        ],
+        "backRefs": [],
         "forwardRefs": [],
-        "value": 17,
+        "value": 84,
         "browsePath": "root.logisticRegression.control.executionCounter"
     },
     "229": {
@@ -815,7 +783,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.045915,
+        "value": 0.029982,
         "browsePath": "root.logisticRegression.control.lastExecutionDuration"
     },
     "230": {
@@ -826,7 +794,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-07-12T09:05:24.373188",
+        "value": "2019-07-30T14:04:54.571967",
         "browsePath": "root.logisticRegression.control.lastStartTime"
     },
     "231": {
@@ -906,7 +874,10 @@
             "570",
             "579",
             "580",
-            "581"
+            "581",
+            "669",
+            "678",
+            "687"
         ],
         "backRefs": [
             "502"
@@ -932,7 +903,9 @@
         "type": "referencer",
         "parent": "236",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "691"
+        ],
         "forwardRefs": [
             "118"
         ],
@@ -945,9 +918,12 @@
         "type": "referencer",
         "parent": "236",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "673"
+        ],
         "forwardRefs": [
-            "123"
+            "123",
+            "122"
         ],
         "value": null,
         "browsePath": "root.visualization.selfservice0.selectedVariables"
@@ -1032,9 +1008,9 @@
         "parent": "244",
         "children": [
             "622",
-            "627",
-            "632",
-            "637"
+            "836",
+            "841",
+            "846"
         ],
         "backRefs": [
             "245",
@@ -1173,7 +1149,9 @@
         "type": "referencer",
         "parent": "236",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "682"
+        ],
         "forwardRefs": [
             "126"
         ],
@@ -1447,7 +1425,7 @@
             "251"
         ],
         "forwardRefs": [],
-        "value": 1,
+        "value": 85,
         "browsePath": "root.ui_function.logisticRegression_0.control.executionCounter"
     },
     "277": {
@@ -1458,7 +1436,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.036307,
+        "value": 0.035979,
         "browsePath": "root.ui_function.logisticRegression_0.control.lastExecutionDuration"
     },
     "278": {
@@ -1469,7 +1447,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-07-12T09:26:12.592485",
+        "value": "2019-07-30T14:04:25.116339",
         "browsePath": "root.ui_function.logisticRegression_0.control.lastStartTime"
     },
     "279": {
@@ -1516,7 +1494,10 @@
             "571",
             "582",
             "583",
-            "584"
+            "584",
+            "696",
+            "705",
+            "714"
         ],
         "backRefs": [
             "506"
@@ -1542,7 +1523,9 @@
         "type": "referencer",
         "parent": "280",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "718"
+        ],
         "forwardRefs": [
             "118"
         ],
@@ -1555,7 +1538,9 @@
         "type": "referencer",
         "parent": "280",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "700"
+        ],
         "forwardRefs": [
             "120"
         ],
@@ -1778,7 +1763,9 @@
         "type": "referencer",
         "parent": "280",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "709"
+        ],
         "forwardRefs": [
             "126"
         ],
@@ -2092,7 +2079,10 @@
             "572",
             "585",
             "586",
-            "587"
+            "587",
+            "723",
+            "732",
+            "741"
         ],
         "backRefs": [
             "510"
@@ -2118,7 +2108,9 @@
         "type": "referencer",
         "parent": "322",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "745"
+        ],
         "forwardRefs": [
             "118"
         ],
@@ -2131,7 +2123,9 @@
         "type": "referencer",
         "parent": "322",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "727"
+        ],
         "forwardRefs": [
             "120"
         ],
@@ -2354,7 +2348,9 @@
         "type": "referencer",
         "parent": "322",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "736"
+        ],
         "forwardRefs": [
             "126"
         ],
@@ -2668,7 +2664,10 @@
             "573",
             "588",
             "589",
-            "590"
+            "590",
+            "750",
+            "759",
+            "768"
         ],
         "backRefs": [
             "514"
@@ -2694,7 +2693,9 @@
         "type": "referencer",
         "parent": "364",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "772"
+        ],
         "forwardRefs": [
             "118"
         ],
@@ -2707,7 +2708,9 @@
         "type": "referencer",
         "parent": "364",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "754"
+        ],
         "forwardRefs": [
             "120"
         ],
@@ -2930,7 +2933,9 @@
         "type": "referencer",
         "parent": "364",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "763"
+        ],
         "forwardRefs": [
             "126"
         ],
@@ -3244,7 +3249,10 @@
             "574",
             "591",
             "592",
-            "593"
+            "593",
+            "777",
+            "786",
+            "795"
         ],
         "backRefs": [
             "518"
@@ -3270,7 +3278,9 @@
         "type": "referencer",
         "parent": "406",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "799"
+        ],
         "forwardRefs": [
             "118"
         ],
@@ -3283,7 +3293,9 @@
         "type": "referencer",
         "parent": "406",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "781"
+        ],
         "forwardRefs": [
             "120"
         ],
@@ -3506,7 +3518,9 @@
         "type": "referencer",
         "parent": "406",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "790"
+        ],
         "forwardRefs": [
             "126"
         ],
@@ -3820,7 +3834,10 @@
             "575",
             "594",
             "595",
-            "596"
+            "596",
+            "804",
+            "813",
+            "822"
         ],
         "backRefs": [
             "522"
@@ -3846,7 +3863,9 @@
         "type": "referencer",
         "parent": "448",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "826"
+        ],
         "forwardRefs": [
             "118"
         ],
@@ -3859,7 +3878,9 @@
         "type": "referencer",
         "parent": "448",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "808"
+        ],
         "forwardRefs": [
             "120"
         ],
@@ -4082,7 +4103,9 @@
         "type": "referencer",
         "parent": "448",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "817"
+        ],
         "forwardRefs": [
             "126"
         ],
@@ -5592,68 +5615,6 @@
         ],
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.5a69d628.tags"
     },
-    "602": {
-        "id": "602",
-        "name": "b44ad65e",
-        "type": "annotation",
-        "parent": "135",
-        "children": [
-            "603",
-            "604",
-            "605",
-            "606"
-        ],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.b44ad65e"
-    },
-    "603": {
-        "id": "603",
-        "name": "type",
-        "type": "const",
-        "parent": "602",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "time",
-        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.b44ad65e.type"
-    },
-    "604": {
-        "id": "604",
-        "name": "startTime",
-        "type": "const",
-        "parent": "602",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "2015-02-14T07:43:34.078071+01:00",
-        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.b44ad65e.startTime"
-    },
-    "605": {
-        "id": "605",
-        "name": "endTime",
-        "type": "const",
-        "parent": "602",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "2015-02-14T16:06:45.706084+01:00",
-        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.b44ad65e.endTime"
-    },
-    "606": {
-        "id": "606",
-        "name": "tags",
-        "type": "const",
-        "parent": "602",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": [
-            "busy"
-        ],
-        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.b44ad65e.tags"
-    },
     "607": {
         "id": "607",
         "name": "74535582",
@@ -5902,190 +5863,2666 @@
         ],
         "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.d0a55aea.tags"
     },
-    "627": {
-        "id": "627",
-        "name": "73706494",
-        "type": "annotation",
-        "parent": "246",
+    "642": {
+        "id": "642",
+        "name": "observerVariables",
+        "type": "observer",
+        "parent": "127",
         "children": [
-            "628",
-            "629",
-            "630",
-            "631"
+            "643",
+            "644",
+            "645",
+            "646",
+            "647",
+            "648",
+            "649",
+            "650"
         ],
         "backRefs": [],
         "forwardRefs": [],
         "value": null,
-        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.73706494"
+        "browsePath": "root.visualization.workbench.observerVariables"
     },
-    "628": {
-        "id": "628",
+    "643": {
+        "id": "643",
+        "name": "enabled",
+        "type": "const",
+        "parent": "642",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.observerVariables.enabled"
+    },
+    "644": {
+        "id": "644",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "642",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 33,
+        "browsePath": "root.visualization.workbench.observerVariables.triggerCounter"
+    },
+    "645": {
+        "id": "645",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "642",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2019-07-30T13:51:50.844678",
+        "browsePath": "root.visualization.workbench.observerVariables.lastTriggerTime"
+    },
+    "646": {
+        "id": "646",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "642",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "129"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.observerVariables.targets"
+    },
+    "647": {
+        "id": "647",
+        "name": "properties",
+        "type": "const",
+        "parent": "642",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "forwardRefs"
+        ],
+        "browsePath": "root.visualization.workbench.observerVariables.properties"
+    },
+    "648": {
+        "id": "648",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "642",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.observerVariables.onTriggerFunction"
+    },
+    "649": {
+        "id": "649",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "642",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.observerVariables.hasEvent"
+    },
+    "650": {
+        "id": "650",
+        "name": "eventString",
+        "type": "const",
+        "parent": "642",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.variables",
+        "browsePath": "root.visualization.workbench.observerVariables.eventString"
+    },
+    "651": {
+        "id": "651",
+        "name": "observerBack",
+        "type": "observer",
+        "parent": "127",
+        "children": [
+            "652",
+            "653",
+            "654",
+            "655",
+            "656",
+            "657",
+            "658",
+            "659"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.observerBack"
+    },
+    "652": {
+        "id": "652",
+        "name": "enabled",
+        "type": "const",
+        "parent": "651",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.observerBack.enabled"
+    },
+    "653": {
+        "id": "653",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "651",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 121,
+        "browsePath": "root.visualization.workbench.observerBack.triggerCounter"
+    },
+    "654": {
+        "id": "654",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "651",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2019-07-30T14:04:54.597973",
+        "browsePath": "root.visualization.workbench.observerBack.lastTriggerTime"
+    },
+    "655": {
+        "id": "655",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "651",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "145"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.observerBack.targets"
+    },
+    "656": {
+        "id": "656",
+        "name": "properties",
+        "type": "const",
+        "parent": "651",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.visualization.workbench.observerBack.properties"
+    },
+    "657": {
+        "id": "657",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "651",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.observerBack.onTriggerFunction"
+    },
+    "658": {
+        "id": "658",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "651",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.observerBack.hasEvent"
+    },
+    "659": {
+        "id": "659",
+        "name": "eventString",
+        "type": "const",
+        "parent": "651",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.background",
+        "browsePath": "root.visualization.workbench.observerBack.eventString"
+    },
+    "660": {
+        "id": "660",
+        "name": "observerStream",
+        "type": "observer",
+        "parent": "127",
+        "children": [
+            "661",
+            "662",
+            "663",
+            "664",
+            "665",
+            "666",
+            "667",
+            "668"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.observerStream"
+    },
+    "661": {
+        "id": "661",
+        "name": "enabled",
+        "type": "const",
+        "parent": "660",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.workbench.observerStream.enabled"
+    },
+    "662": {
+        "id": "662",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "660",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.workbench.observerStream.triggerCounter"
+    },
+    "663": {
+        "id": "663",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "660",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.visualization.workbench.observerStream.lastTriggerTime"
+    },
+    "664": {
+        "id": "664",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "660",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "128"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.observerStream.targets"
+    },
+    "665": {
+        "id": "665",
+        "name": "properties",
+        "type": "const",
+        "parent": "660",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.visualization.workbench.observerStream.properties"
+    },
+    "666": {
+        "id": "666",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "660",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.observerStream.onTriggerFunction"
+    },
+    "667": {
+        "id": "667",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "660",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.observerStream.hasEvent"
+    },
+    "668": {
+        "id": "668",
+        "name": "eventString",
+        "type": "const",
+        "parent": "660",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.stream",
+        "browsePath": "root.visualization.workbench.observerStream.eventString"
+    },
+    "669": {
+        "id": "669",
+        "name": "observerVariables",
+        "type": "observer",
+        "parent": "236",
+        "children": [
+            "670",
+            "671",
+            "672",
+            "673",
+            "674",
+            "675",
+            "676",
+            "677"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.observerVariables"
+    },
+    "670": {
+        "id": "670",
+        "name": "enabled",
+        "type": "const",
+        "parent": "669",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice0.observerVariables.enabled"
+    },
+    "671": {
+        "id": "671",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "669",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 7,
+        "browsePath": "root.visualization.selfservice0.observerVariables.triggerCounter"
+    },
+    "672": {
+        "id": "672",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "669",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2019-07-30T13:51:02.849954",
+        "browsePath": "root.visualization.selfservice0.observerVariables.lastTriggerTime"
+    },
+    "673": {
+        "id": "673",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "669",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "239"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.observerVariables.targets"
+    },
+    "674": {
+        "id": "674",
+        "name": "properties",
+        "type": "const",
+        "parent": "669",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "forwardRefs"
+        ],
+        "browsePath": "root.visualization.selfservice0.observerVariables.properties"
+    },
+    "675": {
+        "id": "675",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "669",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.observerVariables.onTriggerFunction"
+    },
+    "676": {
+        "id": "676",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "669",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice0.observerVariables.hasEvent"
+    },
+    "677": {
+        "id": "677",
+        "name": "eventString",
+        "type": "const",
+        "parent": "669",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.variables",
+        "browsePath": "root.visualization.selfservice0.observerVariables.eventString"
+    },
+    "678": {
+        "id": "678",
+        "name": "observerBack",
+        "type": "observer",
+        "parent": "236",
+        "children": [
+            "679",
+            "680",
+            "681",
+            "682",
+            "683",
+            "684",
+            "685",
+            "686"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.observerBack"
+    },
+    "679": {
+        "id": "679",
+        "name": "enabled",
+        "type": "const",
+        "parent": "678",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice0.observerBack.enabled"
+    },
+    "680": {
+        "id": "680",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "678",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 138,
+        "browsePath": "root.visualization.selfservice0.observerBack.triggerCounter"
+    },
+    "681": {
+        "id": "681",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "678",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2019-07-30T14:04:54.598951",
+        "browsePath": "root.visualization.selfservice0.observerBack.lastTriggerTime"
+    },
+    "682": {
+        "id": "682",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "678",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "256"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.observerBack.targets"
+    },
+    "683": {
+        "id": "683",
+        "name": "properties",
+        "type": "const",
+        "parent": "678",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.visualization.selfservice0.observerBack.properties"
+    },
+    "684": {
+        "id": "684",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "678",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.observerBack.onTriggerFunction"
+    },
+    "685": {
+        "id": "685",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "678",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice0.observerBack.hasEvent"
+    },
+    "686": {
+        "id": "686",
+        "name": "eventString",
+        "type": "const",
+        "parent": "678",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.background",
+        "browsePath": "root.visualization.selfservice0.observerBack.eventString"
+    },
+    "687": {
+        "id": "687",
+        "name": "observerStream",
+        "type": "observer",
+        "parent": "236",
+        "children": [
+            "688",
+            "689",
+            "690",
+            "691",
+            "692",
+            "693",
+            "694",
+            "695"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.observerStream"
+    },
+    "688": {
+        "id": "688",
+        "name": "enabled",
+        "type": "const",
+        "parent": "687",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice0.observerStream.enabled"
+    },
+    "689": {
+        "id": "689",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "687",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.selfservice0.observerStream.triggerCounter"
+    },
+    "690": {
+        "id": "690",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "687",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.visualization.selfservice0.observerStream.lastTriggerTime"
+    },
+    "691": {
+        "id": "691",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "687",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "238"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.observerStream.targets"
+    },
+    "692": {
+        "id": "692",
+        "name": "properties",
+        "type": "const",
+        "parent": "687",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.visualization.selfservice0.observerStream.properties"
+    },
+    "693": {
+        "id": "693",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "687",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.observerStream.onTriggerFunction"
+    },
+    "694": {
+        "id": "694",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "687",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice0.observerStream.hasEvent"
+    },
+    "695": {
+        "id": "695",
+        "name": "eventString",
+        "type": "const",
+        "parent": "687",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.stream",
+        "browsePath": "root.visualization.selfservice0.observerStream.eventString"
+    },
+    "696": {
+        "id": "696",
+        "name": "observerVariables",
+        "type": "observer",
+        "parent": "280",
+        "children": [
+            "697",
+            "698",
+            "699",
+            "700",
+            "701",
+            "702",
+            "703",
+            "704"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice1.observerVariables"
+    },
+    "697": {
+        "id": "697",
+        "name": "enabled",
+        "type": "const",
+        "parent": "696",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice1.observerVariables.enabled"
+    },
+    "698": {
+        "id": "698",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "696",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.selfservice1.observerVariables.triggerCounter"
+    },
+    "699": {
+        "id": "699",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "696",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.visualization.selfservice1.observerVariables.lastTriggerTime"
+    },
+    "700": {
+        "id": "700",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "696",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "283"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.selfservice1.observerVariables.targets"
+    },
+    "701": {
+        "id": "701",
+        "name": "properties",
+        "type": "const",
+        "parent": "696",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "forwardRefs"
+        ],
+        "browsePath": "root.visualization.selfservice1.observerVariables.properties"
+    },
+    "702": {
+        "id": "702",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "696",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice1.observerVariables.onTriggerFunction"
+    },
+    "703": {
+        "id": "703",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "696",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice1.observerVariables.hasEvent"
+    },
+    "704": {
+        "id": "704",
+        "name": "eventString",
+        "type": "const",
+        "parent": "696",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.variables",
+        "browsePath": "root.visualization.selfservice1.observerVariables.eventString"
+    },
+    "705": {
+        "id": "705",
+        "name": "observerBack",
+        "type": "observer",
+        "parent": "280",
+        "children": [
+            "706",
+            "707",
+            "708",
+            "709",
+            "710",
+            "711",
+            "712",
+            "713"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice1.observerBack"
+    },
+    "706": {
+        "id": "706",
+        "name": "enabled",
+        "type": "const",
+        "parent": "705",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice1.observerBack.enabled"
+    },
+    "707": {
+        "id": "707",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "705",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.selfservice1.observerBack.triggerCounter"
+    },
+    "708": {
+        "id": "708",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "705",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.visualization.selfservice1.observerBack.lastTriggerTime"
+    },
+    "709": {
+        "id": "709",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "705",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "300"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.selfservice1.observerBack.targets"
+    },
+    "710": {
+        "id": "710",
+        "name": "properties",
+        "type": "const",
+        "parent": "705",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.visualization.selfservice1.observerBack.properties"
+    },
+    "711": {
+        "id": "711",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "705",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice1.observerBack.onTriggerFunction"
+    },
+    "712": {
+        "id": "712",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "705",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice1.observerBack.hasEvent"
+    },
+    "713": {
+        "id": "713",
+        "name": "eventString",
+        "type": "const",
+        "parent": "705",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.variables",
+        "browsePath": "root.visualization.selfservice1.observerBack.eventString"
+    },
+    "714": {
+        "id": "714",
+        "name": "observerStream",
+        "type": "observer",
+        "parent": "280",
+        "children": [
+            "715",
+            "716",
+            "717",
+            "718",
+            "719",
+            "720",
+            "721",
+            "722"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice1.observerStream"
+    },
+    "715": {
+        "id": "715",
+        "name": "enabled",
+        "type": "const",
+        "parent": "714",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice1.observerStream.enabled"
+    },
+    "716": {
+        "id": "716",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "714",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.selfservice1.observerStream.triggerCounter"
+    },
+    "717": {
+        "id": "717",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "714",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.visualization.selfservice1.observerStream.lastTriggerTime"
+    },
+    "718": {
+        "id": "718",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "714",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "282"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.selfservice1.observerStream.targets"
+    },
+    "719": {
+        "id": "719",
+        "name": "properties",
+        "type": "const",
+        "parent": "714",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.visualization.selfservice1.observerStream.properties"
+    },
+    "720": {
+        "id": "720",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "714",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice1.observerStream.onTriggerFunction"
+    },
+    "721": {
+        "id": "721",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "714",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice1.observerStream.hasEvent"
+    },
+    "722": {
+        "id": "722",
+        "name": "eventString",
+        "type": "const",
+        "parent": "714",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.stream",
+        "browsePath": "root.visualization.selfservice1.observerStream.eventString"
+    },
+    "723": {
+        "id": "723",
+        "name": "observerVariables",
+        "type": "observer",
+        "parent": "322",
+        "children": [
+            "724",
+            "725",
+            "726",
+            "727",
+            "728",
+            "729",
+            "730",
+            "731"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice2.observerVariables"
+    },
+    "724": {
+        "id": "724",
+        "name": "enabled",
+        "type": "const",
+        "parent": "723",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice2.observerVariables.enabled"
+    },
+    "725": {
+        "id": "725",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "723",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.selfservice2.observerVariables.triggerCounter"
+    },
+    "726": {
+        "id": "726",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "723",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.visualization.selfservice2.observerVariables.lastTriggerTime"
+    },
+    "727": {
+        "id": "727",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "723",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "325"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.selfservice2.observerVariables.targets"
+    },
+    "728": {
+        "id": "728",
+        "name": "properties",
+        "type": "const",
+        "parent": "723",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "forwardRefs"
+        ],
+        "browsePath": "root.visualization.selfservice2.observerVariables.properties"
+    },
+    "729": {
+        "id": "729",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "723",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice2.observerVariables.onTriggerFunction"
+    },
+    "730": {
+        "id": "730",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "723",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice2.observerVariables.hasEvent"
+    },
+    "731": {
+        "id": "731",
+        "name": "eventString",
+        "type": "const",
+        "parent": "723",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.variables",
+        "browsePath": "root.visualization.selfservice2.observerVariables.eventString"
+    },
+    "732": {
+        "id": "732",
+        "name": "observerBack",
+        "type": "observer",
+        "parent": "322",
+        "children": [
+            "733",
+            "734",
+            "735",
+            "736",
+            "737",
+            "738",
+            "739",
+            "740"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice2.observerBack"
+    },
+    "733": {
+        "id": "733",
+        "name": "enabled",
+        "type": "const",
+        "parent": "732",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice2.observerBack.enabled"
+    },
+    "734": {
+        "id": "734",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "732",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.selfservice2.observerBack.triggerCounter"
+    },
+    "735": {
+        "id": "735",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "732",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.visualization.selfservice2.observerBack.lastTriggerTime"
+    },
+    "736": {
+        "id": "736",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "732",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "342"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.selfservice2.observerBack.targets"
+    },
+    "737": {
+        "id": "737",
+        "name": "properties",
+        "type": "const",
+        "parent": "732",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.visualization.selfservice2.observerBack.properties"
+    },
+    "738": {
+        "id": "738",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "732",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice2.observerBack.onTriggerFunction"
+    },
+    "739": {
+        "id": "739",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "732",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice2.observerBack.hasEvent"
+    },
+    "740": {
+        "id": "740",
+        "name": "eventString",
+        "type": "const",
+        "parent": "732",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.variables",
+        "browsePath": "root.visualization.selfservice2.observerBack.eventString"
+    },
+    "741": {
+        "id": "741",
+        "name": "observerStream",
+        "type": "observer",
+        "parent": "322",
+        "children": [
+            "742",
+            "743",
+            "744",
+            "745",
+            "746",
+            "747",
+            "748",
+            "749"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice2.observerStream"
+    },
+    "742": {
+        "id": "742",
+        "name": "enabled",
+        "type": "const",
+        "parent": "741",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice2.observerStream.enabled"
+    },
+    "743": {
+        "id": "743",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "741",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.selfservice2.observerStream.triggerCounter"
+    },
+    "744": {
+        "id": "744",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "741",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.visualization.selfservice2.observerStream.lastTriggerTime"
+    },
+    "745": {
+        "id": "745",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "741",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "324"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.selfservice2.observerStream.targets"
+    },
+    "746": {
+        "id": "746",
+        "name": "properties",
+        "type": "const",
+        "parent": "741",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.visualization.selfservice2.observerStream.properties"
+    },
+    "747": {
+        "id": "747",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "741",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice2.observerStream.onTriggerFunction"
+    },
+    "748": {
+        "id": "748",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "741",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice2.observerStream.hasEvent"
+    },
+    "749": {
+        "id": "749",
+        "name": "eventString",
+        "type": "const",
+        "parent": "741",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.stream",
+        "browsePath": "root.visualization.selfservice2.observerStream.eventString"
+    },
+    "750": {
+        "id": "750",
+        "name": "observerVariables",
+        "type": "observer",
+        "parent": "364",
+        "children": [
+            "751",
+            "752",
+            "753",
+            "754",
+            "755",
+            "756",
+            "757",
+            "758"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice3.observerVariables"
+    },
+    "751": {
+        "id": "751",
+        "name": "enabled",
+        "type": "const",
+        "parent": "750",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice3.observerVariables.enabled"
+    },
+    "752": {
+        "id": "752",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "750",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.selfservice3.observerVariables.triggerCounter"
+    },
+    "753": {
+        "id": "753",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "750",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.visualization.selfservice3.observerVariables.lastTriggerTime"
+    },
+    "754": {
+        "id": "754",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "750",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "367"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.selfservice3.observerVariables.targets"
+    },
+    "755": {
+        "id": "755",
+        "name": "properties",
+        "type": "const",
+        "parent": "750",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "forwardRefs"
+        ],
+        "browsePath": "root.visualization.selfservice3.observerVariables.properties"
+    },
+    "756": {
+        "id": "756",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "750",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice3.observerVariables.onTriggerFunction"
+    },
+    "757": {
+        "id": "757",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "750",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice3.observerVariables.hasEvent"
+    },
+    "758": {
+        "id": "758",
+        "name": "eventString",
+        "type": "const",
+        "parent": "750",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.variables",
+        "browsePath": "root.visualization.selfservice3.observerVariables.eventString"
+    },
+    "759": {
+        "id": "759",
+        "name": "observerBack",
+        "type": "observer",
+        "parent": "364",
+        "children": [
+            "760",
+            "761",
+            "762",
+            "763",
+            "764",
+            "765",
+            "766",
+            "767"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice3.observerBack"
+    },
+    "760": {
+        "id": "760",
+        "name": "enabled",
+        "type": "const",
+        "parent": "759",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice3.observerBack.enabled"
+    },
+    "761": {
+        "id": "761",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "759",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.selfservice3.observerBack.triggerCounter"
+    },
+    "762": {
+        "id": "762",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "759",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.visualization.selfservice3.observerBack.lastTriggerTime"
+    },
+    "763": {
+        "id": "763",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "759",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "384"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.selfservice3.observerBack.targets"
+    },
+    "764": {
+        "id": "764",
+        "name": "properties",
+        "type": "const",
+        "parent": "759",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.visualization.selfservice3.observerBack.properties"
+    },
+    "765": {
+        "id": "765",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "759",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice3.observerBack.onTriggerFunction"
+    },
+    "766": {
+        "id": "766",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "759",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice3.observerBack.hasEvent"
+    },
+    "767": {
+        "id": "767",
+        "name": "eventString",
+        "type": "const",
+        "parent": "759",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.variables",
+        "browsePath": "root.visualization.selfservice3.observerBack.eventString"
+    },
+    "768": {
+        "id": "768",
+        "name": "observerStream",
+        "type": "observer",
+        "parent": "364",
+        "children": [
+            "769",
+            "770",
+            "771",
+            "772",
+            "773",
+            "774",
+            "775",
+            "776"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice3.observerStream"
+    },
+    "769": {
+        "id": "769",
+        "name": "enabled",
+        "type": "const",
+        "parent": "768",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice3.observerStream.enabled"
+    },
+    "770": {
+        "id": "770",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "768",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.selfservice3.observerStream.triggerCounter"
+    },
+    "771": {
+        "id": "771",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "768",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.visualization.selfservice3.observerStream.lastTriggerTime"
+    },
+    "772": {
+        "id": "772",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "768",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "366"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.selfservice3.observerStream.targets"
+    },
+    "773": {
+        "id": "773",
+        "name": "properties",
+        "type": "const",
+        "parent": "768",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.visualization.selfservice3.observerStream.properties"
+    },
+    "774": {
+        "id": "774",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "768",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice3.observerStream.onTriggerFunction"
+    },
+    "775": {
+        "id": "775",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "768",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice3.observerStream.hasEvent"
+    },
+    "776": {
+        "id": "776",
+        "name": "eventString",
+        "type": "const",
+        "parent": "768",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.stream",
+        "browsePath": "root.visualization.selfservice3.observerStream.eventString"
+    },
+    "777": {
+        "id": "777",
+        "name": "observerVariables",
+        "type": "observer",
+        "parent": "406",
+        "children": [
+            "778",
+            "779",
+            "780",
+            "781",
+            "782",
+            "783",
+            "784",
+            "785"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice4.observerVariables"
+    },
+    "778": {
+        "id": "778",
+        "name": "enabled",
+        "type": "const",
+        "parent": "777",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice4.observerVariables.enabled"
+    },
+    "779": {
+        "id": "779",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "777",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.selfservice4.observerVariables.triggerCounter"
+    },
+    "780": {
+        "id": "780",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "777",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.visualization.selfservice4.observerVariables.lastTriggerTime"
+    },
+    "781": {
+        "id": "781",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "777",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "409"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.selfservice4.observerVariables.targets"
+    },
+    "782": {
+        "id": "782",
+        "name": "properties",
+        "type": "const",
+        "parent": "777",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "forwardRefs"
+        ],
+        "browsePath": "root.visualization.selfservice4.observerVariables.properties"
+    },
+    "783": {
+        "id": "783",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "777",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice4.observerVariables.onTriggerFunction"
+    },
+    "784": {
+        "id": "784",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "777",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice4.observerVariables.hasEvent"
+    },
+    "785": {
+        "id": "785",
+        "name": "eventString",
+        "type": "const",
+        "parent": "777",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.variables",
+        "browsePath": "root.visualization.selfservice4.observerVariables.eventString"
+    },
+    "786": {
+        "id": "786",
+        "name": "observerBack",
+        "type": "observer",
+        "parent": "406",
+        "children": [
+            "787",
+            "788",
+            "789",
+            "790",
+            "791",
+            "792",
+            "793",
+            "794"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice4.observerBack"
+    },
+    "787": {
+        "id": "787",
+        "name": "enabled",
+        "type": "const",
+        "parent": "786",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice4.observerBack.enabled"
+    },
+    "788": {
+        "id": "788",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "786",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.selfservice4.observerBack.triggerCounter"
+    },
+    "789": {
+        "id": "789",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "786",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.visualization.selfservice4.observerBack.lastTriggerTime"
+    },
+    "790": {
+        "id": "790",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "786",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "426"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.selfservice4.observerBack.targets"
+    },
+    "791": {
+        "id": "791",
+        "name": "properties",
+        "type": "const",
+        "parent": "786",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.visualization.selfservice4.observerBack.properties"
+    },
+    "792": {
+        "id": "792",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "786",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice4.observerBack.onTriggerFunction"
+    },
+    "793": {
+        "id": "793",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "786",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice4.observerBack.hasEvent"
+    },
+    "794": {
+        "id": "794",
+        "name": "eventString",
+        "type": "const",
+        "parent": "786",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.variables",
+        "browsePath": "root.visualization.selfservice4.observerBack.eventString"
+    },
+    "795": {
+        "id": "795",
+        "name": "observerStream",
+        "type": "observer",
+        "parent": "406",
+        "children": [
+            "796",
+            "797",
+            "798",
+            "799",
+            "800",
+            "801",
+            "802",
+            "803"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice4.observerStream"
+    },
+    "796": {
+        "id": "796",
+        "name": "enabled",
+        "type": "const",
+        "parent": "795",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice4.observerStream.enabled"
+    },
+    "797": {
+        "id": "797",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "795",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.selfservice4.observerStream.triggerCounter"
+    },
+    "798": {
+        "id": "798",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "795",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.visualization.selfservice4.observerStream.lastTriggerTime"
+    },
+    "799": {
+        "id": "799",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "795",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "408"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.selfservice4.observerStream.targets"
+    },
+    "800": {
+        "id": "800",
+        "name": "properties",
+        "type": "const",
+        "parent": "795",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.visualization.selfservice4.observerStream.properties"
+    },
+    "801": {
+        "id": "801",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "795",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice4.observerStream.onTriggerFunction"
+    },
+    "802": {
+        "id": "802",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "795",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice4.observerStream.hasEvent"
+    },
+    "803": {
+        "id": "803",
+        "name": "eventString",
+        "type": "const",
+        "parent": "795",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.stream",
+        "browsePath": "root.visualization.selfservice4.observerStream.eventString"
+    },
+    "804": {
+        "id": "804",
+        "name": "observerVariables",
+        "type": "observer",
+        "parent": "448",
+        "children": [
+            "805",
+            "806",
+            "807",
+            "808",
+            "809",
+            "810",
+            "811",
+            "812"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice5.observerVariables"
+    },
+    "805": {
+        "id": "805",
+        "name": "enabled",
+        "type": "const",
+        "parent": "804",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice5.observerVariables.enabled"
+    },
+    "806": {
+        "id": "806",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "804",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.selfservice5.observerVariables.triggerCounter"
+    },
+    "807": {
+        "id": "807",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "804",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.visualization.selfservice5.observerVariables.lastTriggerTime"
+    },
+    "808": {
+        "id": "808",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "804",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "451"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.selfservice5.observerVariables.targets"
+    },
+    "809": {
+        "id": "809",
+        "name": "properties",
+        "type": "const",
+        "parent": "804",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "forwardRefs"
+        ],
+        "browsePath": "root.visualization.selfservice5.observerVariables.properties"
+    },
+    "810": {
+        "id": "810",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "804",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice5.observerVariables.onTriggerFunction"
+    },
+    "811": {
+        "id": "811",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "804",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice5.observerVariables.hasEvent"
+    },
+    "812": {
+        "id": "812",
+        "name": "eventString",
+        "type": "const",
+        "parent": "804",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.variables",
+        "browsePath": "root.visualization.selfservice5.observerVariables.eventString"
+    },
+    "813": {
+        "id": "813",
+        "name": "observerBack",
+        "type": "observer",
+        "parent": "448",
+        "children": [
+            "814",
+            "815",
+            "816",
+            "817",
+            "818",
+            "819",
+            "820",
+            "821"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice5.observerBack"
+    },
+    "814": {
+        "id": "814",
+        "name": "enabled",
+        "type": "const",
+        "parent": "813",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice5.observerBack.enabled"
+    },
+    "815": {
+        "id": "815",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "813",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.selfservice5.observerBack.triggerCounter"
+    },
+    "816": {
+        "id": "816",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "813",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.visualization.selfservice5.observerBack.lastTriggerTime"
+    },
+    "817": {
+        "id": "817",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "813",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "468"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.selfservice5.observerBack.targets"
+    },
+    "818": {
+        "id": "818",
+        "name": "properties",
+        "type": "const",
+        "parent": "813",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.visualization.selfservice5.observerBack.properties"
+    },
+    "819": {
+        "id": "819",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "813",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice5.observerBack.onTriggerFunction"
+    },
+    "820": {
+        "id": "820",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "813",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice5.observerBack.hasEvent"
+    },
+    "821": {
+        "id": "821",
+        "name": "eventString",
+        "type": "const",
+        "parent": "813",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.variables",
+        "browsePath": "root.visualization.selfservice5.observerBack.eventString"
+    },
+    "822": {
+        "id": "822",
+        "name": "observerStream",
+        "type": "observer",
+        "parent": "448",
+        "children": [
+            "823",
+            "824",
+            "825",
+            "826",
+            "827",
+            "828",
+            "829",
+            "830"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice5.observerStream"
+    },
+    "823": {
+        "id": "823",
+        "name": "enabled",
+        "type": "const",
+        "parent": "822",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice5.observerStream.enabled"
+    },
+    "824": {
+        "id": "824",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "822",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.visualization.selfservice5.observerStream.triggerCounter"
+    },
+    "825": {
+        "id": "825",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "822",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.visualization.selfservice5.observerStream.lastTriggerTime"
+    },
+    "826": {
+        "id": "826",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "822",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "450"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.selfservice5.observerStream.targets"
+    },
+    "827": {
+        "id": "827",
+        "name": "properties",
+        "type": "const",
+        "parent": "822",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.visualization.selfservice5.observerStream.properties"
+    },
+    "828": {
+        "id": "828",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "822",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice5.observerStream.onTriggerFunction"
+    },
+    "829": {
+        "id": "829",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "822",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice5.observerStream.hasEvent"
+    },
+    "830": {
+        "id": "830",
+        "name": "eventString",
+        "type": "const",
+        "parent": "822",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "timeSeriesWidget.stream",
+        "browsePath": "root.visualization.selfservice5.observerStream.eventString"
+    },
+    "836": {
+        "id": "836",
+        "name": "2faa3303",
+        "type": "annotation",
+        "parent": "246",
+        "children": [
+            "837",
+            "838",
+            "839",
+            "840"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.2faa3303"
+    },
+    "837": {
+        "id": "837",
         "name": "type",
         "type": "const",
-        "parent": "627",
+        "parent": "836",
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
         "value": "time",
-        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.73706494.type"
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.2faa3303.type"
     },
-    "629": {
-        "id": "629",
+    "838": {
+        "id": "838",
         "name": "startTime",
         "type": "const",
-        "parent": "627",
+        "parent": "836",
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2015-02-15T06:53:29.245695+01:00",
-        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.73706494.startTime"
+        "value": "2015-02-12T05:33:29.289307+01:00",
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.2faa3303.startTime"
     },
-    "630": {
-        "id": "630",
+    "839": {
+        "id": "839",
         "name": "endTime",
         "type": "const",
-        "parent": "627",
+        "parent": "836",
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2015-02-15T16:30:19.160735+01:00",
-        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.73706494.endTime"
+        "value": "2015-02-12T14:44:03.782939+01:00",
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.2faa3303.endTime"
     },
-    "631": {
-        "id": "631",
+    "840": {
+        "id": "840",
         "name": "tags",
         "type": "const",
-        "parent": "627",
+        "parent": "836",
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
         "value": [
             "busy"
         ],
-        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.73706494.tags"
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.2faa3303.tags"
     },
-    "632": {
-        "id": "632",
-        "name": "6474530e",
+    "841": {
+        "id": "841",
+        "name": "faed6886",
         "type": "annotation",
         "parent": "246",
         "children": [
-            "633",
-            "634",
-            "635",
-            "636"
+            "842",
+            "843",
+            "844",
+            "845"
         ],
         "backRefs": [],
         "forwardRefs": [],
         "value": null,
-        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.6474530e"
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.faed6886"
     },
-    "633": {
-        "id": "633",
+    "842": {
+        "id": "842",
         "name": "type",
         "type": "const",
-        "parent": "632",
+        "parent": "841",
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
         "value": "time",
-        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.6474530e.type"
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.faed6886.type"
     },
-    "634": {
-        "id": "634",
+    "843": {
+        "id": "843",
         "name": "startTime",
         "type": "const",
-        "parent": "632",
+        "parent": "841",
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2015-02-14T00:37:04.832377+01:00",
-        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.6474530e.startTime"
+        "value": "2015-02-12T21:23:34.993517+01:00",
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.faed6886.startTime"
     },
-    "635": {
-        "id": "635",
+    "844": {
+        "id": "844",
         "name": "endTime",
         "type": "const",
-        "parent": "632",
+        "parent": "841",
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2015-02-14T09:12:32.841562+01:00",
-        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.6474530e.endTime"
+        "value": "2015-02-13T03:23:40.018117+01:00",
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.faed6886.endTime"
     },
-    "636": {
-        "id": "636",
+    "845": {
+        "id": "845",
         "name": "tags",
         "type": "const",
-        "parent": "632",
+        "parent": "841",
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
         "value": [
             "free"
         ],
-        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.6474530e.tags"
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.faed6886.tags"
     },
-    "637": {
-        "id": "637",
-        "name": "ce9b2d09",
+    "846": {
+        "id": "846",
+        "name": "f15cb389",
         "type": "annotation",
         "parent": "246",
         "children": [
-            "638",
-            "639",
-            "640",
-            "641"
+            "847",
+            "848",
+            "849",
+            "850"
         ],
         "backRefs": [],
         "forwardRefs": [],
         "value": null,
-        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.ce9b2d09"
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.f15cb389"
     },
-    "638": {
-        "id": "638",
+    "847": {
+        "id": "847",
         "name": "type",
         "type": "const",
-        "parent": "637",
+        "parent": "846",
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
         "value": "time",
-        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.ce9b2d09.type"
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.f15cb389.type"
     },
-    "639": {
-        "id": "639",
+    "848": {
+        "id": "848",
         "name": "startTime",
         "type": "const",
-        "parent": "637",
+        "parent": "846",
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2015-02-14T19:26:11.900115+01:00",
-        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.ce9b2d09.startTime"
+        "value": "2015-02-14T00:58:26.170400+01:00",
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.f15cb389.startTime"
     },
-    "640": {
-        "id": "640",
+    "849": {
+        "id": "849",
         "name": "endTime",
         "type": "const",
-        "parent": "637",
+        "parent": "846",
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2015-02-15T03:12:34.384616+01:00",
-        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.ce9b2d09.endTime"
+        "value": "2015-02-14T07:52:08.964621+01:00",
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.f15cb389.endTime"
     },
-    "641": {
-        "id": "641",
+    "850": {
+        "id": "850",
         "name": "tags",
         "type": "const",
-        "parent": "637",
+        "parent": "846",
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
         "value": [
             "free"
         ],
-        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.ce9b2d09.tags"
+        "browsePath": "root.visualization.selfservice0.hasAnnotation.newAnnotations.f15cb389.tags"
+    },
+    "861": {
+        "id": "861",
+        "name": "4bcbca84",
+        "type": "annotation",
+        "parent": "135",
+        "children": [
+            "862",
+            "863",
+            "864",
+            "865"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.4bcbca84"
+    },
+    "862": {
+        "id": "862",
+        "name": "type",
+        "type": "const",
+        "parent": "861",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "time",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.4bcbca84.type"
+    },
+    "863": {
+        "id": "863",
+        "name": "startTime",
+        "type": "const",
+        "parent": "861",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-13T08:17:53.828542+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.4bcbca84.startTime"
+    },
+    "864": {
+        "id": "864",
+        "name": "endTime",
+        "type": "const",
+        "parent": "861",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-13T17:09:50.480133+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.4bcbca84.endTime"
+    },
+    "865": {
+        "id": "865",
+        "name": "tags",
+        "type": "const",
+        "parent": "861",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.4bcbca84.tags"
+    },
+    "866": {
+        "id": "866",
+        "name": "f8cf31c6",
+        "type": "annotation",
+        "parent": "135",
+        "children": [
+            "867",
+            "868",
+            "869",
+            "870"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.f8cf31c6"
+    },
+    "867": {
+        "id": "867",
+        "name": "type",
+        "type": "const",
+        "parent": "866",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "time",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.f8cf31c6.type"
+    },
+    "868": {
+        "id": "868",
+        "name": "startTime",
+        "type": "const",
+        "parent": "866",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-14T08:37:54.850995+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.f8cf31c6.startTime"
+    },
+    "869": {
+        "id": "869",
+        "name": "endTime",
+        "type": "const",
+        "parent": "866",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-14T17:18:32.424893+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.f8cf31c6.endTime"
+    },
+    "870": {
+        "id": "870",
+        "name": "tags",
+        "type": "const",
+        "parent": "866",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.f8cf31c6.tags"
     }
 }

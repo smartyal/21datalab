@@ -1093,7 +1093,7 @@ class TimeSeriesWidget():
 
         """
         start = time.time()
-        
+
         self.__legend_check() # check if a user has deselected a variable
         try: # we need this, otherwise the inPeriodicCb will not be reset
 
