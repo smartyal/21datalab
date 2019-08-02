@@ -15,6 +15,7 @@ The framework is prepared to run on edge, desktop or cloud and is a microservice
 ## setup
 * install python 3.6, recommended https://www.anaconda.com/
 * install bokeh 1.04 for python (e.g. pip install bokeh==1.0.4), use this exact version, work for 1.10 is ongoing
+* install sseclient for python (e.g. pip install sseclient)
 * prepare the web applications folder, it needs some more packages which are placed under web/modules:
   * web/modules/bootstrap (MIT License): get the latest bootstrap dist https://getbootstrap.com/, place it here directly 
   * web/modules/bootstrap-select/ (MIT License):https://developer.snapappointments.com/bootstrap-select/
