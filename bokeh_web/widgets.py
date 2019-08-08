@@ -570,6 +570,8 @@ class TimeSeriesWidget():
         except Exception as ex:
             self.logger.error("problem during __legend_check" + str(ex))
 
+        return (deleteList != [])
+
 
     def __init_new_observer(self):
         self.server.sse_register_cb(self.observer_cb)
@@ -1093,8 +1095,7 @@ class TimeSeriesWidget():
 
         """
         start = time.time()
-
-        self.__legend_check() # check if a user has deselected a variable
+        legendChange =  self.__legend_check() # check if a user has deselected a variable
         try: # we need this, otherwise the inPeriodicCb will not be reset
 
             #self.logger.debug("enter periodic_cb")
@@ -1112,7 +1113,8 @@ class TimeSeriesWidget():
         except Exception as ex:
             self.logger.error(f"Error in periodic callback {ex}")
 
-        self.logger.debug(f"leaving periodic_cb {time.time()-start}")
+        if legendChange or executelist != []:
+            self.logger.debug(f"periodic_cb was {time.time()-start}")
 
     def __get_free_color(self):
         """

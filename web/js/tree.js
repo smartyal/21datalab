@@ -62,6 +62,13 @@ class TreeWidget
 
     }
 
+    id2idx(id)
+    {
+        //return parseInt(id);
+        return id;
+    }
+
+
     start_periodic_tree_update()
     {
         this.periodicTreeUpdate = true;
@@ -808,7 +815,7 @@ class TreeWidget
         console.log("create template",node,templateType);
         var splitted = templateType.split('.');
         var templateName = splitted.pop();
-        var newBrowsePath = this.treeNodes[parseInt(node.id)].browsePath+".new_"+templateName+"_"+Math.random().toString(16).substring(2,6);
+        var newBrowsePath = this.treeNodes[this.id2idx(node.id)].browsePath+".new_"+templateName+"_"+Math.random().toString(16).substring(2,6);
         var query={"type":templateType,"browsePath":newBrowsePath};
         http_post('/_createTemplate',JSON.stringify(query),null,null,null);
     }
@@ -823,7 +830,7 @@ class TreeWidget
 
     context_menu_create(node,type)
     {
-        var newBrowsePath = this.treeNodes[parseInt(node.id)].browsePath+".new_"+type+"_"+Math.random().toString(16).substring(2,6);
+        var newBrowsePath = this.treeNodes[this.id2idx(node.id)].browsePath+".new_"+type+"_"+Math.random().toString(16).substring(2,6);
         var query=[{"browsePath":newBrowsePath,"type":type}];
         console.log("context_menu_create",newBrowsePath);
         http_post('/_create',JSON.stringify(query),node,null);
@@ -874,8 +881,8 @@ class TreeWidget
         // we check if the new name is allowed: it must be unique under the parent
         console.log("edit node done",status,cancel);
 
-        var children = this.treeNodes[parseInt(node.parent)].children;
-        var originalName = this.treeNodes[parseInt(node.id)].name;
+        var children = this.treeNodes[this.id2idx(node.parent)].children;
+        var originalName = this.treeNodes[this.id2idx(node.id)].name;
         var newName = node.text;
 
         if ((newName == originalName)  ||  (cancel == true))
@@ -888,7 +895,7 @@ class TreeWidget
          //iterate over the children
         for (let child in children)
         {
-            var brotherName = this.treeNodes[parseInt(children[child])].name;
+            var brotherName = this.treeNodes[this.id2idx(children[child])].name;
             if (brotherName == newName)
             {
                 //not allowed , bring back the old name
@@ -967,7 +974,7 @@ class TreeWidget
             for (let i=0;i<updateData.deletedNodeIds.length;i++)
             {
                 var deleteId = updateData.deletedNodeIds[i];
-                delete this.treeNodes[parseInt(deleteId)]; //remove it from the global tree
+                delete this.treeNodes[this.id2idx(deleteId)]; //remove it from the global tree
                 // if the jstree does not have this node (reduced tree), the delete_node will fail with false
                 var res = $(this.treeDiv).jstree().delete_node(deleteId);
                 console.log("deleting id ",deleteId,res);
@@ -997,7 +1004,7 @@ class TreeWidget
             for (let id in updateData.modifiedNodes)
             {
                 var newNode = updateData.modifiedNodes[id];
-                var oldNode = this.treeNodes[parseInt(id)];
+                var oldNode = this.treeNodes[this.id2idx(id)];
 
                 var tree = $(this.treeDiv).jstree(true);
                 var treeNode = tree.get_node(id);

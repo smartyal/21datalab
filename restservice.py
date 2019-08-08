@@ -65,7 +65,8 @@ WEBAPI -----------------------
 path                    REQUEST BOY               RESPONSE BODY
 POST /_create       [<createnode.json>]         [<node.json>]           ## give a list of new nodes, result contains all the created nodes  
 POST /_delete       [<nodedescriptor>]          [<nodedescriptor>]      ## give list of deleted nodes back
-POST /_getall       -                           [<node.json>]           ## give the whole address space
+POST /_getall       -                           [<node.json>]           ## give the whole address space, fof colums and files we get "len 34"
+POST /_getallhashed   -                         [<node.json>]           ## give the whole address space, for columns and files we get a hash
 POST /_getbranch    <nodedeccripttor>           {node.json}             ## get a part of the model 
 POST /setProperties   [<node.json>]               [<node.json>]         ## the node.json only contains properties to change
 POST /_get          [<nodescriptor>]            [<node.json>]           ## get node including children as json
@@ -258,6 +259,12 @@ def all(path):
             response = json.dumps(mymodel,indent=4)# some pretty printing for debug
             responseCode = 200
 
+        elif (str(path) == "_getallhashed") and str(flask.request.method) in ["POST","GET"]:
+            logger.debug("execute getall hashed")
+            mymodel = m.get_model_for_web(getHash=True)
+            response = json.dumps(mymodel,indent=4)# some pretty printing for debug
+            responseCode = 200
+
         elif (str(path) == "_getbranch") and str(flask.request.method) in ["POST","GET"]:
             logger.debug("get branch")
             mymodel = m.get_branch(data)
@@ -339,7 +346,7 @@ def all(path):
             logger.debug("execute getvalue")
             values = []
             for nodeDesc in data:
-                values.append(m.get_value(nodeDesc))
+                values.append(m.get_value(nodeDesc))  # a list of lists
             response = json.dumps(values, indent=4)  # some pretty printing for debug
             logger.debug("sending"+response)
             responseCode = 200

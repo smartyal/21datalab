@@ -15,6 +15,8 @@ import sys
 import os
 import time
 import uuid
+import hashlib
+import random
 
 import modeltemplates
 
@@ -701,6 +703,7 @@ class Model():
         self.observersEnabled = True
         self.__init_logger(logging.DEBUG)
         self.globalIdCounter=1 # increased on every creation of a node, it holds the last inserted node id
+        self.idCreationHash = True # if this is true, we create the id per hash, not per counter
         self.timeSeriesTables = TimeSeriesTables()
         self.functions={} # a dictionary holding all functions from ./plugins
         self.templates={} # holding all templates from ./plugins
@@ -991,9 +994,12 @@ class Model():
             if self.get_id(newpath):
                 #we found it, it exists alreay, so we can't create it
                 return None
-            #we can create this node
-            self.globalIdCounter+=1
-            newId = str(self.globalIdCounter)
+            # we can create this node
+            if self.idCreationHash == True:
+                newId = str((random.randrange(2**64))) # a 64 bit random value
+            else:
+                self.globalIdCounter += 1
+                newId = str(self.globalIdCounter)
             newNode = copy.deepcopy(self.nodeTemplate)
             newNode.update({"id":newId,"name":name,"type":type,"parent":parentId})
             if properties !={}:
@@ -1181,11 +1187,12 @@ class Model():
                 self.model[nodeid]["browsePath"]=self.get_browse_path(nodeid)
             return copy.deepcopy(self.model)
 
-    def get_model_for_web(self):
+    def get_model_for_web(self,getHash=False):
         """
             Returns: the full deepcopy of the internal model object (list of dictionaries of the nodes)
                      but leaving out the column values (this can be a lot of data)
                      and the file values (files are binary or strings with big size, typically serialized ML-models)
+                     for files and columns, we either return a string "len 12344" or a sha1 hash value 133344
         """
 
         model = {}
@@ -1197,7 +1204,11 @@ class Model():
                     for nk, nv in nodeDict.items():
                         if nk == "value":
                             try:
-                                node[nk] = "len " + str(len(nv))
+                                if not getHash:
+                                    node[nk] = "len " + str(len(nv))
+                                else:
+                                    fullstring = ':'.join([str(val) for val in nv])
+                                    node[nk] = hashlib.sha1(fullstring.encode()).hexdigest()
                             except:
                                 node[nk] = "None"
                         else:
@@ -2268,8 +2279,10 @@ class Model():
                 #now also load the tables
                 self.globalIdCounter = 0    #reset the counter and recover it further down
                 for nodeId in self.model:
-                    if int(nodeId)>self.globalIdCounter:
-                        self.globalIdCounter = int(nodeId) # here, we recover the global id counter
+                    if not self.idCreationHash:
+                        #we only recover the counter if necessary
+                        if int(nodeId)>self.globalIdCounter:
+                            self.globalIdCounter = int(nodeId) # here, we recover the global id counter
                     if includeData:
                         if self.get_node_info(nodeId)["type"] == "table":
                             table = self.get_browse_path(nodeId)
@@ -2394,6 +2407,8 @@ class Model():
             diff["handle"]=newHandle
 
             return diff
+
+
 
     def disable_observers(self):
         self.observersEnabled = False
