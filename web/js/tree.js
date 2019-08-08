@@ -984,6 +984,37 @@ class TreeWidget
             }
 
             // add new nodes
+            // we need to order them right so that the nodes created find their parent in the tree
+            if (Object.entries(updateData.newNodes).length>0)
+            {
+                var newNodesCopy = Object.entries(updateData.newNodes).slice(); //make a copy
+                var sortedNewNodes = [];
+                var newRunning = true;
+                while (newRunning)
+                {
+                    newRunning = false;
+                    for(let index in newNodesCopy)
+                    {
+                        var newNodeId = newNodesCopy[index][0];
+                        var node = updateData.newNodes[newNodeId];
+                        if (node.parent in this.treeNodes)
+                        {
+                            //we can create this node
+                            console.log("new node",node.id,node.name)
+                            var treeNode = this.node_to_tree(node);
+                            // if the parent is not part of the jstree, then the create will fail with return false
+                            $(this.treeDiv).jstree(true).create_node(node.parent, treeNode);
+                            this.treeNodes[newNodeId] = node; //store the nodedict info in the tree
+                            delete newNodesCopy[index];
+                            newRunning = true; //another round
+                            break;
+                        }
+                    }
+                }
+            }
+
+
+            /*
             for (let newNodeId in updateData.newNodes)
             {
                 var node = updateData.newNodes[newNodeId];
@@ -999,6 +1030,7 @@ class TreeWidget
                 // if the new node is a referencer we also must create the referencee nodes, we do self later
                 // as we might reference to nodes that don't exist yet
             }
+            */
 
             //synchronize modified nodes
             for (let id in updateData.modifiedNodes)

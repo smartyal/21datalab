@@ -15,6 +15,7 @@ import re
 from flask import  render_template, render_template_string
 from bokeh.client import pull_session
 from bokeh.embed import server_session,server_document
+import numpy #for _Getvalue
 
 
 
@@ -88,6 +89,7 @@ POST /dropnodes      <dropquery.json>                                    # infor
 POST /move           <movequery.json>                                    # moves nodes to new parent or/and create new references
 POST /_getlayout     <layoutquery.json>          [html section]          # query the dynamic content of a layout part of the page
 POST /_setlen        <setlenquery.json>           -                      # adjust the len of a column, extensions are inf-padded
+POST /_push          [<nodedict.json>]                                   # push a list of nodes into the model, we accept the full dict, no checking whatsoever !! dangerous
 data:
 
 
@@ -345,10 +347,16 @@ def all(path):
         elif (str(path) == "_getvalue") and str(flask.request.method) in ["POST", "GET"]:
             logger.debug("execute getvalue")
             values = []
-            for nodeDesc in data:
-                values.append(m.get_value(nodeDesc))  # a list of lists
-            response = json.dumps(values, indent=4)  # some pretty printing for debug
-            logger.debug("sending"+response)
+            try:
+                for nodeDesc in data:
+                    value = m.get_value(nodeDesc)
+                    if type(value) is numpy.ndarray:
+                        value = list(value)
+                    values.append(value)  # a list of lists
+                response = json.dumps(values, indent=4)  # some pretty printing for debug
+            except Exception as ex:
+                logger.error("problem get value")
+            logger.debug("sending "+str(len(response)))
             responseCode = 200
 
 
@@ -451,6 +459,11 @@ def all(path):
                     responseCode = 400
             response = json.dumps(result)
             responseCode = 201
+
+        elif (str(path) == "_push") and str(flask.request.method) in ["POST"]:
+            m.push_nodes(data)
+            responseCode = 201
+
 
         elif (str(path) == "_createTemplate") and str(flask.request.method) in ["POST"]:
             logger.debug("craete Template ")

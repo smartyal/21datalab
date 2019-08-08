@@ -721,7 +721,7 @@ class Model():
 
     def __init_logger(self, level):
         """setup the logger object"""
-        self.logger = logging.getLogger("Model")
+        self.logger = logging.getLogger("Model-"+'%08x' % random.randrange(16 ** 8))
         handler = logging.StreamHandler()
         formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
         handler.setFormatter(formatter)
@@ -792,7 +792,7 @@ class Model():
             if not id: return None
             return copy.deepcopy(self.model[id])
 
-    def __get_node_with_children(self,id,nodes):
+    def __get_node_with_children(self,id,nodes,includeForwardRefs=True):
         """
             recursive helper for get_branch
 
@@ -802,26 +802,27 @@ class Model():
             nodes[id]={k:v for k,v in self.model[id].items() if k!="value"} # copy the whole but leave out the value
         elif self.model[id]["type"] == "referencer":
             nodes[id] = self.model[id]
-            #for referencers, we take the direct targets
-            for targetId in self.model[id]["forwardRefs"]:
-                if self.model[targetId]["type"] in ["file", "column"]:
-                    # we do not take these values
-                    target = {k: v for k, v in self.model[id].items() if k != "value"}  # copy the whole but leave out the value
-                else:
-                    target = copy.deepcopy(self.model[targetId])
-                #xxx todo, we might take the wrong backrefs with us, also these target nodes might not have their parent here
-                nodes[targetId]=target
+            if includeForwardRefs:
+                #for referencers, we take the direct targets
+                for targetId in self.model[id]["forwardRefs"]:
+                    if self.model[targetId]["type"] in ["file", "column"]:
+                        # we do not take these values
+                        target = {k: v for k, v in self.model[id].items() if k != "value"}  # copy the whole but leave out the value
+                    else:
+                        target = copy.deepcopy(self.model[targetId])
+                    #xxx todo, we might take the wrong backrefs with us, also these target nodes might not have their parent here
+                    nodes[targetId]=target
         else:
             nodes[id]=self.model[id]
 
         for child in self.model[id]["children"]:
-            nodes.update(self.__get_node_with_children(child,nodes))
+            nodes.update(self.__get_node_with_children(child,nodes,includeForwardRefs))
 
 
         return nodes
 
 
-    def get_branch(self,desc):
+    def get_branch(self,desc,includeRoot=True,includeForwardRefs=True):
         """
             get a branch of the model starting from desc including all children excluding:
                 columns
@@ -838,15 +839,16 @@ class Model():
             id = self.__get_id(desc)
             if not id: return None
             nodes = {}
-            nodes.update(self.__get_node_with_children(id,nodes))
+            nodes.update(self.__get_node_with_children(id,nodes,includeForwardRefs))
         #now we also need all nodes to the desc
-        while self.model[id]["parent"]!="0":
-            #the parent is not invalid so take the parent, we don't make further check for files and otheres
-            parentId =  self.model[id]["parent"]
-            parentNode = copy.deepcopy(self.model[parentId])
-            parentNode["children"]=[id] # the other side-children are not of interest
-            nodes.update({parentId:parentNode})
-            id = self.model[id]["parent"]
+        if includeRoot:
+            while self.model[id]["parent"]!="0":
+                #the parent is not invalid so take the parent, we don't make further check for files and otheres
+                parentId =  self.model[id]["parent"]
+                parentNode = copy.deepcopy(self.model[parentId])
+                parentNode["children"]=[id] # the other side-children are not of interest
+                nodes.update({parentId:parentNode})
+                id = self.model[id]["parent"]
 
         return copy.deepcopy(nodes)
 
@@ -969,6 +971,20 @@ class Model():
                 else:
                     path = self.model[id]["name"]+"."+path
             return path
+
+
+    def push_nodes(self,nodeDicts):
+        """
+            push a ready nodedict into the mode
+            this is a dangerous function as it does not adjust references, parent/child relations whatsoever
+            you must take care of that yourself
+        """
+        for nodeDict in nodeDicts:
+            self.logger.warning(f"pushing node {nodeDict['id'], nodeDict['name']}")
+            self.model[nodeDict["id"]]=copy.deepcopy(nodeDict)
+        self.__notify_observers([],None) # just trigger the treeupdate for now
+        #xxx todo notify!
+
 
 
     def create_node(self,parent="root",type="folder",value=None,name="newNode",properties={}):
@@ -1207,8 +1223,10 @@ class Model():
                                 if not getHash:
                                     node[nk] = "len " + str(len(nv))
                                 else:
-                                    fullstring = ':'.join([str(val) for val in nv])
-                                    node[nk] = hashlib.sha1(fullstring.encode()).hexdigest()
+                                    start = datetime.datetime.now()
+                                    hash = hashlib.sha1(nv.tobytes())
+                                    node[nk] = hash.hexdigest()
+                                    self.logger.debug(f"hashed {nodeDict['name']} in {(datetime.datetime.now()-start).total_seconds()} hash:{node[nk]}")
                             except:
                                 node[nk] = "None"
                         else:
@@ -1437,6 +1455,7 @@ class Model():
             #now remove me
             del self.model[id]
             return True
+
     # if desc.type is a var, function then we just set the value
     # if it's a timeseries" then we set a column in a table, padded if needed
     def set_value(self,desc,value):
@@ -1449,6 +1468,10 @@ class Model():
         with self.lock:
             id = self.get_id(desc)
             if not id: return None
+            #convert if table:
+            if self.model[id]["type"] == "column":
+                value = numpy.asarray(value,dtype=numpy.float64)
+
             self.model[id]["value"] = value
             self.__notify_observers(id,"value")
             return True
@@ -2265,6 +2288,7 @@ class Model():
                 includeData bool: if set to false, the values for tables and files will NOT be loaded
         """
         with self.lock:
+            observerEnabled = self.observersEnabled #store the value
             self.observersEnabled = False
             try:
                 if type(fileName) is str:
@@ -2291,11 +2315,11 @@ class Model():
                             for id, column in zip(ids, data):
                                 self.set_value(id,column)
 
-                self.observersEnabled = True
+                self.observersEnabled = observerEnabled
                 return True
             except Exception as e:
                 self.logger.error("problem loading"+str(e))
-                self.observersEnabled = True
+                self.observersEnabled = observerEnabled
                 return False
 
 
@@ -2856,6 +2880,9 @@ class Model():
 
             self.testThread = threading.Thread(target=__update_tree)
             self.testThread.start()
+
+
+
 
 
 

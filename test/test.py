@@ -533,6 +533,15 @@ def sse_test_2():
     sser.start()
 
 
+def branch_test():
+    m=model.Model()
+    m.load("occupancydemo")
+    br = m.get_branch("root.visualization",includeRoot=False,includeForwardRefs=False)
+    for k,v in br.items():
+        print(f"{k}, {v['browsePath']}")
+
+
+
 if __name__ == "__main__":
 
     #t = Timer()
@@ -578,7 +587,8 @@ if __name__ == "__main__":
     #test_referencer_lookback()
     #req_test()
     #sse_client_test()
-    sse_test_2()
+    #sse_test_2()
+    branch_test()
 
 
 
