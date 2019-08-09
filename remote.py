@@ -11,6 +11,9 @@ import numpy
 
 
 class ModelRestClient():
+    """
+        Helper Class to make calls to the restservice
+    """
 
     def __init__(self,url,logger):
         self.url = url
@@ -24,10 +27,11 @@ class ModelRestClient():
             this functions makes a call to the backend model serer to get data
             Args:
                 method(string) one of ["GET","POST"]
-                path: the nodepath to the time series widtet
-                reqData: a dictionary with request data for te query like the list of variables, time limits etc.
+                path: the rest server like "_getall" or alike
+                reqData: a json serializable dictionary/list  with request data for
+                  th e query like the list of variables, time limits etc.
             Returns (dict):
-                the data from the backend as dict
+                the data from the backend as dict/list
         """
         self.logger.info("__web_call: %s %s %s",method,path,str(reqData))
 
@@ -59,6 +63,18 @@ class ModelRestClient():
 
 
 class RemoteModel(model.Model):
+    """
+        Class to make a local "shadow" Model of a Model that resides in a restservice
+        The local model can be used like any other model: create nodes, change values etc.
+        The local model can be also be synced with its corresponding remote model
+        by pushing/pulling branches and lists of values
+
+        It is useful for an explorative development setup: The model is running on a server for user
+        interaction, the data scientist works offline to create new algorithms, etc.
+        At any time, the data scientist can "push" new functions to the remote model or pick up new annotations
+        and input from the user by "pulling" nodes
+
+    """
 
     def __init__(self,remoteUrl, localModel=None,logger=None):
         model.Model.__init__(self)
@@ -156,9 +172,10 @@ class RemoteModel(model.Model):
 
     def pull_values(self,remoteNodes):
         """
-            get the values of remote nodes (either from all nodes of a branch or a list of nodes)
-            Args:  remoteNodes:
-            Returns:
+            get the values of remote nodes over REST
+            Args:
+                remoteNodes: list of node descriptors
+
 
         """
         self.logger.info(f"@ pull_values {remoteNodes}")
@@ -168,10 +185,10 @@ class RemoteModel(model.Model):
 
     def push_branch(self,branchRoot):
         """
-            push all nodes to the remote including value under the branchRoot
-            1) see if we have to delete nodes in the remote
-            2) push all nodes to remote
-            3) push all value of column, files to remote
+            push all nodes to the remote over REST including value under the branchRoot
+            1) nodes that only exist in remote but not in local are deleted in remote
+            2) all nodes and their properties are uploaded to the remote
+            3) all values of columns and files are also uploaded
 
         """
         self.logger.debug(f"push remote {self.remoteUrl} -- {branchRoot}")
@@ -239,15 +256,17 @@ class RemoteModel(model.Model):
                 for id,array in zip(valueIds,data):
                     self.set_value(id,array)
             else:
-                for id in valueIds:
+                for id,idx in zip(valueIds,range(len(valueIds))):
+                    self.logger.debug(f"processing of value reads {idx*100/len(valueIds)}%")
                     data = self.rest.request("POST","_getvalue",[id])
                     self.set_value(id,data)
 
 
     def push_values(self, nodeIds):
         """
-
-            Args:  remoteNodes:
+            push values to the remote model over REST interface
+            Args:
+                nodeIds: list of nodedescriptors
             Returns:
 
         """
@@ -262,16 +281,15 @@ class RemoteModel(model.Model):
         self.rest.request("POST", "setProperties", body)
 
 
+
+#test functions to show functionality
 def test1():
     print("make a test")
 
     m=model.Model()
-    #m.load('occupancydemo')
     r=Remote("http://127.0.0.1:6001/",m,m.logger)
     m.create_node_from_path("root.test")
-
     r.pull_branch("root")
-    #r.pull_values(["126"])
     m.show()
 
 
@@ -279,37 +297,32 @@ def test2():
 
     m=RemoteModel("http://127.0.0.1:6001/")
     m.load('occupancydemo')
-    #r=Remote("http://127.0.0.1:6001/",m,m.logger)
-   # m.create_node_from_path("root.test")
+    m.create_node_from_path("root.test")
 
     m.pull_branch("root.occupancyData")
-    #r.pull_values(["126"])
-    #m.show()
+    m.show()
 
 def push_test1():
     m = RemoteModel("http://127.0.0.1:6001/")
     m.pull_branch("root")
-    #m.load('occupancydemo')
-    #m.create_node_from_path("root.test")
-    #m.push_branch('root')
-    #time.sleep(5)
-    #m.create_node_from_path("root.test")
 
     m.create_node_from_path("root.test.a.b.c.d")
-    #m.create_node_from_path("root.myextra")
     m.push_branch('root.test')
 
 def push_test2():
     m=RemoteModel("http://127.0.0.1:6001/")
     m.pull_branch("root")
     no = m.get_node("root.occupancyData.classification")
-    no.set_value([0]*len(no.get_value()))
-    m.push_values([no.get_id()])
 
     #now change something
     val = no.get_value()
-    val[1]=2
+    le = int(len(val)/2)
+    val[0:le ]=[1]*le
     no.set_value(val)
+
+    #write it back
+    m.push_values([no.get_id()])
+
     m.pull_branch("root.occupancyData")
 
 def modify_test():
@@ -321,7 +334,14 @@ def full_load_test():
     m.getValuesSeparate = True
     m.pull_branch("root")
 
+def full_load_test_with_disc():
+    # connect to a remote model, get the name, load it from disc and sync the remainings
+    m = RemoteModel("http://127.0.0.1:6001/")
+    info = m.rest.request("GET","modelinfo")
+    m.load(info["name"])
+    m.pull_branch("root") # this should not load anything
+
 
 if __name__ == '__main__':
-    full_load_test()
+    full_load_test_with_disc()
 

@@ -1489,7 +1489,7 @@ class Model():
             id = self.get_id(desc)
             if not id: return None
             if "value" in self.model[id]:
-                return self.model[id]["value"]
+                return copy.deepcopy(self.model[id]["value"])
             else:
                 return None
 
