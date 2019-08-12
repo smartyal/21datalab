@@ -884,8 +884,9 @@ class TimeSeriesWidget():
             # we have backgrounds
             # now see if we have to adjust the last background
             for entry in newBackgrounds:
-                if entry["start"] < self.backgrounds[-1]["end"] and entry["end"]> self.backgrounds[-1]["end"]:
-                    #this is the first to show, an overlapping one
+                if entry["start"] <= self.backgrounds[-1]["end"] and entry["end"] > self.backgrounds[-1]["end"]:
+                    # this is the first to show, an overlapping or extending one, we cant' extend the existing easily, so
+                    # we put the new just right of the old
                     addEntry = {"start": self.backgrounds[-1]["end"], "end": entry["end"], "value":entry["value"], "color": entry["color"]}
                     addBackgrounds.append(addEntry)
                 if entry["start"] > self.backgrounds[-1]["end"] and entry["end"]> self.backgrounds[-1]["end"]:
@@ -901,9 +902,9 @@ class TimeSeriesWidget():
                                     fill_alpha=globalAlpha,
                                     name=name)  # +"_annotaion
             boxes.append(newBack)
+            back["rendererName"]=name
+            self.backgrounds.append(back) # put it in the list of backgrounds for later use
 
-
-        self.backgrounds.extend(addBackgrounds)
         self.plot.renderers.extend(boxes)
 
         #remove renderes out of sight
@@ -1597,7 +1598,7 @@ class TimeSeriesWidget():
         except Exception as ex:
             self.logger.error("error draw threshold "+str(modelPath)+ " "+linePath+" "+str(ex))
 
-    def make_background_entries(self, data):
+    def make_background_entries(self, data, roundValues = True):
         """
             create background entries from background colum of a table:
             we iterate through the data and create a list of entries
@@ -1605,6 +1606,7 @@ class TimeSeriesWidget():
             those entries can directly be used to draw backgrounds
             Args:
                 data: dict with {backgroundId: list of data , __time: list of data
+                roundValue [bool] if true, we round the values to int, floats are not useful for table lookups
             Returns:
                 list of dict entries derived from the data
         """
@@ -1614,6 +1616,15 @@ class TimeSeriesWidget():
         startTime = None
         backgrounds = []
         defaultColor = "grey"
+
+        if roundValues:
+            # round the values, it is not useful to have float values here, we use the background value
+            # for lookup of coloring, so we need int
+            self.logger.debug(f"before round {data[backGroundNodeId]}")
+            data[backGroundNodeId]=[ round(value) if numpy.isfinite(value) else value for value in data[backGroundNodeId] ]
+            self.logger.debug(f"after round {data[backGroundNodeId]}")
+
+
         for value, time in zip(data[backGroundNodeId], data["__time"]):
             # must set the startTime?
             if not startTime:
@@ -1680,6 +1691,8 @@ class TimeSeriesWidget():
 
         boxes =[]
 
+        self.backgrounds=[]
+
         for back in backgrounds:
             name = "__background"+str('%8x'%random.randrange(16**8))
             newBack = BoxAnnotation(left=back["start"], right=back["end"],
@@ -1687,8 +1700,9 @@ class TimeSeriesWidget():
                                     fill_alpha=globalAlpha,
                                     name=name)  # +"_annotaion
             boxes.append(newBack)
-            #self.plot.add_layout(newBack)
-        self.backgrounds = backgrounds # keep them for later look up for streaming
+            back["rendererName"] = name
+            self.backgrounds.append(back)  # put it in the list of backgrounds for later look up for streaming
+
         self.plot.renderers.extend(boxes)
 
     def hide_backgrounds(self):

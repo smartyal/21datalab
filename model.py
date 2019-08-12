@@ -2287,6 +2287,7 @@ class Model():
                 fileName(string) the name of the file without extension, we also accept a dict here: a list of nodes
                 includeData bool: if set to false, the values for tables and files will NOT be loaded
         """
+        self.logger.info(f"load {fileName}, includeData {includeData}")
         with self.lock:
             observerEnabled = self.observersEnabled #store the value
             self.observersEnabled = False

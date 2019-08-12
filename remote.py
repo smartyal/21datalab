@@ -76,7 +76,7 @@ class RemoteModel(model.Model):
 
     """
 
-    def __init__(self,remoteUrl, localModel=None,logger=None):
+    def __init__(self,remoteUrl="http://127.0.0.1:6001/"):
         model.Model.__init__(self)
         self.disable_observers() #  no active elements in the remote model
 
