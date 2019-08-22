@@ -17,10 +17,11 @@ import random
 import time
 import threading
 import sse
+import pytz
 
 
 from bokeh.models import DatetimeTickFormatter, ColumnDataSource, BoxSelectTool, BoxAnnotation, Label, LegendItem, Legend, HoverTool, BoxEditTool, TapTool
-from bokeh.models import Range1d,DataRange1d
+from bokeh.models import Range1d,DataRange1d, Span
 from bokeh import events
 from bokeh.models.widgets import RadioButtonGroup, Paragraph, Toggle, MultiSelect, Button, Select, CheckboxButtonGroup,Dropdown
 from bokeh.plotting import figure, curdoc
@@ -29,6 +30,8 @@ from bokeh.models import Range1d, PanTool, WheelZoomTool, ResetTool, ToolbarBox,
 from bokeh.models import FuncTickFormatter, CustomJSHover, SingleIntervalTicker, DatetimeTicker, CustomJS
 from bokeh.themes import Theme
 from pytz import timezone
+from bokeh.models.glyphs import Rect
+
 
 
 haveLogger = False
@@ -432,6 +435,18 @@ class TimeSeriesWidgetDataServer():
         return annoPath
 
 
+    def adjust_annotations(self,annoPath,anno):
+        """
+            change an exising annotation and write it back to the model via REST
+            Args:
+                anno [dict]: contains entries to be overwritten in the original annotation dict
+        """
+        if annoPath not in self.annotations:
+            return False
+        self.annotations[annoPath].update(anno)
+        #xxx todo write it back over REST
+
+
 
 
     def delete_annotations(self,deleteList):
@@ -484,6 +499,8 @@ class TimeSeriesWidget():
         self.inStreamUpdate = False # set true inside the execution of the stream update
         self.backgrounds = [] #list of current boxannotations dict entries: these are not the renderers
         self.threadsRunning = True # the threads are running: legend watch
+        self.annotationsVisible = False # we are currently not showing annotations
+        self.boxModifierVisible = False # we are currently no showing the modifiert lines
 
         self.__init_figure() #create the graphical output
         self.__init_new_observer()      #
@@ -638,11 +655,43 @@ class TimeSeriesWidget():
             tools.append(self.boxSelectTool)
         tools.append(ResetTool())
 
+
+
+
+
+
+
+
+
+
         fig = figure(toolbar_location=None, plot_height=self.height,
                      plot_width=self.width,
                      sizing_mode="scale_width",
                      x_axis_type='datetime', y_range=Range1d())
         self.plot = fig
+
+        #b1 = date2secs(datetime.datetime(2015,2,13,3,tzinfo=pytz.UTC))*1000
+        #b2 = date2secs(datetime.datetime(2015,2,13,4,tzinfo=pytz.UTC))*1000
+        #wid = 20*60*1000 # 20 min
+        #self.boxData = ColumnDataSource({'x': [b1,b2], 'y':[0,0],'width': [5, 5],'height':[300,300],"alpha":[1,1,0.2]})
+
+        #self.boxRect = self.plot.rect(x="x", y="y", width="width", height="height",source=self.boxData)
+        #self.boxRect = self.plot.rect('x', 'y', 'width', 'height', source=self.boxData,width_units="screen")#, height_units="screen")#, height_units="screen")
+        self.boxModifierTool=BoxEditTool( renderers=[],num_objects=0,dimensions="width",empty_value=0.1)#dimensions="width"
+        self.box_modifier_init()
+        #self.box_modifier_show()
+
+        # possible attribures to boxedittool:
+        # custom_icon, custom_tooltip, dimensions, empty_value, js_event_callbacks, js_property_callbacks, name, num_objects, renderers, subscribed_events
+        #self.plot.add_layout(self.boxRect)
+        #self.boxModifierRect.data_source.on_change("selected",self.box_cb)
+        #self.boxRect.data_source.on_change("active", self.box_cb_2)
+
+        tools.append(self.boxModifierTool)
+
+
+
+
 
         for tool in tools:
             fig.add_tools(tool) # must assign them to the layout to have the actual use hooked
@@ -678,6 +727,7 @@ class TimeSeriesWidget():
         self.plot.on_event(events.LODEnd, self.event_cb)
         self.plot.on_event(events.Reset, self.event_cb)
         self.plot.on_event(events.SelectionGeometry, self.event_cb)
+        self.plot.on_event(events.Tap,self.event_cb)
 
 
         #make the controls
@@ -753,10 +803,16 @@ class TimeSeriesWidget():
         if self.server.get_settings()["hasAnnotation"] == True:
             self.init_annotations() # we create all annotations that we have into self.annotations
 
+
+
     def debug_button_cb(self):
         self.debugButton.css_classes = ['button_21']
 
+    def box_cb(self,attr,old,new):
+        self.debug("BOXCB")
 
+    def box_update(self,x1,x2):
+        self.boxData.data["xs"]=[x1,x2]
 
     def show_group_on_click_cb(self,attr,old,new):
         # in old, new we get a list of indices which are active
@@ -1078,10 +1134,126 @@ class TimeSeriesWidget():
 
             self.plot.y_range.start = yMin
             self.plot.y_range.end = yMax
+            
+            self.box_modifier_rescale()
 
         else:
             self.logger.warning("not y axix to arrange")
 
+
+    def box_modifier_init(self):
+        self.logger.debug("box_modifier_init")
+
+        b1 = date2secs(datetime.datetime(2015, 2, 13, 3, tzinfo=pytz.UTC)) * 1000
+        b2 = date2secs(datetime.datetime(2015, 2, 13, 4, tzinfo=pytz.UTC)) * 1000
+        wid = 20 * 60 * 1000  # 20 min
+        self.boxModifierData = ColumnDataSource( {'x': [b1, b2], 'y': [0, 0], 'width': [5, 5], 'height': [300, 300] })
+
+        self.boxModifierRect = self.plot.rect('x', 'y', 'width', 'height', source=self.boxModifierData, width_units="screen",line_width=5,line_dash="dotted",line_color="white",fill_color="black")  # , height_units="screen")#, height_units="screen")
+        self.boxModifierRect.data_source.on_change("selected", self.box_cb)
+        self.boxModifierTool.renderers=[self.boxModifierRect]
+        self.boxModifierRect.visible = False
+
+
+    def box_modifier_tap(self, x=None, y=None):
+        self.logger.debug("box_modifier_tap")
+        #we do this only if annotations are visible
+        if x!=None and y!= None and self.annotationsVisible:
+            #check if we are inside an annotation
+            for annoName, anno in self.server.get_annotations().items():
+                # self.logger.debug("@show_thresholds "+annoName+" "+anno["type"])
+                if anno["type"] == "time":
+                    if anno["startTime"]<x and anno["endTime"]>x:
+                        #we are inside this annotation:
+                        self.box_modifier_show(annoName,anno)
+                        return
+        #we are not inside an annotation, we hide the box modifier
+        self.box_modifier_hide()
+
+
+    def box_modifier_show(self,annoName,anno):
+        self.boxModifierAnnotationName = annoName
+        self.logger.debug(f"box_modifier_show {annoName}")
+        boxYCenter = int((self.plot.y_range.start + self.plot.y_range.end)/2)
+        boxYHeight = (self.plot.y_range.end - self.plot.y_range.start)*4 # make it much longer, so user can't shift it top/down outside
+        self.logger.debug(f" center{boxYCenter}, height {boxYHeight}, start {self.plot.y_range.start} end {self.plot.y_range.end}")
+
+        if anno["type"] == "time":
+            start = anno["startTime"]
+            end = anno["endTime"]
+            self.boxModifierData.data = {'x': [start, end], 'y': [boxYCenter, boxYCenter], 'width': [5, 5], 'height': [boxYHeight, boxYHeight] }
+            self.boxModifierRect.visible=True
+            self.boxModifierOldData = copy.deepcopy(self.boxModifierData.data)
+            self.boxModifierVisible = True
+
+
+    def box_modifier_hide(self):
+
+        self.boxModifierVisible = False
+        self.boxModifierRect.visible = False
+        self.logger.debug("box_modifier_hide")
+        #self.boxModifierTool.renderers=[]
+
+        #self.boxModifierData.data = {'x': [], 'y': [], 'width': [], 'height': [] }
+
+    def box_modifier_rescale(self):
+        if self.boxModifierVisible == False:
+            return
+        #adjust the limits to span the rectangles on full view area
+        boxYCenter = int((self.plot.y_range.start + self.plot.y_range.end)/2)
+        boxYHeight = (self.plot.y_range.end - self.plot.y_range.start)*4
+        data = copy.deepcopy(self.boxModifierData.data)
+        data['y'] = [boxYCenter, boxYCenter]
+        data['height'] = [boxYHeight, boxYHeight]
+        self.boxModifierData.data = data
+
+    def box_modifier_modify(self):
+        self.logger.debug(f"box_modifier_modify {self.boxModifierVisible}")
+        if self.boxModifierVisible == False:
+            return
+
+        #re-center the y axis height to avoid vertical out-shifting
+        boxYCenter = int((self.plot.y_range.start + self.plot.y_range.end) / 2)
+        #self.boxModifierData.data = self.boxModifierData.data.update({'y':[boxYCenter, boxYCenter]})
+
+        anno = self.server.get_annotations()[self.boxModifierAnnotationName]
+        #now modify it:
+        # adjust the local value in the timeseries server,
+        # correct the visible glyph of the annotation
+        # push it back to the model
+        self.logger.debug(f" anno was {anno}")
+        anno["startTime"] = self.boxModifierData.data['x'][0]
+        anno["endTime"] = self.boxModifierData.data['x'][1]
+
+
+        self.server.adjust_annotations(self.boxModifierAnnotationName, anno)
+        #now also find the box glyph and tune it
+
+        self.remove_renderers(deleteMatch = self.boxModifierAnnotationName)
+        self.draw_annotation(self.boxModifierAnnotationName)
+
+
+
+    def check_boxes(self):
+        if self.boxModifierVisible:
+            try:
+                #self.logger.debug(self.boxData.data)
+                #self.logger.debug(self.toolBarBox.toolbar.active_drag)
+
+                if len(self.boxModifierData.data["x"]) != 2:
+                    self.logger.warning("box modifiert write back")
+                    self.boxModifierData.data = copy.deepcopy(self.boxModifierOldData)
+
+
+                new = json.dumps(self.boxModifierData.data)
+                old = json.dumps(self.boxModifierOldData)
+                if old!= new:
+                    self.box_modifier_modify()
+
+                    self.boxModifierOldData = copy.deepcopy(self.boxModifierData.data)
+
+            except Exception as ex:
+                self.logger.error(f"check_boxes {ex}")
 
 
     def periodic_cb(self):
@@ -1096,6 +1268,7 @@ class TimeSeriesWidget():
 
         """
         start = time.time()
+        self.check_boxes()
         legendChange =  self.__legend_check() # check if a user has deselected a variable
         try: # we need this, otherwise the inPeriodicCb will not be reset
 
@@ -1347,6 +1520,10 @@ class TimeSeriesWidget():
             #self.logger.info("TAGS"+str(self.annotationTags)+"   "+str(option))
             self.data.selected = Selection(indices=[])  # suppress real selection
             self.edit_annotation_cb(event.__dict__["geometry"]["x0"],event.__dict__["geometry"]["x1"],mytag,event.__dict__["geometry"]["y0"],event.__dict__["geometry"]["y1"])
+        if eventType == "Tap":
+            self.logger.debug(f"TAP {self.annotationsVisible}, {event.__dict__['sx']}")
+            self.box_modifier_tap(event.__dict__["x"],event.__dict__["y"]  )
+            self.logger.debug(f"TAP")
 
 
         self.logger.debug(f"leave event with user zomm running{self.userZoomRunning}")
@@ -1465,6 +1642,8 @@ class TimeSeriesWidget():
 
     def show_annotations(self):
         self.plot.renderers.extend([v for k,v in self.annotations.items()])
+        self.annotationsVisible = True
+
 
 
     def hide_annotations(self):
@@ -1473,6 +1652,8 @@ class TimeSeriesWidget():
         timeAnnos = [anno  for anno in annotations.keys() if annotations[anno]["type"]=="time" ]
         #self.logger.debug("hide_annotations "+str(timeAnnos))
         self.remove_renderers(deleteList=timeAnnos)
+        self.annotationsVisible = False
+        self.box_modifier_hide()
 
     def get_layout(self):
         """ return the inner layout, used by the main"""

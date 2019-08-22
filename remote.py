@@ -33,7 +33,10 @@ class ModelRestClient():
             Returns (dict):
                 the data from the backend as dict/list
         """
-        self.logger.info("__web_call: %s %s %s",method,path,str(reqData))
+        dumpData = str(reqData)
+        if len(dumpData)>50:
+            dumpData=f"len{len(dumpData)}"
+        self.logger.info("__web_call: %s %s %s",method,path,dumpData)
 
         response = None
         now = datetime.datetime.now()
@@ -112,7 +115,7 @@ class RemoteModel(model.Model):
         return {"additional":additionalNodeIds,"missing":missingNodeIds,"modified":modifiedNodesIds}
 
 
-    def pull_branch(self, branchRoot):
+    def pull_branch(self, branchRoot, includeData=True):
         """
             get remote nodes including values  and bring them into the local model
             we make a synchronization:
@@ -124,6 +127,7 @@ class RemoteModel(model.Model):
 
             Args:
                 remoteBranchRoot: string : the remote branch node under which we take all nodes
+                includeData [bool] set this to false to avoid pulling(syncing) data from files and columns
 
             Return
 
@@ -162,12 +166,12 @@ class RemoteModel(model.Model):
             newRemoteNodes=[id for id in diff["missing"] if id in nodesFilter]
             if newRemoteNodes:
                 self.logger.info(f"new remote nodes to add {[remoteNodes[id]['browsePath'] for id in newRemoteNodes]}")
-                self.__copy_nodes_from_remote(newRemoteNodes,remoteNodes,withValues=True)
+                self.__copy_nodes_from_remote(newRemoteNodes,remoteNodes,withValues=includeData)
         if diff["modified"]:
             modifiedNodes =[id for id in diff["modified"] if id in nodesFilter]
             if modifiedNodes:
                 self.logger.debug(f"modifiedNodes to load {[remoteNodes[id]['browsePath'] for id in modifiedNodes]}")
-                self.__copy_nodes_from_remote(modifiedNodes, remoteNodes, withValues=True)
+                self.__copy_nodes_from_remote(modifiedNodes, remoteNodes, withValues=includeData)
 
 
     def pull_values(self,remoteNodes):

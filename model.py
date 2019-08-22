@@ -1632,7 +1632,7 @@ class Model():
                 return self.timeSeriesTables.get_value_table(variables,startTime,endTime,noBins,agg,includeTimeStamps=includeTimeStamps)
             '''
 
-    #used in the Node class, give a column variable, return the nodeid of the time variable of that table
+    #used in the Node class, give a column variable or the table itself, return the nodeid of the time variable of that table
     def find_table_time_node(self,desc):
         with self.lock:
             table = self.__find_table(self.get_id(desc))
@@ -1852,12 +1852,16 @@ class Model():
             return the node id of the table, give a column variable
             !! this has no lock, must be called under lock
             Args:
-                desc(string): node descriptor of type column
+                desc(string): node descriptor of type column or the table itself
             Returns:
                 the node id of the table to which the desc node belongs
         """
         id = self.get_id(desc)
         if not id: return False
+
+        if self.model[id]["type"] == "table":
+            return id
+
         for ref in self.model[id]["backRefs"]:
             if self.model[ref]["name"] == "columns":
                 return self.model[ref]["parent"]
