@@ -1344,8 +1344,12 @@ class Model():
                 id = self.get_id(nodeDesc)
             elif "id" in properties:
                 id = properties["id"]
+            elif "browsePath" in properties:
+                id = self.get_id(properties["browsePath"])
             else:
                 self.logger.error("set properties is missing id ")
+                return False
+            if not id:
                 return False
 
             for k,v in properties.items():
