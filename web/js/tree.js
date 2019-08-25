@@ -88,19 +88,10 @@ class TreeWidget
             // message will be of type 'eventType'
 
             let diffUpdate = e.data;
-            if (this.treeUpdateRunning == true)
-            {
-                this.treeUpdateQueued = true;
-            }
-            else
-            {
-                this.treeUpdateRunning = true;
-                console.log("EVENT tree.update" + e.lastEventId + " - " + e.data);
-                // Trigger a tree update
-                this.trigger_tree_update();
-            }
 
-
+            console.log("EVENT tree.update" + e.lastEventId + " - " + e.data);
+            // Trigger a tree update
+            this.trigger_tree_update();
         });
     }
 
@@ -113,9 +104,24 @@ class TreeWidget
 
     trigger_tree_update()
     {
+        console.log("triggering tree update: " + this.periodicTreeUpdate);
+
+        // Check if the periodic tree update is enabled, might be temprarily disabled
         if (this.periodicTreeUpdate == true)
         {
-            this.tree_update();
+            // Check if a tree update is already running
+            if (this.treeUpdateRunning == true)
+            {
+                // in this case just queue the tree update
+                // which will trigger another update at the end of the currently running tree update
+                this.treeUpdateQueued = true;
+            }
+            else
+            {
+                // in this case trigger the tree update
+                this.treeUpdateRunning = true;
+                this.tree_update();
+            }
         }
     }
 
@@ -471,7 +477,7 @@ class TreeWidget
                     }
                 ],
                 'check_callback' : function(operation, node, node_parent, node_position, more) {
-                    console.log('check_callback ' + operation + " " + node.id + " " +node.text+ "parent"+node_parent.text);
+                    console.log('check_callback ' + operation + " " + node.id + " " +node.text + " parent " + node_parent.text);
                     if (operation === "move_node")
                     {
                         // if the move has actually taken place, we allow the tree to finish it
@@ -822,9 +828,23 @@ class TreeWidget
 
     context_menu_rename(node)
     {
+        // Check the current state of the periodic tree update
+        var periodicTreeUpdateCrtValue = this.periodicTreeUpdate;
+        // In case it was enabled disable it
+        if (this.periodicTreeUpdate) {
+            this.periodicTreeUpdate = false;
+            console.log("Temporarily disabling the tree update: ", this.periodicTreeUpdate);
+        }
+
         //$(this.treeDiv).jstree(true).edit(node,null,this.edit_node_done);
-        $(this.treeDiv).jstree(true).edit(node,null, (node,status,cancel) => {
-            this.edit_node_done(node,status,cancel);
+        $(this.treeDiv).jstree(true).edit(node, null, (node,status,cancel) => {
+            // Re-enable the tree update if it was enabled prior to the rename operation
+            if (periodicTreeUpdateCrtValue) {
+                console.log("Re-enabling the tree update", this.periodicTreeUpdate);
+                this.periodicTreeUpdate = true;
+            }
+
+            this.edit_node_done(node, status, cancel);
         });
     }
 

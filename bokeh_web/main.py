@@ -9,7 +9,7 @@ try:
 except:
     pass
 
-print("modelurl and path",modelUrl,modelPath,type(modelUrl),type('http://localhost:6001/'))
+print("modelurl and path",modelUrl,modelPath,type(modelUrl),type(modelPath))
 
 
 ts_server = TimeSeriesWidgetDataServer(str(modelUrl),str(modelPath))
@@ -18,5 +18,4 @@ curdoc().add_root(t.get_layout())
 
 curdoc().add_periodic_callback(t.periodic_cb, 100)
 curdoc().on_session_destroyed(t.session_destroyed_cb)
-
 

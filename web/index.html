@@ -18,6 +18,10 @@
         // Set the default path to the light theme
         let pageThemePath = "/modules/bootswatch/dist/darkly/bootstrap.min.css"
         let treeThemePath = "/modules/jstree/dist/themes/default-dark/style.min.css";
+
+        // set the theme to dark in case it was not defined
+        datalabGlobalTheme = datalabGlobalTheme || "dark";
+
         // In case the theme is set to dark, set the proper paths
         if (datalabGlobalTheme == "dark") {
             pageThemePath = "/modules/bootswatch/dist/darkly/bootstrap.min.css"
@@ -244,8 +248,8 @@
                                         <label class="col">Theme</label>
                                         <div class="col">
                                             <select class="form-control" id="themeSelect">
-                                                <option>light</option>
                                                 <option>dark</option>
+                                                <option>light</option>
                                             </select>
                                         </div>
                                     </div>
