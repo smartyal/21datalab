@@ -1174,8 +1174,9 @@ class TimeSeriesWidget():
 
         #self.boxModifierTool.renderers=[self.boxModifierRectHorizontal]#,self.boxModifierRectVertical]
 
-        self.boxModifierRectHorizontal.visible = False
-        self.boxModifierRectVertical.visible = False
+        #self.boxModifierRectHorizontal.visible = False
+        #self.boxModifierRectVertical.visible = False
+        self.box_modifier_hide()# remove the renderers
 
     def box_modifier_tap(self, x=None, y=None):
         self.logger.debug(f"box_modifier_tap x:{x} y:{y}")
@@ -1739,7 +1740,7 @@ class TimeSeriesWidget():
             the renderes later, this will only be used for "time" annotations, the others are called thresholds
         """
         self.annotations={}
-        self.logger.debug("init_annotations..")
+        self.logger.debug(f"init {len(self.server.get_annotations())} annotations..")
         for annoname, anno in self.server.get_annotations().items():
             if "type" in anno and anno["type"] != "time":
                 continue # ignore any other type
@@ -1793,13 +1794,17 @@ class TimeSeriesWidget():
         try:
             #self.logger.debug("draw_annotation "+modelPath+str(add_layout))
             annotations = self.server.get_annotations()
+
             if annotations[modelPath]["type"]!= "time":
                 return # we only want the time annotations
-
+            settings = self.server.get_settings()
             #now get the first tag, we only use the first
             tag = annotations[modelPath]["tags"][0]
+            if tag not in settings["tags"]:
+                self.logger.warning(f"ignored tag {modelPath}, as {tag} is not in list of annotations: {settings['tags']}")
+                return None
 
-            settings = self.server.get_settings()
+
             tagIndex = settings["tags"].index(tag)
             color = settings["colors"][tagIndex]
             start = annotations[modelPath]["startTime"]

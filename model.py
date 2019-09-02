@@ -430,6 +430,25 @@ class Node():
                     return self.model.get_node(childId)
         return None
 
+
+    def create_child(self,name,type="folder",value=None,properties={}):
+        """
+            create a node under the current node
+                Args:
+                    name [string] the child name
+                    type [string] the type of the node
+                    value [any] direct assignment of values
+                    properies [dict] a dict with further settings of properies like value, type etc
+            Returns:
+                the node objects or none if not available
+        """
+
+        id = self.model.create_node(parent=self.id,name=name,type=type,value=value,properties=properties)
+        if id:
+            return self.model.get_node(id)
+        else:
+            return None
+
     def get_children(self):
         """  Returns:
             a list of Node()-objects which are the children of the current node
