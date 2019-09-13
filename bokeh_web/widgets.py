@@ -118,7 +118,7 @@ class TimeSeriesWidgetDataServer():
     def sse_cb(self,data):
         self.logger.debug(f'sse {data}, {self.settings["observerIds"]}')
         #now we filter out the events which are for me
-        if data["data"] in self.settings["observerIds"]:
+        if data["data"] in self.settings["observerIds"]: #only my own observers are currently taken
             #self.logger.info("sse match")
             if self.sseCb:
                 self.sseCb(data)

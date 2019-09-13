@@ -452,7 +452,7 @@ class Node():
 
     def create_child(self,name,type="folder",value=None,properties={}):
         """
-            create a node under the current node
+            create a node under the current node, if the node exists already, we get the node
                 Args:
                     name [string] the child name
                     type [string] the type of the node
@@ -466,7 +466,9 @@ class Node():
         if id:
             return self.model.get_node(id)
         else:
-            return None
+            #we try to get it anyways
+            return self.get_child(name)
+
 
     def get_children(self):
         """  Returns:
@@ -2252,7 +2254,7 @@ class Model():
                     controlNode = node.get_child("control")
                     controlNode.get_child("status").set_value("running")
                     controlNode.get_child("result").set_value("pending")
-                    controlNode.get_child("signal").set_value("nosignal")
+                    #controlNode.get_child("signal").set_value("nosignal")
                     startTime = datetime.datetime.now()
                     controlNode.get_child("lastStartTime").set_value(startTime.isoformat())
                 finally:
@@ -2268,6 +2270,7 @@ class Model():
                 # inner functions calls of node.xx() will return nothing, so we try, catch
                 try:
                     controlNode.get_child("lastExecutionDuration").set_value(duration)
+                    #controlNode.get_child("signal").set_value("nosignal") #delete the signal
                     controlNode.get_child("status").set_value("finished")
                     controlNode.get_child("executionCounter").set_value(controlNode.get_child("executionCounter").get_value()+1)
                     if result == True:
