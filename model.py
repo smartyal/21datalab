@@ -401,6 +401,17 @@ class Node():
         return self.model.get_value(self.id)
 
     def set_value(self,value):
+        """
+            special support for "column" types: if a scalar is given, we make a "full" array
+        """
+        if self.get_properties()["type"] == "column":
+            if type(value) != numpy.ndarray and type(value) != list:
+                #we have a scalar, so we set it
+                #get the len of the table
+                timeNode = self.get_table_time_node()
+                length = len(timeNode.get_value())
+                value = numpy.full(length,value,dtype=numpy.float64)
+
         return self.model.set_value(self.id,value)
 
     def get_parent(self):
@@ -430,6 +441,14 @@ class Node():
                     return self.model.get_node(childId)
         return None
 
+
+    def delete(self):
+        """
+            delete this node from the model, note that the object itself it not destroyed, but it is disconnected from the model
+            so should not be used anymore afterwards
+        :return:
+        """
+        return self.model.delete_node(self.id)
 
     def create_child(self,name,type="folder",value=None,properties={}):
         """
@@ -479,6 +498,17 @@ class Node():
             return self.get_properties()[property]
         else:
             return None
+
+    def set_properties(self,properties):
+        """
+            add or modify properties of a node
+            Args:
+                properties [dict] holding key,value for the properties
+            Returns
+                True for ok, False for not done
+        """
+        return self.model.set_properties(properties,nodeDesc=self.id)
+
 
     def get_model(self):
         """ this function should only be used for testing, we should never be in the need to access the model inside
@@ -580,7 +610,7 @@ class Node():
 
 
     def get_time_indices(self,startTime,endTime):
-        """ works only for "column" nodes, it looks to find the timeField node of the table to which the node belongs
+        """ works only for the time node, it looks to find the timeField node of the table to which the node belongs
             then tries to find start and end time inside the timeField column and returns the index (rownumber) which are
             INSIDE the given startTime, endTime
             Args:
@@ -607,6 +637,47 @@ class Node():
     def get_logger(self):
         return self.model.logger
 
+    def connect_to_table(self,tableNode):
+        """
+            connect a node to a table, it must be a column type
+            the node itself will be reset and filled with numpy.inf and prepared to work with the table:
+            an array will be created with np.inf of the current table size
+            and the column will be hooked to the table referencer
+
+            Returns:
+                True on success
+        """
+        if self.get_property("type") != "column":
+            return False
+
+        #now make an array of np.inf of the current table size and apply the value
+        timeNode = tableNode.get_table_time_node()
+        if not timeNode:
+            return False
+        tableLen = len(timeNode.get_value())
+        self.set_value(numpy.full(tableLen,numpy.inf,dtype=numpy.float64))
+
+        #now hook it as column to the table
+        #check if we are part of it already
+        for column in tableNode.get_child("columns").get_leaves():
+            if column.get_id() == self.get_id():
+                return
+        #now connect it to the table
+        return self.model.add_forward_refs(tableNode.get_child("columns").get_id(), [self.id])
+
+    def get_columns(self):
+        """
+            get the columns nodes of a table without the time node
+            can be executed on the table node
+
+            Returns:
+                list of node objects which are the columns of the table without the time node
+        """
+        if self.get_properties()["type"] != "table":
+            return None
+        nodes = self.get_child("columns").get_leaves()
+        timeNode = self.get_table_time_node()
+        return [node for node in self.get_child("columns").get_leaves() if node.get_id() != timeNode.get_id()]
 
 class Observer:
     # The observer needs a reference to the model, because the rest service is not able to detect
