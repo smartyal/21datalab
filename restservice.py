@@ -17,7 +17,12 @@ from bokeh.client import pull_session
 from bokeh.embed import server_session,server_document
 import numpy #for _Getvalue
 
+# needed for upload
+from flask import Flask, flash, request, redirect, url_for
+from werkzeug.utils import secure_filename
+import os
 
+UPLOAD_FOLDER = './upload'
 
 '''
 TODO:
@@ -52,6 +57,11 @@ bokehPath = "http://localhost:5006/"
 
 
 web = flask.Flask(__name__)
+
+# check if the upload folder exists, create it otherwise
+if not os.path.isdir(UPLOAD_FOLDER):
+    os.mkdir(UPLOAD_FOLDER)
+web.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 '''
 
@@ -90,6 +100,8 @@ POST /move           <movequery.json>                                    # moves
 POST /_getlayout     <layoutquery.json>          [html section]          # query the dynamic content of a layout part of the page
 POST /_setlen        <setlenquery.json>           -                      # adjust the len of a column, extensions are inf-padded
 POST /_push          [<nodedict.json>]                                   # push a list of nodes into the model, we accept the full dict, no checking whatsoever !! dangerous
+GET  /_upload        -                          [<fileinfo.json>]        # get the list of files in the /upload folder
+POST /_upload       <jquery file upload>                                 # upload files via jquery file upload module-style
 data:
 
 
@@ -204,7 +216,11 @@ setlenquery.json
     <desc>:len,     
 }
 
-
+fileinfo.json
+{
+    "name": filename,
+    "time": string: time in the file system
+}
 
 '''
 
@@ -659,6 +675,51 @@ def all(path):
                 result[descriptor] = m.set_column_len(descriptor,newLen)
             responseCode = 200
             response = json.dumps(result)
+
+        elif ((str(path)=="_upload") and str(flask.request.method) in ["GET"]):
+            # Return the files from the upload folder
+
+            try:
+                # get the files from the upload folder
+                filenames = []
+                for r, d, f in os.walk(UPLOAD_FOLDER):
+                    for filename in f:
+                        filenames.append({
+                            "name": filename,
+                            "time": os.path.getmtime(os.path.join(UPLOAD_FOLDER, filename))
+                        })
+
+                responseCode = 200
+                response = json.dumps(filenames)
+
+            except Exception as ex:
+                logger.error("can't retrieve the files from the upload folder: " + str(ex) + str(sys.exc_info()[0]))
+                responseCode = 404
+
+        elif ((str(path) == "_upload") and str(flask.request.method) in ["POST"]):
+            # Upload a file to the server
+
+            try:
+                # check if the post request has the file part
+                if 'file' not in request.files:
+                    responseCode = 404
+                    logger.error("File part missing in upload request")
+                else:
+                    file = request.files['file']
+                    # if user does not select file, browser also
+                    # submit an empty part without filename
+                    if file.filename == '':
+                        responseCode = 404
+                        logger.error("Filename not specified")
+                    else:
+                        filename = secure_filename(file.filename)
+                        file.save(os.path.join(web.config['UPLOAD_FOLDER'], filename))
+                        responseCode = 200
+                        response = "success"
+            except Exception as ex:
+                logger.error("Can't save the file to the upload folder: " + str(ex) + str(sys.exc_info()[0]))
+                responseCode = 404
+
 
 
         else:

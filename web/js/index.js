@@ -75,6 +75,73 @@ function populate_ui()
 
 }
 
+function populate_file_list() {
+    // Delete all files from the list
+    $(".filenameRow").remove();
+
+    // Get the list of files
+    let data = http_get('/_upload');
+    let files = []
+
+    try {
+        files = JSON.parse(data);
+    }
+    catch(err) {
+        return;
+    }
+
+    for (let f of files) {
+        $(`<div class="row filenameRow"><div class="col">` + f.name + `</div></div>`).insertBefore('#fileuploadRow');
+    }
+}
+
+function initialize_upload() {
+    // Get the files
+    populate_file_list();
+
+    // Initialize the file upload
+    $('#fileupload').fileupload({
+        dataType: 'text',
+        add: function (e, data) {
+            $('#fileuploadCol').append(`<button id="uploadButton" class="btn btn-primary" style="display: none">Upload</button>`);
+            $('#uploadButton').click(function() {
+                data.submit();
+                $('#uploadStatusRow').fadeIn();
+                $('#uploadStatusProgress').text("Progress: 0%");
+            });
+            $('#uploadButton').fadeIn();
+        },
+        done: function (e, data) {
+            populate_file_list();
+
+            console.log("successfully uploaded.");
+
+            $('#uploadStatusProgress').text("Successfully uploaded!");
+        },
+        fail: function(e, data) {
+            populate_file_list();
+
+            console.log('failed uploading.');
+
+            $('#uploadStatusProgress').text("Failed uploading!");
+        },
+        always: function(e, data) {
+            $('#uploadButton').fadeOut(() => {
+                $('#uploadButton').remove();
+            });
+
+            window.setTimeout(() => {
+                $('#uploadStatusRow').fadeOut();
+            }, 3000);
+        },
+
+        progressall: function (e, data) {
+            var progress = parseInt(data.loaded / data.total * 100, 10);
+
+            $('#uploadStatusProgress').text("Progress: " + progress + " %");
+        }
+    });
+}
 
 function on_first_load () {
 
@@ -212,7 +279,7 @@ function on_first_load () {
         }
     });
 
-
+    initialize_upload();
 
 } //on_first_load;
 

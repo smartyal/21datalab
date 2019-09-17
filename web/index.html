@@ -52,6 +52,8 @@
     <script src="modules/font-awesome/js/all.js"></script>
     <script src="modules/moment/moment.min.js"></script>
     <script src="modules/moment/moment-timezone-with-data.min.js"></script>
+    <script src="modules/jquery-ui/jquery-ui.min.js"></script>
+    <script src="modules/jQuery-File-Upload/js/jquery.fileupload.js"></script>
 
     <script src="js/utils.js"></script>
 	<script src="js/tree.js"></script>
@@ -132,33 +134,23 @@
                         <div class="col">
                             <div class="card">
                                 <div class="card-header">
-                                    Import data
+                                    Files
                                 </div>
                                 <div class="card-body">
-                                    <div class="form-group row">
-                                        <label class="col">Source Database</label>
-                                        <div class="col">
-                                            <select class="form-control">
-                                                <option>elasticsearch</option>
-                                                <option>mongoDB</option>
-                                            </select>
+                                    <div class="row" id="fileuploadRow">
+                                        <div class="col" id="fileuploadCol">
+                                            <input id="fileupload" type="file" name="file" data-url="/_upload" multiple="multiple" text="generic test">
                                         </div>
                                     </div>
-                                    <div class="form-group row mb-0">
-                                        <label class="col">URL</label>
+                                    <div class="row hidden pt-2" id="uploadStatusRow">
                                         <div class="col">
-                                            <input class="form-control" type="text"></input>
+                                            <p id="uploadStatusProgress"></p>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="card-footer">
-                                    <button class="btn btn-sm btn-primary">Import</button>
                                 </div>
                             </div>
-
                         </div>
                     </div>
-
                 </div>
             </div>
             <div id="nav-modelling" class="tab-pane fade active show">
