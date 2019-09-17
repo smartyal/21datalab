@@ -30,6 +30,8 @@ The framework is prepared to run on edge, desktop or cloud and is a microservice
   * web/modules/moment (MIT License) contains 
     * moment.min.js https://momentjs.com/
     * moment-timezone-with-data.min.js https://momentjs.com/timezone/
+  * web/modules/jQuery-File-Upload (MIT License): (https://github.com/blueimp/jQuery-File-Upload)
+  * web/modules/jquery-ui (CC0-1.0 License): https://jqueryui.com/download/
 
 ## demo
 * under windows: start the model rest services with "occupancydemo.bat" 
