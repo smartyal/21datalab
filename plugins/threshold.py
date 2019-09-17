@@ -170,7 +170,7 @@ def threshold_scorer_2(functionNode):
         newMask = oldMask or mask # unify merge the old and new mask
         functionNode.get_child("output").get_child("_differential").set_value(newMask) # set all true
     else:
-        functionNode.get_child("output").get_child("_differential").set_value(timeIndices)
+        functionNode.get_child("output").get_child("_differential").set_value(timeIndices) # write out this area to eval
 
 
     # now we have in timeIndices the time indices to work on as a true/false mask
@@ -203,7 +203,10 @@ def threshold_scorer_2(functionNode):
             outOfLimit = numpy.logical_and(outOfLimit,timeIndices)
             outOfLimitIndices = numpy.where(outOfLimit==True)
             outPutNode = functionNode.get_child("output").get_child( node.get_name()+"_score")
-            score = outPutNode.get_value()
+            if functionNode.get_child("incremental").get_value():
+                score = outPutNode.get_value() # take the old and merge
+            else:
+                score = numpy.full(tableLen,numpy.inf,dtype=numpy.float64) # rest all
             score[timeIndices]=numpy.inf
             score[outOfLimitIndices] = values[outOfLimitIndices]
             outPutNode.set_value(score)
