@@ -682,12 +682,17 @@ def all(path):
             try:
                 # get the files from the upload folder
                 filenames = []
-                for r, d, f in os.walk(UPLOAD_FOLDER):
-                    for filename in f:
-                        filenames.append({
-                            "name": filename,
-                            "time": os.path.getmtime(os.path.join(UPLOAD_FOLDER, filename))
-                        })
+                #listdir(mypath)
+                #for r, d, f in os.walk(UPLOAD_FOLDER):
+                for filename in os.listdir(UPLOAD_FOLDER):
+                    fullPath=os.path.join(UPLOAD_FOLDER, filename)
+                    if not os.path.isfile(fullPath):
+                        continue
+                    #for filename in f:
+                    filenames.append({
+                        "name": filename,
+                        "time": os.path.getmtime(fullPath)
+                    })
 
                 responseCode = 200
                 response = json.dumps(filenames)

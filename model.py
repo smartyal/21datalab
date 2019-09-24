@@ -2074,16 +2074,18 @@ class Model():
         return True
 
 
-    def append_table(self,blob,autocreate=True,autopad=True):
+    def append_table(self,blob,autocreate=True,autopad=True, timeSorted = False):
         """
             this function accepts a dictionary containing paths and values and adds them as a row to a table
-             if autoPad is True: it is allowed to leave out columns, those will be padded with NaN,
+             if autoPad is True: it is allowed to leave out columns, those will be padded with numpy.inf,
              if autocreate is True: it is allowed to add unknown colums, those will be added automatically under the given name
 
             Args:
                 blob(dict):
-                    keys: node descriptors, values: value to be appended to the table (only one scalar per variable at a time)
-                    the times should be given in a variable ending with .time
+                    keys: node descriptors,
+                    values: value to be appended to the table (scalar or list per variable is allowed
+                    the times should be given in a variable ending with ".time"
+                        if the table exists already and has another node for the time-values, then we take the .time values and put them on the timenode
                 autocreate(bool): if set to true and the nodes or table in the dict do not exist yet, we autocreate a table
                 autopad(bool) if set to true, we automatically pad values in an existing table if variables of the table are not part of the blob
                                 doing so, we keep consistent lenght for all columns of a table
@@ -2120,7 +2122,7 @@ class Model():
                                     return None
 
 
-            self.logger.debug("append table "+str(tableId)+" and autocreates "+str(autocreates))
+            self.logger.debug("append table "+str(self.get_browse_path(tableId)))
             if autocreates and autocreate:
                 #do we even have to create our table?
                 if not tableId:
@@ -2130,7 +2132,14 @@ class Model():
                     columnsId = self.create_node(parent=tableId,name="columns",properties={"type":"referencer"})
                     timeId = self.create_node(parent=tableId, name="timeField", properties={"type": "referencer"})
                     numberOfRows=0
+                else:
+                    #if we don't create the table, here is our timeId
+                    timeReferencer = self.get_child(tableId, "timeField")
+                    timeId = self.get_leaves_ids(timeReferencer)[0]
+                    #we also then don't create any new time-field
+                    autocreates = [path for path in autocreates if path[-5:]!=".time"]
 
+                self.logger.debug(f"table var autocreates: {autocreates}")
                 for path in autocreates:
                     id = self.create_node_from_path(path,properties={"type":"column"})
                     self.model[id]["value"]=numpy.full(numberOfRows,numpy.inf)
@@ -2139,18 +2148,81 @@ class Model():
                         #we just created the time field, we must also give the table struct the info
                         self.add_forward_refs(timeId,[id])
 
-            #now insert data: prepare a row that contains values for all columns in the right order
             tableColumnIds = self.get_leaves_ids(columnsId) # a list of the ids of the columns
+            timeReferencer = self.get_child(tableId,"timeField")
+            timeId = self.get_leaves_ids(timeReferencer)[0]
+            timePath = None
             for path in blob:
-                id = self.get_id(path)
-                self.model[id]["value"] = numpy.append(self.model[id]["value"],blob[path]) #todo: this is a very inefficient copy and reallocate
-                tableColumnIds.remove(id)
-                #append this value
-            for id in tableColumnIds:
-                self.model[id]["value"] = numpy.append(self.model[id]["value"],numpy.inf) # pad the remainings with inf
+                if path[-5:] == ".time":
+                    timePath = path
+            if not timePath:
+                self.logger.error("no time path given")
+                return False
 
-            #now trigger observser
-            self.__notify_observers(self.get_leaves_ids(columnsId),"value")
+            #now make arrays of all values
+            for k,v in blob.items():
+                if type(v) is list or type(v) is numpy.ndarray:
+                    blob[k]=numpy.asarray(v,dtype=numpy.float64)
+                else:
+                    blob[k] = numpy.asarray([v], dtype=numpy.float64)
+
+
+            valuesLen = len(  blob[list(blob.keys())[0]]  )
+            tableLen = len ( self.get_value(timeId))
+            if not timeSorted:
+                #just append
+                for path in blob:
+                    if path.split('.')[-1]=="time":
+                        id = timeId # we take the existing time Node of the table instead of just the variable named "time"
+                    else:
+                        id = self.get_id(path) # here
+                    self.model[id]["value"] = numpy.append(self.model[id]["value"],blob[path]) #todo: this is a very inefficient copy and reallocate
+                    if id in tableColumnIds:
+                        tableColumnIds.remove(id)
+                    #append this value
+                for id in tableColumnIds:
+                    self.model[id]["value"] = numpy.append(self.model[id]["value"],numpy.full(valuesLen,numpy.inf,dtype=numpy.float64)) # pad the remainings with inf
+
+                #now trigger observser
+                self.__notify_observers(self.get_leaves_ids(columnsId),"value")
+            else:
+                #time sorted: find a place to insert the data in the times
+                currentTimes = numpy.asarray(self.get_value(timeId),dtype=numpy.float64)
+                startTime = blob[timePath][0]
+                endTime = blob[timePath][-1]
+                firstIndexGreaterStart, = numpy.where(currentTimes>startTime) #where returns tuple
+                if len(firstIndexGreaterStart) == 0:
+                    firstIndexGreaterStart = tableLen
+                else:
+                    firstIndexGreaterStart=firstIndexGreaterStart[0]
+
+                firstIndexGreaterEnd, = numpy.where(currentTimes > endTime)
+                if len(firstIndexGreaterEnd) == 0:
+                    firstIndexGreaterEnd = tableLen
+                else:
+                    firstIndexGreaterEnd=firstIndexGreaterEnd[0]
+
+                if firstIndexGreaterEnd != firstIndexGreaterStart:
+                    self.logger.error("we can't insert the data in a row-wise time manner, only as block")
+                    return False
+
+                startIndex = firstIndexGreaterStart # the position to insert the incoming data
+                self.logger.debug(f"insert data @{startIndex} of {tableLen}")
+                for path in blob:
+                    if path.split('.')[-1]=="time":
+                        id = timeId # we take the existing time Node of the table instead of just the variable named "time"
+                    else:
+                        id = self.get_id(path) # here
+                    self.model[id]["value"] = numpy.insert(self.model[id]["value"],startIndex,blob[path]) #todo: this is a very inefficient copy and reallocate
+                    if id in tableColumnIds:
+                        tableColumnIds.remove(id)
+                    #append this value
+                for id in tableColumnIds:
+                    self.model[id]["value"] = numpy.insert(self.model[id]["value"],startIndex,numpy.full(valuesLen,numpy.inf,dtype=numpy.float64)) # pad the remainings with inf
+
+
+                #
+                pass
             return True
 
 
