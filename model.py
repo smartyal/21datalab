@@ -35,6 +35,7 @@ next Todo
 """
 
 sys.path.append("./plugins") #for the importlib loader, doesn't understand relative paths
+sys.path.append("./private") #for the importlib loader, doesn't understand relative paths
 
 myGlobalDir = os.path.dirname(os.path.realpath(__file__)) # holds the directory of this script
 
@@ -996,13 +997,30 @@ class Model():
         """ find all plugins (= all .py files in the ./plugin folder
             take from there the templates from the files and the functions
             this function is execution on startup of the model
+
         """
         #mydir =os.path.dirname(os.path.realpath(__file__))
         mydir = myGlobalDir
         os.chdir(mydir)#to enable import easily
-        sys.path.append(mydir+'/plugins') # for the importlib to find the stuff
+        sys.path.append(mydir + '/plugins') # for the importlib to find the stuff
+        sys.path.append(mydir + '/private')  # for the importlib to find the stuff
 
         plugins = os.listdir(mydir+'/plugins')
+        try:
+            privates = os.listdir(mydir+'/private')
+            #for the privates, take only the ones carrying the line "#21datalabplugin"
+            for fileName in privates:
+                if fileName.startswith('__'):
+                    continue
+                if fileName.startswith('.'):
+                    continue
+                fullName = mydir+'/private/'+fileName
+                f=open(fullName,"r")
+                if f.readline()[0:16]=="#21datalabplugin":
+                    plugins.append(fileName)
+                f.close()
+        except Exception as ex:
+            self.logger.warning(f"problems during /private folder import {ex}")
         for fileName in plugins:
             if fileName.startswith('__'):
                 continue # avoid __pycache__ things
