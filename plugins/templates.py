@@ -30,7 +30,7 @@ timeseriesWidget = {
                      "timeseriesWidget.hasAnnotation.newAnnotations"]},
                  {"name":"newAnnotations","type":"folder"},                     # the folder where annotations created by the users are put
                  {"name":"tags","type":"const","value":["one","two"]},          # the tags available for annotations
-                 {"name":"colors","type":"const","value":["yellow","brown","grey","green","red"]}, # the colors for annotations
+                 {"name":"colors","type":"const","value":["yellow","brown","grey","green","red"]}, # the colors for annotations, can also be a dict with {"tag":{"color":"color","pattern":patter"},"tag2":{..}}
             ]
         },
         {"name":"table","type":"referencer"},                                   # the data table where the time series data resides to be used in this widget (it must be only one)

@@ -1806,7 +1806,18 @@ class TimeSeriesWidget():
 
 
             tagIndex = settings["tags"].index(tag)
-            color = settings["colors"][tagIndex]
+            color = None
+            try:
+                if type(settings["colors"]) is list:
+                    color = settings["colors"][tagIndex]
+                elif type(settings["colors"]) is dict:
+                    color = settings["colors"][tag]["color"]
+            except:
+                pass
+            if not color:
+                self.logger.error("did not find color for boxannotation")
+                color = "red"
+
             start = annotations[modelPath]["startTime"]
             end = annotations[modelPath]["endTime"]
 
