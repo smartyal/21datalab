@@ -1,6 +1,7 @@
 var crtModelName = undefined;
 
 var nodesMoving = {}; //here we store information from the tree plugin about the move, we grab in in the dnd_stop event and execute the move
+var nodesMovingFromUpdate = false;
 
 
 

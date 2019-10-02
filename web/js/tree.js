@@ -483,6 +483,7 @@ class TreeWidget
                         // if the move has actually taken place, we allow the tree to finish it
                         if (nodesMoving.vakata == "stopped") return true;
 
+                        if (nodesMovingFromUpdate == true) return true;
                         //the check callback will be called again when we execute the moving, not only during drop, so the "more" might not
                         // be there on the second cyll
                         try
@@ -1115,7 +1116,9 @@ class TreeWidget
                     {
                         if (newNode.children[index] != oldNode.children[index])
                         {
+                            nodesMovingFromUpdate = true;
                             var result = $(this.treeDiv).jstree(true).move_node(newNode.children[index],newNode.id,index);
+                            nodesMovingFromUpdate = false;
                             console.log("move ",newNode.children[index]," to parent ",newNode.id,"on position ", index,"jstreeresult:",result);
                         }
                     }

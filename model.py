@@ -81,7 +81,10 @@ def secs2dateString(epoch,tz="+00:00"):
     except:
         return None
 
-
+def epochToIsoString(epoch,zone=pytz.UTC):
+    dat = datetime.datetime(1970, 1, 1, 0, 0,tzinfo=pytz.utc) + datetime.timedelta(seconds=epoch)
+    dat=dat.astimezone(zone) # we must do this later conversion due to a bug in tz lib
+    return dat.isoformat()
 
 class Table():
 
@@ -451,7 +454,7 @@ class Node():
         """
         return self.model.delete_node(self.id)
 
-    def create_child(self,name,type="folder",value=None,properties={}):
+    def create_child(self,name=None,type="folder",value=None,properties={}):
         """
             create a node under the current node, if the node exists already, we get the node
                 Args:
@@ -463,6 +466,8 @@ class Node():
                 the node objects or none if not available
         """
 
+        if name == None:
+            name = '%08x' % random.randrange(16 ** 8)
         id = self.model.create_node(parent=self.id,name=name,type=type,value=value,properties=properties)
         if id:
             return self.model.get_node(id)
@@ -2417,6 +2422,7 @@ class Model():
                 f = open("./models/"+fileName + ".model.json", "w")
                 f.write(json.dumps(m, indent=4))
                 f.close()
+                self.currentModelName = fileName
                 return True
             except Exception as e:
                 self.logger.error("problem sving "+str(e))
@@ -2449,6 +2455,7 @@ class Model():
                 return True
 
             #for all others, we start moving nodes
+            self.logger.debug(f"model.move():{nodeIds}=>{parentId}")
             try:
                 for id in nodeIds:
                     if id == parentId or id == "1":
@@ -2464,8 +2471,8 @@ class Model():
                     self.__notify_observers(oldParent, "children")
                     self.__notify_observers(parentId, "children")
 
-            except:
-                self.logger.error("problem moving "+str(nodeIds)+" to new parent"+ parentId+".. this is critical, the model can be messed up")
+            except Exception as ex:
+                self.logger.error(f"problem moving {nodeIds} to new parent {parentId} this is critical, the model can be messed up {ex}")
             return True
 
 

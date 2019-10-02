@@ -201,6 +201,33 @@ class TimeSeriesWidgetDataServer():
         return selectedVars
 
 
+    def load_annotations(self):
+        if (self.settings["hasAnnotation"] == True) or (self.settings["hasThreshold"] == True):
+            response = self.__web_call("post","_get",[self.path+"."+"hasAnnotation"])
+            annotationsInfo = get_const_nodes_as_dict(response[0]["children"])
+            self.settings.update(annotationsInfo)
+            #now get all annotations
+            nodes = self.__web_call("post","_getleaves",self.path+".hasAnnotation.annotations")
+            self.logger.debug("ANNOTATIONS"+json.dumps(nodes,indent=4))
+            #now parse the stuff and build up our information
+            self.annotations={}
+            for node in nodes:
+                if node["type"]=="annotation":
+                    self.annotations[node["browsePath"]]=get_const_nodes_as_dict(node["children"])
+
+                    if "startTime" in self.annotations[node["browsePath"]]:
+                        self.annotations[node["browsePath"]]["startTime"] = date2secs(self.annotations[node["browsePath"]]["startTime"])*1000
+                    if "endTime" in self.annotations[node["browsePath"]]:
+                        self.annotations[node["browsePath"]]["endTime"] = date2secs(self.annotations[node["browsePath"]]["endTime"]) * 1000
+                    if self.annotations[node["browsePath"]]["type"] == "threshold":
+                        #we also pick the target
+                        self.annotations[node["browsePath"]]["variable"]=self.annotations[node["browsePath"]]["variable"][0]
+            self.logger.debug("server annotations" + json.dumps(self.annotations, indent=4))
+
+
+
+
+
     def __get_settings(self):
         """
             get all the settings of the widget and store them also in the self.settings cache
@@ -240,7 +267,8 @@ class TimeSeriesWidgetDataServer():
         else:
             self.scoreVariables = [node["browsePath"] for node in nodes]
 
-
+        self.load_annotations()
+        """
         #now grab more infor for annotations if needed:
         if (self.settings["hasAnnotation"] == True) or (self.settings["hasThreshold"] == True):
             response = self.__web_call("post","_get",[self.path+"."+"hasAnnotation"])
@@ -263,6 +291,7 @@ class TimeSeriesWidgetDataServer():
                         #we also pick the target
                         self.annotations[node["browsePath"]]["variable"]=self.annotations[node["browsePath"]]["variable"][0]
             #self.logger.debug("server annotations" + json.dumps(self.annotations, indent=4))
+        """
         #grab the info for the buttons
         myButtons=[]
         for node in info[0]["children"]:
@@ -486,7 +515,11 @@ class TimeSeriesWidgetDataServer():
     def refresh_settings(self):
         self.__get_settings()
 
-
+    def select_annotation(self,annoList):
+        #anno list is a list of browsepaths
+        query = {"deleteExisting": True, "parent": self.path + ".hasAnnotation.selectedAnnotations", "add": annoList}
+        self.__web_call("POST", "_references", query)
+        return
 
 
 class TimeSeriesWidget():
@@ -583,7 +616,20 @@ class TimeSeriesWidget():
                 self.streamingUpdateData = self.server.get_data(variablesRequest, -self.streamingInterval, None,
                                                                 self.server.get_settings()["bins"])  # for debug
                 self.__dispatch_function(self.stream_update)
+        elif data["event"] == "timeSeriesWidget.annotations":
+            self.logger.debug(f"must reload annotations")
+            self.reInitAnnotationsVisible = self.annotationsVisible #store the state
+            # sync from the server
+            self.__dispatch_function(self.reinit_annotations)
 
+    def reinit_annotations(self):
+        self.hide_annotations()
+        self.server.load_annotations()
+        self.logger.debug("reinit_annotations=>init_annotations")
+        self.init_annotations()
+        if self.reInitAnnotationsVisible:
+            self.logger.debug("reinit_annotations=>init_annotations")
+            self.show_annotations()
 
     def __legend_check(self):
         try:
@@ -623,7 +669,7 @@ class TimeSeriesWidget():
         self.hoverTool = None # forget the old hovers
         self.showBackgrounds = False
         self.showThresholds = False
-        self.buttonWidth = 160
+        self.buttonWidth = 100
 
         #layoutControls = []# this will later be applied to layout() function
 
@@ -1205,6 +1251,7 @@ class TimeSeriesWidget():
         self.logger.debug(f"box_modifier_show {annoName}")
 
         self.boxModifierAnnotationName = annoName
+        self.server.select_annotation(annoName)
         boxYCenter = int((self.plot.y_range.start + self.plot.y_range.end) / 2)
         boxXCenter = int((self.plot.x_range.start + self.plot.x_range.end) / 2)
         boxYHeight = (self.plot.y_range.end - self.plot.y_range.start) * 4
@@ -1236,6 +1283,7 @@ class TimeSeriesWidget():
         self.boxModifierRectVertical.visible = False #hide the renderer
         self.boxModifierRectHorizontal.visible = False #hide the renderer
 
+        self.server.select_annotation([]) # unselect all
         #also remove the renderer from the renderers
         self.remove_renderers(renderers=[self.boxModifierRectHorizontal,self.boxModifierRectVertical])
 
@@ -1800,15 +1848,14 @@ class TimeSeriesWidget():
             settings = self.server.get_settings()
             #now get the first tag, we only use the first
             tag = annotations[modelPath]["tags"][0]
-            if tag not in settings["tags"]:
-                self.logger.warning(f"ignored tag {modelPath}, as {tag} is not in list of annotations: {settings['tags']}")
-                return None
+            #if tag not in settings["tags"]:
+            #    self.logger.warning(f"ignored tag {modelPath}, as {tag} is not in list of annotations: {settings['tags']}")
+            #    return None
 
-
-            tagIndex = settings["tags"].index(tag)
             color = None
             try:
                 if type(settings["colors"]) is list:
+                    tagIndex = settings["tags"].index(tag)
                     color = settings["colors"][tagIndex]
                 elif type(settings["colors"]) is dict:
                     color = settings["colors"][tag]["color"]
@@ -2078,7 +2125,7 @@ class TimeSeriesWidget():
             scoreVariables = self.server.get_score_variables()
             vars=list(set(variables)-set(scoreVariables))
             if len(vars) != 1:
-                self.logger.error("can't create threshold anno, len(vars"+str(len(variable)))
+                self.logger.error("can't create threshold anno, len(vars"+str(len(vars)))
                 return
 
 
