@@ -833,9 +833,10 @@ class TimeSeriesWidget():
             self.streamingMode = False # initially off
         self.showGroup = CheckboxButtonGroup(labels=self.showGroupLabelsDisplay)
         self.showGroup.on_change("active",self.show_group_on_click_cb)
-        layoutControls.append(self.showGroup)
+        layoutControls.append(row(self.showGroup))
 
         #make the custom buttons
+        buttonControls = []
         self.customButtonsInstances = []
         if "buttons" in settings:
             self.logger.debug("create user buttons")
@@ -844,7 +845,7 @@ class TimeSeriesWidget():
                 button = Button(label=entry["name"],width=self.buttonWidth)#,css_classes=['button_21'])
                 instance = self.ButtonCb(self,entry["targets"])
                 button.on_click(instance.cb)
-                layoutControls.append(button)
+                buttonControls.append(button)
                 self.customButtonsInstances.append(instance)
 
         #make the debug button
@@ -853,15 +854,19 @@ class TimeSeriesWidget():
                 #we must create a reload button
                 button = Button(label="reload",width=self.buttonWidth)#, css_classes=['button_21'])
                 button.on_click(self.reset_all)
-                layoutControls.append(button)
+                buttonControls.append(button)
+
 
         if 0: # turn this helper button on to put some debug code
             self.debugButton= Button(label="debug",width=self.buttonWidth)
             self.debugButton.on_click(self.debug_button_cb)
-            layoutControls.append(self.debugButton)
+            buttonControls.append(self.debugButton)
+
+        layoutControls.extend(buttonControls)
 
         #build the layout
-        self.layout = layout( [row(children=[self.plot,self.tools],sizing_mode="fixed")],row(layoutControls,width=self.width ,sizing_mode="scale_width"))
+        #self.layout = layout( [row(children=[self.plot,self.tools],sizing_mode="fixed")],row(layoutControls,width=self.width ,sizing_mode="scale_width"))
+        self.layout = layout([row(children=[self.plot, self.tools], sizing_mode="fixed")], row(layoutControls, width=int(self.width*0.6),sizing_mode="scale_width"))
 
         if self.server.get_settings()["hasAnnotation"] == True:
             self.init_annotations() # we create all annotations that we have into self.annotations
@@ -1225,6 +1230,7 @@ class TimeSeriesWidget():
         self.box_modifier_hide()# remove the renderers
 
     def box_modifier_tap(self, x=None, y=None):
+
         self.logger.debug(f"box_modifier_tap x:{x} y:{y}")
         #we do this only if annotations are visible
         if self.annotationsVisible:
@@ -1237,18 +1243,30 @@ class TimeSeriesWidget():
                         self.box_modifier_show(annoName,anno)
                         return
         if self.showThresholds:
+
             for annoName, anno in self.server.get_annotations().items():
                 if anno["type"] == "threshold":
-                    self.logger.debug(f" annomin {anno['min']} anno max {anno['max']}")
-                    if anno["min"] < y and anno["max"] > y:
-                        self.box_modifier_show(annoName,anno)
-                        return
+                    # we must also check if that specific threshold annotation is currently visible
+                    if self.find_renderer(annoName):
+                        self.logger.debug(f" annomin {anno['min']} anno max {anno['max']}")
+                        if anno["min"] < y and anno["max"] > y:
+                            self.box_modifier_show(annoName,anno)
+                            return
         #we are not inside an annotation, we hide the box modifier
         self.box_modifier_hide()
 
 
     def box_modifier_show(self,annoName,anno):
         self.logger.debug(f"box_modifier_show {annoName}")
+
+        if self.boxModifierVisible:
+            if self.boxModifierAnnotationName == annoName:
+                #this one is already visible, we are done
+                return
+            else:
+                #if another is already visible, we hide it first
+                self.box_modifier_hide()
+
 
         self.boxModifierAnnotationName = annoName
         self.server.select_annotation(annoName)
@@ -1679,6 +1697,13 @@ class TimeSeriesWidget():
         self.box_modifier_hide() # reset the selection
         self.refresh_plot()
 
+
+    def find_renderer(self,rendererName):
+        for r in self.plot.renderers:
+            if r.name:
+                if r.name == rendererName:
+                    return True
+        return False
 
     def remove_renderers(self,deleteList=[],deleteMatch="",renderers=[]):
         """

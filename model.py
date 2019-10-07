@@ -2654,7 +2654,7 @@ class Model():
             return
         #  tree update thing
         with self.lock:
-            self.logger.debug(f"__notify_observers {nodeIds}: {properties}")
+            #self.logger.debug(f"__notify_observers {nodeIds}: {properties}")
             # this is for the tree updates, any change is taken
             self.modelUpdateCounter = self.modelUpdateCounter + 1 #this is used by the diff update function and model copies
             # Notify all observers about the tree update
@@ -2671,6 +2671,8 @@ class Model():
             if type(nodeIds) is  not list:
                 nodeIds = [nodeIds]
 
+            names =[self.model[id]["name"] for id in nodeIds]
+            self.logger.debug(f"__notify_observers {names}: {properties}")
             #if "value" in properties:
             #    print("value")
 
@@ -2683,19 +2685,22 @@ class Model():
                 #if self.model[nodeId]["browsePath"]=="root.folder.cos":
                 #    print("debug cos")
 
-                for id in self.get_referencers(nodeId):
+
+                backrefs =  self.get_referencers(nodeId)
+                for id in backrefs:
                     if self.model[id]["name"] == "targets" and self.model[self.model[id]["parent"]]["type"] == "observer":
                         # this node is being observed,
                         observerId = self.model[id]["parent"]
                         observer = self.get_children_dict(observerId)
                         # check if trigger
                         if observer["enabled"]["value"] == True:
+                            #self.logger.debug(f"{self.model[nodeId]['name']} is targeted by observer {self.get_browse_path(observerId)}")
                             if observerId in triggeredObservers:
-                                #self.logger.debug(f"we have triggered the observer {self.get_browse_path(observerId)} in this call already, pass")
+                                self.logger.debug(f"we have triggered the observer {self.get_browse_path(observerId)} in this call already, pass")
                                 continue
                             for property in properties:
                                 if property in observer["properties"]["value"]:
-                                    #self.logger.debug(f"event trigger on {self.get_browse_path(observerId)} for change in {property}")
+                                    #self.logger.debug(f"observer trigger on {self.get_browse_path(observerId)} for change in {property}")
                                     self.model[observer["triggerCounter"]["id"]]["value"] = self.model[observer["triggerCounter"]["id"]]["value"]+1
                                     self.model[observer["lastTriggerTime"]["id"]]["value"] = datetime.datetime.now().isoformat()
                                     for funcNodeId in self.get_leaves_ids(observer["onTriggerFunction"]["id"]):

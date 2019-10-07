@@ -94,6 +94,7 @@ def threshold_scorer_2(functionNode):
         those two time areas are "AND" merged: it is useful to define additional "regions"
 
         then we iterate over the thresholds and look for annotations of type "threshold"
+        for each variable only one threshold (the last in the list) will be evaluated
         the variables to score on are the variables in the inputs which also have a threshold tag given
 
         the time areas to score on is either the full range (differential = false)
@@ -125,6 +126,7 @@ def threshold_scorer_2(functionNode):
     tableNode = inputNodes[0].get_table_node()
     timeNode = tableNode.get_table_time_node()
     tableLen = len(timeNode.get_value())
+    totalOutputNode = functionNode.get_child("output").get_child("_total_score")
 
 
     #first find the time areas to work on for the scorer, this is the overlap area of annotations and annotations2
@@ -134,6 +136,9 @@ def threshold_scorer_2(functionNode):
     annos1Filter = functionNode.get_child("annotationsFilter").get_value()
 
     for anno in annos1:
+        logger.debug(f"processing anno {anno.get_name()}")
+        if anno.get_child("type").get_value() != "time":
+            continue # only time annotations
         if annos1Filter:
             #we must filter
             tags = anno.get_child("tags").get_value()
@@ -191,7 +196,7 @@ def threshold_scorer_2(functionNode):
         thresholds[id] = {"min": thisMin, "max": thisMax}
 
 
-
+    total_score = numpy.full(tableLen,numpy.inf,dtype=numpy.float64) # rest all
     for node in inputNodes:
         id = node.get_id()
         if id in thresholds:
@@ -209,8 +214,10 @@ def threshold_scorer_2(functionNode):
                 score = numpy.full(tableLen,numpy.inf,dtype=numpy.float64) # rest all
             score[timeIndices]=numpy.inf
             score[outOfLimitIndices] = values[outOfLimitIndices]
+            total_score[numpy.isfinite(score)] = -1 #set one where the score is finite, there we have an anomaly
             outPutNode.set_value(score)
 
+    totalOutputNode.set_value(total_score)
     return True
 
 
