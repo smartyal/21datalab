@@ -97,5 +97,5 @@ def confusion_percentage(confusionMatrix):
             if columnIndex != rowIndex:
                 confusionCount = confusionCount + column
             totalCount = totalCount + column
-    print(f"confusion_percentage {confusionCount} , {totalCount} ")
+    #print(f"confusion_percentage {confusionCount} , {totalCount} ")
     return float(confusionCount)/float(totalCount)
