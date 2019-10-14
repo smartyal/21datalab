@@ -1111,18 +1111,30 @@ class TreeWidget
                 //check modification of dependencies: children and references
                 if (newNode.children.toString() != oldNode.children.toString())
                 {
+                    // Store the child nodes to be moved under this parent
+                    var nodesToMove = [];
+
                     //iterate over the array
                     for (let index =0; index < newNode.children.length;index++)
                     {
                         if (newNode.children[index] != oldNode.children[index])
                         {
-                            nodesMovingFromUpdate = true;
-                            var result = $(this.treeDiv).jstree(true).move_node(newNode.children[index],newNode.id,index);
-                            nodesMovingFromUpdate = false;
-                            console.log("move ",newNode.children[index]," to parent ",newNode.id,"on position ", index,"jstreeresult:",result);
+                            // check if the child is in the modified nodes (i.e. it's parent changed)
+                            if (this.id2idx(newNode.children[index]) in updateData.modifiedNodes) {
+                                //  Node movement 
+                                nodesToMove.push(newNode.children[index]);
+                            }
                         }
                     }
-                    //children have changed
+
+                    // If there are nodes to be moved move them
+                    if (nodesToMove.length > 0) {
+                        nodesMovingFromUpdate = true;
+                        var result = $(this.treeDiv).jstree(true).move_node(nodesToMove, newNode.id,  oldNode.children.length);
+
+                        console.log("Moving ", nodesToMove.length, " nodes. Result: ", result);
+                        nodesMovingFromUpdate = false;
+                    }
                 }
 
                 if (newNode.forwardRefs.toString() != oldNode.forwardRefs.toString())
