@@ -202,6 +202,7 @@ class TimeSeriesWidgetDataServer():
 
 
     def load_annotations(self):
+        self.logger.debug("load_annotations")
         if (self.settings["hasAnnotation"] == True) or (self.settings["hasThreshold"] == True):
             response = self.__web_call("post","_get",[self.path+"."+"hasAnnotation"])
             annotationsInfo = get_const_nodes_as_dict(response[0]["children"])

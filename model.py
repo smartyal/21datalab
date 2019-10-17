@@ -798,7 +798,7 @@ class Model():
             a model holds all modelling information and data to work on
         """
         self.model = {"1":{"name":"root","type":"folder","children":[],"parent":"0","id":"1","backRefs":[],"forwardRefs":[]}}
-        self.observersEnabled = True
+        self.disableObserverCounter = 0 # a counting sema (under manual lock) for the disabling: if zero the notify_observers is active otherwise not
         self.__init_logger(logging.DEBUG)
         self.globalIdCounter=1 # increased on every creation of a node, it holds the last inserted node id
         self.idCreationHash = True # if this is true, we create the id per hash, not per counter
@@ -806,6 +806,7 @@ class Model():
         self.functions={} # a dictionary holding all functions from ./plugins
         self.templates={} # holding all templates from ./plugins
         self.lock = threading.RLock()
+        self.executeFunctionRunning = False # set to true, makes sure only one functions runs at a time
         self.import_plugins()
         self.differentialHandles ={} # containing model_copy entries to support differential queries
         self.diffHandleCounter = 0  # used only for debugging
@@ -2290,6 +2291,10 @@ class Model():
         """
 
         with self.lock:
+            if self.executeFunctionRunning:
+                self.logger.warning(f"function {desc} can't be executed, busy")
+                return "busy"
+
             id = self.get_id(desc)
             if self.model[id]["type"]!= "function":
                 return False
@@ -2335,13 +2340,18 @@ class Model():
                 id: the node id of the function to be executed
         """
         try:
+
             with self.lock:
+                if self.executeFunctionRunning:
+                    return
+                self.executeFunctionRunning = True
+
                 self.logger.info(f"in execution Thread, executing {id}")
                 #check the function
                 functionName = self.model[id]["functionPointer"]
-                if not functionName in self.functions:
-                    print("not found in global functions list")
-                    return False
+                #if not functionName in self.functions:
+                #    print("not found in global functions list")
+                #    return False
                 functionPointer = self.functions[functionName]['function']
                 #now set some controls
                 try:
@@ -2355,13 +2365,13 @@ class Model():
                 finally:
                     pass
 
-            #lock open: we execute without lock
+            # model lock open: we execute without model lock
             result = functionPointer(node) # this is the actual execution
             #now we are back, set the status to finished
             duration = (datetime.datetime.now()-startTime).total_seconds()
 
             with self.lock:
-                # this is a bit dangerous, maybe the node is not there anymore, so the
+                # this is a bit dangerous, maybe the node is not there anymore?, so the
                 # inner functions calls of node.xx() will return nothing, so we try, catch
                 try:
                     controlNode.get_child("lastExecutionDuration").set_value(duration)
@@ -2378,11 +2388,13 @@ class Model():
                     self.logger.error("problem setting results from execution of #"+str(id))
                     pass
 
+            self.executeFunctionRunning = False
             return result
         except Exception as ex:
             self.logger.error("error inside execution thread, id " +str(id)+" functionname"+str(functionName)+str(sys.exc_info()[1])+" "+str(ex))
             controlNode.get_child("status").set_value("interrupted")
             controlNode.get_child("result").set_value("error")
+            self.executeFunctionRunning = False
             return False
 
     def show(self):
@@ -2487,8 +2499,7 @@ class Model():
         """
         self.logger.info(f"load {fileName}, includeData {includeData}")
         with self.lock:
-            observerEnabled = self.observersEnabled #store the value
-            self.observersEnabled = False
+            self.disable_observers()
             try:
                 if type(fileName) is str:
                     f = open("./models/"+fileName+".model.json","r")
@@ -2514,11 +2525,11 @@ class Model():
                             for id, column in zip(ids, data):
                                 self.set_value(id,column)
 
-                self.observersEnabled = observerEnabled
+                self.enable_observers()
                 return True
             except Exception as e:
                 self.logger.error("problem loading"+str(e))
-                self.observersEnabled = observerEnabled
+                self.enable_observers()
                 return False
 
 
@@ -2634,9 +2645,23 @@ class Model():
 
 
     def disable_observers(self):
-        self.observersEnabled = False
+        with self.lock:
+            self.disableObserverCounter += 1
+            self.logger.debug(f"disable_observers() {self.disableObserverCounter}")
     def enable_observers(self):
-        self.observersEnabled = True
+        with self.lock:
+            if self.disableObserverCounter >0:
+                self.disableObserverCounter -=1
+            else:
+                self.logger.error("enable_observers without disable observers")
+        self.logger.debug(f"enable_observers() {self.disableObserverCounter}")
+
+    def notify_observers(self, nodeIds, properties):
+        """
+            public wrapper for __notify observser, only expert use!
+        """
+        self.logger.info(f"notify observser, {nodeIds}, {properties}")
+        return self.__notify_observers(nodeIds,properties)
 
     def __notify_observers(self, nodeIds, properties ):
         """
@@ -2650,7 +2675,7 @@ class Model():
         """
 
         # for now we only do the tree update thing
-        if not self.observersEnabled:
+        if self.disableObserverCounter>0:
             return
         #  tree update thing
         with self.lock:

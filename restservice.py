@@ -70,6 +70,7 @@ WEBCODES ---------------------
 201 ok, created
 400 bad request malformed
 404 not found
+429 too many requests
 405 not allowed
 
 WEBAPI -----------------------
@@ -514,11 +515,13 @@ def all(path):
             responseCode = 201
 
         elif (str(path) == "_execute"):
-            logger.debug("execute function")
+            logger.debug(f"execute function {data} (start the function thread)")
             result =[]
             launch = m.execute_function(data)
-            if launch:
+            if launch==True:
                 responseCode = 200
+            elif launch == "busy":
+                responseCode = 429
             else:
                 responseCode = 404
 

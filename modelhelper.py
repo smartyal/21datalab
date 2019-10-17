@@ -99,3 +99,14 @@ def confusion_percentage(confusionMatrix):
             totalCount = totalCount + column
     #print(f"confusion_percentage {confusionCount} , {totalCount} ")
     return float(confusionCount)/float(totalCount)
+
+
+
+def movingaverage(values, window=10):
+    weights = numpy.repeat(1.0, window)/window
+    sma = numpy.convolve(values, weights, 'valid')
+    return sma
+
+def autocorr(x):
+    result = numpy.correlate(x, x, mode='full')
+    return result[result.size // 2:]
