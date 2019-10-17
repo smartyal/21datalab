@@ -1,18 +1,18 @@
 
 
-.button_21 button.bk-bs-btn.bk-bs-btn-default {
+.button_21 button.bk-btn.bk-btn-default {
 	background-color: #b3b3b3;
 	font-weight: bold;
 	border-style:solid;
 }
 
-.group_button_21 label.bk-bs-btn.bk-bs-btn-default {
+.group_button_21 label.bk-btn.bk-btn-default {
 	background-color: #b3b3b3;
 	font-weight: bold;
 	border-style:solid;
 }
 
-.group_button_21 label.bk-bs-btn.bk-bs-btn-default.bk-bs-active {
+.group_button_21 label.bk-btn.bk-btn-default.bk-active {
 	background-color: #d9d9d9;
 	font-weight: bold;
 	border-style:solid;
@@ -23,17 +23,20 @@
 	width:200px;
 }
 
+.dropdown_21  {
+    color : #000000;
+}
 
 
 
 
-.tabs_21 .bk-bs-nav-tabs>li>span {
+.tabs_21 .bk-nav-tabs>li>span {
     background-color: #b3b3b3;
 }
 
 
 
-.tabs_21 .bk-bs-nav {
+.tabs_21 .bk-nav {
     border-color:#1a1a1a;
     background-color: #ffffff;
 }

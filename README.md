@@ -14,7 +14,7 @@ Further reading:
 The framework is prepared to run on edge, desktop or cloud and is a microservice architecure. The core software is based on python 3.6. Currently, only the source-code version is available
 ## setup
 * install python 3.6, recommended https://www.anaconda.com/
-* install bokeh 1.04 for python (e.g. pip install bokeh==1.0.4), use this exact version, work for 1.10 is ongoing
+* install bokeh 1.3.4 for python (e.g. pip install bokeh==1.3.4), higher versions might work
 * install sseclient for python (e.g. pip install sseclient)
 * prepare the web applications folder, it needs some more packages which are placed under web/modules:
   * web/modules/bootstrap (MIT License): get the latest bootstrap dist https://getbootstrap.com/, place it here directly 

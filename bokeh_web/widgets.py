@@ -670,7 +670,7 @@ class TimeSeriesWidget():
         self.hoverTool = None # forget the old hovers
         self.showBackgrounds = False
         self.showThresholds = False
-        self.buttonWidth = 100
+        self.buttonWidth = 70
 
         #layoutControls = []# this will later be applied to layout() function
 
@@ -806,7 +806,7 @@ class TimeSeriesWidget():
             labels.extend(["threshold","-erase threshold-"])
         if labels:
             menu = [(label,label) for label in labels]
-            self.annotationDropDown = Dropdown(label="Annotate: "+str(labels[0]), menu=menu,width=self.buttonWidth)
+            self.annotationDropDown = Dropdown(label="Annotate: "+str(labels[0]), menu=menu,width=self.buttonWidth,css_classes = ['dropdown_21'])
             self.currentAnnotationTag = labels[0]
             self.annotationDropDown.on_change('value', self.annotation_drop_down_on_change_cb)
             #self.annotation_drop_down_on_change_cb() #call it to set the box select tool right and the label
@@ -1706,6 +1706,9 @@ class TimeSeriesWidget():
                     return True
         return False
 
+    def add_renderers(self,addList):
+        self.plot.renderers.extend(addList)
+
     def remove_renderers(self,deleteList=[],deleteMatch="",renderers=[]):
         """
          this functions removes renderers (plotted elements from the widget), we find the ones to delete based on their name attribute
@@ -1866,7 +1869,7 @@ class TimeSeriesWidget():
              modelPath(string): the path to the annotation, the modelPath-node must contain children startTime, endTime, colors, tags
         """
         try:
-            #self.logger.debug("draw_annotation "+modelPath+str(add_layout))
+            self.logger.debug(f"draw_annotation  {modelPath}, add layout {add_layout}")
             annotations = self.server.get_annotations()
 
             if annotations[modelPath]["type"]!= "time":
@@ -1904,7 +1907,8 @@ class TimeSeriesWidget():
             self.annotations[modelPath]=newAnno # put it in the annotation store for later
 
             if add_layout:
-                self.plot.add_layout(newAnno)
+                #self.plot.add_layout(newAnno)
+                self.add_renderers([newAnno])
             else:
                 return newAnno
         except Exception as ex:
@@ -1971,7 +1975,7 @@ class TimeSeriesWidget():
                                     fill_alpha=globalAlpha,
                                     name=modelPath)  # +"_annotaion
 
-            self.plot.add_layout(newAnno)
+            self.add_renderers([newAnno])
         except Exception as ex:
             self.logger.error("error draw threshold "+str(modelPath)+ " "+linePath+" "+str(ex))
 
