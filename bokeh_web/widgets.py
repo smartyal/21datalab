@@ -31,6 +31,7 @@ from bokeh.models import FuncTickFormatter, CustomJSHover, SingleIntervalTicker,
 from bokeh.themes import Theme
 from pytz import timezone
 from bokeh.models.glyphs import Rect
+from bokeh.models.glyphs import Quad
 
 
 
@@ -1835,7 +1836,7 @@ class TimeSeriesWidget():
         """ hide the current annotatios in the widget of type time"""
         annotations = self.server.get_annotations()
         timeAnnos = [anno  for anno in annotations.keys() if annotations[anno]["type"]=="time" ]
-        #self.logger.debug("hide_annotations "+str(timeAnnos))
+        self.logger.debug("hide_annotations "+str(timeAnnos))
         self.remove_renderers(deleteList=timeAnnos)
         self.annotationsVisible = False
         self.box_modifier_hide()
@@ -1881,15 +1882,20 @@ class TimeSeriesWidget():
             #    self.logger.warning(f"ignored tag {modelPath}, as {tag} is not in list of annotations: {settings['tags']}")
             #    return None
 
-            color = None
-            try:
+            try: # to set color and pattern
                 if type(settings["colors"]) is list:
                     tagIndex = settings["tags"].index(tag)
+                    pattern = None
                     color = settings["colors"][tagIndex]
                 elif type(settings["colors"]) is dict:
                     color = settings["colors"][tag]["color"]
+                    pattern = settings["colors"][tag]["pattern"]
+                    if not pattern is None:
+                        if pattern not in [" ",".","o","-","|","+",":","@","/","\\","x",",","`","v",">","*"]:
+                            pattern = 'x'
             except:
-                pass
+                color = None
+                pattern = None
             if not color:
                 self.logger.error("did not find color for boxannotation")
                 color = "red"
@@ -1897,18 +1903,38 @@ class TimeSeriesWidget():
             start = annotations[modelPath]["startTime"]
             end = annotations[modelPath]["endTime"]
 
-            #print("draw new anno",color,start,end,modelPath)
+            infinity=1000000
+            # we must use varea, as this is the only one glyph that supports hatches and does not create a blue box when zooming out
+            #self.logger.debug(f"have pattern with hatch {pattern}, tag {tag}, color{color} ")
+            if not pattern is None:
+                newAnno = self.plot.varea(x=[start,end],
+                                          y1=[-infinity,-infinity],
+                                          y2=[infinity,infinity],
+                                          fill_color=color,
+                                          hatch_color="black",
+                                          hatch_pattern=pattern,
+                                          hatch_alpha=1,
+                                          name=modelPath,
+                                          fill_alpha=globalAlpha)
+            else:
+                #no pattern
+                newAnno = self.plot.varea(x=[start, end],
+                                          y1=[-infinity, -infinity],
+                                          y2=[infinity, infinity],
+                                          fill_color=color,
+                                          name=modelPath,
+                                          fill_alpha=globalAlpha)
 
-            newAnno = BoxAnnotation(left=start,right=end,
-                                fill_color=color,
-                                fill_alpha=globalAlpha,
-                                name=modelPath) #+"_annotaion
+
+
+            if not add_layout:
+                self.remove_renderers(renderers=[newAnno])
 
             self.annotations[modelPath]=newAnno # put it in the annotation store for later
 
             if add_layout:
-                #self.plot.add_layout(newAnno)
-                self.add_renderers([newAnno])
+                #already added
+                pass
             else:
                 return newAnno
         except Exception as ex:
