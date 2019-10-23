@@ -2502,7 +2502,24 @@ class Model():
             self.disable_observers()
             try:
                 if type(fileName) is str:
-                    f = open("./models/"+fileName+".model.json","r")
+                    model_directory = None
+                    model_filename = None
+                    if os.path.isabs(fileName):
+                        model_directory = os.path.dirname(fileName)
+                        model_filename = os.path.basename(fileName)
+                    else:
+                        file_directory = os.path.dirname(fileName)
+                        if len(file_directory) == 0:
+                            # we are only given a filename, use 21datalab subfolder models as directory
+                            model_directory = os.path.join(os.path.dirname(__file__), "models")
+                            model_filename = fileName
+                        else:
+                            # we are given a relative path + filename
+                            model_directory = os.path.dirname(fileName)
+                            model_filename = os.path.basename(fileName)
+
+                    #if os.path.dirname(fileName)
+                    f = open(os.path.join(model_directory, model_filename) + ".model.json","r")
                     model = json.loads(f.read())
                     self.model = model
                     f.close()
@@ -2520,7 +2537,7 @@ class Model():
                     if includeData:
                         if self.get_node_info(nodeId)["type"] == "table":
                             table = self.get_browse_path(nodeId)
-                            data = numpy.load("./models/" + fileName+'.'+table + ".npy")
+                            data = numpy.load(os.path.join(model_directory, model_filename) + "." + table + ".npy")
                             ids = self.get_leaves_ids(table+".columns")
                             for id, column in zip(ids, data):
                                 self.set_value(id,column)
