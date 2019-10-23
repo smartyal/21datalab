@@ -1,3 +1,4 @@
+import argparse
 import flask
 import json
 import logging
@@ -742,22 +743,31 @@ def all(path):
         return flask.Response("",mimetype="text/html"),501
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--port', help='Port on which the restservice is listening', default=6001, type=int)
+    parser.add_argument('model', help='Full path to model or name of a model in the models subdirectory', nargs='?', default=None)
+
+    args = parser.parse_args()
+    model_path = args.model
+    port = args.port
+
     m = model.Model()
-    if len(sys.argv) > 1:
-        if sys.argv[1] == "occupancy":
+    if model_path is not None:
+        if model_path == "occupancy":
             print("starting occupany demo")
             m.create_test(2)
-        elif sys.argv[1] == "dynamictest":
+        elif model_path == "dynamictest":
             print("starting the dynamic test")
             m.create_test(3)
         else:
-            print("load model from disk: "+sys.argv[1])
-            m.load(sys.argv[1])
+            print("load model from disk: " + model_path)
+            m.load(model_path)
     else:
         print("no model - create standard test model")
         m.create_test(1)
 
-    web.run(host='0.0.0.0', port=6001, debug=False)#, threaded = False)
+    web.run(host='0.0.0.0', port=port, debug=False)#, threaded = False)
 
     #enable this to use wsgi web server instead
     #http_server = WSGIServer(('0.0.0.0', 6001), web)
