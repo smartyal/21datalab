@@ -36,13 +36,18 @@ function populate_ui()
 {
     var divs = $("div[id^='ui-layout']"); // all divs starting with "ui-layout"
 
-    for (var div of divs)
+    //for (var div of divs)
+    //for (var index in divs)
+    //for(const [index, div] of divs.entries())
+    for (var index = 0; index < divs.length; index++)
     {
 
-
+        var div = divs[index];
         let divTag = $("#"+div.id)
         var path = JSON.parse(divTag.attr('uiinfo'))['path'];
-        http_post("_getlayout",JSON.stringify({"layoutNode":path}),div.id, null,function(obj,status,data,params)   {
+        var isLast = (index == (divs.length-1));
+
+        http_post("_getlayout",JSON.stringify({"layoutNode":path}),div.id, isLast,function(isLast,status,data,params)   {
             var id = params;
             if (status==200)
             {
@@ -68,6 +73,7 @@ function populate_ui()
                 catch{}
                 var tree = new TreeCard(treeDiv.id,settings);
             }
+            if (isLast) populate_ui_complete();
 
         });
     }
@@ -282,10 +288,228 @@ function on_first_load () {
 
     initialize_upload();
 
+    // right mouse click
+    /*
+	document.querySelector('#ui-layout-workbench').addEventListener('contextmenu', function(e) {
+		showContextMenu();
+	    e.preventDefault();
+	});
+	*/
+
+
+
 } //on_first_load;
 
+function showContextMenu (){
+    console.log("here context menu");
+}
 
 
+
+function populate_ui_complete(){
+
+    console.log("populate_ui_complete, this should be called only once at the very end!");
+    var elem = $('#ui-component-workbench');
+	elem.on('contextmenu', function(e) {
+
+	    
+        e.preventDefault();
+        //var menu = prepare_context_menu(e);
+        console.log("context");
+        show_context_menu(e);
+        //superCm.createMenu(menu, e);
+        //return false;
+    });
+}
+
+function show_context_menu(e)
+{
+   console.log("in show");
+    //get the current state from the backend
+   http_post("_getbranchpretty","root.visualization.workbench", e,null, function(obj,status,data,params)
+            {
+                if (status==200)
+                {
+
+                    console.log("back");
+
+                    var menu = prepare_context_menu(data);
+                    superCm.createMenu(menu,params);
+                }
+            }
+   );
+
+}
+
+function context_menu_click_show(option)
+{
+    console.log("context_menu_click_show "+option.label+" data" + option.data);
+}
+
+function context_menu_click_delete(option)
+{
+    console.log("context_menu_click_delete "+option.label+" data" + option.data);
+
+    http_post("/_delete",JSON.stringify(option.data),null,null,null);
+
+}
+
+
+
+function context_menu_click_function(option)
+{
+    console.log("context_menu_click_function, execute " + option.data);
+    http_post("/_execute",JSON.stringify(option.data),null,null,null);
+    superCm.destroyMenu(); // hide it
+}
+
+function prepare_context_menu(dataString)
+{
+    //data is a string json containing the widget info
+    var data = JSON.parse(dataString);
+    var disableDirectModification = true;
+
+    try
+    {
+        var targets = data.hasAnnotation.selectedAnnotations[".properties"].forwardRefs;
+        if (targets.length != 0)
+        {
+            console.log("have selected annotation");
+            disableDirectModification = false;
+        }
+    }
+    catch
+    {
+    }
+
+
+    // let's create the context menue depending on the current status
+    var menu= [
+
+    // area direct modification, only if something is selected (annotation)
+    {
+        icon:"far fa-trash-alt",
+        label:"delete",
+        disabled : disableDirectModification,
+        data: data.hasAnnotation.selectedAnnotations[".properties"].forwardRefs,
+        action : function(option, contextMenuIndex, optionIndex){context_menu_click_delete(option);}
+    },
+    {
+        icon:"fas fa-external-link-alt",
+        label:"show in model",
+        disabled : disableDirectModification
+    },
+    {
+        icon: 'fa fa-edit',   //Icon for the option
+        label: 'modify',   //Label to be displayed for the option
+        action: function(option, contextMenuIndex, optionIndex) {console.log("menu2");},   //The callback once clicked
+        disabled: disableDirectModification
+    },
+
+    {
+        separator : true
+    }];
+
+    //now comes the show/hide submenu
+    let showSubmenu = [
+
+        {
+            disabled: false,
+            icon: 'fas fa-columns',
+            label: 'variables',
+            submenu:[]
+        },
+        {
+            icon: 'far fa-dot-circle',
+            label: 'scores',
+            disabled: false
+        },
+        {
+            icon: 'far fa-bookmark',
+            label:"annotations"
+        },
+        {
+            icon: 'fas fa-layer-group',
+            label:"background"
+        },
+    ];
+    var showJson = data.visibleElements[".properties"].value;
+    if ("thresholds" in showJson)
+    {
+        var entry = {
+                icon: 'fas fa-arrows-alt-v',
+                label: 'thresholds',
+                disabled: false,
+                data:showJson["thresholds"],
+                action: function(option, contextMenuIndex, optionIndex){var opt = option; context_menu_click_show(opt);}
+        };
+        showSubmenu.push(entry);
+    }
+    //add the show/hide to the menu
+    menu.push({
+        disabled: false,
+        icon: 'fas fa-eye',
+        label: 'show/hide',
+        submenu: showSubmenu
+        });
+
+    //the "new area"
+    var menuNew = [
+        {separator :true},
+
+        {
+            icon: 'fa fa-plus',
+            label: 'new',
+            disabled: false,
+            submenu: [
+                {
+                    icon: 'far fa-bookmark',
+                    label:"annotation"
+                },
+                {
+                    icon: 'fas fa-arrows-alt-v',
+                    label: 'threshold'
+                }
+            ]
+        }
+    ]
+    menu=menu.concat(menuNew);
+
+
+    //user functions
+    var menuUserFunctions =[{
+            separator: true
+        }];
+
+    for (fkt of data.contextMenuFunctions[".properties"].forwardRefs)
+    {
+        var entry={
+            icon: 'fas fa-play-circle',
+            label: '<font size="3" color="#d9b100">'+fkt+'</font>',
+            data: fkt,
+            action: function(option, contextMenuIndex, optionIndex){context_menu_click_function(option); }
+        };
+        menuUserFunctions.push(entry);
+    }
+    if (menuUserFunctions.length>1)
+    {
+        menu=menu.concat(menuUserFunctions);
+    }
+
+
+    var menuTail = [
+        {
+            separator: true
+        },
+        {
+            icon: 'fas fa-cog',
+            label : "settings"
+        }
+    ];
+
+    menu = menu.concat(menuTail);
+    return menu;
+}
 
 
 $( document ).ready(function() {
