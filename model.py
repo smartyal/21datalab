@@ -951,6 +951,56 @@ class Model():
 
         return copy.deepcopy(nodes)
 
+    def __get_node_with_children_pretty(self,id):
+        """
+            recursive helper for get_branch_pretty
+            args:
+                nodes: the nodes so far
+
+        """
+
+        result = {}
+
+        node = self.model[id]
+        #create my properties
+        props = {k: copy.deepcopy(v) for k, v in node.items() if k not in ["value", "forwardRefs", "backRefs", "children"]}
+        if node["type"] not in ["file", "column"]:
+            # we also take the value then
+            props["value"] = copy.deepcopy(node["value"])
+        if node["type"] == "referencer":
+            leaves = self.get_leaves_ids(id)
+            forwards = [self.get_browse_path(leaf) for leaf in leaves]
+            props["forwardRefs"] = forwards
+        result[".properties"]=props
+
+        #now the children
+        for childId in node["children"]:
+            result[self.model[childId]["name"]]=self.__get_node_with_children_pretty(childId)
+
+        return result
+
+
+
+    def get_branch_pretty(self,desc):
+        """
+            get a branch in the form
+            "child1":{"child3":... ".type":, ".value"
+            "child2":{
+            the properties occurr in ".property" style, the children are direct entries
+            we only use names
+            for the referencers, the ".forwardRefs" are the leaves with full path: ["root.folder1.tzarget2","root.varibale.bare"..]
+        """
+        with self.lock:
+            id = self.__get_id(desc)
+            if not id: return None
+            return self.__get_node_with_children_pretty(id)
+
+
+
+
+
+
+
 
 
     def get_node_with_children(self,desc):
