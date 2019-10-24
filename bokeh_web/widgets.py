@@ -32,6 +32,9 @@ from bokeh.themes import Theme
 from pytz import timezone
 from bokeh.models.glyphs import Rect
 from bokeh.models.glyphs import Quad
+from bokeh.models.glyphs import VArea
+
+from bokeh.models.renderers import GlyphRenderer
 
 
 
@@ -236,12 +239,18 @@ class TimeSeriesWidgetDataServer():
             Returns: none
 
         """
+
+        self.fetch_mirror()
+
+
+
         request = [self.path]
         info = self.__web_call("post","_get",request)
         self.logger.debug("initial settings %s",json.dumps(info,indent=4))
         #self.originalInfo=copy.deepcopy(info)
         #grab some settings
         self.settings = get_const_nodes_as_dict(info[0]["children"])
+
 
         #also grab the selected
         request = self.path+".selectedVariables"
@@ -269,7 +278,14 @@ class TimeSeriesWidgetDataServer():
         else:
             self.scoreVariables = [node["browsePath"] for node in nodes]
 
-        self.load_annotations()
+        #now for the annotations
+        if (self.settings["hasAnnotation"] == True) or (self.settings["hasThreshold"] == True):
+            response = self.__web_call("post","_get",[self.path+"."+"hasAnnotation"])
+            annotationsInfo = get_const_nodes_as_dict(response[0]["children"])
+            self.settings.update(annotationsInfo)
+
+        #self.load_annotations()
+        self.annotations=self.fetch_annotations() # get all the annotations
         """
         #now grab more infor for annotations if needed:
         if (self.settings["hasAnnotation"] == True) or (self.settings["hasThreshold"] == True):
@@ -347,6 +363,41 @@ class TimeSeriesWidgetDataServer():
         self.logger.debug("%s",json.dumps(self.settings,indent=4))
 
 
+
+
+
+    def fetch_annotations(self):
+        # return a dict with {id:annotationdict}
+        #get a fresh copy of the annotations
+        nodes = self.__web_call("post", "_getleaves", self.path + ".hasAnnotation.annotations")
+        self.logger.debug(f"_fetch_annotations(): {len(nodes)} annotations")
+        # now parse the stuff and build up our information
+        annotations = {}
+        for node in nodes:
+            if node["type"] == "annotation":
+                annotation = get_const_nodes_as_dict(node["children"])
+                annotation["browsePath"]=node["browsePath"]
+                annotation["id"]=node["id"]
+                annotation["name"] = node["name"]
+                #convert some stuff
+                if "startTime" in annotation:
+                    annotation["startTime"] = date2secs(
+                        annotation["startTime"]) * 1000
+                if "endTime" in annotation:
+                    annotation["endTime"] = date2secs(
+                        annotation["endTime"]) * 1000
+                if annotation["type"] == "threshold":
+                    # we also pick the target
+                    annotation["variable"] = \
+                        annotation["variable"][0]
+                annotations[node["id"]]=annotation
+        self.logger.debug("server annotations" + json.dumps(self.annotations, indent=4))
+        return annotations
+
+
+
+
+
     ##############################
     ## INTERFACE FOR THE WIDGET
     ##############################
@@ -401,6 +452,12 @@ class TimeSeriesWidgetDataServer():
     def get_time_node(self):
         return self.timeNode
 
+    def get_mirror(self):
+        return self.mirror
+
+    def fetch_mirror(self):
+        self.mirror = self.__web_call("post", "_getbranchpretty", self.path)
+        return self.mirror
 
     def get_variables_selectable(self):
         """ returns the selectable variables from the cache"""
@@ -412,6 +469,7 @@ class TimeSeriesWidgetDataServer():
 
     def get_annotations(self):
         return copy.deepcopy(self.annotations)
+        #return copy.deepcopy(self.annotations)
 
     def bokeh_time_to_string(self,epoch):
         localtz =  timezone(self.settings["timeZone"])
@@ -461,9 +519,14 @@ class TimeSeriesWidgetDataServer():
         self.logger.debug("creating anno %s",str(nodesToCreate))
         res = self.__web_call('POST','_create',nodesToCreate)
 
-        #now also update our internal list
-        self.annotations[annoPath] = {"startTime":start,"endTime":end,"tags":[tag],"min":min,"max":max,"type":type,"variable":self.get_variables_selected()[0]}
-        return annoPath
+        if res:
+            #the first is our node id
+            #now also update our internal list
+            anno  = {"startTime":start,"endTime":end,"tags":[tag],"min":min,"max":max,"type":type,"variable":self.get_variables_selected()[0],"id":res[0],"name":nodeName}
+            self.annotations[anno["id"]] = copy.deepcopy(anno)
+            return anno
+        else:
+            return None
 
 
     def adjust_annotations(self,annoPath,anno):
@@ -488,7 +551,7 @@ class TimeSeriesWidgetDataServer():
 
             ]
         else:
-            logger.error("adjust_annotations : unsopported type")
+            self.logger.error("adjust_annotations : unsopported type")
             return
 
         res = self.__web_call('POST', 'setProperties', nodesToModify)
@@ -553,6 +616,8 @@ class TimeSeriesWidget():
         self.threadsRunning = True # the threads are running: legend watch
         self.annotationsVisible = False # we are currently not showing annotations
         self.boxModifierVisible = False # we are currently no showing the modifiert lines
+        self.renderers = {}  # each element is ["id":["renderer":object,"info":annoDict] these are the created renderers to be later used e.g. annotations
+
 
         self.__init_figure() #create the graphical output
         self.__init_new_observer()      #
@@ -619,10 +684,35 @@ class TimeSeriesWidget():
                                                                 self.server.get_settings()["bins"])  # for debug
                 self.__dispatch_function(self.stream_update)
         elif data["event"] == "timeSeriesWidget.annotations":
-            self.logger.debug(f"must reload annotations")
-            self.reInitAnnotationsVisible = self.annotationsVisible #store the state
+            self.logger.warning(f"must reload annotations")
+            #self.reInitAnnotationsVisible = self.annotationsVisible #store the state
             # sync from the server
-            self.__dispatch_function(self.reinit_annotations)
+            #self.__dispatch_function(self.reinit_annotations)
+            self.__dispatch_function(self.update_annotations)
+
+    def update_annotations(self):
+        self.logger.debug("update_annotations")
+        # this is called when the backend has changed annotation leaves
+        lastAnnotations = self.server.get_annotations()
+        newAnnotations = self.server.fetch_annotations()
+
+        #check for deletes
+        deleteList = []
+        for annoId in lastAnnotations:
+            if annoId not in newAnnotations:
+                self.logger.debug(f"annotations was deleted on server: {annoId}, {lastAnnotations[annoId]['name']}")
+                deleteList.append(annoId)
+                if annoId in self.renderers:
+                    del self.renderers[annoId]
+        self.logger.debug(f"must delete {deleteList}")
+
+        self.remove_renderers(deleteList = deleteList)
+
+        if self.boxModifierVisible:
+            if self.boxModifierAnnotationName in deleteList:
+                self.box_modifier_hide()
+
+
 
     def reinit_annotations(self):
         self.hide_annotations()
@@ -676,6 +766,7 @@ class TimeSeriesWidget():
         #layoutControls = []# this will later be applied to layout() function
 
         settings = self.server.get_settings()
+        mirror = self.server.get_mirror()
 
         if "width" in settings:
             self.width = settings["width"]
@@ -1225,40 +1316,39 @@ class TimeSeriesWidget():
         self.boxModifierRectHorizontal.data_source.on_change("selected", self.box_cb)
         self.boxModifierRectVertical.data_source.on_change("selected", self.box_cb)
 
-        #self.boxModifierTool.renderers=[self.boxModifierRectHorizontal]#,self.boxModifierRectVertical]
-
-        #self.boxModifierRectHorizontal.visible = False
-        #self.boxModifierRectVertical.visible = False
         self.box_modifier_hide()# remove the renderers
 
     def box_modifier_tap(self, x=None, y=None):
 
         self.logger.debug(f"box_modifier_tap x:{x} y:{y}")
-        #we do this only if annotations are visible
-        if self.annotationsVisible:
-            #check if we are inside an annotation
-            for annoName, anno in self.server.get_annotations().items():
-                self.logger.debug("check anno "+annoName+" "+anno["type"])
-                if anno["type"] == "time":
-                    if anno["startTime"]<x and anno["endTime"]>x:
-                        #we are inside this annotation:
-                        self.box_modifier_show(annoName,anno)
-                        return
-        if self.showThresholds:
 
-            for annoName, anno in self.server.get_annotations().items():
-                if anno["type"] == "threshold":
-                    # we must also check if that specific threshold annotation is currently visible
-                    if self.find_renderer(annoName):
-                        self.logger.debug(f" annomin {anno['min']} anno max {anno['max']}")
-                        if anno["min"] < y and anno["max"] > y:
-                            self.box_modifier_show(annoName,anno)
-                            return
+        #check if we are inside a visible annotation
+        for annoId, anno in self.server.get_annotations().items():
+            #self.logger.debug("check anno "+annoName+" "+anno["type"])
+            candidate = False
+            if anno["type"] == "time":
+                if anno["startTime"]<x and anno["endTime"]>x:
+                    #we are inside this annotation:
+                    candidate=True
+            elif anno["type"] == "threshold":
+                if anno["min"] < y and anno["max"] > y:
+                    candidate = True
+            if candidate:
+                if self.find_renderer(anno["id"]):
+                    #we are inside this anno and it is visible,
+                    self.box_modifier_show(annoId, anno)
+                    return
+
         #we are not inside an annotation, we hide the box modifier
         self.box_modifier_hide()
 
 
     def box_modifier_show(self,annoName,anno):
+        """
+            Args:
+                annoName: the key in the annotationlist (=id in the model)
+        """
+
         self.logger.debug(f"box_modifier_show {annoName}")
 
         if self.boxModifierVisible:
@@ -1332,6 +1422,14 @@ class TimeSeriesWidget():
             data['x'] = [boxXCenter, boxXCenter]
             self.boxModifierData.data = data
 
+    def adjust_annotation(self,anno):
+        if anno["type"]=="time":
+            if self.find_renderer(anno["id"]):
+                source=self.renderers[anno["id"]]["source"]
+                source.patch({'x':[ (0,anno["startTime"]),(1,anno["endTime"]) ]})
+
+                #self.renderers[anno["id"]]["source"]["x"]=[anno["startTime"],anno["endTime"]]
+
     def box_modifier_modify(self):
         self.logger.debug(f"box_modifier_modify {self.boxModifierVisible}, now => {self.boxModifierData.data}")
         if self.boxModifierVisible == False:
@@ -1362,8 +1460,9 @@ class TimeSeriesWidget():
             anno["startTime"] = self.boxModifierData.data['x'][0]
             anno["endTime"] = self.boxModifierData.data['x'][1]
             self.server.adjust_annotations(self.boxModifierAnnotationName, anno)
-            self.remove_renderers(deleteMatch=self.boxModifierAnnotationName)
-            self.draw_annotation(self.boxModifierAnnotationName)
+            self.adjust_annotation(anno)
+            #self.remove_renderers(deleteMatch=self.boxModifierAnnotationName)
+            #self.draw_annotation(anno,visible=True)
             #now also find the box glyph and tune it
 
         elif anno["type"] == "threshold":
@@ -1740,6 +1839,8 @@ class TimeSeriesWidget():
 
         self.plot.renderers = newRenderers
 
+
+
     def annotation_toggle_click_cb(self,toggleState):
         """
             callback from ui for turning on/off the annotations
@@ -1810,8 +1911,30 @@ class TimeSeriesWidget():
             self.showBackgrounds = False
 
 
-
     def init_annotations(self):
+        # we assume that annotations are part of the model,
+        ## get the annotations from the server and build the renderers, plot them if wanted
+        ## but only the time annotations, the others are created and destroyed on demand
+        #self.visibleAnnotations = set() # a set
+
+        self.logger.debug(f"init_annotations() {len(self.server.get_annotations())} annotations..")
+
+        #now we build all renderers for the time annos and don't show them now
+        for annoname, anno in self.server.get_annotations().items():
+            if anno["type"] == "time":
+                self.draw_annotation(anno,False)
+
+        mirror = self.server.get_mirror()["visibleElements"][".properties"]["value"]
+        if "annotations" in mirror:
+            if mirror["annotations"] == True:
+                self.show_annotations()
+
+        self.logger.debug("init annotations done")
+
+    def draw_threshold2(self,anno,visible=False):
+        self.logger.debug(f"draw_threshold2() {anno['name']} visible:{visible}")
+
+    def init_annotations_old(self):
         """
             chreate the actual bokeh objects based on existing annotations, this speeds up the process a lot when show
             ing the annotations later, we will keep the created objecs in the self.annotations list and apply it to
@@ -1827,8 +1950,13 @@ class TimeSeriesWidget():
         self.logger.debug("init_annotations.. done")
 
     def show_annotations(self):
-        self.plot.renderers.extend([v for k,v in self.annotations.items()])
-        self.annotationsVisible = True
+        addList=[]
+        for k, v in self.renderers.items():
+            if not v["renderer"] in self.plot.renderers:
+                addList.append(v["renderer"])
+
+        self.plot.renderers.extend(addList)
+        #self.annotationsVisible = True
 
 
 
@@ -1838,7 +1966,7 @@ class TimeSeriesWidget():
         timeAnnos = [anno  for anno in annotations.keys() if annotations[anno]["type"]=="time" ]
         self.logger.debug("hide_annotations "+str(timeAnnos))
         self.remove_renderers(deleteList=timeAnnos)
-        self.annotationsVisible = False
+        #self.annotationsVisible = False
         self.box_modifier_hide()
 
     def get_layout(self):
@@ -1860,10 +1988,77 @@ class TimeSeriesWidget():
                 del self.annotations[anno]
 
 
+    def draw_annotation(self, anno, visible=False):
+        """
+            draw one time annotation on the plot
+            Args:
+             anno: the annotation
+             visible: true/false
+        """
+        try:
+            self.logger.debug(f"draw_annotation  {anno['name']} visible {visible}")
+
+            tag = anno["tags"][0]
+            mirror = self.server.get_mirror()
+            myColors = mirror["hasAnnotation"]["colors"][".properties"]["value"]
+            myTags = mirror["hasAnnotation"]["tags"][".properties"]["value"]
+
+            try: # to set color and pattern
+                if type(myColors) is list:
+                    tagIndex = myTags.index(tag)
+                    pattern = None
+                    color = myColors[tagIndex]
+                elif type(myColors) is dict:
+                    color = myColors[tag]["color"]
+                    pattern = myColors[tag]["pattern"]
+                    if not pattern is None:
+                        if pattern not in [" ",".","o","-","|","+",":","@","/","\\","x",",","`","v",">","*"]:
+                            pattern = 'x'
+            except:
+                color = None
+                pattern = None
+            if not color:
+                self.logger.error("did not find color for boxannotation")
+                color = "red"
+
+            start = anno["startTime"]
+            end = anno["endTime"]
+
+            infinity=1000000
+            # we must use varea, as this is the only one glyph that supports hatches and does not create a blue box when zooming out
+            #self.logger.debug(f"have pattern with hatch {pattern}, tag {tag}, color{color} ")
+            source = ColumnDataSource(dict(x=[start, end], y1=[-infinity, -infinity], y2=[infinity, infinity]))
+
+            if not pattern is None:
+                area = VArea(x="x",y1="y1",y2="y2",
+                                    fill_color=color,
+                                    name=anno["id"],
+                                    fill_alpha=globalAlpha,
+                                    hatch_color="black",
+                                    hatch_pattern=pattern,
+                                    hatch_alpha=1)
+            else:
+                area = VArea(x="x", y1="y1", y2="y2",
+                                    fill_color=color,
+                                    name=anno["id"],
+                                    fill_alpha=globalAlpha)
+
+           
+            # bokeh hack to avoid adding the renderers directly: we create a renderer from the glyph and store it for later bulk assing to the plot
+            # which is a lot faster than one by one
+            myrenderer = GlyphRenderer(data_source=source,glyph=area,name=anno['id'])
+            if visible:
+                self.add_renderers([myrenderer])
+
+        except Exception as ex:
+            self.logger.error("error draw annotation"+str(ex))
+
+
+        self.renderers[anno["id"]]={"renderer":myrenderer,"info":copy.deepcopy(anno),"source":source} # we keep this renderer to speed up later
 
 
 
-    def draw_annotation(self, modelPath, add_layout = True):
+    def draw_annotation_old(self, modelPath, add_layout = True):
         """
             draw one time annotation on the plot
             Args:
@@ -2004,6 +2199,38 @@ class TimeSeriesWidget():
             self.add_renderers([newAnno])
         except Exception as ex:
             self.logger.error("error draw threshold "+str(modelPath)+ " "+linePath+" "+str(ex))
+
+
+    def draw_threshold2(self, anno,visible=False):
+        """ draw the boxannotation for a threshold
+            Args:
+                 anno
+        """
+
+        try:
+            tag = anno["tags"][0]
+
+            if linePath:
+                color = self.lines[linePath].glyph.line_color
+            else:
+                color ="blue"
+
+            min = annotations[modelPath]["min"]
+            max = annotations[modelPath]["max"]
+            if min>max:
+                max,min = min,max # swap them
+
+            # print("draw new anno",color,start,end,modelPath)
+
+            newAnno = BoxAnnotation(top=max, bottom=min,
+                                    fill_color=color,
+                                    fill_alpha=globalAlpha,
+                                    name=modelPath)  # +"_annotaion
+
+            self.add_renderers([newAnno])
+        except Exception as ex:
+            self.logger.error("error draw threshold "+str(modelPath)+ " "+linePath+" "+str(ex))
+
 
     def make_background_entries(self, data, roundValues = True):
         """
@@ -2171,9 +2398,9 @@ class TimeSeriesWidget():
         elif "threshold" not in tag:
             #create a time annotation one
 
-            newAnnotationPath = self.server.add_annotation(start,end,tag,type="time")
+            newAnno= self.server.add_annotation(start,end,tag,type="time")
             #print("\n now draw"+newAnnotationPath)
-            self.draw_annotation(newAnnotationPath)
+            self.draw_annotation(newAnno,visible=True)
             #print("\n draw done")
         else:
             #create a threshold annotation, but only if ONE variable is currently selected

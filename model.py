@@ -963,14 +963,15 @@ class Model():
 
         node = self.model[id]
         #create my properties
-        props = {k: copy.deepcopy(v) for k, v in node.items() if k not in ["value", "forwardRefs", "backRefs", "children"]}
+        props = {k: copy.deepcopy(v) for k, v in node.items() if k not in ["value", "backRefs", "children"]}
         if node["type"] not in ["file", "column"]:
             # we also take the value then
             props["value"] = copy.deepcopy(node["value"])
         if node["type"] == "referencer":
             leaves = self.get_leaves_ids(id)
             forwards = [self.get_browse_path(leaf) for leaf in leaves]
-            props["forwardRefs"] = forwards
+            props["leaves"]=forwards
+            props["leavesIds"]=leaves
         result[".properties"]=props
 
         #now the children

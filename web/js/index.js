@@ -351,6 +351,7 @@ function context_menu_click_delete(option)
     console.log("context_menu_click_delete "+option.label+" data" + option.data);
 
     http_post("/_delete",JSON.stringify(option.data),null,null,null);
+    superCm.destroyMenu(); // hide it
 
 }
 
@@ -371,7 +372,7 @@ function prepare_context_menu(dataString)
 
     try
     {
-        var targets = data.hasAnnotation.selectedAnnotations[".properties"].forwardRefs;
+        var targets = data.hasAnnotation.selectedAnnotations[".properties"].leaves;
         if (targets.length != 0)
         {
             console.log("have selected annotation");
@@ -391,7 +392,7 @@ function prepare_context_menu(dataString)
         icon:"far fa-trash-alt",
         label:"delete",
         disabled : disableDirectModification,
-        data: data.hasAnnotation.selectedAnnotations[".properties"].forwardRefs,
+        data: data.hasAnnotation.selectedAnnotations[".properties"].leaves,
         action : function(option, contextMenuIndex, optionIndex){context_menu_click_delete(option);}
     },
     {
@@ -481,7 +482,7 @@ function prepare_context_menu(dataString)
             separator: true
         }];
 
-    for (fkt of data.contextMenuFunctions[".properties"].forwardRefs)
+    for (fkt of data.contextMenuFunctions[".properties"].leaves)
     {
         var entry={
             icon: 'fas fa-play-circle',
