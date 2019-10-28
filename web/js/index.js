@@ -73,7 +73,18 @@ function populate_ui()
                 catch{}
                 var tree = new TreeCard(treeDiv.id,settings);
             }
-            if (isLast) populate_ui_complete();
+
+            // the widgets
+            var widgetDivs =  $("#"+id+" div[id^='ui-component']");
+            for (var widgetDiv of widgetDivs)
+            {
+                var widgetAvatar = JSON.parse(widgetDiv.attributes.uiinfo.value).droppath;
+
+                console.log("need a context menu for ",widgetDiv.id, "=> ", widgetAvatar);
+                hook_context_menu(widgetDiv.id,widgetAvatar);
+            }
+
+            //if (isLast) populate_ui_complete();
 
         });
     }
@@ -305,7 +316,7 @@ function showContextMenu (){
 }
 
 
-
+/*
 function populate_ui_complete(){
 
     console.log("populate_ui_complete, this should be called only once at the very end!");
@@ -321,29 +332,83 @@ function populate_ui_complete(){
         //return false;
     });
 }
+*/
 
-function show_context_menu(e)
+function hook_context_menu(divId,modelPath)
 {
-   console.log("in show");
+     console.log("hook_context_menu()",divId," ",modelPath);
+     var elem = $("#"+divId);
+     elem.on('contextmenu', function(e) {
+        e.preventDefault();
+        console.log("context");
+        show_context_menu(e,modelPath);
+     });
+}
+
+function show_context_menu(e,modelPath)
+{
+   console.log("show_context_menu() ",modelPath);
     //get the current state from the backend
-   http_post("_getbranchpretty","root.visualization.workbench", e,null, function(obj,status,data,params)
+   http_post("_getbranchpretty",modelPath, e,null, function(obj,status,data,params)
+        {
+            if (status==200)
             {
-                if (status==200)
-                {
 
-                    console.log("back");
+                console.log("in show_context_menu(), back from http");
 
-                    var menu = prepare_context_menu(data);
-                    superCm.createMenu(menu,params);
-                }
+                var menu = prepare_context_menu(data,modelPath);
+                superCm.createMenu(menu,params);
             }
+        }
    );
 
 }
 
 function context_menu_click_show(option)
 {
-    console.log("context_menu_click_show "+option.label+" data" + option.data);
+    console.log("context_menu_click_show "+option.label);
+    if (option.data.annotations == true)
+    {
+        console.log("hide annotation and switch @",option.path);
+        var data = option.data;
+        data.annotations=false;
+        context_menu_set_visible_elements(option.path,data);
+        superCm.destroyMenu();
+    }
+    else if (option.data.annotations == false)
+    {
+        console.log("show annotation and switch");
+
+        var data = option.data;
+        data.annotations=true;
+        context_menu_set_visible_elements(option.path,data);
+        superCm.destroyMenu(); 
+    }
+
+
+
+}
+
+
+function context_menu_set_visible_elements(modelPath,data)
+{
+        var query = [{browsePath:modelPath+".visibleElements",value:data}];
+
+        http_post('/setProperties',JSON.stringify(query), null, this, (self,status,data,params) => {
+            if (status>201)
+            {
+                //backend responded bad, we must set the frontend back
+
+                console.log("context_menu_set_visible_elements",status);
+            }
+            else
+            {
+                console.log("context_menu_set_visible_elements ok");
+
+            }
+        });
+
+
 }
 
 function context_menu_click_delete(option)
@@ -364,7 +429,7 @@ function context_menu_click_function(option)
     superCm.destroyMenu(); // hide it
 }
 
-function prepare_context_menu(dataString)
+function prepare_context_menu(dataString,modelPath)
 {
     //data is a string json containing the widget info
     var data = JSON.parse(dataString);
@@ -412,6 +477,9 @@ function prepare_context_menu(dataString)
     }];
 
     //now comes the show/hide submenu
+    let annotationsAction = "show";
+    if (data.visibleElements[".properties"].value.annotations == true) annotationsAction = "hide";
+
     let showSubmenu = [
 
         {
@@ -427,7 +495,10 @@ function prepare_context_menu(dataString)
         },
         {
             icon: 'far fa-bookmark',
-            label:"annotations"
+            label:annotationsAction+" annotations",
+            data:data.visibleElements[".properties"].value,
+            path:modelPath,
+            action: function(option, contextMenuIndex, optionIndex){var opt = option; context_menu_click_show(opt);}
         },
         {
             icon: 'fas fa-layer-group',

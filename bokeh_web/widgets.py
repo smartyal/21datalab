@@ -690,6 +690,27 @@ class TimeSeriesWidget():
             #self.__dispatch_function(self.reinit_annotations)
             self.__dispatch_function(self.update_annotations)
 
+
+        elif data["event"] == "timeSeriesWidget.visibleElements":
+            self.logger.debug("update the visible Elements")
+            visibleElementsOld = copy.deepcopy(self.server.get_mirror()["visibleElements"][".properties"]["value"])
+            visibleElementsNew = self.server.fetch_mirror()["visibleElements"][".properties"]["value"]
+
+            for entry in ["thresholds","annotations","scores","background"]:
+                #check for turn on:
+                if entry in visibleElementsNew and visibleElementsNew[entry] == True:
+                    if not entry in visibleElementsOld or visibleElementsOld[entry] == False:
+                        # element was turned on
+                        if entry == "annotations":
+                            self.__dispatch_function(self.show_annotations)
+                if entry in visibleElementsOld and visibleElementsOld[entry] == True:
+                    if not entry in visibleElementsNew or visibleElementsNew[entry]== False:
+                        # element was turned off
+                        if entry== "annotations":
+                            self.__dispatch_function(self.hide_annotations)
+
+
+
     def update_annotations(self):
         self.logger.debug("update_annotations")
         # this is called when the backend has changed annotation leaves
@@ -1924,10 +1945,13 @@ class TimeSeriesWidget():
             if anno["type"] == "time":
                 self.draw_annotation(anno,False)
 
-        mirror = self.server.get_mirror()["visibleElements"][".properties"]["value"]
-        if "annotations" in mirror:
-            if mirror["annotations"] == True:
-                self.show_annotations()
+        try:
+            mirror = self.server.get_mirror()["visibleElements"][".properties"]["value"]
+            if "annotations" in mirror:
+                if mirror["annotations"] == True:
+                    self.show_annotations()
+        except Exception as ex:
+            self.logger.warning(f"init_annotations {ex}")
 
         self.logger.debug("init annotations done")
 
@@ -1950,6 +1974,7 @@ class TimeSeriesWidget():
         self.logger.debug("init_annotations.. done")
 
     def show_annotations(self):
+        self.logger.debug("show_annotations()")
         addList=[]
         for k, v in self.renderers.items():
             if not v["renderer"] in self.plot.renderers:
@@ -2043,7 +2068,7 @@ class TimeSeriesWidget():
                                     name=anno["id"],
                                     fill_alpha=globalAlpha)
 
-           
+
             # bokeh hack to avoid adding the renderers directly: we create a renderer from the glyph and store it for later bulk assing to the plot
             # which is a lot faster than one by one
             myrenderer = GlyphRenderer(data_source=source,glyph=area,name=anno['id'])
