@@ -641,6 +641,8 @@ class TimeSeriesWidget():
         self.streamingUpdateData = None
         self.streamingMode = False
         self.showBackgrounds = False
+        self.showAnnotationTags = [] # a list with tags to display currently
+        self.showAnnotations = False # curently displaying annotations
 
 
         self.__init_figure() #create the graphical output
@@ -732,8 +734,14 @@ class TimeSeriesWidget():
 
         elif data["event"] == "timeSeriesWidget.visibleElements":
             self.logger.debug("update the visible Elements")
-            visibleElementsOld = copy.deepcopy(self.server.get_mirror()["visibleElements"][".properties"]["value"])
-            visibleElementsNew = self.server.fetch_mirror()["visibleElements"][".properties"]["value"]
+
+            oldMirror = copy.deepcopy(self.server.get_mirror())
+            visibleElementsOld = oldMirror["visibleElements"][".properties"]["value"]
+            visibleTagsOld =oldMirror["hasAnnotation"]["visibleTags"][".properties"]["value"]
+
+            newMirror = copy.deepcopy(self.server.fetch_mirror())
+            visibleElementsNew = newMirror["visibleElements"][".properties"]["value"]
+            visibleTagsNew = newMirror["hasAnnotation"]["visibleTags"][".properties"]["value"]
 
             for entry in ["thresholds","annotations","scores","background"]:
                 #check for turn on:
@@ -762,6 +770,9 @@ class TimeSeriesWidget():
                         elif entry == "background":
                             self.__dispatch_function(self.hide_backgrounds)
 
+            if (visibleTagsOld != visibleTagsNew) and self.showAnnotations:
+                self.__dispatch_function(self.show_annotations)
+                
         elif data["event"] == "timeSeriesWidget.values":
             #the data has changed, typically the score values
             pass
@@ -2122,18 +2133,38 @@ class TimeSeriesWidget():
         self.logger.debug("init_annotations.. done")
 
     def show_annotations(self):
+
         self.logger.debug("show_annotations()")
-        addList=[]
+        self.showAnnotations = True
+
+        mirror = self.server.fetch_mirror()
+        allowedTags = mirror["hasAnnotation"]["visibleTags"][".properties"]["value"]
+        self.showAnnotationTags = [tag for tag in allowedTags if allowedTags[tag]]
+        self.logger.debug(f"show annotation tags {self.showAnnotationTags}")
+
+        addList = []
+        removeList = []
+
         for k, v in self.renderers.items():
             if not v["renderer"] in self.plot.renderers:
-                addList.append(v["renderer"])
+                #this renderer is not yet in the renderers, check if we are allowed to show it
+                if any ([True for tag in v["info"]["tags"] if tag in self.showAnnotationTags ]):
+                    addList.append(v["renderer"])
+            if v["renderer"] in self.plot.renderers:
+                #this renderer is already there, check if we might need to hide it
+                if not any([True for tag in v["info"]["tags"] if tag in self.showAnnotationTags]):
+                    removeList.append(v["renderer"])
 
         self.plot.renderers.extend(addList)
+        self.remove_renderers(renderers=removeList)
+
+
         #self.annotationsVisible = True
 
 
 
     def hide_annotations(self):
+        self.showAnnotations = False
         """ hide the current annotatios in the widget of type time"""
         annotations = self.server.get_annotations()
         timeAnnos = [anno  for anno in annotations.keys() if annotations[anno]["type"]=="time" ]

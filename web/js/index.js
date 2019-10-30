@@ -440,6 +440,49 @@ function context_menu_click_delete(option)
 
 }
 
+function context_menu_click_test(option, contextMenuIndex, optionIndex)
+{
+    console.log("context_menu_click_test");
+    var option = {
+
+            icon: 'fas fa-cog',
+            label : "settingsss",
+            action: function(option, contextMenuIndex, optionIndex){ var opt = option; var idx = contextMenuIndex; var optIdx = optionIndex;
+                context_menu_click_test(opt,idx,optIdx);
+                }
+
+    };
+
+    superCm.setMenuOption(contextMenuIndex, optionIndex, option);
+    superCm.updateMenu();
+
+}
+
+function context_menu_tag_select_click(option,contextMenuIndex, optionIndex)
+{
+    console.log("context_menu_tag_select_click",option);
+    //make the true/false check box adjustment
+
+
+    if (option.currentValue == true)
+    {
+        option.currentValue = false;
+        option.icon = "far fa-square";
+    }
+    else
+    {
+        option.currentValue = true;
+        option.icon = "far fa-check-square";
+    }
+
+    option.data[option.label]=option.currentValue;
+    var query = [{browsePath:option.modelPath+".hasAnnotation.visibleTags",value:option.data}];
+    http_post('/setProperties',JSON.stringify(query), null, this, null);
+    superCm.setMenuOption(contextMenuIndex, optionIndex, option);
+    superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
+
+
+}
 
 
 function context_menu_click_function(option)
@@ -496,6 +539,7 @@ function prepare_context_menu(dataString,modelPath)
         separator : true
     }];
 
+
     //now comes the show/hide submenu
     let annotationsAction = "show";
     if (data.visibleElements[".properties"].value.annotations == true) annotationsAction = "hide";
@@ -505,6 +549,32 @@ function prepare_context_menu(dataString,modelPath)
     if (data.visibleElements[".properties"].value.thresholds == true) thresholdAction = "hide";
     let scoresAction = "show";
     if (data.visibleElements[".properties"].value.scores == true) scoresAction = "hide";
+
+    let visibleTags = data.hasAnnotation.visibleTags[".properties"].value;
+
+    // for switching on and off the annotation tags
+    let annotationsSubmenu = [];
+    for (tag in visibleTags)
+    {
+        let icon = "far fa-square";
+        if (visibleTags[tag]== true) {icon = "far fa-check-square";}
+        var entry = {
+            icon:icon,
+            label:tag,
+            data:visibleTags,
+            modelPath:modelPath,
+            currentValue:visibleTags[tag],
+            action: function(option, contextMenuIndex, optionIndex){
+                    var opt = option;
+                    var idx = contextMenuIndex; var
+                    optIdx = optionIndex;
+                    context_menu_tag_select_click(opt,idx,optIdx);
+                }
+        }
+
+        annotationsSubmenu.push(entry);
+    }
+
 
 
 
@@ -531,7 +601,8 @@ function prepare_context_menu(dataString,modelPath)
             element : "annotations",
             data:data.visibleElements[".properties"].value,
             path:modelPath,
-            action: function(option, contextMenuIndex, optionIndex){var opt = option; context_menu_click_show(opt);}
+            action: function(option, contextMenuIndex, optionIndex){var opt = option; context_menu_click_show(opt);},
+            submenu : annotationsSubmenu
         },
         {
             icon: 'fas fa-layer-group',
@@ -610,7 +681,10 @@ function prepare_context_menu(dataString,modelPath)
         },
         {
             icon: 'fas fa-cog',
-            label : "settings"
+            label : "settings",
+            action: function(option, contextMenuIndex, optionIndex){ var opt = option; var idx = contextMenuIndex; var optIdx = optionIndex;
+                context_menu_click_test(opt,idx,optIdx);
+                }
         }
     ];
 
