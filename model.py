@@ -705,9 +705,11 @@ class Observer:
         self.logger = self.model.logger
         self.lock = threading.RLock()
 
+
         #preload queue: this is a workaround as the browser does not get the first 2 events immideately
+        # it actually doesn't help ..?
         for i in range(2):
-            self.updateQueue.put({"event":"tree.update","id":"","data":""})
+            self.updateQueue.put({"event":"_preload","id":"","data":"xy"+str(i)})
 
     def update(self, event):
         """
@@ -733,6 +735,7 @@ class Observer:
             events are "identical", if they have the same "event" and "data"
         """
 
+        self.logger.debug(f"Observer {id(self)} get_event()")
         stop_event_processing = False # This flag shows when to stop the event processing
 
         while not stop_event_processing:
@@ -749,14 +752,14 @@ class Observer:
 
             except Exception as ex:
                 # this happens if we time out the queue get, no problem, just continue
-                #self.logger.error(f"Exception while handling event:{id(self)}: {ex}")
-                 continue
+                #self.logger.error(f"Exception observer {id(self)} thread self.updateQueue.get: {ex},{str(sys.exc_info()[0])}")
+                pass
 
             #now go over all the sorted event queues and check what to send out:
             try:
                 now = time.time()
                 for eventIdentification,entry in self.eventQueues.items(): # entry is {"lasttimestampe": "queue":
-                    #self.logger.debug(f"for check {id(self)} {eventType} size: {entry['queue'].qsize()},last:{entry['lastTimeStamp']}, now:{now}")
+                    #self.logger.debug(f"observer {id(self)} check queue of {eventIdentification} size: {entry['queue'].qsize()},last:{entry['lastTimeStamp']}, now:{now}, ready: {now > (entry['lastTimeStamp']+self.minWaitTime)}")
                     if (not entry["queue"].empty()) and (now > (entry["lastTimeStamp"]+self.minWaitTime)):
                         #send this event, the timeout was met, we pull the first event from the queue, trash the remaining ones
                         self.eventQueues[eventIdentification]["lastTimeStamp"]=now
@@ -770,7 +773,7 @@ class Observer:
                             self.logger.debug(f"Qtrash observerinstance{id(self)} eventident {eventIdentification} size {self.eventQueues[eventIdentification]['queue'].qsize()}")
                             while not self.eventQueues[eventIdentification]["queue"].empty():
                                self.eventQueues[eventIdentification]["queue"].get(False)
-                        #self.logger.debug(f"Qyield {id(self)} {myEvent['event']} {myEvent['id']}")
+                        #self.logger.debug(f"Qyield {id(self)} : {myEvent}")
                         yield event_string
 
 
@@ -837,6 +840,7 @@ class Model():
         """
             Args:
                 id (string): give a browsepath ("root.myfolder.myvariable") or a nodeId ("10")
+                or a "fancy" path mixed like "1000.min" where 1000 is a node id, only the first is allowed as Nodeid, the followings are names
             Returns:
                 (string): the node id as string
                 None if not found
@@ -848,11 +852,18 @@ class Model():
             names = id.split('.')
             if names[0]=="root":
                 names = names[1:]
+                actualSearchId = "1"
+
+            elif names[0] in self.model:
+                self.logger.debug(f"fancy browsepath {names}")
+                actualSearchId = names[0]
+                names = names[1:]
+            else:
+                return None
         except:
             return None
 
         #now we start at root
-        actualSearchId = "1"
         for name in names:
             nextSearchId = None
             for childId in self.model[actualSearchId]["children"]:
@@ -1359,6 +1370,12 @@ class Model():
                 self.model[fromId]["forwardRefs"].append(toId)
             self.__notify_observers(fromId,"forwardRefs")
             return True
+
+    def lock_model(self):
+        self.lock.acquire()
+
+    def release_model(self):
+        self.lock.release()
 
     def get_model(self):
         """
@@ -2783,13 +2800,14 @@ class Model():
                                         self.logger.debug(f"execute ontrigger function {funcNodeId}")
                                         self.execute_function(funcNodeId)
                                     if observer["hasEvent"]["value"] == True:
-                                        self.logger.debug(f"send event {observer['eventString']['value']}")
+                                        #self.logger.debug(f"send event {observer['eventString']['value']}")
                                         #also send the real event
                                         #self.modelUpdateCounter = self.modelUpdateCounter+1
                                         event = {
                                             "id": self.modelUpdateCounter,
                                             "event": observer["eventString"]["value"],
                                             "data": observerId}
+                                        self.logger.debug(f"send event {event}")
                                         for observerObject in self.observers:
                                             observerObject.update(event)
                                     triggeredObservers.append(observerId)# next time, we don't trigger

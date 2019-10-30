@@ -366,6 +366,26 @@ function show_context_menu(e,modelPath)
 
 function context_menu_click_show(option)
 {
+    let element = option.element;
+    console.log(element, option.data[element]);
+    if (option.data[element] == true)
+    {
+        //console.log("hide annotation and switch @",option.path);
+        var data = option.data;
+        data[element]=false;
+        context_menu_set_visible_elements(option.path,data);
+        superCm.destroyMenu();
+    }
+    else if (option.data[element] == false)
+    {
+        //console.log("show annotation and switch");
+
+        var data = option.data;
+        data[element]=true;
+        context_menu_set_visible_elements(option.path,data);
+        superCm.destroyMenu();
+    }
+    /*
     console.log("context_menu_click_show "+option.label);
     if (option.data.annotations == true)
     {
@@ -382,9 +402,9 @@ function context_menu_click_show(option)
         var data = option.data;
         data.annotations=true;
         context_menu_set_visible_elements(option.path,data);
-        superCm.destroyMenu(); 
+        superCm.destroyMenu();
     }
-
+    */
 
 
 }
@@ -479,44 +499,59 @@ function prepare_context_menu(dataString,modelPath)
     //now comes the show/hide submenu
     let annotationsAction = "show";
     if (data.visibleElements[".properties"].value.annotations == true) annotationsAction = "hide";
+    let backgroundAction = "show";
+    if (data.visibleElements[".properties"].value.background == true) backgroundAction = "hide";
+    let thresholdAction = "show";
+    if (data.visibleElements[".properties"].value.thresholds == true) thresholdAction = "hide";
+    let scoresAction = "show";
+    if (data.visibleElements[".properties"].value.scores == true) scoresAction = "hide";
+
+
+
 
     let showSubmenu = [
-
-        {
+        /*{
             disabled: false,
             icon: 'fas fa-columns',
             label: 'variables',
             submenu:[]
         },
+        */
         {
             icon: 'far fa-dot-circle',
-            label: 'scores',
-            disabled: false
+            label: scoresAction+' scores',
+            element : "scores",
+            data:data.visibleElements[".properties"].value,
+            path:modelPath,
+            action: function(option, contextMenuIndex, optionIndex){var opt = option; context_menu_click_show(opt);}
         },
         {
             icon: 'far fa-bookmark',
             label:annotationsAction+" annotations",
+            element : "annotations",
             data:data.visibleElements[".properties"].value,
             path:modelPath,
             action: function(option, contextMenuIndex, optionIndex){var opt = option; context_menu_click_show(opt);}
         },
         {
             icon: 'fas fa-layer-group',
-            label:"background"
+            label:backgroundAction+" background",
+            element:"background",
+            data:data.visibleElements[".properties"].value,
+            path:modelPath,
+            action:function(option, contextMenuIndex, optionIndex){var opt = option; context_menu_click_show(opt);}
         },
+        {
+            icon: 'fas fa-arrows-alt-v',
+            label: thresholdAction+' thresholds',
+            element: "thresholds",
+            data:data.visibleElements[".properties"].value,
+            path:modelPath,
+            action: function(option, contextMenuIndex, optionIndex){var opt = option; context_menu_click_show(opt);}
+
+        }
     ];
-    var showJson = data.visibleElements[".properties"].value;
-    if ("thresholds" in showJson)
-    {
-        var entry = {
-                icon: 'fas fa-arrows-alt-v',
-                label: 'thresholds',
-                disabled: false,
-                data:showJson["thresholds"],
-                action: function(option, contextMenuIndex, optionIndex){var opt = option; context_menu_click_show(opt);}
-        };
-        showSubmenu.push(entry);
-    }
+
     //add the show/hide to the menu
     menu.push({
         disabled: false,

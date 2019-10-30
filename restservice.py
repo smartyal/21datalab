@@ -534,12 +534,17 @@ def all(path):
         elif (str(path) == "_references"):
             logger.debug("set new references")
             result = []
+            m.lock_model()
+            m.disable_observers() #avoid intermediate events
             if "deleteExisting" in data and data["deleteExisting"] == True:
                 m.remove_forward_refs(data["parent"])
             if "add" in data:
                 result = m.add_forward_refs(data["parent"],data["add"])
             if "remove" in data:
                 result = m.remove_forward_refs(data["parent"], data["remove"])
+            m.enable_observers()
+            m.release_model()
+            m.notify_observers([m.get_id(data["parent"])],"forwardRefs")
             responseCode = 201
 
         elif (str(path) == "_execute"):

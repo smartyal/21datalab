@@ -103,7 +103,7 @@ def threshold_scorer_2(functionNode):
         modelling:
         - put the scorer where you like
         - connect annotations and inputs
-        - execute it once
+        - execute it once with signal "reset"
         - connect the widgets.scoreVariables to the output folder (to make them scores)
         - install an observer (event:timeSeriesWidget.variables) in the widget to watch the selectedVariables and scoreVariables value change
 
