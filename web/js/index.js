@@ -473,6 +473,14 @@ function context_menu_click_function(option)
     superCm.destroyMenu(); // hide it
 }
 
+function context_menu_new_annotation_click(option,contextMenuIndex, optionIndex)
+{
+    console.log("context menue new annotation",option.setValue);
+    var query = [{browsePath:option.modelPath+".nextNewAnnotation",value:option.setValue}];
+    http_post('/setProperties',JSON.stringify(query), null, this, null);
+    superCm.destroyMenu();
+}
+
 function prepare_context_menu(dataString,modelPath)
 {
     //data is a string json containing the widget info
@@ -522,6 +530,7 @@ function prepare_context_menu(dataString,modelPath)
 
 
     //now comes the show/hide submenu
+    /*
     let annotationsAction = "show";
     if (data.visibleElements[".properties"].value.annotations == true) annotationsAction = "hide";
     let backgroundAction = "show";
@@ -530,9 +539,10 @@ function prepare_context_menu(dataString,modelPath)
     if (data.visibleElements[".properties"].value.thresholds == true) thresholdAction = "hide";
     let scoresAction = "show";
     if (data.visibleElements[".properties"].value.scores == true) scoresAction = "hide";
+    */
 
-    let visibleTags = data.hasAnnotation.visibleTags[".properties"].value;
-    let colors = data.hasAnnotation.colors[".properties"].value;
+    var visibleTags = data.hasAnnotation.visibleTags[".properties"].value;
+    var colors = data.hasAnnotation.colors[".properties"].value;
 
     // for switching on and off the annotation tags
     let annotationsSubmenu = [];
@@ -544,7 +554,8 @@ function prepare_context_menu(dataString,modelPath)
         let mypattern = colors[tag].pattern;
         if (mypattern == null) mypattern = "&nbsp &nbsp &nbsp";
         else mypattern = "&nbsp "+mypattern + " &nbsp";
-        let mycolorString = `${tag} &nbsp <span style='background-color:${mycolor}'> ${mypattern} </span>`;
+        let mycolorString = `<span style='background-color:${mycolor};text-color:red;font-family:monospace'> <font color='white'> ${mypattern}</font> </span> &nbsp ${tag}`;
+        //let mycolorString = `${tag} &nbsp <span style='textcolor:red;background-color:${mycolor}'> ${mypattern}  </span>`;
 
         var entry = {
             icon:icon,
@@ -596,44 +607,6 @@ function prepare_context_menu(dataString,modelPath)
     }
 
 
-    /*let showSubmenu = [
-        {
-            icon: 'far fa-dot-circle',
-            label: scoresAction+' scores',
-            element : "scores",
-            data:data.visibleElements[".properties"].value,
-            path:modelPath,
-            action: function(option, contextMenuIndex, optionIndex){var opt = option; context_menu_click_show(opt);}
-        },
-        {
-            icon: 'far fa-bookmark',
-            label:annotationsAction+" annotations",
-            element : "annotations",
-            data:data.visibleElements[".properties"].value,
-            path:modelPath,
-            action: function(option, contextMenuIndex, optionIndex){var opt = option; context_menu_click_show(opt);},
-            submenu : annotationsSubmenu
-        },
-        {
-            icon: 'fas fa-layer-group',
-            label:backgroundAction+" background",
-            element:"background",
-            data:data.visibleElements[".properties"].value,
-            path:modelPath,
-            action:function(option, contextMenuIndex, optionIndex){var opt = option; context_menu_click_show(opt);}
-        },
-        {
-            icon: 'fas fa-arrows-alt-v',
-            label: thresholdAction+' thresholds',
-            element: "thresholds",
-            data:data.visibleElements[".properties"].value,
-            path:modelPath,
-            action: function(option, contextMenuIndex, optionIndex){var opt = option; context_menu_click_show(opt);}
-
-        }
-    ];
-    */
-
     //add the show/hide to the menu
     menu.push({
         disabled: false,
@@ -642,7 +615,62 @@ function prepare_context_menu(dataString,modelPath)
         submenu: showSubmenu
         });
 
+
+
+
     //the "new area"
+
+    // new annotation submenu
+    let newAnnnotationsSubmenu = [];
+    for (tag in visibleTags)
+    {
+        let mycolor = colors[tag].color;
+        let mypattern = colors[tag].pattern;
+        if (mypattern == null) mypattern = "&nbsp &nbsp &nbsp";
+        else mypattern = "&nbsp "+mypattern + " &nbsp";
+        //let mycolorString = `${tag} &nbsp <span style='background-color:${mycolor}'> ${mypattern} </span>`;
+        let mycolorString = `<span style='background-color:${mycolor};text-color:red;font-family:monospace'> <font color='white'> ${mypattern}</font> </span> &nbsp ${tag}`;
+
+        var entry = {
+            label:mycolorString,
+            data:visibleTags,
+            modelPath:modelPath,
+            setValue:{type:"time",tag:tag},
+            action: function(option, contextMenuIndex, optionIndex){
+                    var opt = option;
+                    var idx = contextMenuIndex; var
+                    optIdx = optionIndex;
+                    context_menu_new_annotation_click(opt,idx,optIdx);
+                }
+        }
+
+        newAnnnotationsSubmenu.push(entry);
+    }
+
+    let newThresholdsSubmenu = [];
+    //selected variables?
+    let selectedVariables = data.selectedVariables[".properties"].leaves;
+    for (variable of selectedVariables)
+    {
+        var entry = {
+            label:variable,
+            setValue:{type:"threshold",variable:variable},
+            modelPath:modelPath,
+            action: function(option, contextMenuIndex, optionIndex){
+                    var opt = option;
+                    var idx = contextMenuIndex; var
+                    optIdx = optionIndex;
+                    context_menu_new_annotation_click(opt,idx,optIdx);
+                }
+        }
+
+        newThresholdsSubmenu.push(entry);
+    }
+
+
+
+
+
     var menuNew = [
         {separator :true},
 
@@ -653,11 +681,13 @@ function prepare_context_menu(dataString,modelPath)
             submenu: [
                 {
                     icon: 'far fa-bookmark',
-                    label:"annotation"
+                    label:"annotation",
+                    submenu: newAnnnotationsSubmenu
                 },
                 {
                     icon: 'fas fa-arrows-alt-v',
-                    label: 'threshold'
+                    label: 'threshold',
+                    submenu: newThresholdsSubmenu
                 }
             ]
         }

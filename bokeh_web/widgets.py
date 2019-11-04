@@ -395,6 +395,7 @@ class TimeSeriesWidgetDataServer():
                         annotation["variable"][0]
                 annotations[node["id"]]=annotation
         self.logger.debug("server annotations" + json.dumps(self.annotations, indent=4))
+        self.annotations = copy.deepcopy(annotations)
         return annotations
 
 
@@ -525,7 +526,7 @@ class TimeSeriesWidgetDataServer():
         if res:
             #the first is our node id
             #now also update our internal list
-            anno  = {"startTime":start,"endTime":end,"tags":[tag],"min":min,"max":max,"type":type,"variable":self.get_variables_selected()[0],"id":res[0],"name":nodeName}
+            anno  = {"startTime":start,"endTime":end,"tags":[tag],"min":min,"max":max,"type":type,"variable":var,"id":res[0],"name":nodeName}
             self.annotations[anno["id"]] = copy.deepcopy(anno)
             return anno
         else:
@@ -643,12 +644,14 @@ class TimeSeriesWidget():
         self.showBackgrounds = False
         self.showAnnotationTags = [] # a list with tags to display currently
         self.showAnnotations = False # curently displaying annotations
+        self.currentAnnotationVariable = None
 
 
         self.__init_figure() #create the graphical output
         self.__init_new_observer()      #
         self.init_additional_elements() # we need the observer already here eg for the scores s we might modifiy the backend and rely on the callback
 
+        self.debug = None
     class ButtonCb():
         """
             a wrapper class for the user button callbacks. we need this as we are keeping parameters with the callback
@@ -774,8 +777,28 @@ class TimeSeriesWidget():
                 self.__dispatch_function(self.show_annotations)
 
         elif data["event"] == "timeSeriesWidget.values":
-            #the data has changed, typically the score values
+            #the data has changed, typically the score values?
             pass
+
+        elif data["event"] == "timeSeriesWidget.newAnnotation":
+            #self.logger.debug(f"draw anno!")
+            self.__dispatch_function(self.draw_new_annotation)
+
+
+    def draw_new_annotation(self):
+        data = self.server.fetch_mirror()
+        entry =  data["nextNewAnnotation"][".properties"]["value"]
+        if entry["type"] == "time":
+            self.boxSelectTool.dimensions = "width"
+            self.set_active_drag_tool(self.boxSelectTool)
+            self.currentAnnotationTag = entry["tag"]
+        elif entry["type"] == "threshold":
+            self.boxSelectTool.dimensions = "height"
+            self.set_active_drag_tool(self.boxSelectTool)
+            self.currentAnnotationTag = "threshold"
+            self.currentAnnotationVariable = entry["variable"]
+
+
 
 
     def update_annotations(self):
@@ -869,14 +892,17 @@ class TimeSeriesWidget():
         if "height" in settings:
             self.height = settings["height"]
 
+        """ 
         #set the theme
         if settings["theme"] == "dark":
             self.curdoc().theme = Theme(json=themes.darkTheme)
             self.lineColors = themes.darkLineColors
+            self.plot.xaxis.major_label_text_color = themes.darkTickColor
         else:
             self.curdoc().theme = Theme(json=themes.whiteTheme)
             self.lineColors = themes.whiteLineColors
-
+            self.plot.xaxis.major_label_text_color = themes.whiteTickColor
+        """
         #self.cssClasses = {"button":"button_21","groupButton":"group_button_21","multiSelect":"multi_select_21"}
         #self.cssClasses = {"button": "button_21_sm", "groupButton": "group_button_21_sm", "multiSelect": "multi_select_21_sm"}
         #self.layoutSettings = {"controlPosition":"bottom"} #support right and bottom, the location of the buttons and tools
@@ -898,7 +924,8 @@ class TimeSeriesWidget():
            4) create a toolbar and add it to the layout by hand
         """
         self.wheelZoomTool = WheelZoomTool(dimensions="width")
-        tools = [self.wheelZoomTool, PanTool(dimensions="width")]
+        self.panTool = PanTool(dimensions="width")
+        tools = [self.wheelZoomTool, self.panTool]
         if settings["hasAnnotation"] == True:
             self.boxSelectTool = BoxSelectTool(dimensions="width")
             tools.append(self.boxSelectTool)
@@ -921,6 +948,19 @@ class TimeSeriesWidget():
                      sizing_mode="scale_width",
                      x_axis_type='datetime', y_range=Range1d())
         self.plot = fig
+
+        # set the theme
+        if settings["theme"] == "dark":
+            self.curdoc().theme = Theme(json=themes.darkTheme)
+            self.lineColors = themes.darkLineColors
+            self.plot.xaxis.major_label_text_color = themes.darkTickColor
+            self.plot.yaxis.major_label_text_color = themes.darkTickColor
+        else:
+            self.curdoc().theme = Theme(json=themes.whiteTheme)
+            self.lineColors = themes.whiteLineColors
+            self.plot.xaxis.major_label_text_color = themes.whiteTickColor
+            self.plot.yaxis.major_label_text_color = themes.whiteTickColor
+
 
         #b1 = date2secs(datetime.datetime(2015,2,13,3,tzinfo=pytz.UTC))*1000
         #b2 = date2secs(datetime.datetime(2015,2,13,4,tzinfo=pytz.UTC))*1000
@@ -949,7 +989,7 @@ class TimeSeriesWidget():
             fig.add_tools(tool) # must assign them to the layout to have the actual use hooked
         toolBarBox = ToolbarBox()  #we need the strange creation of the tools to avoid the toolbar to disappear after
                                    # reload of widget, then drawing an annotations (bokeh bug?)
-        toolBarBox.toolbar = Toolbar(tools=tools,active_inspect=None,active_scroll=self.wheelZoomTool)
+        toolBarBox.toolbar = Toolbar(tools=tools,active_inspect=None,active_scroll=self.wheelZoomTool,active_drag = None)
         #active_inspect = [crosshair],
         # active_drag =                         # here you can assign the defaults
         # active_scroll =                       # wheel_zoom sometimes is not working if it is set here
@@ -968,6 +1008,7 @@ class TimeSeriesWidget():
             """%settings["timeZone"])
 
         self.plot.xaxis.ticker = DatetimeTicker(desired_num_ticks=4)# give more room for the date time string (default was 6)
+
         self.refresh_plot()
 
         #hook in the callback of the figure
@@ -986,19 +1027,20 @@ class TimeSeriesWidget():
         layoutControls =[]
 
         #Annotation drop down
-        labels=[]
-        if settings["hasAnnotation"] == True:
-            labels = settings["tags"]
-            labels.append("-erase-")
-        if settings["hasThreshold"] == True:
-            labels.extend(["threshold","-erase threshold-"])
-        if labels:
-            menu = [(label,label) for label in labels]
-            self.annotationDropDown = Dropdown(label="Annotate: "+str(labels[0]), menu=menu,width=self.buttonWidth,css_classes = ['dropdown_21'])
-            self.currentAnnotationTag = labels[0]
-            self.annotationDropDown.on_change('value', self.annotation_drop_down_on_change_cb)
-            #self.annotation_drop_down_on_change_cb() #call it to set the box select tool right and the label
-            layoutControls.append(self.annotationDropDown)
+        if 0: #no drop down for now
+            labels=[]
+            if settings["hasAnnotation"] == True:
+                labels = settings["tags"]
+                labels.append("-erase-")
+            if settings["hasThreshold"] == True:
+                labels.extend(["threshold","-erase threshold-"])
+            if labels:
+                menu = [(label,label) for label in labels]
+                self.annotationDropDown = Dropdown(label="Annotate: "+str(labels[0]), menu=menu,width=self.buttonWidth,css_classes = ['dropdown_21'])
+                self.currentAnnotationTag = labels[0]
+                self.annotationDropDown.on_change('value', self.annotation_drop_down_on_change_cb)
+                #self.annotation_drop_down_on_change_cb() #call it to set the box select tool right and the label
+                layoutControls.append(self.annotationDropDown)
 
         """ 
         currently disabled
@@ -1055,12 +1097,13 @@ class TimeSeriesWidget():
             self.debugButton.on_click(self.debug_button_cb)
             buttonControls.append(self.debugButton)
 
+
         layoutControls.extend(buttonControls)
 
         #build the layout
-        #self.layout = layout( [row(children=[self.plot,self.tools],sizing_mode="fixed")],row(layoutControls,width=self.width ,sizing_mode="scale_width"))
-        self.layout = layout([row(children=[self.plot, self.tools], sizing_mode="fixed")], row(layoutControls, width=int(self.width*0.6),sizing_mode="scale_width"))
 
+        self.layout = layout([row(children=[self.plot, self.tools], sizing_mode="fixed")], row(layoutControls, width=int(self.width*0.6),sizing_mode="scale_width"))
+        #self.layout = layout([row(children=[self.plot, self.tools], sizing_mode="fixed")])
 
         if self.server.get_settings()["hasAnnotation"] == True:
             self.init_annotations() # we create all annotations that we have into self.annotations
@@ -1083,9 +1126,48 @@ class TimeSeriesWidget():
             self.show_scores()
 
 
+    def set_active_drag_tool(self,tool):
+        #we need to change the default selection of active drag and then write the list of tools to the toolsbar
+        # the list must be different, otherwise the write will not cause the "rebuild" of the tools
+        # so we take the last from the list and hide it shortly
+
+        if hasattr(self,"toolBarBox"):
+            store = self.toolBarBox.toolbar.tools
+            self.toolBarBox.toolbar.tools = store[:-1] # write something else so we have a change to force the rebuild
+            #now set the active drag
+            self.toolBarBox.toolbar.active_drag = tool
+            self.toolBarBox.toolbar.tools = store
+
 
     def debug_button_cb(self):
+
         self.debugButton.css_classes = ['button_21']
+        self.logger.debug("ACTIVE: " + str(self.plot.toolbar.active_drag))
+        self.logger.debug("ACTIVEtoolBarBox: " + str(self.toolBarBox.toolbar.active_drag))
+
+        x = random.randint(1,10)
+
+
+        self.debug={}
+        if x>4 :
+            self.debug["next"] = self.boxSelectTool
+        else:
+            self.debug["next"] = self.boxModifierTool
+
+        self.set_active_drag_tool(self.debug["next"])
+
+        #self.logger.debug("set active: " + str(self.debug["next"]))
+        #self.debug["value"] = self.toolBarBox.toolbar.tools
+        #self.toolBarBox.toolbar.tools = []
+        #self.setup_toolbar()
+
+
+    def setup_toolbar(self):
+        self.logger.debug("set back")
+        self.toolBarBox.toolbar.active_drag = self.debug["next"]
+        self.toolBarBox.toolbar.tools = self.debug["value"]
+        self.debug = None
+
 
     def box_cb(self,attr,old,new):
         self.debug("BOXCB")
@@ -1460,7 +1542,7 @@ class TimeSeriesWidget():
                     return
 
         #we are not inside an annotation, we hide the box modifier
-        self.box_modifier_hide()
+        self.box_modifier_hide(auto=True)
 
 
     def box_modifier_show(self,annoName,anno):
@@ -1505,10 +1587,15 @@ class TimeSeriesWidget():
             self.plot.renderers.append(self.boxModifierRectVertical)
             self.boxModifierTool.renderers = [self.boxModifierRectVertical]
 
+        self.set_active_drag_tool(self.boxModifierTool)
 
-
-    def box_modifier_hide(self):
-
+    def box_modifier_hide(self,auto = False):
+        """
+            if auto is set, we check if visible before
+        """
+        self.set_active_drag_tool(self.panTool)
+        if auto and not self.boxModifierVisible:
+            return
         self.boxModifierVisible = False
         self.boxModifierRectVertical.visible = False #hide the renderer
         self.boxModifierRectHorizontal.visible = False #hide the renderer
@@ -1518,6 +1605,7 @@ class TimeSeriesWidget():
         self.remove_renderers(renderers=[self.boxModifierRectHorizontal,self.boxModifierRectVertical])
 
         self.logger.debug("box_modifier_hide")
+        #self.set_active_drag_tool(self.panTool)
         #self.boxModifierTool.renderers=[]
 
         #self.boxModifierData.data = {'x': [], 'y': [], 'width': [], 'height': [] }
@@ -2655,15 +2743,21 @@ class TimeSeriesWidget():
             #print("\n draw done")
         else:
             #create a threshold annotation, but only if ONE variable is currently selected
-            variables = self.server.get_variables_selected()
-            scoreVariables = self.server.get_score_variables()
-            vars=list(set(variables)-set(scoreVariables))
-            if len(vars) != 1:
-                self.logger.error("can't create threshold anno, len(vars"+str(len(vars)))
-                return
+            variable = None
+            if self.currentAnnotationVariable == None: # no variable given from context menu
+                variables = self.server.get_variables_selected()
+                scoreVariables = self.server.get_score_variables()
+                vars=list(set(variables)-set(scoreVariables))
+                if len(vars) != 1:
+                    self.logger.error("can't create threshold anno, len(vars"+str(len(vars)))
+                    return
+                variable = vars[0]
+            else:
+                variable = self.currentAnnotationVariable
 
 
-            newAnnotation  = self.server.add_annotation(start,end,tag,type ="threshold",min=min,max=max,var = vars[0] )
+            newAnnotation  = self.server.add_annotation(start,end,tag,type ="threshold",min=min,max=max,var = variable )
+            #self.currentAnnotationVariable = None
             self.draw_threshold(newAnnotation)# ,vars[0])
 
     def find_score_variable(self,variablePath):
