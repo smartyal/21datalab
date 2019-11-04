@@ -772,7 +772,7 @@ class TimeSeriesWidget():
 
             if (visibleTagsOld != visibleTagsNew) and self.showAnnotations:
                 self.__dispatch_function(self.show_annotations)
-                
+
         elif data["event"] == "timeSeriesWidget.values":
             #the data has changed, typically the score values
             pass

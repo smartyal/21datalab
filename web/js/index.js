@@ -364,47 +364,29 @@ function show_context_menu(e,modelPath)
 
 }
 
-function context_menu_click_show(option)
+function context_menu_click_show(option,contextMenuIndex, optionIndex)
 {
     let element = option.element;
-    console.log(element, option.data[element]);
-    if (option.data[element] == true)
-    {
-        //console.log("hide annotation and switch @",option.path);
-        var data = option.data;
-        data[element]=false;
-        context_menu_set_visible_elements(option.path,data);
-        superCm.destroyMenu();
-    }
-    else if (option.data[element] == false)
-    {
-        //console.log("show annotation and switch");
 
-        var data = option.data;
-        data[element]=true;
-        context_menu_set_visible_elements(option.path,data);
-        superCm.destroyMenu();
-    }
-    /*
-    console.log("context_menu_click_show "+option.label);
-    if (option.data.annotations == true)
+    if (option.currentValue == true)
     {
-        console.log("hide annotation and switch @",option.path);
-        var data = option.data;
-        data.annotations=false;
-        context_menu_set_visible_elements(option.path,data);
-        superCm.destroyMenu();
+        option.currentValue = false;
+        option.icon = "far fa-square";
     }
-    else if (option.data.annotations == false)
+    else
     {
-        console.log("show annotation and switch");
+        option.currentValue = true;
+        option.icon = "far fa-check-square";
+    }
 
-        var data = option.data;
-        data.annotations=true;
-        context_menu_set_visible_elements(option.path,data);
-        superCm.destroyMenu();
-    }
-    */
+    var data = option.data;
+    data[element]=option.currentValue;
+
+    console.log("switch show",data);
+    context_menu_set_visible_elements(option.path,data);
+
+    superCm.setMenuOption(contextMenuIndex, optionIndex, option);
+    superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
 
 
 }
@@ -475,12 +457,11 @@ function context_menu_tag_select_click(option,contextMenuIndex, optionIndex)
         option.icon = "far fa-check-square";
     }
 
-    option.data[option.label]=option.currentValue;
+    option.data[option.entry]=option.currentValue;
     var query = [{browsePath:option.modelPath+".hasAnnotation.visibleTags",value:option.data}];
     http_post('/setProperties',JSON.stringify(query), null, this, null);
     superCm.setMenuOption(contextMenuIndex, optionIndex, option);
     superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
-
 
 }
 
@@ -551,6 +532,7 @@ function prepare_context_menu(dataString,modelPath)
     if (data.visibleElements[".properties"].value.scores == true) scoresAction = "hide";
 
     let visibleTags = data.hasAnnotation.visibleTags[".properties"].value;
+    let colors = data.hasAnnotation.colors[".properties"].value;
 
     // for switching on and off the annotation tags
     let annotationsSubmenu = [];
@@ -558,9 +540,16 @@ function prepare_context_menu(dataString,modelPath)
     {
         let icon = "far fa-square";
         if (visibleTags[tag]== true) {icon = "far fa-check-square";}
+        let mycolor = colors[tag].color;
+        let mypattern = colors[tag].pattern;
+        if (mypattern == null) mypattern = "&nbsp &nbsp &nbsp";
+        else mypattern = "&nbsp "+mypattern + " &nbsp";
+        let mycolorString = `${tag} &nbsp <span style='background-color:${mycolor}'> ${mypattern} </span>`;
+
         var entry = {
             icon:icon,
-            label:tag,
+            label:mycolorString,
+            entry:tag,
             data:visibleTags,
             modelPath:modelPath,
             currentValue:visibleTags[tag],
@@ -576,17 +565,38 @@ function prepare_context_menu(dataString,modelPath)
     }
 
 
+    var showSubmenu = [];
+    let elements = ["annotations","background","thresholds","scores"];
+    var jsonValue = data.visibleElements[".properties"].value;
+    for (let element of elements)
+    {
+        let icon = "far fa-square";
+        let visible = jsonValue[element];
+        if (visible == true) icon = "far fa-check-square";
+
+        var entry = {
+            icon: icon,
+            label:element,
+            element : element,
+            path : modelPath,
+            data : jsonValue,
+            currentValue : visible,
+            action: function(option, contextMenuIndex, optionIndex){
+                        var opt = option;
+                        var idx = contextMenuIndex; var
+                        optIdx = optionIndex;
+                        context_menu_click_show(opt,idx,optIdx);
+                    }
+        };
+        if (element == "annotations")
+        {
+            entry.submenu = annotationsSubmenu;
+        }
+        showSubmenu.push(entry);
+    }
 
 
-
-    let showSubmenu = [
-        /*{
-            disabled: false,
-            icon: 'fas fa-columns',
-            label: 'variables',
-            submenu:[]
-        },
-        */
+    /*let showSubmenu = [
         {
             icon: 'far fa-dot-circle',
             label: scoresAction+' scores',
@@ -622,6 +632,7 @@ function prepare_context_menu(dataString,modelPath)
 
         }
     ];
+    */
 
     //add the show/hide to the menu
     menu.push({
