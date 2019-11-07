@@ -99,7 +99,7 @@ class TreeWidget
     {
         this.periodicTreeUpdate = false;
 
-        this.eventSource.close()
+        this.eventSource.close();
     }
 
     trigger_tree_update()

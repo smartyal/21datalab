@@ -855,7 +855,7 @@ class Model():
                 actualSearchId = "1"
 
             elif names[0] in self.model:
-                self.logger.debug(f"fancy browsepath {names}")
+                #self.logger.debug(f"fancy browsepath {names}")
                 actualSearchId = names[0]
                 names = names[1:]
             else:
@@ -1315,7 +1315,7 @@ class Model():
             template["name"]=path.split('.')[-1]
             parentPath = '.'.join(path.split('.')[:-1])
             newNodeIds = self.__create_nodes_from_path_with_children(parentPath,[template])
-            print(newNodeIds)
+            self.logger.debug(f"create_template_from_path, new nodeids: {newNodeIds}")
 
             #now adjust the references
             for newNodeId in newNodeIds:
@@ -2565,6 +2565,7 @@ class Model():
                 fileName(string) the name of the file without extension, we also accept a dict here: a list of nodes
                 includeData bool: if set to false, the values for tables and files will NOT be loaded
         """
+        result = False
         self.logger.info(f"load {fileName}, includeData {includeData}")
         with self.lock:
             self.disable_observers()
@@ -2594,11 +2595,15 @@ class Model():
                                 self.set_value(id,column)
 
                 self.enable_observers()
-                return True
+                result = True
             except Exception as e:
                 self.logger.error("problem loading"+str(e))
                 self.enable_observers()
-                return False
+                result = False
+
+            self.update() # automatically adjust all widgets and other known templates to the latest style
+
+        return result
 
 
     def create_differential_handle(self, user = None):
@@ -2866,6 +2871,55 @@ class Model():
                     #same len
                     pass
                 return newLen
+
+    def update(self):
+        """
+            update all known widgets to the latest template including complex backward compatibility changes
+            :return:
+        """
+        self.logger.info("update() running...")
+        self.disable_observers()
+        try:
+            # the ts widgets:
+            # now go throught the widget and update all according the template
+            # now find all type widget
+            newNodes = {}
+            widgets = []
+            for id, props in self.model.items():
+                if props["type"] == "widget":
+                    widgetObject = self.get_node(id)
+                    if widgetObject.get_child("widgetType").get_value() == "timeSeriesWidget":
+                        widgets.append(id)
+                        self.logger.debug(f"update():found widget {widgetObject.get_browse_path()}")
+
+            for id in widgets:
+                path = self.get_browse_path(id)
+                mirrorBefore = self.get_branch_pretty(path)
+                self.create_template_from_path(path,self.get_templates()['templates.timeseriesWidget']) # this will create all nodes which are not there yet
+
+                #now make specific updates e.g. linking of referencers, update of list to dicts etc.
+                # xxx todo
+                # if colors is a list: make a dict out of it
+                colors = self.get_value(f"{id}.hasAnnotation.colors")
+                tags = self.get_value(f"{id}.hasAnnotation.tags")
+                if type(colors) is list:
+                    colors = {v:{"color":colors[idx],"pattern":None} for idx,v in enumerate(tags)}
+                    self.logger.debug(f"update(): set value{id}.hasAnnotation.colors := {colors} ")
+                    self.set_value(f"{id}.hasAnnotation.colors",colors)
+
+                if not "visibleTags" in mirrorBefore["hasAnnotation"] or (self.get_value(f"{id}.hasAnnotation.visibleTags") != mirrorBefore["hasAnnotation"]["visibleTags"][".properties"]["value"]):
+                    #it is different or new, so we created it now
+                    visibleTags = {v:True for v in tags}
+                    self.set_value(f"{id}.hasAnnotation.visibleTags",visibleTags)
+                    self.logger.debug(f"update(): set value{id}.visibleTagss := {visibleTags} ")
+
+                #make sure the hasAnnotation.annotations referencer points to newannotations as well
+                self.add_forward_refs(f"{id}.hasAnnotation.annotations",[f"{id}.hasAnnotation.newAnnotations"])
+
+        except Exception as ex:
+            self.logger.error(f" {ex} , {sys.exc_info()[0]}")
+
+        self.enable_observers()
 
     def create_test(self,testNo=1):
         """

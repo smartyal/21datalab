@@ -515,13 +515,13 @@ function prepare_context_menu(dataString,modelPath)
     {
         icon:"fas fa-external-link-alt",
         label:"show in model",
-        disabled : disableDirectModification
+        disabled : true
     },
     {
         icon: 'fa fa-edit',   //Icon for the option
         label: 'modify',   //Label to be displayed for the option
         action: function(option, contextMenuIndex, optionIndex) {console.log("menu2");},   //The callback once clicked
-        disabled: disableDirectModification
+        disabled: true
     },
 
     {
@@ -723,6 +723,7 @@ function prepare_context_menu(dataString,modelPath)
         {
             icon: 'fas fa-cog',
             label : "settings",
+            disabled : true,
             action: function(option, contextMenuIndex, optionIndex){ var opt = option; var idx = contextMenuIndex; var optIdx = optionIndex;
                 context_menu_click_test(opt,idx,optIdx);
                 }
