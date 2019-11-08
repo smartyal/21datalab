@@ -541,6 +541,7 @@ class TimeSeriesWidgetDataServer():
         """
         if anno["id"] not in self.annotations:
             return False
+        self.logger.debug(f"update annotation {anno}")
         self.annotations[anno["id"]].update(anno)
         path = anno["id"]# we build a "fancy" browsepath as nodeid.name.name
         if anno['type'] == "time":
@@ -803,11 +804,28 @@ class TimeSeriesWidget():
             self.currentAnnotationVariable = entry["variable"]
 
 
+    def _compare_anno(self,anno1,anno2):
 
+        for k in anno1:
+            if k == "browsePath":
+                continue
+            elif k in ["startTime", "endTime"]:
+                diff = abs(anno1[k]-anno2[k])
+                if diff < 0.1:
+                    continue
+                else:
+                    self.logger.debug(f'compare failded time diff {diff}')
+                    return False
+            else:
+                if anno1[k] != anno2[k]:
+                    print(f"compare failed {k}, {anno1[k]}  {anno2[k]}")
+                    return False
+        return True
 
     def update_annotations(self):
         self.logger.debug("update_annotations")
-        # this is called when the backend has changed annotation leaves
+        # this is called when the backend has changed annotation leaves or values, it adjusts annotations
+        # and thresholds
         lastAnnotations = self.server.get_annotations()
         newAnnotations = self.server.fetch_annotations()
 
@@ -818,6 +836,8 @@ class TimeSeriesWidget():
                 self.logger.debug(f"update_annotations() -- annotations was deleted on server: {annoId}, {lastAnnotations[annoId]['name']}")
                 deleteList.append(annoId)
                 if annoId in self.renderers:
+                    with self.renderersLock:
+                        self.renderersGarbage.append(self.renderers[annoId]["renderer"])
                     del self.renderers[annoId]
         self.logger.debug(f"update_annotations() -- must delete {deleteList}")
 
@@ -830,31 +850,41 @@ class TimeSeriesWidget():
         #now the new ones
 
         for annoId,anno in newAnnotations.items():
+
             if anno["type"] == "time":
                 if annoId not in self.renderers:
-
+                    self.logger.debug(f"new annotations {annoId}")
                     self.draw_annotation(anno,visible=False)
                 else:
                     #check if is has changed
-                    if anno != self.renderers[annoId]["info"]:
-                        self.logger.debug(f"update_annotations() -- annotation has changed {annoId}")
-                        self.renderers[annoId]["renderer"].visible = False
+                    #if anno != self.renderers[annoId]["info"]:
+                    if not self._compare_anno(anno,self.renderers[annoId]["info"] ):
+                        self.logger.debug(f"update_annotations() -- annotation has changed {annoId} {self.renderers[annoId]['info']} => {anno}")
                         with self.renderersLock:
                             self.renderersGarbage.append(self.renderers[annoId]["renderer"])
-                        #self.remove_renderers(renderers=[self.renderers[annoId]["renderer"]])
                         del self.renderers[annoId]# kick out the entry, the remaining invisible renderer will stay in bokeh as garbage
                         #now recreate
                         self.draw_annotation(anno, visible=False)
+            if anno["type"] == "threshold":
+                # for thresholds we do not support delete/create per backend, only modify
+                # so check for modifications here
+                if anno != self.renderers[annoId]["info"]:
+                    self.logger.debug(f"update_annotations() -- thresholds has changed {annoId} {self.renderers[annoId]['info']} => {anno}")
+                    with self.renderersLock:
+                        self.renderersGarbage.append(self.renderers[annoId]["renderer"])
+                    del self.renderers[annoId]  # kick out the entry, the remaining invisible renderer will stay in bokeh as garbage
+                    # now recreate
+                    self.draw_threshold(anno)
 
         #now execute the changes
 
-        #self.remove_renderers(deleteList = deleteList)
-        for entry in deleteList:
-            # we only switch it invisible for now, we don't delete the
-            # renderer, as this takes too long
-            r = self.find_renderer(entry)
-            if r:
-                r.visible = False
+        if 0:
+            for entry in deleteList:
+                # we only switch it invisible for now, we don't delete the
+                # renderer, as this takes too long
+                r = self.find_renderer(entry)
+                if r:
+                    r.visible = False
 
         self.show_annotations() # this will put them to the plot renderes
 
@@ -1707,7 +1737,7 @@ class TimeSeriesWidget():
             anno["startTime"] = self.boxModifierData.data['x'][0]
             anno["endTime"] = self.boxModifierData.data['x'][1]
             self.server.adjust_annotation(anno)#s(self.boxModifierAnnotationName, anno)
-            self.adjust_annotation(anno)
+            #self.adjust_annotation(anno) xxx here
             #self.remove_renderers(deleteMatch=self.boxModifierAnnotationName)
             #self.draw_annotation(anno,visible=True)
             #now also find the box glyph and tune it
@@ -1984,7 +2014,7 @@ class TimeSeriesWidget():
         self.remove_renderers(deleteLines)
         #remove the according thresholds if any
         for lin in deleteLines:
-            self.remove_renderers(self.find_thresholds_of_line(lin))
+            self.remove_renderers(self.find_thresholds_of_line(lin),deleteFromLocal=True)
 
 
 
@@ -2117,7 +2147,7 @@ class TimeSeriesWidget():
     def add_renderers(self,addList):
         self.plot.renderers.extend(addList)
 
-    def remove_renderers(self,deleteList=[],deleteMatch="",renderers=[]):
+    def remove_renderers(self,deleteList=[],deleteMatch="",renderers=[],deleteFromLocal = False):
         """
          this functions removes renderers (plotted elements from the widget), we find the ones to delete based on their name attribute
          Args:
@@ -2126,6 +2156,7 @@ class TimeSeriesWidget():
             renderers : a list of bokeh renderers to be deleted
         """
 
+        deletedRenderers = []
         #sanity check:
         with self.renderersLock:
             if self.renderersGarbage:
@@ -2141,13 +2172,16 @@ class TimeSeriesWidget():
         newRenderers = []
         for r in self.plot.renderers:
             if r in renderers:
+                deletedRenderers.append(r)
                 continue # we ignore this one and do NOT add it to the renderers, this will hide the object
             if r.name:
                 if r.name in deleteList:
                     self.logger.debug(f"remove_renderers {r.name}")
                     deleteList.remove(r.name) # reduce the list to speed up looking later
+                    deletedRenderers.append(r)
                     continue  # we ignore this one and do NOT add it to the renderers, this will hide the object
                 elif deleteMatch != "" and deleteMatch in r.name:
+                    deletedRenderers.append(r)
                     continue  # we ignore this one and do NOT add it to the renderers, this will hide the object
                 else:
                     newRenderers.append(r)  # we keep this one, as it doesnt mathc the deletersl
@@ -2156,6 +2190,14 @@ class TimeSeriesWidget():
 
         self.plot.renderers = newRenderers
 
+        if deleteFromLocal:
+            #delete this also from the local renderers list:
+            delList = []
+            for k,v in self.renderers.items():
+                if v["renderer"] in deletedRenderers:
+                    delList.append(k)
+            for k in delList:
+                del self.renderers[k]
 
 
     def annotation_toggle_click_cb(self,toggleState):
@@ -2213,7 +2255,8 @@ class TimeSeriesWidget():
         self.box_modifier_hide()
         annotations = self.server.get_annotations()
         timeAnnos = [anno for anno in annotations.keys() if annotations[anno]["type"]=="threshold" ]
-        self.remove_renderers(deleteList=timeAnnos)
+        self.remove_renderers(deleteList=timeAnnos,deleteFromLocal=True)
+
 
 
 
@@ -2282,6 +2325,8 @@ class TimeSeriesWidget():
         removeList = []
 
         for k, v in self.renderers.items():
+            if v["info"]["type"] != "time":
+                continue # only the time annotations
             if not v["renderer"] in self.plot.renderers:
                 #this renderer is not yet in the renderers, check if we are allowed to show it
                 if any ([True for tag in v["info"]["tags"] if tag in self.showAnnotationTags ]):
@@ -2386,11 +2431,13 @@ class TimeSeriesWidget():
             if visible:
                 self.add_renderers([myrenderer])
 
+            self.renderers[anno["id"]] = {"renderer": myrenderer, "info": copy.deepcopy(anno),"source": source}  # we keep this renderer to speed up later
+
         except Exception as ex:
             self.logger.error("error draw annotation"+str(ex))
 
 
-        self.renderers[anno["id"]]={"renderer":myrenderer,"info":copy.deepcopy(anno),"source":source} # we keep this renderer to speed up later
+
 
 
 
@@ -2499,22 +2546,27 @@ class TimeSeriesWidget():
         for threshold in thresholds:
             self.draw_threshold(annotations[threshold])#,path)
 
-    def hide_thresholds_of_line(self,path):
+    """
+        def hide_thresholds_of_line(self,path):
         thresholds = self.find_thresholds_of_line(path)
-        self.remove_renderers(deleteList=thresholds)
+        self.remove_renderers(deleteList=thresholds,deleteFromLocal=True)
+    """
 
     def draw_threshold(self, annoDict):#, linePath=None):
         """ draw the boxannotation for a threshold
             Args:
                  modelPath(string): the path to the annotation, the modelPath-node must contain children startTime, endTime, colors, tags
         """
-
+        self.logger.debug(f"draw thresholds {annoDict}")
         try:
             #if the box is there already, then we skip
-            foundRenderer = self.find_renderer(annoDict["id"])
-            if foundRenderer:
-                #nothing to do
+            if annoDict["id"] in self.renderers:
+                self.logger.warning(f"have this already {annoDict['id']}")
                 return
+            #foundRenderer = self.find_renderer(annoDict["id"])
+            #if foundRenderer:
+            #    #nothing to do
+            #    return
 
 
 
@@ -2539,6 +2591,10 @@ class TimeSeriesWidget():
                                     name=annoDict["id"])  # +"_annotaion
 
             self.add_renderers([newAnno])
+
+            self.renderers[annoDict["id"]] = {"renderer": newAnno, "info": copy.deepcopy(annoDict)}  # we keep this renderer to speed up later
+
+
         except Exception as ex:
             self.logger.error("error draw threshold "+str(annoDict["id"])+str(ex))
 
