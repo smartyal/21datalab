@@ -746,13 +746,21 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--port', help='Port on which the restservice is listening', default=6001, type=int)
+    parser.add_argument('--plugin_directory',
+                        help='Adds a directory to the list of directories from which plugins are loaded',
+                        action='append',
+                        default=[])
     parser.add_argument('model', help='Full path to model or name of a model in the models subdirectory', nargs='?', default=None)
 
     args = parser.parse_args()
     model_path = args.model
     port = args.port
+    plugin_directories = args.plugin_directory
 
     m = model.Model()
+    for plugin_directory in plugin_directories:
+        print('Importing plugins from directory \"{:}\"'.format(plugin_directory))
+        m.import_plugins_from_directory(plugin_directory)
     if model_path is not None:
         if model_path == "occupancy":
             print("starting occupany demo")
