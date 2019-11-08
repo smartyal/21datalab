@@ -1782,10 +1782,13 @@ class Model():
         return backRefs
 
 
-    def get_referencers(self,desc):
+    def get_referencers_old(self,desc):
         """
             find the referencers pointing to a node via the "leaves algorithm"
             initially, we take the parent and the backref referencers
+            Args:
+                deep: we support the reverse leave-algorithms including any depth of children level after the last referencer,
+                e.g. a leaves-path of referencer -> referencer -> nodes -> child ->child is a valid match
         """
         with self.lock:
             id = self.__get_id(desc)
@@ -1799,6 +1802,40 @@ class Model():
             referencers = self.__get_referencer_parents(ids)
             return referencers
 
+
+    def get_referencers(self,desc,deepLevel = 1):
+        """
+            find the referencers pointing to a node via the "leaves algorithm"
+            initially, we take the parent and the backref referencers
+            Args:
+                deepLevel: we support the reverse leave-algorithms including any depth of children level after the last referencer,
+                e.g. a leaves-path of referencer -> referencer -> nodes -> child ->child is a valid match
+                we give the number of parent levels to include in the search at the leaves
+                default is 1, so the node itself and its parent
+
+        """
+        with self.lock:
+            id = self.__get_id(desc)
+            if not id:return None
+
+            if not deepLevel:
+                ids = [self.model[id]["parent"],id]
+            else:
+                ids = self._get_parents(id,deepLevel)
+
+            if "0" in ids:
+                ids.remove("0")
+
+            referencers = self.__get_referencer_parents(ids)
+            return referencers
+
+    def _get_parents(self,id,deepLevel = -1):
+        ids = []
+        while id != "1" and deepLevel >= 0:
+            ids.append(id)
+            deepLevel -=1
+            id = self.model[id]["parent"]
+        return ids
 
     #get a table with values like in the table stored, start and end times are optional
     # if start, end not given, then we get the full table with no postprocessing at all
@@ -2784,7 +2821,7 @@ class Model():
                 #    print("debug cos")
 
 
-                backrefs =  self.get_referencers(nodeId)
+                backrefs =  self.get_referencers(nodeId,deepLevel=3) # deepLevel non standard, three parents! we support ref->ref->node->child->child->child
                 for id in backrefs:
                     if self.model[id]["name"] == "targets" and self.model[self.model[id]["parent"]]["type"] == "observer":
                         # this node is being observed,
@@ -2897,8 +2934,7 @@ class Model():
                 mirrorBefore = self.get_branch_pretty(path)
                 self.create_template_from_path(path,self.get_templates()['templates.timeseriesWidget']) # this will create all nodes which are not there yet
 
-                #now make specific updates e.g. linking of referencers, update of list to dicts etc.
-                # xxx todo
+                # now make specific updates e.g. linking of referencers, update of list to dicts etc.
                 # if colors is a list: make a dict out of it
                 colors = self.get_value(f"{id}.hasAnnotation.colors")
                 tags = self.get_value(f"{id}.hasAnnotation.tags")
@@ -2909,7 +2945,11 @@ class Model():
 
                 if not "visibleTags" in mirrorBefore["hasAnnotation"] or (self.get_value(f"{id}.hasAnnotation.visibleTags") != mirrorBefore["hasAnnotation"]["visibleTags"][".properties"]["value"]):
                     #it is different or new, so we created it now
-                    visibleTags = {v:True for v in tags}
+                    visibleTags = {tag:True for tag in tags}
+                    #make sure that from the colors, we take them as well
+                    updateVisibleTags = {tag:True for tag in colors}
+                    visibleTags.update(updateVisibleTags)
+
                     self.set_value(f"{id}.hasAnnotation.visibleTags",visibleTags)
                     self.logger.debug(f"update(): set value{id}.visibleTagss := {visibleTags} ")
 

@@ -646,6 +646,9 @@ class TimeSeriesWidget():
         self.showAnnotations = False # curently displaying annotations
         self.currentAnnotationVariable = None
 
+        self.renderersLock = threading.Lock()
+        self.renderersGarbage = [] # a list of renderers to be deleted when time allowes
+
 
         self.__init_figure() #create the graphical output
         self.__init_new_observer()      #
@@ -689,6 +692,7 @@ class TimeSeriesWidget():
          - streaming update
            we can do calls to the restservice here but can't work with the bokeh data, therefore we
            dispatch functions to be executed in the callback from the bokeh loop
+
         """
         self.logger.debug(f"observer_cb {data}")
         if data["event"] == "timeSeriesWidget.variables":
@@ -808,25 +812,51 @@ class TimeSeriesWidget():
         newAnnotations = self.server.fetch_annotations()
 
         #check for deletes
-        deleteList = []
-        for annoId in lastAnnotations:
+        deleteList = [] # a list of ids
+        for annoId,anno in lastAnnotations.items():
             if annoId not in newAnnotations:
-                self.logger.debug(f"annotations was deleted on server: {annoId}, {lastAnnotations[annoId]['name']}")
+                self.logger.debug(f"update_annotations() -- annotations was deleted on server: {annoId}, {lastAnnotations[annoId]['name']}")
                 deleteList.append(annoId)
                 if annoId in self.renderers:
                     del self.renderers[annoId]
-        self.logger.debug(f"must delete {deleteList}")
+        self.logger.debug(f"update_annotations() -- must delete {deleteList}")
 
-        #self.remove_renderers(deleteList = deleteList)
-        if deleteList:
-            # we only switch it invisible for now, we don't delete the
-            # renderer, as this takes too long
-            r = self.find_renderer(deleteList[0])
-            r.visible = False
+
 
         if self.boxModifierVisible:
             if self.boxModifierAnnotationName in deleteList:
                 self.box_modifier_hide()
+
+        #now the new ones
+
+        for annoId,anno in newAnnotations.items():
+            if anno["type"] == "time":
+                if annoId not in self.renderers:
+
+                    self.draw_annotation(anno,visible=False)
+                else:
+                    #check if is has changed
+                    if anno != self.renderers[annoId]["info"]:
+                        self.logger.debug(f"update_annotations() -- annotation has changed {annoId}")
+                        self.renderers[annoId]["renderer"].visible = False
+                        with self.renderersLock:
+                            self.renderersGarbage.append(self.renderers[annoId]["renderer"])
+                        #self.remove_renderers(renderers=[self.renderers[annoId]["renderer"]])
+                        del self.renderers[annoId]# kick out the entry, the remaining invisible renderer will stay in bokeh as garbage
+                        #now recreate
+                        self.draw_annotation(anno, visible=False)
+
+        #now execute the changes
+
+        #self.remove_renderers(deleteList = deleteList)
+        for entry in deleteList:
+            # we only switch it invisible for now, we don't delete the
+            # renderer, as this takes too long
+            r = self.find_renderer(entry)
+            if r:
+                r.visible = False
+
+        self.show_annotations() # this will put them to the plot renderes
 
 
 
@@ -2097,37 +2127,34 @@ class TimeSeriesWidget():
         """
 
         #sanity check:
+        with self.renderersLock:
+            if self.renderersGarbage:
+                self.logger.info(f"renderers garbage collector {self.renderersGarbage}")
+                renderers.extend(self.renderersGarbage)
+                self.renderersGarbage = []
+
         if deleteList == [] and deleteMatch == "" and renderers == []:
             return
         #self.logger.debug(f"remove_renderers(), {deleteList}, {deleteMatch}, {renderers}")
 
         deleteList = deleteList.copy() # we will modify it
         newRenderers = []
-        if renderers == []:
-            for r in self.plot.renderers:
-                if r.name:
-                    if r.name in deleteList:
-                        self.logger.debug(f"remove_renderers {r.name}")
-                        deleteList.remove(r.name) # reduce the list to speed up looking later
-                        #r.visible=False
-                        pass  # we ignore this one and do NOT add it to the renderers, this will hide the object
-                    elif deleteMatch != "" and deleteMatch in r.name:
-                        pass  # we ignore this one and do NOT add it to the renderers, this will hide the object
-                    else:
-                        newRenderers.append(r)  # we keep this one, as it doesnt mathc the deletersl
+        for r in self.plot.renderers:
+            if r in renderers:
+                continue # we ignore this one and do NOT add it to the renderers, this will hide the object
+            if r.name:
+                if r.name in deleteList:
+                    self.logger.debug(f"remove_renderers {r.name}")
+                    deleteList.remove(r.name) # reduce the list to speed up looking later
+                    continue  # we ignore this one and do NOT add it to the renderers, this will hide the object
+                elif deleteMatch != "" and deleteMatch in r.name:
+                    continue  # we ignore this one and do NOT add it to the renderers, this will hide the object
                 else:
-                    newRenderers.append(r)  # if we have no name, we can't filter, keep this
-        else:
-            for r in self.plot.renderers:
-                if r in renderers:
-                    #r.visible=False
-                    pass # dont take this one
-                else:
-                    newRenderers.append(r)
+                    newRenderers.append(r)  # we keep this one, as it doesnt mathc the deletersl
+            else:
+                newRenderers.append(r)  # if we have no name, we can't filter, keep this
 
-        #self.logger.debug("remove_renderers() - apply")
         self.plot.renderers = newRenderers
-        #self.logger.debug("remove_renderers() - apply done")
 
 
 
@@ -2239,6 +2266,9 @@ class TimeSeriesWidget():
         self.logger.debug("init_annotations.. done")
 
     def show_annotations(self):
+        """
+            show annotations and hide annotations according to their tags (compare with visibleTags
+        """
 
         self.logger.debug("show_annotations()")
         self.showAnnotations = True
