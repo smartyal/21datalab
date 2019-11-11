@@ -116,7 +116,8 @@ timeseriesWidget = {
             {"name": "lastTriggerTime", "type": "variable", "value": ""},       # last datetime when it was triggered
             {"name": "targets", "type": "referencer","references":[
                 "timeseriesWidget.visibleElements",
-                "timeseriesWidget.hasAnnotation.visibleTags"
+                "timeseriesWidget.hasAnnotation.visibleTags",
+                "timeseriesWidget.autoScaleY"
                 ]
             },
             {"name": "properties", "type": "const", "value": ["value"]},        # look for value change properties to observe [“children”,“value”, “forwardRefs”]
@@ -137,6 +138,9 @@ timeseriesWidget = {
              {"name": "eventString", "type": "const", "value": "timeSeriesWidget.newAnnotation"}  # the string of the event
             ]
         },
-        {"name": "currentColors", "type": "variable", "value":{"entry":{"lineColor":"red"}}} #put the current colors here
+        {"name": "currentColors", "type": "variable", "value":{"entry":{"lineColor":"red"}}},   #put the current colors here
+        {"name": "autoScaleY", "type": "variable", "value":True},               # turn y axis autoscale on/off during runtime
+        {"name": "panOnlyX","type":"const","value":False}                       # if this is set true, the pan and wheel zoom only zooms in x-direction
+
     ]
 }

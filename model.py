@@ -476,15 +476,25 @@ class Node():
             return self.get_child(name)
 
 
-    def get_children(self):
+    def get_children(self, deepLevel=1):
         """  Returns:
             a list of Node()-objects which are the children of the current node
+            args:
+                deepLevel: set >1 to get children and childrens' children
         """
         nodeInfo = self.model.get_node_info(self.id)
-        children=[]
-        for childId in nodeInfo['children']:
-            children.append(self.model.get_node(childId))
+        children = []
+        if nodeInfo["children"]:
+            children=[self.model.get_node(id) for id in nodeInfo['children'] ]
+
+            while deepLevel>1:
+                deepLevel -=1
+                childrenOld = children.copy()
+                for child in childrenOld:
+                    children.extend(child.get_children())
+                children = list(set(children)) # remove dublicates
         return children
+
 
     def get_properties(self):
         """  Returns:
@@ -1317,7 +1327,7 @@ class Model():
             newNodeIds = self.__create_nodes_from_path_with_children(parentPath,[template])
             self.logger.debug(f"create_template_from_path, new nodeids: {newNodeIds}")
 
-            #now adjust the references
+            #now adjust the references of new nodes and of the ones that were there
             for newNodeId in newNodeIds:
                 if "references" in self.model[newNodeId]:
                     #we must create forward references
@@ -1336,7 +1346,7 @@ class Model():
         with self.lock:
             return copy.deepcopy(self.templates)
 
-    def add_forward_refs(self,referencerDesc,targets):
+    def add_forward_refs(self,referencerDesc,targets,allowDuplicates = True):
         """
             adding forward references from a referencer to other nodes, the forward references are appended at the list
             of forward references of the referencer node
@@ -1366,6 +1376,9 @@ class Model():
                     continue
                 if toId == fromId:
                     continue
+                if not allowDuplicates:
+                    if toId in self.model[fromId]["forwardRefs"]:
+                        continue # ignore this forwards ref, we have it already
                 self.model[toId]["backRefs"].append(fromId)
                 self.model[fromId]["forwardRefs"].append(toId)
             self.__notify_observers(fromId,"forwardRefs")
@@ -2964,14 +2977,41 @@ class Model():
                 widget = self.get_node(id)
                 helperRoot = helperModel.get_node("root.widget")
                 template = self.get_templates()['templates.timeseriesWidget']
-                for child in widget.get_children():
+
+                children = helperRoot.get_children(3)
+                print(f"2 level children {[node.get_browse_path() for node in children]}")
+                for child in helperRoot.get_children():
                     if child.get_properties()["type"] == "observer":
-                        currentProperties = child.get_child("properties").get_value()
-                        requiredProperties = helperRoot.get_child(child.get_name()).get_child("properties").get_value()
-                        for prop in requiredProperties:
-                            if prop not in currentProperties:
-                                currentProperties.append(prop)
-                        child.get_child("properties").set_value(currentProperties)
+                        widgetNode = widget.get_child(child.get_name()).get_child("properties")
+                        helperNode = child.get_child("properties")
+
+                        for prop in helperNode.get_value():
+                            current = widgetNode.get_value()
+                            if prop not in current:
+                                current.append(prop)
+                                widgetNode.set_value(current)
+
+                for child in helperRoot.get_children(3):
+                    if child.get_properties()["type"] == "referencer":
+                        self.logger.debug(f"found referencer {child.get_name()}")
+                        # now adjust the references of new nodes and of the ones that were there
+                        targets = child.get_properties()["forwardRefs"]
+                        if targets:
+                            targets = [helperModel.get_browse_path(ref) for ref in targets]
+                            requiredTargets = [widget.get_browse_path()+"."+".".join(ref.split(".")[2:]) for ref in targets]
+                            self.logger.debug(f"required targets {requiredTargets}")
+                            #now check in the model
+                            widgetNodePath = widget.get_browse_path()+ child.get_browse_path()[len(helperRoot.get_browse_path()):]
+                            widgetNode = self.get_node(widgetNodePath)
+                            #now check if we have them
+                            targetPaths = [tNode.get_browse_path() for tNode in widgetNode.get_targets()]
+                            for target in requiredTargets:
+                                if target not in targetPaths:
+                                    self.logger.debug(f"adding ref {widgetNode.get_browse_path()} => {target}")
+                                    self.add_forward_refs(widgetNode.get_id(),[target])
+
+
+
 
 
 

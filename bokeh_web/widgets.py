@@ -26,7 +26,7 @@ from bokeh import events
 from bokeh.models.widgets import RadioButtonGroup, Paragraph, Toggle, MultiSelect, Button, Select, CheckboxButtonGroup,Dropdown
 from bokeh.plotting import figure, curdoc
 from bokeh.layouts import layout,widgetbox, column, row, Spacer
-from bokeh.models import Range1d, PanTool, WheelZoomTool, ResetTool, ToolbarBox, Toolbar, Selection
+from bokeh.models import Range1d, PanTool, WheelZoomTool, ResetTool, ToolbarBox, Toolbar, Selection, BoxZoomTool
 from bokeh.models import FuncTickFormatter, CustomJSHover, SingleIntervalTicker, DatetimeTicker, CustomJS
 from bokeh.themes import Theme
 from pytz import timezone
@@ -417,6 +417,7 @@ class TimeSeriesWidgetDataServer():
 
 
     def get_data(self,variables,start=None,end=None,bins=300):
+
         """
             retrieve a data table from the backend
             Args:
@@ -428,6 +429,7 @@ class TimeSeriesWidgetDataServer():
                 the body of the response of the data request of the backend
         """
         self.logger.debug("server.get_data()")
+
         varList = self.selectedVariables.copy()
         #include background values if it has background enabled
         if self.settings["background"]["hasBackground"]==True:
@@ -445,6 +447,8 @@ class TimeSeriesWidgetDataServer():
             "includeTimeStamps": "02:00",
         }
         r=self.__web_call("POST","_getdata",body)
+        if not r:
+            return None
         #convert the time to ms since epoch
         r["__time"]=(numpy.asarray(r["__time"])*1000).tolist()
         #make them all lists and make all inf/nan etc to nan
@@ -452,6 +456,7 @@ class TimeSeriesWidgetDataServer():
             r[k]=[value if numpy.isfinite(value) else numpy.nan for value in v]
         #self.logger.debug(str(r))
         return r
+
 
     def get_time_node(self):
         return self.timeNode
@@ -661,6 +666,8 @@ class TimeSeriesWidget():
         self.renderersLock = threading.Lock()
         self.renderersGarbage = [] # a list of renderers to be deleted when time allowes
 
+        self.autoAdjustY = True # autoscaling of the y axis
+
 
         self.__init_figure() #create the graphical output
         self.__init_new_observer()      #
@@ -717,7 +724,6 @@ class TimeSeriesWidget():
             self.__dispatch_function(self.refresh_backgrounds)
         elif data["event"] == "timeSeriesWidget.stream":
             self.logger.debug(f"self.streamingMode {self.streamingMode}")
-            #self.streamingMode=True # xxxhack
             if self.streamingMode and not self.streamingUpdateData:
                 #self.logger.debug("get stream data")
                 #we update the streaming every second
@@ -791,6 +797,7 @@ class TimeSeriesWidget():
 
             if (visibleTagsOld != visibleTagsNew) and self.showAnnotations:
                 self.__dispatch_function(self.show_annotations)
+
 
         elif data["event"] == "timeSeriesWidget.values":
             #the data has changed, typically the score values?
@@ -1007,8 +1014,13 @@ class TimeSeriesWidget():
            3) assign them to the figure with add_tools()
            4) create a toolbar and add it to the layout by hand
         """
-        self.wheelZoomTool = WheelZoomTool(dimensions="width")
-        self.panTool = PanTool(dimensions="width")
+        if self.server.get_mirror()["panOnlyX"][".properties"]["value"]==True:
+            self.wheelZoomTool = WheelZoomTool(dimensions="width")
+            self.panTool = PanTool(dimensions="width")
+        else:
+            self.wheelZoomTool = WheelZoomTool()#dimensions="width")
+            self.panTool = PanTool()#dimensions="width")
+
         tools = [self.wheelZoomTool, self.panTool]
         if settings["hasAnnotation"] == True:
             self.boxSelectTool = BoxSelectTool(dimensions="width")
@@ -1017,6 +1029,8 @@ class TimeSeriesWidget():
             self.boxSelectTool = BoxSelectTool(dimensions="height")
             tools.append(self.boxSelectTool)
         tools.append(ResetTool())
+        self.freeZoomTool = BoxZoomTool()
+        tools.append(self.freeZoomTool)
 
 
 
@@ -1563,7 +1577,10 @@ class TimeSeriesWidget():
         """
             this function automatically adjusts the limts of the y-axis that the data fits perfectly in the plot window
         """
-        self.logger.debug("adjust_y_axis_limits")
+        self.logger.debug(f"adjust_y_axis_limits {self.autoAdjustY}")
+
+        if not self.autoAdjustY:
+            return
 
         lineData = []
         selected = self.server.get_variables_selected()
@@ -2075,8 +2092,7 @@ class TimeSeriesWidget():
 
 
         self.__plot_lines(newLines)
-
-        #xxxtodo: make this differential as well
+        #todo: make this differential as well
         if self.server.get_settings()["background"]["hasBackground"]:
             self.refresh_backgrounds()
 
@@ -2135,13 +2151,18 @@ class TimeSeriesWidget():
             #self.refresh_plot()
             if self.streamingMode:
                 self.userZoomRunning = False # the user is finished with zooming, we can now push data to the UI again
-            pass
+            #self.logger.debug(f"{self.toolBarBox.toolbar.active_pan}")
+            self.autoAdjustY = False
+            self.refresh_plot()
+
         if eventType == "LODEnd":
             if self.streamingMode:
                 self.userZoomRunning = False # the user is finished with zooming, we can now push data to the UI again
                 # also update the zoom level during streaming
                 self.streamingInterval = self.rangeEnd - self.rangeStart
-            self.refresh_plot()
+            #if self.server.get_settings()["autoScaleY"][".properties"]["value"] == True
+            self.autoAdjustY = self.server.get_mirror()["autoScaleY"][".properties"]["value"]
+            self.refresh_plot() #xxx
 
         if eventType == "Reset":
             self.reset_plot_cb()
