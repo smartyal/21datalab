@@ -638,8 +638,8 @@ function prepare_context_menu(dataString,modelPath)
             setValue:{type:"time",tag:tag},
             action: function(option, contextMenuIndex, optionIndex){
                     var opt = option;
-                    var idx = contextMenuIndex; var
-                    optIdx = optionIndex;
+                    var idx = contextMenuIndex;
+                    var optIdx = optionIndex;
                     context_menu_new_annotation_click(opt,idx,optIdx);
                 }
         }
@@ -650,10 +650,21 @@ function prepare_context_menu(dataString,modelPath)
     let newThresholdsSubmenu = [];
     //selected variables?
     let selectedVariables = data.selectedVariables[".properties"].leaves;
+    let currentColors = data.currentColors[".properties"].value;
     for (variable of selectedVariables)
     {
+        if (variable in currentColors)
+        {
+            var mycolor = currentColors[variable].lineColor;
+        }
+        else
+        {
+            var mycolor = "black";
+        }
+        let mycolorString = `<span style='background-color:${mycolor};text-color:red;font-family:monospace'> <font color='white'> &nbsp - &nbsp </font> </span> &nbsp ${variable}`;
+
         var entry = {
-            label:variable,
+            label:mycolorString,
             setValue:{type:"threshold",variable:variable},
             modelPath:modelPath,
             action: function(option, contextMenuIndex, optionIndex){

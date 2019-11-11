@@ -104,7 +104,7 @@ timeseriesWidget = {
             {"name": "triggerCounter", "type": "variable", "value": 0},         # increased on each trigger
             {"name": "lastTriggerTime", "type": "variable", "value": ""},       # last datetime when it was triggered
             {"name": "targets", "type": "referencer","references":["timeseriesWidget.hasAnnotation.annotations"]},    # pointing to the all nodes,
-            {"name": "properties", "type": "const", "value": ["children"]},        # look for value change properties to observe [“children”,“value”, “forwardRefs”]
+            {"name": "properties", "type": "const", "value": ["children","value"]},        # look for value change properties to observe [“children”,“value”, “forwardRefs”]
             {"name": "onTriggerFunction", "type": "referencer"},                # the function(s) to be called when triggering
             {"name": "hasEvent", "type": "const", "value": True},               # set to true if we want an event as well
             {"name": "eventString", "type": "const", "value": "timeSeriesWidget.annotations"}  # the string of the event
@@ -136,6 +136,7 @@ timeseriesWidget = {
              {"name": "hasEvent", "type": "const", "value": True},              # set to true if we want an event as well
              {"name": "eventString", "type": "const", "value": "timeSeriesWidget.newAnnotation"}  # the string of the event
             ]
-        }
+        },
+        {"name": "currentColors", "type": "variable", "value":{"entry":{"lineColor":"red"}}} #put the current colors here
     ]
 }

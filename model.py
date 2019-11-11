@@ -2921,6 +2921,10 @@ class Model():
             # now go throught the widget and update all according the template
             # now find all type widget
             newNodes = {}
+            helperModel = Model()
+            helperModel.disable_observers()
+            helperModel.create_template_from_path("root.widget", self.get_templates()['templates.timeseriesWidget'])
+
             widgets = []
             for id, props in self.model.items():
                 if props["type"] == "widget":
@@ -2955,6 +2959,21 @@ class Model():
 
                 #make sure the hasAnnotation.annotations referencer points to newannotations as well
                 self.add_forward_refs(f"{id}.hasAnnotation.annotations",[f"{id}.hasAnnotation.newAnnotations"])
+
+                #now make sure the observers have at least the required properties enabled
+                widget = self.get_node(id)
+                helperRoot = helperModel.get_node("root.widget")
+                template = self.get_templates()['templates.timeseriesWidget']
+                for child in widget.get_children():
+                    if child.get_properties()["type"] == "observer":
+                        currentProperties = child.get_child("properties").get_value()
+                        requiredProperties = helperRoot.get_child(child.get_name()).get_child("properties").get_value()
+                        for prop in requiredProperties:
+                            if prop not in currentProperties:
+                                currentProperties.append(prop)
+                        child.get_child("properties").set_value(currentProperties)
+
+
 
         except Exception as ex:
             self.logger.error(f" {ex} , {sys.exc_info()[0]}")

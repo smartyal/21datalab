@@ -463,6 +463,17 @@ class TimeSeriesWidgetDataServer():
         self.mirror = self.__web_call("post", "_getbranchpretty", self.path)
         return self.mirror
 
+    def get_current_colors(self):
+        return self.mirror["currentColors"][".properties"]["value"]
+
+    def update_current_colors(self,colors):
+        currentColors = self.mirror["currentColors"][".properties"]["value"]
+        currentColors.update(colors) # this is in place update
+        #colorsself.mirror["currentColors"]["_properties"]["value"]
+        nodesToModify = [{"browsePath": self.path + ".currentColors", "value": currentColors}]
+        self.mirror["currentColors"][".properties"]["value"] = currentColors
+        self.__web_call('POST', 'setProperties', nodesToModify)
+
     def get_variables_selectable(self):
         """ returns the selectable variables from the cache"""
         return copy.deepcopy(self.selectableVariables)
@@ -541,7 +552,7 @@ class TimeSeriesWidgetDataServer():
         """
         if anno["id"] not in self.annotations:
             return False
-        self.logger.debug(f"update annotation {anno}")
+        self.logger.debug(f"ser .adjust_annotation {anno}")
         self.annotations[anno["id"]].update(anno)
         path = anno["id"]# we build a "fancy" browsepath as nodeid.name.name
         if anno['type'] == "time":
@@ -733,11 +744,11 @@ class TimeSeriesWidget():
                 self.__dispatch_function(self.stream_update)
 
         elif data["event"] == "timeSeriesWidget.annotations":
-            self.logger.warning(f"must reload annotations")
+            self.logger.info(f"must reload annotations")
             #self.reInitAnnotationsVisible = self.annotationsVisible #store the state
             # sync from the server
             #self.__dispatch_function(self.reinit_annotations)
-            self.__dispatch_function(self.update_annotations)
+            self.__dispatch_function(self.update_annotations_and_thresholds)
 
 
         elif data["event"] == "timeSeriesWidget.visibleElements":
@@ -806,7 +817,9 @@ class TimeSeriesWidget():
 
     def _compare_anno(self,anno1,anno2):
 
-        for k in anno1:
+        keysInBoth = set(anno1.keys()).intersection(set(anno2.keys()))
+
+        for k in keysInBoth:
             if k == "browsePath":
                 continue
             elif k in ["startTime", "endTime"]:
@@ -822,7 +835,9 @@ class TimeSeriesWidget():
                     return False
         return True
 
-    def update_annotations(self):
+
+
+    def update_annotations_and_thresholds(self):
         self.logger.debug("update_annotations")
         # this is called when the backend has changed annotation leaves or values, it adjusts annotations
         # and thresholds
@@ -852,9 +867,9 @@ class TimeSeriesWidget():
         for annoId,anno in newAnnotations.items():
 
             if anno["type"] == "time":
-                if annoId not in self.renderers:
+                if annoId not in self.renderers and self.showAnnotations:
                     self.logger.debug(f"new annotations {annoId}")
-                    self.draw_annotation(anno,visible=False)
+                    self.draw_annotation(anno,visible=False) #will be activated later with show_annotations
                 else:
                     #check if is has changed
                     #if anno != self.renderers[annoId]["info"]:
@@ -862,13 +877,14 @@ class TimeSeriesWidget():
                         self.logger.debug(f"update_annotations() -- annotation has changed {annoId} {self.renderers[annoId]['info']} => {anno}")
                         with self.renderersLock:
                             self.renderersGarbage.append(self.renderers[annoId]["renderer"])
-                        del self.renderers[annoId]# kick out the entry, the remaining invisible renderer will stay in bokeh as garbage
+                        del self.renderers[annoId]# kick out the entry,
                         #now recreate
-                        self.draw_annotation(anno, visible=False)
+                        self.draw_annotation(anno, visible=True) #show right away
             if anno["type"] == "threshold":
                 # for thresholds we do not support delete/create per backend, only modify
                 # so check for modifications here
-                if anno != self.renderers[annoId]["info"]:
+                # it might not be part of the renderers: maybe thresholds are currently off
+                if annoId in self.renderers and not self._compare_anno(anno,self.renderers[annoId]["info"]):
                     self.logger.debug(f"update_annotations() -- thresholds has changed {annoId} {self.renderers[annoId]['info']} => {anno}")
                     with self.renderersLock:
                         self.renderersGarbage.append(self.renderers[annoId]["renderer"])
@@ -886,7 +902,10 @@ class TimeSeriesWidget():
                 if r:
                     r.visible = False
 
-        self.show_annotations() # this will put them to the plot renderes
+        if self.showAnnotations:
+            self.show_annotations() # this will put them to the plot renderes
+        else:
+            self.remove_renderers() # execute at least the deletes
 
 
 
@@ -1733,14 +1752,13 @@ class TimeSeriesWidget():
             # correct the visible glyph of the annotation
             # push it back to the model
 
-            # sanity check: end not before start
-            anno["startTime"] = self.boxModifierData.data['x'][0]
-            anno["endTime"] = self.boxModifierData.data['x'][1]
-            self.server.adjust_annotation(anno)#s(self.boxModifierAnnotationName, anno)
-            #self.adjust_annotation(anno) xxx here
-            #self.remove_renderers(deleteMatch=self.boxModifierAnnotationName)
-            #self.draw_annotation(anno,visible=True)
-            #now also find the box glyph and tune it
+            #may this is just a zoom, so check if start or endtime has changed
+            if anno["startTime"] != self.boxModifierData.data['x'][0] or anno["endTime"] != self.boxModifierData.data['x'][1]:
+                # sanity check: end not before start
+                anno["startTime"] = self.boxModifierData.data['x'][0]
+                anno["endTime"] = self.boxModifierData.data['x'][1]
+                self.server.adjust_annotation(anno)#wait for observer to notify the real change
+
 
         elif anno["type"] == "threshold":
             if self.boxModifierData.data['y'][1] <= self.boxModifierData.data['y'][0]:
@@ -1752,11 +1770,13 @@ class TimeSeriesWidget():
             boxXCenter = float(self.plot.x_range.start + self.plot.x_range.end) / 2
             self.boxModifierData.data['x'] = [boxXCenter, boxXCenter]
 
-            anno["min"] = self.boxModifierData.data['y'][0]
-            anno["max"] = self.boxModifierData.data['y'][1]
-            self.server.adjust_annotation(anno)#s(self.boxModifierAnnotationName, anno)
-            self.remove_renderers(deleteMatch=anno["id"])
-            self.draw_threshold(anno)#self.boxModifierAnnotationName,anno['variable'])
+            #maybe just a zoom
+            if anno["min"] != self.boxModifierData.data['y'][0] or anno["max"] != self.boxModifierData.data['y'][1]:
+                anno["min"] = self.boxModifierData.data['y'][0]
+                anno["max"] = self.boxModifierData.data['y'][1]
+                self.server.adjust_annotation(anno)#s(self.boxModifierAnnotationName, anno)
+                self.remove_renderers(deleteMatch=anno["id"],deleteFromLocal=True)
+                self.draw_threshold(anno)#self.boxModifierAnnotationName,anno['variable'])
 
 
 
@@ -1841,7 +1861,7 @@ class TimeSeriesWidget():
 
         self.inPeriodicCb = False
 
-    def __get_free_color(self):
+    def __get_free_color(self,varName = None):
         """
             get a currently unused color from the given palette, we need to make this a function, not just a mapping list
             as lines come and go and therefore colors become free again
@@ -1850,6 +1870,15 @@ class TimeSeriesWidget():
                 a free color code
 
         """
+
+        #try to find the color first:
+        if varName:
+            currentLinesColors = self.server.get_current_colors()
+            if varName in currentLinesColors:
+                return currentLinesColors[varName]["lineColor"]
+
+        #not found, get a new one
+
         usedColors =  [self.lines[lin].glyph.line_color for lin in self.lines]
         for color in self.lineColors:
             if color not in usedColors:
@@ -1904,7 +1933,7 @@ class TimeSeriesWidget():
         timeNode = "__time"
         #now plot var
         for variableName in newVars:
-            color = self.__get_free_color()
+            color = self.__get_free_color(variableName)
             self.logger.debug("new color ist"+color)
             if variableName != timeNode:
                 self.logger.debug(f"plotting line {variableName}, is score: {self.server.is_score_variable(variableName)}")
@@ -1931,6 +1960,11 @@ class TimeSeriesWidget():
                 if self.showThresholds:
                     self.show_thresholds_of_line(variableName)
 
+        #compile the new colors
+        nowColors = {}
+        for variableName,glyph in self.lines.items():
+            nowColors[variableName] = {"lineColor":glyph.glyph.line_color}
+        self.server.update_current_colors(nowColors)
 
         #now make a legend
         #legendItems=[LegendItem(label=var,renderers=[self.lines[var]]) for var in self.lines]
