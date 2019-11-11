@@ -1010,10 +1010,12 @@ class Model():
         if plugin_directory not in sys.path:
             sys.path.append(plugin_directory)  # for the importlib to find the stuff
 
-        for fileName in glob.glob(os.path.join(plugin_directory, '**/*.py')):
+        plugin_filenames = glob.glob(os.path.join(plugin_directory, '**/*.py'), recursive=True)
+        for fileName in plugin_filenames:
             if fileName.startswith('__'):
                 continue # avoid __pycache__ things
-            moduleName = os.path.splitext(fileName)[0].replace(os.path.sep, '.')
+            filename_relative = os.path.relpath(fileName, plugin_directory)
+            moduleName = os.path.splitext(filename_relative)[0].replace(os.path.sep, '.')
             module = importlib.import_module(moduleName)
             #now analyze all objects in the module
             for objName in dir(module):
@@ -1025,7 +1027,7 @@ class Model():
                     self.templates[moduleName+"."+objName]=copy.deepcopy(element)
                 elif callable(element):
                     #this is a function, get more info
-                    newFunction = {"module":module,"function":element}
+                    newFunction = {"module":module, "function":element}
                     self.functions[moduleName+"."+objName]=newFunction
 
     def import_default_plugins(self):
