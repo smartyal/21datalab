@@ -124,10 +124,18 @@ class TimeSeriesWidgetDataServer():
     def sse_cb(self,data):
         self.logger.debug(f'sse {data}, {self.settings["observerIds"]}, my id {id(self)}')
         #now we filter out the events which are for me
-        if data["data"] in self.settings["observerIds"]: #only my own observers are currently taken
-            #self.logger.info("sse match")
-            if self.sseCb:
-                self.sseCb(data)
+        if data["data"]!="":
+            try:
+                dataString = data["data"]
+                dataString = dataString.replace("'",'"') # json needs double quote for key/values entries
+                parseData = json.loads(dataString)
+                if "nodeId" in parseData:
+                    if parseData["nodeId"] in self.settings["observerIds"]: #only my own observers are currently taken
+                        #self.logger.info("sse match")
+                        if self.sseCb:
+                            self.sseCb(data)
+            except Exception as ex:
+                self.logger.error(f"sse_Cb error {ex}, {sys.exc_info()[0]}")
 
     def sse_stop(self):
         self.sse.stop()
@@ -795,6 +803,7 @@ class TimeSeriesWidget():
                         elif entry == "background":
                             self.__dispatch_function(self.hide_backgrounds)
 
+            #visible tag selections for annotations has changed
             if (visibleTagsOld != visibleTagsNew) and self.showAnnotations:
                 self.__dispatch_function(self.show_annotations)
 
@@ -909,10 +918,11 @@ class TimeSeriesWidget():
                 if r:
                     r.visible = False
 
-        if self.showAnnotations:
-            self.show_annotations() # this will put them to the plot renderes
-        else:
-            self.remove_renderers() # execute at least the deletes
+        #if self.showAnnotations:
+            #self.show_annotations() # this will put them to the plot renderes
+
+
+        self.remove_renderers() # execute at least the deletes
 
 
 

@@ -775,8 +775,8 @@ class Observer:
                         self.eventQueues[eventIdentification]["lastTimeStamp"]=now
                         #send out this event
                         myEvent = self.eventQueues[eventIdentification]["queue"].get()
-                        event_string = f"id:{myEvent['id']}\nevent: {myEvent['event']}\ndata: {myEvent['data']}\n\n"
-                        #self.logger.debug(f'Observer {id(self)} sending event: {myEvent["event"]}')
+                        event_string = f'id:{myEvent["id"]}\nevent: {myEvent["event"]}\ndata: {myEvent["data"]}\n\n'
+                        self.logger.debug(f'Observer {id(self)} sending event: {event_string}')
 
                         #pull empty the queue
                         if self.eventQueues[eventIdentification]['queue'].qsize():
@@ -2861,7 +2861,7 @@ class Model():
                                         event = {
                                             "id": self.modelUpdateCounter,
                                             "event": observer["eventString"]["value"],
-                                            "data": observerId}
+                                            "data": {"nodeId":observerId}}
                                         self.logger.debug(f"send event {event}")
                                         for observerObject in self.observers:
                                             observerObject.update(event)
