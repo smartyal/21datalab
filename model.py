@@ -752,7 +752,7 @@ class Observer:
             try:
                 # Try to retrieve an item from the update queue
                 event = self.updateQueue.get(block=True,timeout=self.minWaitTime)
-                eventIdentification = event["event"]+str(event["data"])
+                eventIdentification = event["event"]#+str(event["data"])
                 #now sort this event into the queues of eventids
                 if eventIdentification not in self.eventQueues:
                     # this is a new type/identificatin of event, create an entry in the event  queue
@@ -766,12 +766,21 @@ class Observer:
                 pass
 
             #now go over all the sorted event queues and check what to send out:
+            if 0:
+                #show the queues
+                for k,v in self.eventQueues.items():
+                    q = v["queue"]
+                    qLen = q.qsize()
+                    self.logger.debug(f"Queue {k}: len {qLen} {[q.queue[id] for id in range(qLen)]}")
             try:
                 now = time.time()
                 for eventIdentification,entry in self.eventQueues.items(): # entry is {"lasttimestampe": "queue":
                     #self.logger.debug(f"observer {id(self)} check queue of {eventIdentification} size: {entry['queue'].qsize()},last:{entry['lastTimeStamp']}, now:{now}, ready: {now > (entry['lastTimeStamp']+self.minWaitTime)}")
                     if (not entry["queue"].empty()) and (now > (entry["lastTimeStamp"]+self.minWaitTime)):
                         #send this event, the timeout was met, we pull the first event from the queue, trash the remaining ones
+                        """
+                        old code
+                        
                         self.eventQueues[eventIdentification]["lastTimeStamp"]=now
                         #send out this event
                         myEvent = self.eventQueues[eventIdentification]["queue"].get()
@@ -783,7 +792,20 @@ class Observer:
                             self.logger.debug(f"Qtrash observerinstance{id(self)} eventident {eventIdentification} size {self.eventQueues[eventIdentification]['queue'].qsize()}")
                             while not self.eventQueues[eventIdentification]["queue"].empty():
                                self.eventQueues[eventIdentification]["queue"].get(False)
-                        #self.logger.debug(f"Qyield {id(self)} : {myEvent}")
+                        self.logger.debug(f"Qyield {id(self)} : {myEvent}")
+                        yield event_string
+                        """
+                        self.eventQueues[eventIdentification]["lastTimeStamp"]=now
+                        #send out this event
+
+                        #pull empty the queue
+                        if self.eventQueues[eventIdentification]['queue'].qsize():
+                            self.logger.debug(f"Qtrash observerinstance{id(self)} eventident {eventIdentification} size {self.eventQueues[eventIdentification]['queue'].qsize()}")
+                            while not self.eventQueues[eventIdentification]["queue"].empty():
+                                myEvent = self.eventQueues[eventIdentification]["queue"].get(False)
+
+                        event_string = f'id:{myEvent["id"]}\nevent: {myEvent["event"]}\ndata: {myEvent["data"]}\n\n'
+                        self.logger.debug(f"Qyield {id(self)} : {myEvent}")
                         yield event_string
 
 
@@ -2477,6 +2499,12 @@ class Model():
                     controlNode = node.get_child("control")
                     controlNode.get_child("status").set_value("running")
                     controlNode.get_child("result").set_value("pending")
+                    controlNode.get_child("progress").set_value(0)
+                    targetId = self.get_id("root.system.progress.targets")
+                    if targetId:
+                        self.remove_forward_refs(targetId)
+                        self.add_forward_refs(targetId,[controlNode.get_child("progress").get_id()])
+
                     #controlNode.get_child("signal").set_value("nosignal")
                     startTime = datetime.datetime.now()
                     controlNode.get_child("lastStartTime").set_value(startTime.isoformat())
@@ -2496,6 +2524,7 @@ class Model():
                     #controlNode.get_child("signal").set_value("nosignal") #delete the signal
                     controlNode.get_child("status").set_value("finished")
                     controlNode.get_child("executionCounter").set_value(controlNode.get_child("executionCounter").get_value()+1)
+                    controlNode.get_child("progress").set_value(1)
                     if result == True:
                         controlNode.get_child("result").set_value("ok")
                     else:
@@ -2862,6 +2891,14 @@ class Model():
                                             "id": self.modelUpdateCounter,
                                             "event": observer["eventString"]["value"],
                                             "data": {"nodeId":observerId}}
+                                        #some special handling
+                                        if event["event"] == "system.progress":
+                                            try:
+                                                progressValue = self.get_value(self.get_leaves_ids("root.system.progress.targets")[0])
+                                                event["data"]["value"]=progressValue
+                                            except Exception as ex:
+                                                self.logger.error(f"error getting value for system.progress {ex}, {sys.exc_info()[0]}")
+
                                         self.logger.debug(f"send event {event}")
                                         for observerObject in self.observers:
                                             observerObject.update(event)
@@ -3012,7 +3049,13 @@ class Model():
 
 
 
-
+            #now the system progress observer
+            if not self.get_node("root.system.progress"):
+                self.create_template_from_path("root.system.progress",self.get_templates()['system.observer'])
+                self.set_value("root.system.progress.hasEvent",True)
+                self.set_value("root.system.progress.eventString","system.progress")
+                self.set_value("root.system.progress.properties",["value"])
+                self.set_value("root.system.progress.enabled",True)
 
 
         except Exception as ex:

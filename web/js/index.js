@@ -3,6 +3,7 @@ var crtModelName = undefined;
 var nodesMoving = {}; //here we store information from the tree plugin about the move, we grab in in the dnd_stop event and execute the move
 var nodesMovingFromUpdate = false;
 
+var eventSource = 0;
 
 
 function populate_settings() {
@@ -161,6 +162,33 @@ function initialize_upload() {
     });
 }
 
+function initialize_progress_bar()
+{
+    eventSource = new EventSource('/event/stream');
+
+    // This callback handles messages that have no event field set, should not be used in our case
+    eventSource.onmessage = (e) => {
+        // Do something - event data etc will be in e.data
+        console.log("event",e,e.data);
+    };
+
+    // Handler for events of type 'tree.update' only
+    eventSource.addEventListener('system.progress', (e) => {
+        // Do something - event data will be in e.data,
+        // message will be of type 'eventType'
+
+        let data = e.data;
+        //replace potential single quotes
+        data = data.replace(/\'/g, "\"");
+        var valeur=JSON.parse(data).value;
+        valeur = valeur*100;
+        console.log("EVENT system.progress" + valeur );
+        $('.progress-bar').css('width', valeur+'%').attr('aria-valuenow', valeur);
+        //$('.progress-bar').text(valeur);
+    });
+
+}
+
 function on_first_load () {
 
 
@@ -307,7 +335,7 @@ function on_first_load () {
 	});
 	*/
 
-
+    initialize_progress_bar();
 
 } //on_first_load;
 

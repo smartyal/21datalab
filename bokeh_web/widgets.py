@@ -879,13 +879,15 @@ class TimeSeriesWidget():
                 self.box_modifier_hide()
 
         #now the new ones
+        createdTimeAnnos = []
 
         for annoId,anno in newAnnotations.items():
 
             if anno["type"] == "time":
-                if annoId not in self.renderers and self.showAnnotations:
+                if annoId not in self.renderers:# and self.showAnnotations:
                     self.logger.debug(f"new annotations {annoId}")
                     self.draw_annotation(anno,visible=False) #will be activated later with show_annotations
+                    createdTimeAnnos.append(annoId)
                 else:
                     #check if is has changed
                     #if anno != self.renderers[annoId]["info"]:
@@ -918,9 +920,10 @@ class TimeSeriesWidget():
                 if r:
                     r.visible = False
 
-        #if self.showAnnotations:
-            #self.show_annotations() # this will put them to the plot renderes
+        if self.showAnnotations:
+            self.show_annotations(createdTimeAnnos) # this will put them to the plot renderes
 
+        #self.show_annotations()
 
         self.remove_renderers() # execute at least the deletes
 
@@ -2373,7 +2376,7 @@ class TimeSeriesWidget():
         #now we have all bokeh objects in the self.annotations
         self.logger.debug("init_annotations.. done")
 
-    def show_annotations(self):
+    def show_annotations(self, annoIdFilter=[]):
         """
             show annotations and hide annotations according to their tags (compare with visibleTags
         """
@@ -2390,6 +2393,9 @@ class TimeSeriesWidget():
         removeList = []
 
         for k, v in self.renderers.items():
+            if annoIdFilter:
+                if k not in annoIdFilter:
+                    continue
             if v["info"]["type"] != "time":
                 continue # only the time annotations
             if not v["renderer"] in self.plot.renderers:
@@ -2500,6 +2506,7 @@ class TimeSeriesWidget():
 
         except Exception as ex:
             self.logger.error("error draw annotation"+str(ex))
+            return None
 
 
 
