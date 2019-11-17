@@ -172,7 +172,7 @@ function initialize_progress_bar()
         console.log("event",e,e.data);
     };
 
-    // Handler for events of type 'tree.update' only
+    // Handler for events of type 'system.progress' only
     eventSource.addEventListener('system.progress', (e) => {
         // Do something - event data will be in e.data,
         // message will be of type 'eventType'
@@ -184,7 +184,26 @@ function initialize_progress_bar()
         valeur = valeur*100;
         console.log("EVENT system.progress" + valeur );
         $('.progress-bar').css('width', valeur+'%').attr('aria-valuenow', valeur);
-        //$('.progress-bar').text(valeur);
+        if (valeur != 100)
+        {
+            $('.progress-bar').text(JSON.parse(data).function);
+        }
+        else
+        {
+            $('.progress-bar').text("");
+        }
+    });
+
+     eventSource.addEventListener('system.status', (e) => {
+        // Do something - event data will be in e.data,
+        // message will be of type 'eventType'
+
+        let data = e.data;
+        //replace potential single quotes
+        data = data.replace(/\'/g, "\"");
+        var parsed = JSON.parse(data);
+        console.log("EVENT system-status" + parsed.text );
+        $('#system-status').text(parsed.text);
     });
 
 }

@@ -800,12 +800,12 @@ class Observer:
 
                         #pull empty the queue
                         if self.eventQueues[eventIdentification]['queue'].qsize():
-                            self.logger.debug(f"Qtrash observerinstance{id(self)} eventident {eventIdentification} size {self.eventQueues[eventIdentification]['queue'].qsize()}")
+                            #self.logger.debug(f"Qtrash observerinstance{id(self)} eventident {eventIdentification} size {self.eventQueues[eventIdentification]['queue'].qsize()}")
                             while not self.eventQueues[eventIdentification]["queue"].empty():
                                 myEvent = self.eventQueues[eventIdentification]["queue"].get(False)
 
                         event_string = f'id:{myEvent["id"]}\nevent: {myEvent["event"]}\ndata: {myEvent["data"]}\n\n'
-                        self.logger.debug(f"Qyield {id(self)} : {myEvent}")
+                        #self.logger.debug(f"Qyield {id(self)} : {myEvent}")
                         yield event_string
 
 
@@ -2499,12 +2499,11 @@ class Model():
                     controlNode = node.get_child("control")
                     controlNode.get_child("status").set_value("running")
                     controlNode.get_child("result").set_value("pending")
-                    controlNode.get_child("progress").set_value(0)
                     targetId = self.get_id("root.system.progress.targets")
                     if targetId:
                         self.remove_forward_refs(targetId)
                         self.add_forward_refs(targetId,[controlNode.get_child("progress").get_id()])
-
+                    controlNode.get_child("progress").set_value(0)
                     #controlNode.get_child("signal").set_value("nosignal")
                     startTime = datetime.datetime.now()
                     controlNode.get_child("lastStartTime").set_value(startTime.isoformat())
@@ -2892,12 +2891,23 @@ class Model():
                                             "event": observer["eventString"]["value"],
                                             "data": {"nodeId":observerId}}
                                         #some special handling
-                                        if event["event"] == "system.progress":
-                                            try:
-                                                progressValue = self.get_value(self.get_leaves_ids("root.system.progress.targets")[0])
-                                                event["data"]["value"]=progressValue
-                                            except Exception as ex:
-                                                self.logger.error(f"error getting value for system.progress {ex}, {sys.exc_info()[0]}")
+                                        try:
+                                            if event["event"] == "system.progress":
+                                                progressNode = self.get_node(self.get_leaves_ids("root.system.progress.targets")[0])
+                                                event["data"]["value"]=progressNode.get_value()
+                                                event["data"]["function"]=progressNode.get_parent().get_parent().get_browse_path()
+                                            else:
+                                                eventNode = self.get_node(observerId)
+                                                extraInfoNode = eventNode.get_child("eventData")
+                                                if extraInfoNode:
+                                                    extraInfo = extraInfoNode.get_value()
+                                                    if type(extraInfo) is not dict:
+                                                        extraInfo={"info":extraInfo}
+                                                    event["data"].update(extraInfo)
+
+                                        except Exception as ex:
+                                            self.logger.error(f"error getting extra info for event {ex}, {sys.exc_info()[0]}")
+                                        #for all other events, take the event data if there is one (as json)
 
                                         self.logger.debug(f"send event {event}")
                                         for observerObject in self.observers:
