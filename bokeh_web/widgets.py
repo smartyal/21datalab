@@ -920,7 +920,7 @@ class TimeSeriesWidget():
                 if r:
                     r.visible = False
 
-        if self.showAnnotations:
+        if self.showAnnotations and createdTimeAnnos != []:
             self.show_annotations(createdTimeAnnos) # this will put them to the plot renderes
 
         #self.show_annotations()

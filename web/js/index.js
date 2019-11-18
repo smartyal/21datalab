@@ -795,9 +795,10 @@ function prepare_context_menu(dataString,modelPath)
 
     for (fkt of data.contextMenuFunctions[".properties"].leaves)
     {
+        var splitted = fkt.split(".");
         var entry={
             icon: 'fas fa-play-circle',
-            label: '<font size="3" color="#d9b100">'+fkt+'</font>',
+            label: '<font size="3" color="#d9b100">'+splitted[splitted.length -1]+'</font>',
             data: fkt,
             action: function(option, contextMenuIndex, optionIndex){context_menu_click_function(option); }
         };

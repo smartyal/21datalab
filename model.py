@@ -719,7 +719,7 @@ class Observer:
         #preload queue: this is a workaround as the browser does not get the first 2 events immideately
         # it actually doesn't help ..?
         for i in range(2):
-            self.updateQueue.put({"event":"_preload","id":"","data":"xy"+str(i)})
+            self.updateQueue.put({"event":"_preload","id":"","data":{"xy":str(i)}})
 
     def update(self, event):
         """
