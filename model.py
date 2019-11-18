@@ -492,7 +492,9 @@ class Node():
                 childrenOld = children.copy()
                 for child in childrenOld:
                     children.extend(child.get_children())
-                children = list(set(children)) # remove dublicates
+                #remove dublicates via id:
+                childDict = {child.get_id():child for child in children} # same keys(id) will only be there once
+                children = list(childDict.values())
         return children
 
 
@@ -502,6 +504,13 @@ class Node():
         """
         nodeInfo = self.model.get_node_info(self.id)
         return copy.deepcopy(nodeInfo)
+
+    def get_type(self):
+        """
+            Retuns:
+                the type of the node
+        """
+        return self.get_property("type")
 
     def get_property(self,property):
         """
@@ -544,7 +553,7 @@ class Node():
 
 
     def get_targets(self):
-        """ this function returns the target ids of a referencer as a list, not resolving the leaves"""
+        """ this function returns the target Nodes of a referencer as a list, not resolving the leaves"""
         if self.get_properties()["type"] != "referencer":
             return None
         targets = []
@@ -752,7 +761,10 @@ class Observer:
             try:
                 # Try to retrieve an item from the update queue
                 event = self.updateQueue.get(block=True,timeout=self.minWaitTime)
-                eventIdentification = event["event"]#+str(event["data"])
+                if "nodeId" in event["data"]:
+                    eventIdentification = event["event"]+event["data"]["nodeId"]
+                else:
+                    eventIdentification = event["event"]#+str(event["data"])
                 #now sort this event into the queues of eventids
                 if eventIdentification not in self.eventQueues:
                     # this is a new type/identificatin of event, create an entry in the event  queue
@@ -2563,6 +2575,7 @@ class Model():
                 includeData : if set to False, we DONT store the values of node types tables or files to disk
 
         """
+        self.logger.debug(f"save model as {fileName} with data {includeData}")
         with self.lock:
             try:
                 m = self.get_model_for_web()  # leave out the tables
@@ -3018,7 +3031,7 @@ class Model():
                     self.logger.debug(f"update(): set value{id}.visibleTagss := {visibleTags} ")
 
                 #make sure the hasAnnotation.annotations referencer points to newannotations as well
-                self.add_forward_refs(f"{id}.hasAnnotation.annotations",[f"{id}.hasAnnotation.newAnnotations"])
+                self.add_forward_refs(f"{id}.hasAnnotation.annotations",[f"{id}.hasAnnotation.newAnnotations"],allowDuplicates=False)
 
                 #now make sure the observers have at least the required properties enabled
                 widget = self.get_node(id)
