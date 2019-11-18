@@ -40,7 +40,5 @@ The framework is prepared to run on edge, desktop or cloud and is a microservice
   * you'll find the model tree under the tab model  
   * you'll find the time UI under tab pipelines, then select the "occupancy" and open, it takes 10 seconds to load the UI
   * demo how to here: https://docs.google.com/document/d/1q7Ph-TBbDy314IkCoWfwP1www-dX2-i9EQaSTRKHtlc/edit?usp=sharing
-  * this is how it looks: [![21datalabscreenshot.png](https://i.postimg.cc/4yWRVKXY/21datalabscreenshot.png)](https://postimg.cc/YLLPwCG7)  
-  * this is how it looks: [![screenshot.jpg](https://drive.google.com/file/d/1AfxsYIhHOuwi8v4RqUUKGS7ivuFTBlOC/view?usp=sharing)]
-
+  * this is how it looks: ![image](https://drive.google.com/uc?export=view&id=1MAAJoTDCBQcB9XNpxE2KGuGvmJolsYfA)
 
