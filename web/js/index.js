@@ -355,8 +355,115 @@ function on_first_load () {
 	*/
 
     initialize_progress_bar();
+    initialize_context_menu();
 
 } //on_first_load;
+
+
+function initialize_context_menu()
+{
+    // make the modals needed
+    var modal = document.createElement('div');
+    modal.id = "annotationedit";
+    modal.className = "modal fade";
+    modal.setAttribute("tabindex","-1");
+    modal.setAttribute("role","dialog");
+    modal.setAttribute("aria-labelledby","myModalLabel");
+
+    var modalCode = `
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="annotationedittitle">Edit Selection</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    </div>
+
+                    <div class="modal-body" id ="annotationeditbody">
+                        <div class="form-group row">
+                            <div class="col-10" id="annotationeditnodepath">browsepath</div>
+                        </div>
+
+                        <div class="form-group row" id="annotationeditmin">
+                            <label class="col-3">min</label>
+                            <div class="col-9">
+                                <input type="text" id="annotationeditminval" class="form-control edit-modal-input" value="val">
+                            </div>
+                        </div>
+                        <div class="form-group row" id="annotationeditmax">
+                            <label class="col-3">max</label>
+                            <div class="col-9">
+                                <input type="text" id="annotationeditmaxval" class="form-control edit-modal-input" value="val">
+                            </div>
+                        </div>
+                        <div class="form-group row" id="annotationeditstart" hidden>
+                            <label class="col-3">start</label>
+                            <div class="col-9">
+                                <input type="text" id="annotationeditstartval" class="form-control edit-modal-input" value="start">
+                            </div>
+                        </div>
+                        <div class="form-group row" id="annotationeditend" hidden>
+                            <label class="col-3">end</label>
+                            <div class="col-9">
+                                <input type="text" id="annotationeditendval" class="form-control edit-modal-input" value="start">
+                            </div>
+                        </div>
+                       <div class="form-group row" id="annotationedittags" hidden>
+                            <label class="col-3">tags</label>
+                            <div class="col-9">
+                                <input type="text" id="annotationedittagsval" class="form-control edit-modal-input" value="start">
+                            </div>
+                        </div>
+                       <div class="form-group row" id="annotationeditvariables" hidden>
+                            <label class="col-3">variables</label>
+                            <div class="col-9">
+                                <input type="text" id="annotationeditvariablesval" class="form-control edit-modal-input" value="start">
+                            </div>
+                        </div>
+
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" id ="annotationeditButtonSave">Save changes</button>
+                    </div>
+                </div>
+            </div>`;
+    modal.innerHTML = modalCode;
+
+    var targetDiv = $("#contextmenu");
+    targetDiv.append(modal);
+    var saveButton=$("#annotationeditButtonSave");
+    saveButton.click(function(){
+        //write the stuff back to the model
+        console.log("edit ok");
+        //go over the non-hidden fields and take them
+        var query = [];
+        var nodePath = $('#annotationeditnodepath').text();
+        var fields = {"min":"min","max":"max","start":"startTime","end":"endTime","variables":"variables","tags":"tags"};
+        for (let field in fields)
+        {
+            let hidden = $("#annotationedit"+field).attr("hidden");
+            if (!hidden)
+            {
+                var value = JSON.parse($('#annotationedit'+field+"val").val());
+                console.log("we have "+field+value);
+                var subQuery = {"browsePath":nodePath+"."+fields[field],"value":value}
+                query.push(subQuery);
+            }
+
+
+        }
+        console.log("query out",query);
+        http_post("/setProperties",JSON.stringify(query),null,null,null);
+
+
+
+    });
+}
+
+
+
+
 
 function showContextMenu (){
     console.log("here context menu");
@@ -555,6 +662,77 @@ function context_menu_settings_click(option,contextMenuIndex, optionIndex)
     }
 }
 
+function context_menu_edit(option,contextMenuIndex,optionIndex)
+{
+    //console.log("edit"+option.data);
+    //$('#annotationedit').modal('show');
+
+    var option = option;
+    superCm.destroyMenu();
+    // get the children of the annotation
+    http_post('/_getbranchpretty',option.data, null, this, (self,status,data,params) => {
+            if (status>201)
+            {
+                //backend responded bad, we must set the frontend back
+
+                console.log("context_menu_edit",status);
+            }
+            else
+            {
+                console.log("context_menu_edit ok");
+                //take the data
+                modal = $('#annotationedit');//.modal('show');
+
+                var data = JSON.parse(data);
+                var fields=[];
+                if (data.type['.properties'].value == "time")
+                {
+                    //time annotations
+                    $('#annotationedittitle').text("Edit Annotation")
+                    $('#annotationeditnodepath').text(option.data);
+
+                    $('#annotationeditmin').attr("hidden",true);
+                    $('#annotationeditmax').attr("hidden",true);
+                    $('#annotationeditstart').attr("hidden",false);
+                    $('#annotationeditend').attr("hidden",false);
+                    $('#annotationedittags').attr("hidden",false);
+
+                    $('#annotationeditstartval').val(JSON.stringify(data.startTime[".properties"].value));
+                    $('#annotationeditendval').val(JSON.stringify(data.endTime[".properties"].value));
+                    $('#annotationedittagsval').val(JSON.stringify(data.tags[".properties"].value));
+
+                }
+                else if (data.type['.properties'].value == "threshold")
+                {
+                    $('#annotationedittitle').text("Edit Threshold");
+                    $('#annotationeditnodepath').text(option.data);
+
+                    $('#annotationeditmin').attr("hidden",false);
+                    $('#annotationeditmax').attr("hidden",false);
+                    $('#annotationeditstart').attr("hidden",true);
+                    $('#annotationeditend').attr("hidden",true);
+                    $('#annotationedittags').attr("hidden",false);
+
+                    $('#annotationeditminval').val(JSON.stringify(data.min[".properties"].value));
+                    $('#annotationeditmaxval').val(JSON.stringify(data.max[".properties"].value));
+                    $('#annotationedittagsval').val(JSON.stringify(data.tags[".properties"].value));
+                }
+                else
+                {
+                    console.log("unsupported tag type");
+                    return;
+                }
+
+                modal.modal('show');
+
+
+            }
+        });
+
+
+
+}
+
 
 function prepare_context_menu(dataString,modelPath)
 {
@@ -588,15 +766,11 @@ function prepare_context_menu(dataString,modelPath)
         action : function(option, contextMenuIndex, optionIndex){context_menu_click_delete(option);}
     },
     {
-        icon:"fas fa-external-link-alt",
-        label:"show in model",
-        disabled : true
-    },
-    {
         icon: 'fa fa-edit',   //Icon for the option
-        label: 'modify',   //Label to be displayed for the option
-        action: function(option, contextMenuIndex, optionIndex) {console.log("menu2");},   //The callback once clicked
-        disabled: true
+        label: 'edit',   //Label to be displayed for the option
+        data: data.hasAnnotation.selectedAnnotations[".properties"].leaves,
+        action : function(option, contextMenuIndex, optionIndex){context_menu_edit(option,contextMenuIndex,optionIndex);},
+        disabled: disableDirectModification
     },
 
     {

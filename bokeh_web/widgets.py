@@ -896,6 +896,11 @@ class TimeSeriesWidget():
                         with self.renderersLock:
                             self.renderersGarbage.append(self.renderers[annoId]["renderer"])
                         del self.renderers[annoId]# kick out the entry,
+                        # if the currently selected is being changed, we hide the box modifier
+                        if self.boxModifierVisible:
+                            if self.boxModifierAnnotationName == annoId:
+                                self.box_modifier_hide()
+
                         #now recreate
                         self.draw_annotation(anno, visible=True) #show right away
             if anno["type"] == "threshold":
@@ -907,11 +912,14 @@ class TimeSeriesWidget():
                     with self.renderersLock:
                         self.renderersGarbage.append(self.renderers[annoId]["renderer"])
                     del self.renderers[annoId]  # kick out the entry, the remaining invisible renderer will stay in bokeh as garbage
+                    #if the currently selected is being changed, we hide the box modifier
+                    if self.boxModifierVisible:
+                        if self.boxModifierAnnotationName == annoId:
+                            self.box_modifier_hide()
                     # now recreate
                     self.draw_threshold(anno)
 
         #now execute the changes
-
         if 0:
             for entry in deleteList:
                 # we only switch it invisible for now, we don't delete the
