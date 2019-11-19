@@ -570,10 +570,14 @@ function context_menu_set_visible_elements(modelPath,data)
 function context_menu_click_delete(option)
 {
     console.log("context_menu_click_delete "+option.label+" data" + option.data);
-
-    http_post("/_delete",JSON.stringify(option.data),null,null,null);
+    $('#doublecheck').modal("show");
+    $('#doublechecktext1').text("Deleting Annotation");
+    $('#doublechecktext2').text(option.data);
+    var saveButton=$("#doublecheckButtonSave");
+    saveButton.click(function(){
+        http_post("/_delete",JSON.stringify(option.data),null,null,null);
+    });
     superCm.destroyMenu(); // hide it
-
 }
 
 function context_menu_click_test(option, contextMenuIndex, optionIndex)
