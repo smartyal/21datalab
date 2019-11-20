@@ -59,6 +59,7 @@ observer = {
         {"name": "targets","type":"referencer"},                        #  pointing to the nodes observed
         {"name": "properties","type":"const","value":["value"]},        #  properties to observe [“children”,“value”, “forwardRefs”]
         {"name": "onTriggerFunction","type":"referencer"},              #  the function(s) to be called when triggering
+        {"name": "triggerSourceId","type":"variable"},                  #  the sourceId of the node which caused the observer to trigger
         {"name": "hasEvent","type":"const","value":False},              # set to event string iftrue if we want an event as well
         {"name": "eventString","type":"const","value":"observerdefaultevent"},              # the string of the event
         {"name": "eventData","type":"const","value":{"text":"observer status update"}}      # the value-dict will be part of the SSE event["data"] , the key "text": , this will appear on the page,

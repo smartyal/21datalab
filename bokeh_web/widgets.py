@@ -631,6 +631,20 @@ class TimeSeriesWidgetDataServer():
         self.__web_call("POST", "_references", query)
         return
 
+    def set_x_range(self,start,end):
+        startTimeString = self.bokeh_time_to_string(start)
+        endTimeString = self.bokeh_time_to_string(end)
+
+        self.mirror["startTime"][".properties"]["value"]=startTimeString
+        self.mirror["endTime"][".properties"]["value"] = endTimeString
+
+        query= [
+            {"browsePath": self.path+".startTime","value":startTimeString},
+            {"browsePath": self.path + ".endTime", "value": endTimeString}]
+        self.__web_call("POST","setProperties",query)
+        return
+
+
 
 class TimeSeriesWidget():
     def __init__(self, dataserver,curdoc=None):
@@ -807,6 +821,21 @@ class TimeSeriesWidget():
             if (visibleTagsOld != visibleTagsNew) and self.showAnnotations:
                 self.__dispatch_function(self.show_annotations)
 
+            #startime/endtime has changed
+
+            if (oldMirror["startTime"][".properties"]["value"] !=
+                newMirror["startTime"][".properties"]["value"]) or (
+                 oldMirror["endTime"][".properties"]["value"] !=
+                 newMirror["endTime"][".properties"]["value"]):
+                start = date2secs(newMirror["startTime"][".properties"]["value"])*1000
+                end = date2secs(newMirror["endTime"][".properties"]["value"])*1000
+                #self.rangeStart = date2secs(newMirror["startTime"][".properties"]["value"])*1000
+                #self.rangeEnd = date2secs(newMirror["endTime"][".properties"]["value"])*1000
+                self.logger.debug("start/end changed")
+                times = {"start":start,"end":end}
+                self.__dispatch_function(self.sync_x_axis,times)
+
+
 
         elif data["event"] == "timeSeriesWidget.values":
             #the data has changed, typically the score values?
@@ -815,6 +844,26 @@ class TimeSeriesWidget():
         elif data["event"] == "timeSeriesWidget.newAnnotation":
             #self.logger.debug(f"draw anno!")
             self.__dispatch_function(self.draw_new_annotation)
+
+
+    def sync_x_axis(self,times=None):
+        self.logger.debug(f"sync_x_axis x ")
+
+        variables = self.server.get_variables_selected()
+        start = times["start"]
+        end = times["end"]
+        #self.set_x_axis(start,end)
+        variablesRequest = variables.copy()
+        variablesRequest.append("__time")  # make sure we get the time included
+        newData = self.server.get_data(variablesRequest, start, end,
+                                                        self.server.get_settings()["bins"])  # for debug
+        self.data.data = newData
+
+        self.set_x_axis(start, end)
+        self.plot.x_range.start = start
+        self.plot.x_range.end = end
+        self.autoAdjustY = self.server.get_mirror()["autoScaleY"][".properties"]["value"]
+        self.adjust_y_axis_limits()
 
 
     def draw_new_annotation(self):
@@ -1021,8 +1070,13 @@ class TimeSeriesWidget():
 
 
         #initial values
-        self.rangeStart = settings["startTime"]
-        self.rangeEnd = settings["endTime"]
+        try:
+            self.rangeStart = date2secs(settings["startTime"])*1000
+            self.rangeEnd = date2secs(settings["endTime"])*1000
+        except:
+            self.rangeStart = None
+            self.rangeEnd = None
+            self.logger.error("range start, end error, use default full")
 
         #create figure
         """
@@ -1065,7 +1119,7 @@ class TimeSeriesWidget():
         fig = figure(toolbar_location=None, plot_height=self.height,
                      plot_width=self.width,
                      sizing_mode="scale_width",
-                     x_axis_type='datetime', y_range=Range1d())
+                     x_axis_type='datetime', y_range=Range1d(),x_range=(0,1))
         self.plot = fig
 
         # set the theme
@@ -1954,6 +2008,12 @@ class TimeSeriesWidget():
         if not getData:
             self.logger.error(f"no data received")
             return
+        if self.rangeStart == None:
+            #write it back
+            self.rangeStart = getData["__time"][0]
+            self.rangeEnd   = getData["__time"][-1]
+            self.server.set_x_range(self.rangeStart, self.rangeEnd)
+
         if newVars == []:
             self.data.data = getData  # also apply the data to magically update
         else:
@@ -2016,6 +2076,7 @@ class TimeSeriesWidget():
         else:
             self.plot.legend.items = legendItems #replace them
 
+        self.set_x_axis()
         self.adjust_y_axis_limits()
 
 
@@ -2033,6 +2094,14 @@ class TimeSeriesWidget():
             self.userZoomRunning = True
         #print("range cb"+str(attribute),self.rangeStart,self.rangeEnd)
         #self.logger.debug(f"leaving range_cb with userzoom running {self.userZoomRunning}")
+
+    def set_x_axis(self,start=None,end=None):
+        if start:
+            self.rangeStart = start
+        if end:
+            self.rangeEnd = end
+        self.plot.x_range.start = self.rangeStart
+        self.plot.x_range.end   = self.rangeEnd
 
     def refresh_plot(self):
         """
@@ -2183,6 +2252,7 @@ class TimeSeriesWidget():
                 self.streamingInterval = self.rangeEnd - self.rangeStart
             #if self.server.get_settings()["autoScaleY"][".properties"]["value"] == True
             self.autoAdjustY = self.server.get_mirror()["autoScaleY"][".properties"]["value"]
+            self.server.set_x_range(self.rangeStart,self.rangeEnd)
             self.refresh_plot() #xxx
 
         if eventType == "Reset":

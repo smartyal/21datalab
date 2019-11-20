@@ -2895,6 +2895,8 @@ class Model():
                                     for funcNodeId in self.get_leaves_ids(observer["onTriggerFunction"]["id"]):
                                         self.logger.debug(f"execute ontrigger function {funcNodeId}")
                                         self.execute_function(funcNodeId)
+                                    if "triggerSourceId" in observer:
+                                        self.model[observer["triggerSourceId"]["id"]]["value"] = nodeId
                                     if observer["hasEvent"]["value"] == True:
                                         #self.logger.debug(f"send event {observer['eventString']['value']}")
                                         #also send the real event
@@ -2902,7 +2904,7 @@ class Model():
                                         event = {
                                             "id": self.modelUpdateCounter,
                                             "event": observer["eventString"]["value"],
-                                            "data": {"nodeId":observerId}}
+                                            "data": {"nodeId":observerId,"sourceId":nodeId}}
                                         #some special handling
                                         try:
                                             if event["event"] == "system.progress":
