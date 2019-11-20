@@ -80,7 +80,8 @@ POST /_create       [<createnode.json>]         [<node.json>]           ## give 
 POST /_delete       [<nodedescriptor>]          [<nodedescriptor>]      ## give list of deleted nodes back
 POST /_getall       -                           [<node.json>]           ## give the whole address space, fof colums and files we get "len 34"
 POST /_getallhashed   -                         [<node.json>]           ## give the whole address space, for columns and files we get a hash
-POST /_getbranch    <nodedeccripttor>           {node.json}             ## get a part of the model 
+POST /_getbranch    <nodedeccripttor>           {node.json}             ## get a part of the model
+POST _getbranchpretty <nodedesciptor>           {prettybranch.json}     ## get a branch but easy internal access 
 POST /setProperties   [<node.json>]               [<node.json>]         ## the node.json only contains properties to change
 POST /_get          [<nodescriptor>]            [<node.json>]           ## get node including children as json
 POST /_getvalue     [<nodedescriptor>]          [<values>]              ## get a list of values, not available are returned as none
@@ -182,7 +183,7 @@ pipelines.json
  
 referencequery.json
 {
-    "node": <nodedescriptor> # must be a referencer
+    "parent": <nodedescriptor> # must be a referencer
     "add": [<nodedescriptors>]
     "deleteExisting" : one of True/False # if set, all existings references are deleted
     "remove" :[<nodedescriptors>]
@@ -223,6 +224,26 @@ fileinfo.json
     "name": filename,
     "time": string: time in the file system
 }
+
+prettybranch.json
+//formatting a branch in a easy accessible way like
+branch["visualization"]["workbench"]["hasAnnotation"][".properties]["value"]
+{
+    ".properties":
+    {
+        "value":1234,
+        "type":"const
+        "child2":
+        { 
+        ...
+        }
+    }
+    "child1":
+    "child2":
+
+}
+
+
 
 '''
 
@@ -290,6 +311,13 @@ def all(path):
             mymodel = m.get_branch(data)
             response = json.dumps(mymodel, indent=4)  # some pretty printing for debug
             responseCode = 200
+
+        elif (str(path) == "_getbranchpretty") and str(flask.request.method) in ["POST","GET"]:
+            logger.debug("get branch pretty")
+            mymodel = m.get_branch_pretty(data)
+            response = json.dumps(mymodel, indent=4)  # some pretty printing for debug
+            responseCode = 200
+
 
         elif (str(path) == "pipelines") and str(flask.request.method) in ["GET"]:
             logger.debug("execute get pipelines")
@@ -507,12 +535,17 @@ def all(path):
         elif (str(path) == "_references"):
             logger.debug("set new references")
             result = []
+            m.lock_model()
+            m.disable_observers() #avoid intermediate events
             if "deleteExisting" in data and data["deleteExisting"] == True:
                 m.remove_forward_refs(data["parent"])
             if "add" in data:
                 result = m.add_forward_refs(data["parent"],data["add"])
             if "remove" in data:
                 result = m.remove_forward_refs(data["parent"], data["remove"])
+            m.enable_observers()
+            m.release_model()
+            m.notify_observers([m.get_id(data["parent"])],"forwardRefs")
             responseCode = 201
 
         elif (str(path) == "_execute"):

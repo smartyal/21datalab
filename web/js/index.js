@@ -3,6 +3,7 @@ var crtModelName = undefined;
 var nodesMoving = {}; //here we store information from the tree plugin about the move, we grab in in the dnd_stop event and execute the move
 var nodesMovingFromUpdate = false;
 
+var eventSource = 0;
 
 
 function populate_settings() {
@@ -36,13 +37,18 @@ function populate_ui()
 {
     var divs = $("div[id^='ui-layout']"); // all divs starting with "ui-layout"
 
-    for (var div of divs)
+    //for (var div of divs)
+    //for (var index in divs)
+    //for(const [index, div] of divs.entries())
+    for (var index = 0; index < divs.length; index++)
     {
 
-
+        var div = divs[index];
         let divTag = $("#"+div.id)
         var path = JSON.parse(divTag.attr('uiinfo'))['path'];
-        http_post("_getlayout",JSON.stringify({"layoutNode":path}),div.id, null,function(obj,status,data,params)   {
+        var isLast = (index == (divs.length-1));
+
+        http_post("_getlayout",JSON.stringify({"layoutNode":path}),div.id, isLast,function(isLast,status,data,params)   {
             var id = params;
             if (status==200)
             {
@@ -68,6 +74,18 @@ function populate_ui()
                 catch{}
                 var tree = new TreeCard(treeDiv.id,settings);
             }
+
+            // the widgets
+            var widgetDivs =  $("#"+id+" div[id^='ui-component']");
+            for (var widgetDiv of widgetDivs)
+            {
+                var widgetAvatar = JSON.parse(widgetDiv.attributes.uiinfo.value).droppath;
+
+                console.log("need a context menu for ",widgetDiv.id, "=> ", widgetAvatar);
+                hook_context_menu(widgetDiv.id,widgetAvatar);
+            }
+
+            //if (isLast) populate_ui_complete();
 
         });
     }
@@ -142,6 +160,52 @@ function initialize_upload() {
             $('#uploadStatusProgress').text("Progress: " + progress + " %");
         }
     });
+}
+
+function initialize_progress_bar()
+{
+    eventSource = new EventSource('/event/stream');
+
+    // This callback handles messages that have no event field set, should not be used in our case
+    eventSource.onmessage = (e) => {
+        // Do something - event data etc will be in e.data
+        console.log("event",e,e.data);
+    };
+
+    // Handler for events of type 'system.progress' only
+    eventSource.addEventListener('system.progress', (e) => {
+        // Do something - event data will be in e.data,
+        // message will be of type 'eventType'
+
+        let data = e.data;
+        //replace potential single quotes
+        data = data.replace(/\'/g, "\"");
+        var valeur=JSON.parse(data).value;
+        valeur = valeur*100;
+        console.log("EVENT system.progress" + valeur );
+        $('.progress-bar').css('width', valeur+'%').attr('aria-valuenow', valeur);
+        if (valeur != 100)
+        {
+            $('.progress-bar').text(JSON.parse(data).function);
+        }
+        else
+        {
+            $('.progress-bar').text("");
+        }
+    });
+
+     eventSource.addEventListener('system.status', (e) => {
+        // Do something - event data will be in e.data,
+        // message will be of type 'eventType'
+
+        let data = e.data;
+        //replace potential single quotes
+        data = data.replace(/\'/g, "\"");
+        var parsed = JSON.parse(data);
+        console.log("EVENT system-status" + parsed.text );
+        $('#system-status').text(parsed.text);
+    });
+
 }
 
 function on_first_load () {
@@ -282,10 +346,691 @@ function on_first_load () {
 
     initialize_upload();
 
+    // right mouse click
+    /*
+	document.querySelector('#ui-layout-workbench').addEventListener('contextmenu', function(e) {
+		showContextMenu();
+	    e.preventDefault();
+	});
+	*/
+
+    initialize_progress_bar();
+    initialize_context_menu();
+
 } //on_first_load;
 
 
+function initialize_context_menu()
+{
+    // make the modals needed
+    var modal = document.createElement('div');
+    modal.id = "annotationedit";
+    modal.className = "modal fade";
+    modal.setAttribute("tabindex","-1");
+    modal.setAttribute("role","dialog");
+    modal.setAttribute("aria-labelledby","myModalLabel");
 
+    var modalCode = `
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="annotationedittitle">Edit Selection</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    </div>
+
+                    <div class="modal-body" id ="annotationeditbody">
+                        <div class="form-group row">
+                            <div class="col-10" id="annotationeditnodepath">browsepath</div>
+                        </div>
+
+                        <div class="form-group row" id="annotationeditmin">
+                            <label class="col-3">min</label>
+                            <div class="col-9">
+                                <input type="text" id="annotationeditminval" class="form-control edit-modal-input" value="val">
+                            </div>
+                        </div>
+                        <div class="form-group row" id="annotationeditmax">
+                            <label class="col-3">max</label>
+                            <div class="col-9">
+                                <input type="text" id="annotationeditmaxval" class="form-control edit-modal-input" value="val">
+                            </div>
+                        </div>
+                        <div class="form-group row" id="annotationeditstart" hidden>
+                            <label class="col-3">start</label>
+                            <div class="col-9">
+                                <input type="text" id="annotationeditstartval" class="form-control edit-modal-input" value="start">
+                            </div>
+                        </div>
+                        <div class="form-group row" id="annotationeditend" hidden>
+                            <label class="col-3">end</label>
+                            <div class="col-9">
+                                <input type="text" id="annotationeditendval" class="form-control edit-modal-input" value="start">
+                            </div>
+                        </div>
+                       <div class="form-group row" id="annotationedittags" hidden>
+                            <label class="col-3">tags</label>
+                            <div class="col-9">
+                                <input type="text" id="annotationedittagsval" class="form-control edit-modal-input" value="start">
+                            </div>
+                        </div>
+                       <div class="form-group row" id="annotationeditvariables" hidden>
+                            <label class="col-3">variables</label>
+                            <div class="col-9">
+                                <input type="text" id="annotationeditvariablesval" class="form-control edit-modal-input" value="start">
+                            </div>
+                        </div>
+
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" id ="annotationeditButtonSave">Save changes</button>
+                    </div>
+                </div>
+            </div>`;
+    modal.innerHTML = modalCode;
+
+    var targetDiv = $("#contextmenu");
+    targetDiv.append(modal);
+    var saveButton=$("#annotationeditButtonSave");
+    saveButton.click(function(){
+        //write the stuff back to the model
+        console.log("edit ok");
+        //go over the non-hidden fields and take them
+        var query = [];
+        var nodePath = $('#annotationeditnodepath').text();
+        var fields = {"min":"min","max":"max","start":"startTime","end":"endTime","variables":"variables","tags":"tags"};
+        for (let field in fields)
+        {
+            let hidden = $("#annotationedit"+field).attr("hidden");
+            if (!hidden)
+            {
+                var value = JSON.parse($('#annotationedit'+field+"val").val());
+                console.log("we have "+field+value);
+                var subQuery = {"browsePath":nodePath+"."+fields[field],"value":value}
+                query.push(subQuery);
+            }
+
+
+        }
+        console.log("query out",query);
+        http_post("/setProperties",JSON.stringify(query),null,null,null);
+
+
+
+    });
+}
+
+
+
+
+
+function showContextMenu (){
+    console.log("here context menu");
+}
+
+
+/*
+function populate_ui_complete(){
+
+    console.log("populate_ui_complete, this should be called only once at the very end!");
+    var elem = $('#ui-component-workbench');
+	elem.on('contextmenu', function(e) {
+
+	    
+        e.preventDefault();
+        //var menu = prepare_context_menu(e);
+        console.log("context");
+        show_context_menu(e);
+        //superCm.createMenu(menu, e);
+        //return false;
+    });
+}
+*/
+
+function hook_context_menu(divId,modelPath)
+{
+     console.log("hook_context_menu()",divId," ",modelPath);
+     var elem = $("#"+divId);
+     elem.on('contextmenu', function(e) {
+        e.preventDefault();
+        console.log("context");
+        show_context_menu(e,modelPath);
+     });
+}
+
+function show_context_menu(e,modelPath)
+{
+   console.log("show_context_menu() ",modelPath);
+    //get the current state from the backend
+   http_post("_getbranchpretty",modelPath, e,null, function(obj,status,data,params)
+        {
+            if (status==200)
+            {
+
+                console.log("in show_context_menu(), back from http");
+
+                var menu = prepare_context_menu(data,modelPath);
+                superCm.createMenu(menu,params);
+            }
+        }
+   );
+
+}
+
+function context_menu_click_show(option,contextMenuIndex, optionIndex)
+{
+    let element = option.element;
+
+    if (option.currentValue == true)
+    {
+        option.currentValue = false;
+        option.icon = "far fa-square";
+    }
+    else
+    {
+        option.currentValue = true;
+        option.icon = "far fa-check-square";
+    }
+
+    var data = option.data;
+    data[element]=option.currentValue;
+
+    console.log("switch show",data);
+    context_menu_set_visible_elements(option.path,data);
+
+    superCm.setMenuOption(contextMenuIndex, optionIndex, option);
+    superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
+
+
+}
+
+
+function context_menu_set_visible_elements(modelPath,data)
+{
+        var query = [{browsePath:modelPath+".visibleElements",value:data}];
+
+        http_post('/setProperties',JSON.stringify(query), null, this, (self,status,data,params) => {
+            if (status>201)
+            {
+                //backend responded bad, we must set the frontend back
+
+                console.log("context_menu_set_visible_elements",status);
+            }
+            else
+            {
+                console.log("context_menu_set_visible_elements ok");
+
+            }
+        });
+
+
+}
+
+function context_menu_click_delete(option)
+{
+    console.log("context_menu_click_delete "+option.label+" data" + option.data);
+    $('#doublecheck').modal("show");
+    $('#doublechecktext1').text("Deleting Annotation");
+    $('#doublechecktext2').text(option.data);
+    var saveButton=$("#doublecheckButtonSave");
+    saveButton.click(function(){
+        http_post("/_delete",JSON.stringify(option.data),null,null,null);
+    });
+    superCm.destroyMenu(); // hide it
+}
+
+function context_menu_click_test(option, contextMenuIndex, optionIndex)
+{
+    console.log("context_menu_click_test");
+    var option = {
+
+            icon: 'fas fa-cog',
+            label : "settingsss",
+            action: function(option, contextMenuIndex, optionIndex){ var opt = option; var idx = contextMenuIndex; var optIdx = optionIndex;
+                context_menu_click_test(opt,idx,optIdx);
+                }
+
+    };
+
+    superCm.setMenuOption(contextMenuIndex, optionIndex, option);
+    superCm.updateMenu();
+
+}
+
+function context_menu_tag_select_click(option,contextMenuIndex, optionIndex)
+{
+    console.log("context_menu_tag_select_click",option);
+    //make the true/false check box adjustment
+
+
+    if (option.currentValue == true)
+    {
+        option.currentValue = false;
+        option.icon = "far fa-square";
+    }
+    else
+    {
+        option.currentValue = true;
+        option.icon = "far fa-check-square";
+    }
+
+    option.data[option.entry]=option.currentValue;
+    var query = [{browsePath:option.modelPath+".hasAnnotation.visibleTags",value:option.data}];
+    http_post('/setProperties',JSON.stringify(query), null, this, null);
+    superCm.setMenuOption(contextMenuIndex, optionIndex, option);
+    superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
+
+}
+
+
+function context_menu_click_function(option)
+{
+    console.log("context_menu_click_function, execute " + option.data);
+    http_post("/_execute",JSON.stringify(option.data),null,null,null);
+    superCm.destroyMenu(); // hide it
+}
+
+function context_menu_new_annotation_click(option,contextMenuIndex, optionIndex)
+{
+    console.log("context menue new annotation",option.setValue);
+    var query = [{browsePath:option.modelPath+".nextNewAnnotation",value:option.setValue}];
+    http_post('/setProperties',JSON.stringify(query), null, this, null);
+    superCm.destroyMenu();
+}
+
+
+function context_menu_settings_click(option,contextMenuIndex, optionIndex)
+{
+    console.log("context_menu_tag_select_click",option);
+    //make the true/false check box adjustment
+
+    if (option.entry == "autoScaleY")
+    {
+        if (option.currentValue == true)
+        {
+            option.currentValue = false;
+            option.icon = "far fa-square";
+        }
+        else
+        {
+            option.currentValue = true;
+            option.icon = "far fa-check-square";
+        }
+
+        option.data[option.entry]=option.currentValue;
+        var query = [{browsePath:option.modelPath+".autoScaleY",value:option.currentValue}];
+        http_post('/setProperties',JSON.stringify(query), null, this, null);
+        superCm.setMenuOption(contextMenuIndex, optionIndex, option);
+        superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
+    }
+}
+
+function context_menu_edit(option,contextMenuIndex,optionIndex)
+{
+    //console.log("edit"+option.data);
+    //$('#annotationedit').modal('show');
+
+    var option = option;
+    superCm.destroyMenu();
+    // get the children of the annotation
+    http_post('/_getbranchpretty',option.data, null, this, (self,status,data,params) => {
+            if (status>201)
+            {
+                //backend responded bad, we must set the frontend back
+
+                console.log("context_menu_edit",status);
+            }
+            else
+            {
+                console.log("context_menu_edit ok");
+                //take the data
+                modal = $('#annotationedit');//.modal('show');
+
+                var data = JSON.parse(data);
+                var fields=[];
+                if (data.type['.properties'].value == "time")
+                {
+                    //time annotations
+                    $('#annotationedittitle').text("Edit Annotation")
+                    $('#annotationeditnodepath').text(option.data);
+
+                    $('#annotationeditmin').attr("hidden",true);
+                    $('#annotationeditmax').attr("hidden",true);
+                    $('#annotationeditstart').attr("hidden",false);
+                    $('#annotationeditend').attr("hidden",false);
+                    $('#annotationedittags').attr("hidden",false);
+
+                    $('#annotationeditstartval').val(JSON.stringify(data.startTime[".properties"].value));
+                    $('#annotationeditendval').val(JSON.stringify(data.endTime[".properties"].value));
+                    $('#annotationedittagsval').val(JSON.stringify(data.tags[".properties"].value));
+
+                }
+                else if (data.type['.properties'].value == "threshold")
+                {
+                    $('#annotationedittitle').text("Edit Threshold");
+                    $('#annotationeditnodepath').text(option.data);
+
+                    $('#annotationeditmin').attr("hidden",false);
+                    $('#annotationeditmax').attr("hidden",false);
+                    $('#annotationeditstart').attr("hidden",true);
+                    $('#annotationeditend').attr("hidden",true);
+                    $('#annotationedittags').attr("hidden",false);
+
+                    $('#annotationeditminval').val(JSON.stringify(data.min[".properties"].value));
+                    $('#annotationeditmaxval').val(JSON.stringify(data.max[".properties"].value));
+                    $('#annotationedittagsval').val(JSON.stringify(data.tags[".properties"].value));
+                }
+                else
+                {
+                    console.log("unsupported tag type");
+                    return;
+                }
+
+                modal.modal('show');
+
+
+            }
+        });
+
+
+
+}
+
+
+function prepare_context_menu(dataString,modelPath)
+{
+    //data is a string json containing the widget info
+    var data = JSON.parse(dataString);
+    var disableDirectModification = true;
+
+    try
+    {
+        var targets = data.hasAnnotation.selectedAnnotations[".properties"].leaves;
+        if (targets.length != 0)
+        {
+            console.log("have selected annotation");
+            disableDirectModification = false;
+        }
+    }
+    catch
+    {
+    }
+
+
+    // let's create the context menue depending on the current status
+    var menu= [
+
+    // area direct modification, only if something is selected (annotation)
+    {
+        icon:"far fa-trash-alt",
+        label:"delete",
+        disabled : disableDirectModification,
+        data: data.hasAnnotation.selectedAnnotations[".properties"].leaves,
+        action : function(option, contextMenuIndex, optionIndex){context_menu_click_delete(option);}
+    },
+    {
+        icon: 'fa fa-edit',   //Icon for the option
+        label: 'edit',   //Label to be displayed for the option
+        data: data.hasAnnotation.selectedAnnotations[".properties"].leaves,
+        action : function(option, contextMenuIndex, optionIndex){context_menu_edit(option,contextMenuIndex,optionIndex);},
+        disabled: disableDirectModification
+    },
+
+    {
+        separator : true
+    }];
+
+
+    //now comes the show/hide submenu
+    /*
+    let annotationsAction = "show";
+    if (data.visibleElements[".properties"].value.annotations == true) annotationsAction = "hide";
+    let backgroundAction = "show";
+    if (data.visibleElements[".properties"].value.background == true) backgroundAction = "hide";
+    let thresholdAction = "show";
+    if (data.visibleElements[".properties"].value.thresholds == true) thresholdAction = "hide";
+    let scoresAction = "show";
+    if (data.visibleElements[".properties"].value.scores == true) scoresAction = "hide";
+    */
+
+    var visibleTags = data.hasAnnotation.visibleTags[".properties"].value;
+    var colors = data.hasAnnotation.colors[".properties"].value;
+
+    // for switching on and off the annotation tags
+    let annotationsSubmenu = [];
+    for (tag in visibleTags)
+    {
+        let icon = "far fa-square";
+        if (visibleTags[tag]== true) {icon = "far fa-check-square";}
+        let mycolor = colors[tag].color;
+        let mypattern = colors[tag].pattern;
+        if (mypattern == null) mypattern = "&nbsp &nbsp &nbsp";
+        else mypattern = "&nbsp "+mypattern + " &nbsp";
+        let mycolorString = `<span style='background-color:${mycolor};text-color:red;font-family:monospace'> <font color='white'> ${mypattern}</font> </span> &nbsp ${tag}`;
+        //let mycolorString = `${tag} &nbsp <span style='textcolor:red;background-color:${mycolor}'> ${mypattern}  </span>`;
+
+        var entry = {
+            icon:icon,
+            label:mycolorString,
+            entry:tag,
+            data:visibleTags,
+            modelPath:modelPath,
+            currentValue:visibleTags[tag],
+            action: function(option, contextMenuIndex, optionIndex){
+                    var opt = option;
+                    var idx = contextMenuIndex; var
+                    optIdx = optionIndex;
+                    context_menu_tag_select_click(opt,idx,optIdx);
+                }
+        }
+
+        annotationsSubmenu.push(entry);
+    }
+
+
+    var showSubmenu = [];
+    let elements = ["annotations","background","thresholds","scores"];
+    var jsonValue = data.visibleElements[".properties"].value;
+    for (let element of elements)
+    {
+        let icon = "far fa-square";
+        let visible = jsonValue[element];
+        if (visible == true) icon = "far fa-check-square";
+
+        var entry = {
+            icon: icon,
+            label:element,
+            element : element,
+            path : modelPath,
+            data : jsonValue,
+            currentValue : visible,
+            action: function(option, contextMenuIndex, optionIndex){
+                        var opt = option;
+                        var idx = contextMenuIndex; var
+                        optIdx = optionIndex;
+                        context_menu_click_show(opt,idx,optIdx);
+                    }
+        };
+        if (element == "annotations")
+        {
+            entry.submenu = annotationsSubmenu;
+        }
+        showSubmenu.push(entry);
+    }
+
+
+    //add the show/hide to the menu
+    menu.push({
+        disabled: false,
+        icon: 'fas fa-eye',
+        label: 'show/hide',
+        submenu: showSubmenu
+        });
+
+
+
+
+    //the "new area"
+
+    // new annotation submenu
+    let newAnnnotationsSubmenu = [];
+    for (tag in visibleTags)
+    {
+        let mycolor = colors[tag].color;
+        let mypattern = colors[tag].pattern;
+        if (mypattern == null) mypattern = "&nbsp &nbsp &nbsp";
+        else mypattern = "&nbsp "+mypattern + " &nbsp";
+        //let mycolorString = `${tag} &nbsp <span style='background-color:${mycolor}'> ${mypattern} </span>`;
+        let mycolorString = `<span style='background-color:${mycolor};text-color:red;font-family:monospace'> <font color='white'> ${mypattern}</font> </span> &nbsp ${tag}`;
+
+        var entry = {
+            label:mycolorString,
+            data:visibleTags,
+            modelPath:modelPath,
+            setValue:{type:"time",tag:tag},
+            action: function(option, contextMenuIndex, optionIndex){
+                    var opt = option;
+                    var idx = contextMenuIndex;
+                    var optIdx = optionIndex;
+                    context_menu_new_annotation_click(opt,idx,optIdx);
+                }
+        }
+
+        newAnnnotationsSubmenu.push(entry);
+    }
+
+    let newThresholdsSubmenu = [];
+    //selected variables?
+    let selectedVariables = data.selectedVariables[".properties"].leaves;
+    let scoreVariables = data.scoreVariables[".properties"].leaves;
+
+    let currentColors = data.currentColors[".properties"].value;
+    for (variable of selectedVariables)
+    {
+        if (scoreVariables.includes(variable))
+        {
+            //skip score variables
+            continue;
+        }
+        if (variable in currentColors)
+        {
+            var mycolor = currentColors[variable].lineColor;
+        }
+        else
+        {
+            var mycolor = "black";
+        }
+        let mycolorString = `<span style='background-color:${mycolor};text-color:red;font-family:monospace'> <font color='white'> &nbsp - &nbsp </font> </span> &nbsp ${variable}`;
+
+        var entry = {
+            label:mycolorString,
+            setValue:{type:"threshold",variable:variable},
+            modelPath:modelPath,
+            action: function(option, contextMenuIndex, optionIndex){
+                    var opt = option;
+                    var idx = contextMenuIndex; var
+                    optIdx = optionIndex;
+                    context_menu_new_annotation_click(opt,idx,optIdx);
+                }
+        }
+
+        newThresholdsSubmenu.push(entry);
+    }
+
+
+
+
+
+    var menuNew = [
+        {separator :true},
+
+        {
+            icon: 'fa fa-plus',
+            label: 'new',
+            disabled: false,
+            submenu: [
+                {
+                    icon: 'far fa-bookmark',
+                    label:"annotation",
+                    submenu: newAnnnotationsSubmenu
+                },
+                {
+                    icon: 'fas fa-arrows-alt-v',
+                    label: 'threshold',
+                    submenu: newThresholdsSubmenu
+                }
+            ]
+        }
+    ]
+    menu=menu.concat(menuNew);
+
+
+    //user functions
+    var menuUserFunctions =[{
+            separator: true
+        }];
+
+    for (fkt of data.contextMenuFunctions[".properties"].leaves)
+    {
+        var splitted = fkt.split(".");
+        var entry={
+            icon: 'fas fa-play-circle',
+            label: '<font size="3" color="#d9b100">'+splitted[splitted.length -1]+'</font>',
+            data: fkt,
+            action: function(option, contextMenuIndex, optionIndex){context_menu_click_function(option); }
+        };
+        menuUserFunctions.push(entry);
+    }
+    if (menuUserFunctions.length>1)
+    {
+        menu=menu.concat(menuUserFunctions);
+    }
+
+
+
+    let tailSubMenu =[];
+
+    // y scale
+    {
+        let yscale = data.autoScaleY[".properties"].value;
+        let icon = "far fa-square";
+        if (yscale == true) icon = "far fa-check-square";
+        var entry = {
+            label:"autoscale y axis",
+            icon:icon,
+            currentValue:yscale,
+            data:data,
+            entry:"autoScaleY",
+            modelPath:modelPath,
+            setValue:{type:"time",tag:tag},
+            action: function(option, contextMenuIndex, optionIndex){
+                    var opt = option;
+                    var idx = contextMenuIndex;
+                    var optIdx = optionIndex;
+                    context_menu_settings_click(opt,idx,optIdx);
+                }
+        }
+
+        tailSubMenu.push(entry);
+    }
+
+    var menuTail = [
+        {
+            separator: true
+        },
+        {
+            icon: 'fas fa-cog',
+            label : "settings",
+            disabled : false,
+            submenu:tailSubMenu
+
+        }
+    ];
+
+    menu = menu.concat(menuTail);
+    return menu;
+}
 
 
 $( document ).ready(function() {

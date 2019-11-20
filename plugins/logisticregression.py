@@ -133,7 +133,7 @@ def logistic_regression(functionNode):
         outputNode.set_value(list(score))
 
 
-    return
+    return True
 
 logisticRegressionTemplate2= {
     "name":"logisticRegression2",

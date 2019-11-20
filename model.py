@@ -481,15 +481,27 @@ class Node():
             return self.get_child(name)
 
 
-    def get_children(self):
+    def get_children(self, deepLevel=1):
         """  Returns:
             a list of Node()-objects which are the children of the current node
+            args:
+                deepLevel: set >1 to get children and childrens' children
         """
         nodeInfo = self.model.get_node_info(self.id)
-        children=[]
-        for childId in nodeInfo['children']:
-            children.append(self.model.get_node(childId))
+        children = []
+        if nodeInfo["children"]:
+            children=[self.model.get_node(id) for id in nodeInfo['children'] ]
+
+            while deepLevel>1:
+                deepLevel -=1
+                childrenOld = children.copy()
+                for child in childrenOld:
+                    children.extend(child.get_children())
+                #remove dublicates via id:
+                childDict = {child.get_id():child for child in children} # same keys(id) will only be there once
+                children = list(childDict.values())
         return children
+
 
     def get_properties(self):
         """  Returns:
@@ -497,6 +509,13 @@ class Node():
         """
         nodeInfo = self.model.get_node_info(self.id)
         return copy.deepcopy(nodeInfo)
+
+    def get_type(self):
+        """
+            Retuns:
+                the type of the node
+        """
+        return self.get_property("type")
 
     def get_property(self,property):
         """
@@ -539,7 +558,7 @@ class Node():
 
 
     def get_targets(self):
-        """ this function returns the target ids of a referencer as a list, not resolving the leaves"""
+        """ this function returns the target Nodes of a referencer as a list, not resolving the leaves"""
         if self.get_properties()["type"] != "referencer":
             return None
         targets = []
@@ -710,9 +729,11 @@ class Observer:
         self.logger = self.model.logger
         self.lock = threading.RLock()
 
+
         #preload queue: this is a workaround as the browser does not get the first 2 events immideately
+        # it actually doesn't help ..?
         for i in range(2):
-            self.updateQueue.put({"event":"tree.update","id":"","data":""})
+            self.updateQueue.put({"event":"_preload","id":"","data":{"xy":str(i)}})
 
     def update(self, event):
         """
@@ -738,13 +759,17 @@ class Observer:
             events are "identical", if they have the same "event" and "data"
         """
 
+        self.logger.debug(f"Observer {id(self)} get_event()")
         stop_event_processing = False # This flag shows when to stop the event processing
 
         while not stop_event_processing:
             try:
                 # Try to retrieve an item from the update queue
                 event = self.updateQueue.get(block=True,timeout=self.minWaitTime)
-                eventIdentification = event["event"]+str(event["data"])
+                if "nodeId" in event["data"]:
+                    eventIdentification = event["event"]+event["data"]["nodeId"]
+                else:
+                    eventIdentification = event["event"]#+str(event["data"])
                 #now sort this event into the queues of eventids
                 if eventIdentification not in self.eventQueues:
                     # this is a new type/identificatin of event, create an entry in the event  queue
@@ -754,28 +779,50 @@ class Observer:
 
             except Exception as ex:
                 # this happens if we time out the queue get, no problem, just continue
-                #self.logger.error(f"Exception while handling event:{id(self)}: {ex}")
-                 continue
+                #self.logger.error(f"Exception observer {id(self)} thread self.updateQueue.get: {ex},{str(sys.exc_info()[0])}")
+                pass
 
             #now go over all the sorted event queues and check what to send out:
+            if 0:
+                #show the queues
+                for k,v in self.eventQueues.items():
+                    q = v["queue"]
+                    qLen = q.qsize()
+                    self.logger.debug(f"Queue {k}: len {qLen} {[q.queue[id] for id in range(qLen)]}")
             try:
                 now = time.time()
                 for eventIdentification,entry in self.eventQueues.items(): # entry is {"lasttimestampe": "queue":
-                    #self.logger.debug(f"for check {id(self)} {eventType} size: {entry['queue'].qsize()},last:{entry['lastTimeStamp']}, now:{now}")
+                    #self.logger.debug(f"observer {id(self)} check queue of {eventIdentification} size: {entry['queue'].qsize()},last:{entry['lastTimeStamp']}, now:{now}, ready: {now > (entry['lastTimeStamp']+self.minWaitTime)}")
                     if (not entry["queue"].empty()) and (now > (entry["lastTimeStamp"]+self.minWaitTime)):
                         #send this event, the timeout was met, we pull the first event from the queue, trash the remaining ones
+                        """
+                        old code
+                        
                         self.eventQueues[eventIdentification]["lastTimeStamp"]=now
                         #send out this event
                         myEvent = self.eventQueues[eventIdentification]["queue"].get()
-                        event_string = f"id:{myEvent['id']}\nevent: {myEvent['event']}\ndata: {myEvent['data']}\n\n"
-                        #self.logger.debug(f'Observer {id(self)} sending event: {myEvent["event"]}')
+                        event_string = f'id:{myEvent["id"]}\nevent: {myEvent["event"]}\ndata: {myEvent["data"]}\n\n'
+                        self.logger.debug(f'Observer {id(self)} sending event: {event_string}')
 
                         #pull empty the queue
                         if self.eventQueues[eventIdentification]['queue'].qsize():
                             self.logger.debug(f"Qtrash observerinstance{id(self)} eventident {eventIdentification} size {self.eventQueues[eventIdentification]['queue'].qsize()}")
                             while not self.eventQueues[eventIdentification]["queue"].empty():
                                self.eventQueues[eventIdentification]["queue"].get(False)
-                        #self.logger.debug(f"Qyield {id(self)} {myEvent['event']} {myEvent['id']}")
+                        self.logger.debug(f"Qyield {id(self)} : {myEvent}")
+                        yield event_string
+                        """
+                        self.eventQueues[eventIdentification]["lastTimeStamp"]=now
+                        #send out this event
+
+                        #pull empty the queue
+                        if self.eventQueues[eventIdentification]['queue'].qsize():
+                            #self.logger.debug(f"Qtrash observerinstance{id(self)} eventident {eventIdentification} size {self.eventQueues[eventIdentification]['queue'].qsize()}")
+                            while not self.eventQueues[eventIdentification]["queue"].empty():
+                                myEvent = self.eventQueues[eventIdentification]["queue"].get(False)
+
+                        event_string = f'id:{myEvent["id"]}\nevent: {myEvent["event"]}\ndata: {myEvent["data"]}\n\n'
+                        #self.logger.debug(f"Qyield {id(self)} : {myEvent}")
                         yield event_string
 
 
@@ -842,6 +889,7 @@ class Model():
         """
             Args:
                 id (string): give a browsepath ("root.myfolder.myvariable") or a nodeId ("10")
+                or a "fancy" path mixed like "1000.min" where 1000 is a node id, only the first is allowed as Nodeid, the followings are names
             Returns:
                 (string): the node id as string
                 None if not found
@@ -853,11 +901,18 @@ class Model():
             names = id.split('.')
             if names[0]=="root":
                 names = names[1:]
+                actualSearchId = "1"
+
+            elif names[0] in self.model:
+                #self.logger.debug(f"fancy browsepath {names}")
+                actualSearchId = names[0]
+                names = names[1:]
+            else:
+                return None
         except:
             return None
 
         #now we start at root
-        actualSearchId = "1"
         for name in names:
             nextSearchId = None
             for childId in self.model[actualSearchId]["children"]:
@@ -955,6 +1010,57 @@ class Model():
                 id = self.model[id]["parent"]
 
         return copy.deepcopy(nodes)
+
+    def __get_node_with_children_pretty(self,id):
+        """
+            recursive helper for get_branch_pretty
+            args:
+                nodes: the nodes so far
+
+        """
+
+        result = {}
+
+        node = self.model[id]
+        #create my properties
+        props = {k: copy.deepcopy(v) for k, v in node.items() if k not in ["value", "backRefs", "children"]}
+        if node["type"] not in ["file", "column"]:
+            # we also take the value then
+            props["value"] = copy.deepcopy(node["value"])
+        if node["type"] == "referencer":
+            leaves = self.get_leaves_ids(id)
+            forwards = [self.get_browse_path(leaf) for leaf in leaves]
+            props["leaves"]=forwards
+            props["leavesIds"]=leaves
+        result[".properties"]=props
+
+        #now the children
+        for childId in node["children"]:
+            result[self.model[childId]["name"]]=self.__get_node_with_children_pretty(childId)
+
+        return result
+
+
+
+    def get_branch_pretty(self,desc):
+        """
+            get a branch in the form
+            "child1":{"child3":... ".type":, ".value"
+            "child2":{
+            the properties occurr in ".property" style, the children are direct entries
+            we only use names
+            for the referencers, the ".forwardRefs" are the leaves with full path: ["root.folder1.tzarget2","root.varibale.bare"..]
+        """
+        with self.lock:
+            id = self.__get_id(desc)
+            if not id: return None
+            return self.__get_node_with_children_pretty(id)
+
+
+
+
+
+
 
 
 
@@ -1246,9 +1352,9 @@ class Model():
             template["name"]=path.split('.')[-1]
             parentPath = '.'.join(path.split('.')[:-1])
             newNodeIds = self.__create_nodes_from_path_with_children(parentPath,[template])
-            print(newNodeIds)
+            self.logger.debug(f"create_template_from_path, new nodeids: {newNodeIds}")
 
-            #now adjust the references
+            #now adjust the references of new nodes and of the ones that were there
             for newNodeId in newNodeIds:
                 if "references" in self.model[newNodeId]:
                     #we must create forward references
@@ -1267,7 +1373,7 @@ class Model():
         with self.lock:
             return copy.deepcopy(self.templates)
 
-    def add_forward_refs(self,referencerDesc,targets):
+    def add_forward_refs(self,referencerDesc,targets,allowDuplicates = True):
         """
             adding forward references from a referencer to other nodes, the forward references are appended at the list
             of forward references of the referencer node
@@ -1297,10 +1403,19 @@ class Model():
                     continue
                 if toId == fromId:
                     continue
+                if not allowDuplicates:
+                    if toId in self.model[fromId]["forwardRefs"]:
+                        continue # ignore this forwards ref, we have it already
                 self.model[toId]["backRefs"].append(fromId)
                 self.model[fromId]["forwardRefs"].append(toId)
             self.__notify_observers(fromId,"forwardRefs")
             return True
+
+    def lock_model(self):
+        self.lock.acquire()
+
+    def release_model(self):
+        self.lock.release()
 
     def get_model(self):
         """
@@ -1707,10 +1822,13 @@ class Model():
         return backRefs
 
 
-    def get_referencers(self,desc):
+    def get_referencers_old(self,desc):
         """
             find the referencers pointing to a node via the "leaves algorithm"
             initially, we take the parent and the backref referencers
+            Args:
+                deep: we support the reverse leave-algorithms including any depth of children level after the last referencer,
+                e.g. a leaves-path of referencer -> referencer -> nodes -> child ->child is a valid match
         """
         with self.lock:
             id = self.__get_id(desc)
@@ -1724,6 +1842,40 @@ class Model():
             referencers = self.__get_referencer_parents(ids)
             return referencers
 
+
+    def get_referencers(self,desc,deepLevel = 1):
+        """
+            find the referencers pointing to a node via the "leaves algorithm"
+            initially, we take the parent and the backref referencers
+            Args:
+                deepLevel: we support the reverse leave-algorithms including any depth of children level after the last referencer,
+                e.g. a leaves-path of referencer -> referencer -> nodes -> child ->child is a valid match
+                we give the number of parent levels to include in the search at the leaves
+                default is 1, so the node itself and its parent
+
+        """
+        with self.lock:
+            id = self.__get_id(desc)
+            if not id:return None
+
+            if not deepLevel:
+                ids = [self.model[id]["parent"],id]
+            else:
+                ids = self._get_parents(id,deepLevel)
+
+            if "0" in ids:
+                ids.remove("0")
+
+            referencers = self.__get_referencer_parents(ids)
+            return referencers
+
+    def _get_parents(self,id,deepLevel = -1):
+        ids = []
+        while id != "1" and deepLevel >= 0:
+            ids.append(id)
+            deepLevel -=1
+            id = self.model[id]["parent"]
+        return ids
 
     #get a table with values like in the table stored, start and end times are optional
     # if start, end not given, then we get the full table with no postprocessing at all
@@ -2352,6 +2504,11 @@ class Model():
                     controlNode = node.get_child("control")
                     controlNode.get_child("status").set_value("running")
                     controlNode.get_child("result").set_value("pending")
+                    targetId = self.get_id("root.system.progress.targets")
+                    if targetId:
+                        self.remove_forward_refs(targetId)
+                        self.add_forward_refs(targetId,[controlNode.get_child("progress").get_id()])
+                    controlNode.get_child("progress").set_value(0)
                     #controlNode.get_child("signal").set_value("nosignal")
                     startTime = datetime.datetime.now()
                     controlNode.get_child("lastStartTime").set_value(startTime.isoformat())
@@ -2371,6 +2528,7 @@ class Model():
                     #controlNode.get_child("signal").set_value("nosignal") #delete the signal
                     controlNode.get_child("status").set_value("finished")
                     controlNode.get_child("executionCounter").set_value(controlNode.get_child("executionCounter").get_value()+1)
+                    controlNode.get_child("progress").set_value(1)
                     if result == True:
                         controlNode.get_child("result").set_value("ok")
                     else:
@@ -2410,6 +2568,7 @@ class Model():
                 includeData : if set to False, we DONT store the values of node types tables or files to disk
 
         """
+        self.logger.debug(f"save model as {fileName} with data {includeData}")
         with self.lock:
             try:
                 m = self.get_model_for_web()  # leave out the tables
@@ -2490,6 +2649,7 @@ class Model():
                 fileName(string) the name of the file without extension, we also accept a dict here: a list of nodes
                 includeData bool: if set to false, the values for tables and files will NOT be loaded
         """
+        result = False
         self.logger.info(f"load {fileName}, includeData {includeData}")
         with self.lock:
             self.disable_observers()
@@ -2536,11 +2696,15 @@ class Model():
                                 self.set_value(id,column)
 
                 self.enable_observers()
-                return True
+                result = True
             except Exception as e:
                 self.logger.error("problem loading"+str(e))
                 self.enable_observers()
-                return False
+                result = False
+
+            self.update() # automatically adjust all widgets and other known templates to the latest style
+
+        return result
 
 
     def create_differential_handle(self, user = None):
@@ -2721,7 +2885,7 @@ class Model():
                 #    print("debug cos")
 
 
-                backrefs =  self.get_referencers(nodeId)
+                backrefs =  self.get_referencers(nodeId,deepLevel=3) # deepLevel non standard, three parents! we support ref->ref->node->child->child->child
                 for id in backrefs:
                     if self.model[id]["name"] == "targets" and self.model[self.model[id]["parent"]]["type"] == "observer":
                         # this node is being observed,
@@ -2742,13 +2906,33 @@ class Model():
                                         self.logger.debug(f"execute ontrigger function {funcNodeId}")
                                         self.execute_function(funcNodeId)
                                     if observer["hasEvent"]["value"] == True:
-                                        self.logger.debug(f"send event {observer['eventString']['value']}")
+                                        #self.logger.debug(f"send event {observer['eventString']['value']}")
                                         #also send the real event
                                         #self.modelUpdateCounter = self.modelUpdateCounter+1
                                         event = {
                                             "id": self.modelUpdateCounter,
                                             "event": observer["eventString"]["value"],
-                                            "data": observerId}
+                                            "data": {"nodeId":observerId}}
+                                        #some special handling
+                                        try:
+                                            if event["event"] == "system.progress":
+                                                progressNode = self.get_node(self.get_leaves_ids("root.system.progress.targets")[0])
+                                                event["data"]["value"]=progressNode.get_value()
+                                                event["data"]["function"]=progressNode.get_parent().get_parent().get_browse_path()
+                                            else:
+                                                eventNode = self.get_node(observerId)
+                                                extraInfoNode = eventNode.get_child("eventData")
+                                                if extraInfoNode:
+                                                    extraInfo = extraInfoNode.get_value()
+                                                    if type(extraInfo) is not dict:
+                                                        extraInfo={"info":extraInfo}
+                                                    event["data"].update(extraInfo)
+
+                                        except Exception as ex:
+                                            self.logger.error(f"error getting extra info for event {ex}, {sys.exc_info()[0]}")
+                                        #for all other events, take the event data if there is one (as json)
+
+                                        self.logger.debug(f"send event {event}")
                                         for observerObject in self.observers:
                                             observerObject.update(event)
                                     triggeredObservers.append(observerId)# next time, we don't trigger
@@ -2807,6 +2991,110 @@ class Model():
                     #same len
                     pass
                 return newLen
+
+    def update(self):
+        """
+            update all known widgets to the latest template including complex backward compatibility changes
+            :return:
+        """
+        self.logger.info("update() running...")
+        self.disable_observers()
+        try:
+            # the ts widgets:
+            # now go throught the widget and update all according the template
+            # now find all type widget
+            newNodes = {}
+            helperModel = Model()
+            helperModel.disable_observers()
+            helperModel.create_template_from_path("root.widget", self.get_templates()['templates.timeseriesWidget'])
+
+            widgets = []
+            for id, props in self.model.items():
+                if props["type"] == "widget":
+                    widgetObject = self.get_node(id)
+                    if widgetObject.get_child("widgetType").get_value() == "timeSeriesWidget":
+                        widgets.append(id)
+                        self.logger.debug(f"update():found widget {widgetObject.get_browse_path()}")
+
+            for id in widgets:
+                path = self.get_browse_path(id)
+                mirrorBefore = self.get_branch_pretty(path)
+                self.create_template_from_path(path,self.get_templates()['templates.timeseriesWidget']) # this will create all nodes which are not there yet
+
+                # now make specific updates e.g. linking of referencers, update of list to dicts etc.
+                # if colors is a list: make a dict out of it
+                colors = self.get_value(f"{id}.hasAnnotation.colors")
+                tags = self.get_value(f"{id}.hasAnnotation.tags")
+                if type(colors) is list:
+                    colors = {v:{"color":colors[idx],"pattern":None} for idx,v in enumerate(tags)}
+                    self.logger.debug(f"update(): set value{id}.hasAnnotation.colors := {colors} ")
+                    self.set_value(f"{id}.hasAnnotation.colors",colors)
+
+                if not "visibleTags" in mirrorBefore["hasAnnotation"] or (self.get_value(f"{id}.hasAnnotation.visibleTags") != mirrorBefore["hasAnnotation"]["visibleTags"][".properties"]["value"]):
+                    #it is different or new, so we created it now
+                    visibleTags = {tag:True for tag in tags}
+                    #make sure that from the colors, we take them as well
+                    updateVisibleTags = {tag:True for tag in colors}
+                    visibleTags.update(updateVisibleTags)
+
+                    self.set_value(f"{id}.hasAnnotation.visibleTags",visibleTags)
+                    self.logger.debug(f"update(): set value{id}.visibleTagss := {visibleTags} ")
+
+                #make sure the hasAnnotation.annotations referencer points to newannotations as well
+                self.add_forward_refs(f"{id}.hasAnnotation.annotations",[f"{id}.hasAnnotation.newAnnotations"],allowDuplicates=False)
+
+                #now make sure the observers have at least the required properties enabled
+                widget = self.get_node(id)
+                helperRoot = helperModel.get_node("root.widget")
+                template = self.get_templates()['templates.timeseriesWidget']
+
+                children = helperRoot.get_children(3)
+                print(f"2 level children {[node.get_browse_path() for node in children]}")
+                for child in helperRoot.get_children():
+                    if child.get_properties()["type"] == "observer":
+                        widgetNode = widget.get_child(child.get_name()).get_child("properties")
+                        helperNode = child.get_child("properties")
+
+                        for prop in helperNode.get_value():
+                            current = widgetNode.get_value()
+                            if prop not in current:
+                                current.append(prop)
+                                widgetNode.set_value(current)
+
+                for child in helperRoot.get_children(3):
+                    if child.get_properties()["type"] == "referencer":
+                        self.logger.debug(f"found referencer {child.get_name()}")
+                        # now adjust the references of new nodes and of the ones that were there
+                        targets = child.get_properties()["forwardRefs"]
+                        if targets:
+                            targets = [helperModel.get_browse_path(ref) for ref in targets]
+                            requiredTargets = [widget.get_browse_path()+"."+".".join(ref.split(".")[2:]) for ref in targets]
+                            self.logger.debug(f"required targets {requiredTargets}")
+                            #now check in the model
+                            widgetNodePath = widget.get_browse_path()+ child.get_browse_path()[len(helperRoot.get_browse_path()):]
+                            widgetNode = self.get_node(widgetNodePath)
+                            #now check if we have them
+                            targetPaths = [tNode.get_browse_path() for tNode in widgetNode.get_targets()]
+                            for target in requiredTargets:
+                                if target not in targetPaths:
+                                    self.logger.debug(f"adding ref {widgetNode.get_browse_path()} => {target}")
+                                    self.add_forward_refs(widgetNode.get_id(),[target])
+
+
+
+            #now the system progress observer
+            if not self.get_node("root.system.progress"):
+                self.create_template_from_path("root.system.progress",self.get_templates()['system.observer'])
+                self.set_value("root.system.progress.hasEvent",True)
+                self.set_value("root.system.progress.eventString","system.progress")
+                self.set_value("root.system.progress.properties",["value"])
+                self.set_value("root.system.progress.enabled",True)
+
+
+        except Exception as ex:
+            self.logger.error(f" {ex} , {sys.exc_info()[0]}")
+
+        self.enable_observers()
 
     def create_test(self,testNo=1):
         """
