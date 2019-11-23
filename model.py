@@ -1027,6 +1027,7 @@ class Model():
             forwards = [self.get_browse_path(leaf) for leaf in leaves]
             props["leaves"]=forwards
             props["leavesIds"]=leaves
+            props["leavesValues"] = [self.get_value(id) if self.model[id]["type"] not in ["file","column"] else None for id in leaves]
         result[".properties"]=props
 
         #now the children

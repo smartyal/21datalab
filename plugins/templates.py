@@ -139,8 +139,14 @@ timeseriesWidget = {
             ]
         },
         {"name": "currentColors", "type": "variable", "value":{"entry":{"lineColor":"red"}}},   #put the current colors here
-        {"name": "autoScaleY", "type": "variable", "value":True},               # turn y axis autoscale on/off during runtime
-        {"name": "panOnlyX","type":"const","value":False}                       # if this is set true, the pan and wheel zoom only zooms in x-direction
+        {"name": "autoScaleY", "type": "variable", "value":True},                   # turn y axis autoscale on/off during runtime
+        {"name": "panOnlyX","type":"const","value":False},                              # if this is set true, the pan and wheel zoom only zooms in x-direction
+        {"name": "streamingMode","type":"const","value":False},                       # if this is set true, the pan and wheel zoom only zooms in x-direction
+        {"name": "contextMenuSettings","type":"folder","children": [
+            {"name":"auto scale y","type":"referencer","references":["timeSeriesWidget.autoScaleY"]},
+            {"name":"streaming Mode","type":"referencer","references":["timeSeriesWidget.streamingMode"]}
+            ]
+        }
 
     ]
 }

@@ -21,6 +21,9 @@ import numpy #for _Getvalue
 from flask import Flask, flash, request, redirect, url_for
 from werkzeug.utils import secure_filename
 import os
+import argparse
+
+
 
 UPLOAD_FOLDER = './upload'
 
@@ -775,22 +778,31 @@ def all(path):
         return flask.Response("",mimetype="text/html"),501
 
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", help="port for the restservice")
+    parser.add_argument("model", help="display a square of a given number",
+                        type=str)
+    args = parser.parse_args()
+
+    #print(args.port)
+
+    if not args.port:
+        port = 6001
+    else:
+        port = args.port
+
+
+
     m = model.Model()
-    if len(sys.argv) > 1:
-        if sys.argv[1] == "occupancy":
-            print("starting occupany demo")
-            m.create_test(2)
-        elif sys.argv[1] == "dynamictest":
-            print("starting the dynamic test")
-            m.create_test(3)
-        else:
-            print("load model from disk: "+sys.argv[1])
-            m.load(sys.argv[1])
+    if args.model:
+        print("load model from disk: " + args.model)
+        m.load(args.model)
     else:
         print("no model - create standard test model")
         m.create_test(1)
 
-    web.run(host='0.0.0.0', port=6001, debug=False)#, threaded = False)
+    web.run(host='0.0.0.0', port=port, debug=False)#, threaded = False)
 
     #enable this to use wsgi web server instead
     #http_server = WSGIServer(('0.0.0.0', 6001), web)
