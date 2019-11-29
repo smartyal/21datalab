@@ -92,8 +92,8 @@ GET  /pipelines      -                          [<pipeline.json>]       ## get t
 POST /_load         fileName (str)              -
 POST /_save         fileName (str)              -
 POST /_getdata      <dataquery.json>]
-POST /_appendRow     [<data.json>]
-POST /_references <referencequery.json>
+POST /_appendRow     [<data.json>]  
+POST /_references <referencequery.json>                                  ## adjust references, details see json
 POST /_execute      <nodedescriptor>            //nothing                ## execute a function
 GET  /templates      -                           [templatename]          ## get all available templates to be created
 POST /_createTemplate  <createtemplate.json>     -                       #create a template at a path given
@@ -188,7 +188,7 @@ referencequery.json
     "parent": <nodedescriptor> # must be a referencer
     "add": [<nodedescriptors>] # always a list!!
     "deleteExisting" : one of True/False # if set, all existings references are deleted
-    "remove" :[<nodedescriptors>] # always a list!!
+    "remove" :[<nodedescriptors>] # always a list!!, we also delete duplicate references if they exist
 }
 
 movequery.json
@@ -544,7 +544,7 @@ def all(path):
             if "add" in data:
                 result = m.add_forward_refs(data["parent"],data["add"])
             if "remove" in data:
-                result = m.remove_forward_refs(data["parent"], data["remove"])
+                result = m.remove_forward_refs(data["parent"], data["remove"],deleteDuplicates=True)
             m.enable_observers()
             m.release_model()
             m.notify_observers([m.get_id(data["parent"])],"forwardRefs")

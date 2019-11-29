@@ -1471,12 +1471,14 @@ class Model():
         return model
 
 
-    def remove_forward_refs(self,sourceDesc,targetDescriptors = []):
+    def remove_forward_refs(self,sourceDesc,targetDescriptors = [], deleteDuplicates=False):
         """
             remove forward references from a referencer, this also removes the backreference from the target
             Args:
                 sourceDesc: the descriptor of the referencer node
                 targets: a list of descriptors, if missing we delete all
+                deleteDuplicates: if set true, we delete all referenes to a target if we hae more than one reference
+
             Returns:
                 True/False for success
         """
@@ -1494,8 +1496,15 @@ class Model():
             for toId in targets:
                 if not toId:
                     continue # we skip Nones coming from the get_id
-                self.model[fromId]["forwardRefs"].remove(toId)
-                self.model[toId]["backRefs"].remove(fromId)
+                if deleteDuplicates:
+                    # maybe multiple entries
+                    while toId in self.model[fromId]["forwardRefs"]: # maybe multiple entries
+                        self.model[fromId]["forwardRefs"].remove(toId)
+                        self.model[toId]["backRefs"].remove(fromId)
+                else:
+                    # we delete only one entry
+                    self.model[fromId]["forwardRefs"].remove(toId)
+                    self.model[toId]["backRefs"].remove(fromId)
             self.__notify_observers(fromId,"forwardRefs")
         return True
 
