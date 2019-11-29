@@ -631,6 +631,20 @@ class TimeSeriesWidgetDataServer():
         self.__web_call("POST", "_references", query)
         return
 
+    def set_x_range(self,start,end):
+        startTimeString = self.bokeh_time_to_string(start)
+        endTimeString = self.bokeh_time_to_string(end)
+
+        self.mirror["startTime"][".properties"]["value"]=startTimeString
+        self.mirror["endTime"][".properties"]["value"] = endTimeString
+
+        query= [
+            {"browsePath": self.path+".startTime","value":startTimeString},
+            {"browsePath": self.path + ".endTime", "value": endTimeString}]
+        self.__web_call("POST","setProperties",query)
+        return
+
+
 
 class TimeSeriesWidget():
     def __init__(self, dataserver,curdoc=None):
@@ -665,7 +679,6 @@ class TimeSeriesWidget():
         self.renderers = {}  # each element is ["id":["renderer":object,"info":annoDict] these are the created renderers to be later used e.g. annotations
 
         self.streamingUpdateData = None
-        self.streamingMode = False
         self.showBackgrounds = False
         self.showAnnotationTags = [] # a list with tags to display currently
         self.showAnnotations = False # curently displaying annotations
@@ -678,8 +691,10 @@ class TimeSeriesWidget():
 
 
         self.__init_figure() #create the graphical output
-        self.__init_new_observer()      #
+
         self.init_additional_elements() # we need the observer already here eg for the scores s we might modifiy the backend and rely on the callback
+
+        self.__init_new_observer()  #
 
         self.debug = None
     class ButtonCb():
@@ -733,7 +748,7 @@ class TimeSeriesWidget():
         elif data["event"] == "timeSeriesWidget.stream":
             self.logger.debug(f"self.streamingMode {self.streamingMode}")
             if self.streamingMode and not self.streamingUpdateData:
-                #self.logger.debug("get stream data")
+                self.logger.debug("get stream data")
                 #we update the streaming every second
                 #get fresh data, store it into a variable and make the update on dispatch in the context of bokeh
                 variables = self.server.get_variables_selected()
@@ -746,6 +761,7 @@ class TimeSeriesWidget():
                 self.__dispatch_function(self.stream_update)
             elif not self.streamingMode and not self.streamingUpdateData:
                 #this is a standard update without streaming
+                self.logger.debug("get changed data")
                 variables = self.server.get_variables_selected()
                 variablesRequest = variables.copy()
                 variablesRequest.append("__time")  # make sure we get the time included
@@ -807,6 +823,33 @@ class TimeSeriesWidget():
             if (visibleTagsOld != visibleTagsNew) and self.showAnnotations:
                 self.__dispatch_function(self.show_annotations)
 
+            #startime/endtime has changed
+
+            if (oldMirror["startTime"][".properties"]["value"] !=
+                newMirror["startTime"][".properties"]["value"]) or (
+                 oldMirror["endTime"][".properties"]["value"] !=
+                 newMirror["endTime"][".properties"]["value"]):
+                start = date2secs(newMirror["startTime"][".properties"]["value"])*1000
+                end = date2secs(newMirror["endTime"][".properties"]["value"])*1000
+                #self.rangeStart = date2secs(newMirror["startTime"][".properties"]["value"])*1000
+                #self.rangeEnd = date2secs(newMirror["endTime"][".properties"]["value"])*1000
+                self.logger.debug("start/end changed")
+                times = {"start":start,"end":end}
+                self.__dispatch_function(self.sync_x_axis,times)
+
+            #check if streaming mode has changed
+            if oldMirror["streamingMode"][".properties"]["value"] != newMirror["streamingMode"][".properties"]["value"]:
+                if newMirror["streamingMode"][".properties"]["value"]:
+                    self.start_streaming()
+                else:
+                    self.stop_streaming()
+
+            if oldMirror["panOnlyX"][".properties"]["value"] != newMirror["panOnlyX"][".properties"]["value"]:
+                self.set_pan_tool(newMirror["panOnlyX"][".properties"]["value"])
+
+
+
+
 
         elif data["event"] == "timeSeriesWidget.values":
             #the data has changed, typically the score values?
@@ -815,6 +858,26 @@ class TimeSeriesWidget():
         elif data["event"] == "timeSeriesWidget.newAnnotation":
             #self.logger.debug(f"draw anno!")
             self.__dispatch_function(self.draw_new_annotation)
+
+
+    def sync_x_axis(self,times=None):
+        self.logger.debug(f"sync_x_axis x ")
+
+        variables = self.server.get_variables_selected()
+        start = times["start"]
+        end = times["end"]
+        #self.set_x_axis(start,end)
+        variablesRequest = variables.copy()
+        variablesRequest.append("__time")  # make sure we get the time included
+        newData = self.server.get_data(variablesRequest, start, end,
+                                                        self.server.get_settings()["bins"])  # for debug
+        self.data.data = newData
+
+        self.set_x_axis(start, end)
+        #self.plot.x_range.start = start
+        #self.plot.x_range.end = end
+        self.autoAdjustY = self.server.get_mirror()["autoScaleY"][".properties"]["value"]
+        self.adjust_y_axis_limits()
 
 
     def draw_new_annotation(self):
@@ -1021,8 +1084,13 @@ class TimeSeriesWidget():
 
 
         #initial values
-        self.rangeStart = settings["startTime"]
-        self.rangeEnd = settings["endTime"]
+        try:
+            self.rangeStart = date2secs(settings["startTime"])*1000
+            self.rangeEnd = date2secs(settings["endTime"])*1000
+        except:
+            self.rangeStart = None
+            self.rangeEnd = None
+            self.logger.error("range start, end error, use default full")
 
         #create figure
         """
@@ -1035,6 +1103,7 @@ class TimeSeriesWidget():
            3) assign them to the figure with add_tools()
            4) create a toolbar and add it to the layout by hand
         """
+        """
         if self.server.get_mirror()["panOnlyX"][".properties"]["value"]==True:
             self.wheelZoomTool = WheelZoomTool(dimensions="width")
             self.panTool = PanTool(dimensions="width")
@@ -1043,6 +1112,13 @@ class TimeSeriesWidget():
             self.panTool = PanTool()#dimensions="width")
 
         tools = [self.wheelZoomTool, self.panTool]
+        """
+        self.wheelZoomTool = WheelZoomTool()
+        self.wheelZoomToolX = WheelZoomTool(dimensions = "width")
+        self.panTool = PanTool()
+        tools = [self.wheelZoomTool,self.wheelZoomToolX,self.panTool]
+
+
         if settings["hasAnnotation"] == True:
             self.boxSelectTool = BoxSelectTool(dimensions="width")
             tools.append(self.boxSelectTool)
@@ -1065,7 +1141,7 @@ class TimeSeriesWidget():
         fig = figure(toolbar_location=None, plot_height=self.height,
                      plot_width=self.width,
                      sizing_mode="scale_width",
-                     x_axis_type='datetime', y_range=Range1d())
+                     x_axis_type='datetime', y_range=Range1d(),x_range=(0,1))
         self.plot = fig
 
         # set the theme
@@ -1244,6 +1320,8 @@ class TimeSeriesWidget():
         if "scores" in visibleElements and visibleElements["scores"] == True:
             self.show_scores()
 
+        if self.server.get_mirror()["streamingMode"][".properties"]["value"] == True:
+            self.start_streaming()
 
     def set_active_drag_tool(self,tool):
         #we need to change the default selection of active drag and then write the list of tools to the toolsbar
@@ -1260,6 +1338,24 @@ class TimeSeriesWidget():
             #now set the active drag
             self.toolBarBox.toolbar.active_drag = tool
             self.toolBarBox.toolbar.tools = store
+
+    def set_pan_tool(self,panOnlyX=True):
+        self.logger.debug(f"set x only pan: {panOnlyX}")
+        if hasattr(self,"toolBarBox"): #check this: at the startup we are not yet fully supplied, so nothing to do here
+
+            store = self.toolBarBox.toolbar.tools
+
+            if panOnlyX==True:
+                self.wheelZoomTool = WheelZoomTool(dimensions="width")
+                self.panTool = PanTool(dimensions="width")
+            else:
+                self.wheelZoomTool = WheelZoomTool()#dimensions="width")
+                self.panTool = PanTool()#dimensions="width")
+
+
+            store =[self.wheelZoomTool,self.panTool]+store[2:]
+            self.toolBarBox.toolbar.tools = store
+
 
 
     def debug_button_cb(self):
@@ -1496,8 +1592,12 @@ class TimeSeriesWidget():
                         self.streamingUpdateData = None
                     else:
                         self.data.data = self.streamingUpdateData# #update the plot
-                        self.plot.x_range.start = self.data.data["__time"][0]
-                        self.plot.x_range.end = self.data.data["__time"][-1]
+                        self.logger.debug(f"streaming start {self.data.data['__time'][0]} end {self.data.data['__time'][-1]}, interv {self.streamingInterval}")
+                        #self.plot.x_range.start = self.data.data["__time"][0]
+                        #self.plot.x_range.end = self.data.data["__time"][-1]
+                        if self.streamingMode:
+                            #only in streaming Mode we set the axis new
+                            self.set_x_axis(self.data.data["__time"][0],self.data.data["__time"][-1])
                         self.adjust_y_axis_limits()
                         if self.showBackgrounds:
                             #we also try to update the backgrounds here
@@ -1954,6 +2054,12 @@ class TimeSeriesWidget():
         if not getData:
             self.logger.error(f"no data received")
             return
+        if self.rangeStart == None:
+            #write it back
+            self.rangeStart = getData["__time"][0]
+            self.rangeEnd   = getData["__time"][-1]
+            self.server.set_x_range(self.rangeStart, self.rangeEnd)
+
         if newVars == []:
             self.data.data = getData  # also apply the data to magically update
         else:
@@ -2016,6 +2122,7 @@ class TimeSeriesWidget():
         else:
             self.plot.legend.items = legendItems #replace them
 
+        self.set_x_axis()
         self.adjust_y_axis_limits()
 
 
@@ -2033,6 +2140,14 @@ class TimeSeriesWidget():
             self.userZoomRunning = True
         #print("range cb"+str(attribute),self.rangeStart,self.rangeEnd)
         #self.logger.debug(f"leaving range_cb with userzoom running {self.userZoomRunning}")
+
+    def set_x_axis(self,start=None,end=None):
+        if start:
+            self.rangeStart = start
+        if end:
+            self.rangeEnd = end
+        self.plot.x_range.start = self.rangeStart
+        self.plot.x_range.end   = self.rangeEnd
 
     def refresh_plot(self):
         """
@@ -2180,9 +2295,10 @@ class TimeSeriesWidget():
             if self.streamingMode:
                 self.userZoomRunning = False # the user is finished with zooming, we can now push data to the UI again
                 # also update the zoom level during streaming
-                self.streamingInterval = self.rangeEnd - self.rangeStart
+                self.streamingInterval = self.plot.x_range.end - self.plot.x_range.start #.rangeEnd - self.rangeStart
             #if self.server.get_settings()["autoScaleY"][".properties"]["value"] == True
             self.autoAdjustY = self.server.get_mirror()["autoScaleY"][".properties"]["value"]
+            self.server.set_x_range(self.rangeStart,self.rangeEnd)
             self.refresh_plot() #xxx
 
         if eventType == "Reset":

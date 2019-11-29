@@ -1032,6 +1032,7 @@ class Model():
             forwards = [self.get_browse_path(leaf) for leaf in leaves]
             props["leaves"]=forwards
             props["leavesIds"]=leaves
+            props["leavesValues"] = [self.get_value(id) if self.model[id]["type"] not in ["file","column"] else None for id in leaves]
         result[".properties"]=props
 
         #now the children
@@ -2905,6 +2906,8 @@ class Model():
                                     for funcNodeId in self.get_leaves_ids(observer["onTriggerFunction"]["id"]):
                                         self.logger.debug(f"execute ontrigger function {funcNodeId}")
                                         self.execute_function(funcNodeId)
+                                    if "triggerSourceId" in observer:
+                                        self.model[observer["triggerSourceId"]["id"]]["value"] = nodeId
                                     if observer["hasEvent"]["value"] == True:
                                         #self.logger.debug(f"send event {observer['eventString']['value']}")
                                         #also send the real event
@@ -2912,7 +2915,7 @@ class Model():
                                         event = {
                                             "id": self.modelUpdateCounter,
                                             "event": observer["eventString"]["value"],
-                                            "data": {"nodeId":observerId}}
+                                            "data": {"nodeId":observerId,"sourceId":nodeId}}
                                         #some special handling
                                         try:
                                             if event["event"] == "system.progress":

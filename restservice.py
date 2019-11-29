@@ -22,6 +22,9 @@ import numpy #for _Getvalue
 from flask import Flask, flash, request, redirect, url_for
 from werkzeug.utils import secure_filename
 import os
+import argparse
+
+
 
 UPLOAD_FOLDER = './upload'
 
@@ -804,9 +807,6 @@ if __name__ == '__main__':
         else:
             print("load model from disk: " + model_path)
             m.load(model_path)
-    else:
-        print("no model - create standard test model")
-        m.create_test(1)
 
     web.run(host='0.0.0.0', port=port, debug=False)#, threaded = False)
 

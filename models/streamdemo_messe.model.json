@@ -983,7 +983,7 @@
         "backRefs": [],
         "forwardRefs": [],
         "value": {
-            "port": 5006
+            "port": 5016
         },
         "browsePath": "root.deployment.ui.components.workbench.settings"
     },
@@ -1178,7 +1178,7 @@
             "129"
         ],
         "forwardRefs": [],
-        "value": "len 44444",
+        "value": "len 44701",
         "browsePath": "root.folder.sin"
     },
     "574": {
@@ -1194,7 +1194,7 @@
             "129"
         ],
         "forwardRefs": [],
-        "value": "len 44444",
+        "value": "len 44701",
         "browsePath": "root.folder.cos"
     },
     "575": {
@@ -1207,7 +1207,7 @@
             "570"
         ],
         "forwardRefs": [],
-        "value": "len 44444",
+        "value": "len 44701",
         "browsePath": "root.folder.step"
     },
     "576": {
@@ -1221,7 +1221,7 @@
             "571"
         ],
         "forwardRefs": [],
-        "value": "len 44444",
+        "value": "len 44701",
         "browsePath": "root.folder.time"
     },
     "577": {
@@ -1247,7 +1247,7 @@
             "129"
         ],
         "forwardRefs": [],
-        "value": "len 44444",
+        "value": "len 44701",
         "browsePath": "root.folder_autotable.sin_score"
     },
     "579": {
@@ -1263,7 +1263,7 @@
             "129"
         ],
         "forwardRefs": [],
-        "value": "len 44444",
+        "value": "len 44701",
         "browsePath": "root.folder_autotable.cos_score"
     },
     "589": {
@@ -1411,7 +1411,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 60882,
+        "value": 61138,
         "browsePath": "root.thresholdScorer.control.executionCounter"
     },
     "600": {
@@ -1422,7 +1422,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.008974,
+        "value": 0.012974,
         "browsePath": "root.thresholdScorer.control.lastExecutionDuration"
     },
     "601": {
@@ -1433,7 +1433,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-11-23T22:02:55.324640",
+        "value": "2019-11-23T22:47:22.150864",
         "browsePath": "root.thresholdScorer.control.lastStartTime"
     },
     "602": {
@@ -1598,7 +1598,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 71040,
+        "value": 71553,
         "browsePath": "root.visualization.workbench.observerStream.triggerCounter"
     },
     "621": {
@@ -1609,7 +1609,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-11-23T22:02:55.329621",
+        "value": "2019-11-23T22:47:22.160840",
         "browsePath": "root.visualization.workbench.observerStream.lastTriggerTime"
     },
     "622": {
@@ -3380,7 +3380,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 27192,
+        "value": 27705,
         "browsePath": "root.system.progress.triggerCounter"
     },
     "4425723408065578788": {
@@ -3391,7 +3391,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-11-23T22:02:55.338763",
+        "value": "2019-11-23T22:47:22.185834",
         "browsePath": "root.system.progress.lastTriggerTime"
     },
     "3939645154328067705": {

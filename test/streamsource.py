@@ -36,7 +36,7 @@ def make_blob(epoch, includeOutlier=True):
 
 
 
-def write_test(rate):
+def write_test(rate,port =6001):
 
     while True:
         time.sleep(float(rate)/1000)
@@ -46,7 +46,8 @@ def write_test(rate):
         body = [blob]
         try:
             startTime = datetime.datetime.now()
-            r = requests.post("http://127.0.0.1:6001/_appendRow", data=json.dumps(body),timeout=5)
+            host = "http://127.0.0.1:"+str(port)+"/_appendRow"
+            r = requests.post(host, data=json.dumps(body),timeout=5)
             diff = (datetime.datetime.now()-startTime).total_seconds()
             print(f"sent {json.dumps(body)} with result {r.status_code} difftime{diff}")
         except Exception as ex:
@@ -55,8 +56,17 @@ def write_test(rate):
 
 if __name__ == '__main__':
     # give the rate in ms
+    
+    
     if len(sys.argv)>1:
         rate = int(sys.argv[1])
     else:
         rate = 1000
-    write_test(rate)
+     
+    
+    if len(sys.argv)>2:
+        port = int(sys.argv[2])
+    else:
+        port = 6001
+    
+    write_test(rate,port)    

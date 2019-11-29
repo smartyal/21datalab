@@ -639,31 +639,29 @@ function context_menu_new_annotation_click(option,contextMenuIndex, optionIndex)
     superCm.destroyMenu();
 }
 
-
-function context_menu_settings_click(option,contextMenuIndex, optionIndex)
+function context_menu_bool_settings_click(option,contextMenuIndex, optionIndex)
 {
     console.log("context_menu_tag_select_click",option);
     //make the true/false check box adjustment
 
-    if (option.entry == "autoScaleY")
+    if (option.currentValue == true)
     {
-        if (option.currentValue == true)
-        {
-            option.currentValue = false;
-            option.icon = "far fa-square";
-        }
-        else
-        {
-            option.currentValue = true;
-            option.icon = "far fa-check-square";
-        }
-
-        option.data[option.entry]=option.currentValue;
-        var query = [{browsePath:option.modelPath+".autoScaleY",value:option.currentValue}];
-        http_post('/setProperties',JSON.stringify(query), null, this, null);
-        superCm.setMenuOption(contextMenuIndex, optionIndex, option);
-        superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
+        option.currentValue = false;
+        option.icon = "far fa-square";
     }
+    else
+    {
+        option.currentValue = true;
+        option.icon = "far fa-check-square";
+    }
+
+    option.data[option.entry]=option.currentValue;
+    var query = [{browsePath:option.nodePath,value:option.currentValue}];
+    http_post('/setProperties',JSON.stringify(query), null, this, null);
+
+    superCm.setMenuOption(contextMenuIndex, optionIndex, option);
+    superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
+
 }
 
 function context_menu_edit(option,contextMenuIndex,optionIndex)
@@ -992,28 +990,34 @@ function prepare_context_menu(dataString,modelPath)
     let tailSubMenu =[];
 
     // y scale
+    for (let child in data.contextMenuSettings)
     {
-        let yscale = data.autoScaleY[".properties"].value;
+        //console.log(entry);
+        if (child == ".properties") continue; // ignore this entry
+        var entryPath = data.contextMenuSettings[child][".properties"].leaves[0];
+        var value = data.contextMenuSettings[child][".properties"].leavesValues[0];
+        console.log(child + " > " + entryPath+ ":"+value);
+
         let icon = "far fa-square";
-        if (yscale == true) icon = "far fa-check-square";
+        if (value == true) icon = "far fa-check-square";
+
         var entry = {
-            label:"autoscale y axis",
+            label:child,
             icon:icon,
-            currentValue:yscale,
+            currentValue:value,
+            nodePath:entryPath,
             data:data,
-            entry:"autoScaleY",
-            modelPath:modelPath,
-            setValue:{type:"time",tag:tag},
             action: function(option, contextMenuIndex, optionIndex){
                     var opt = option;
                     var idx = contextMenuIndex;
                     var optIdx = optionIndex;
-                    context_menu_settings_click(opt,idx,optIdx);
+                    context_menu_bool_settings_click(opt,idx,optIdx);
                 }
         }
 
         tailSubMenu.push(entry);
     }
+
 
     var menuTail = [
         {
