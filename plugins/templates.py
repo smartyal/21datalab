@@ -142,11 +142,8 @@ timeseriesWidget = {
         {"name": "autoScaleY", "type": "variable", "value":True},                   # turn y axis autoscale on/off during runtime
         {"name": "panOnlyX","type":"const","value":False},                              # if this is set true, the pan and wheel zoom only zooms in x-direction
         {"name": "streamingMode","type":"const","value":False},                       # if this is set true, the pan and wheel zoom only zooms in x-direction
-        {"name": "contextMenuSettings","type":"folder","children": [
-            {"name":"auto scale y","type":"referencer","references":["timeSeriesWidget.autoScaleY"]},
-            {"name":"streaming Mode","type":"referencer","references":["timeSeriesWidget.streamingMode"]}
-            ]
-        }
+        {"name": "contextMenuSettings","type":"folder"}                         # configure here the "settings" submenu of the context menu: each child should be a referencer pointing to a bool variable
+                                                                                # the entry displayed in the context menu will be the name of the referencder
 
     ]
 }
