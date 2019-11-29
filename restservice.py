@@ -186,9 +186,9 @@ pipelines.json
 referencequery.json
 {
     "parent": <nodedescriptor> # must be a referencer
-    "add": [<nodedescriptors>]
+    "add": [<nodedescriptors>] # always a list!!
     "deleteExisting" : one of True/False # if set, all existings references are deleted
-    "remove" :[<nodedescriptors>]
+    "remove" :[<nodedescriptors>] # always a list!!
 }
 
 movequery.json

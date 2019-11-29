@@ -623,6 +623,42 @@ function context_menu_tag_select_click(option,contextMenuIndex, optionIndex)
 
 }
 
+function context_menu_variable_select_click(option,contextMenuIndex, optionIndex)
+{
+    console.log("context_menu_variable_select_click",option);
+    //make the true/false check box adjustment
+
+    var query = {parent:option.modelPath+".selectedVariables"};
+    if (option.currentValue == true)
+    {
+        option.currentValue = false;
+        option.icon = "far fa-square";
+        //remove this one
+        query.remove = [option.varPath];
+        //also hide a potential score renderer
+        let matchingString = option.name+"_score"
+        for (let variablePath of option.selectedVariables)
+        {
+            if (variablePath.endsWith(matchingString))
+            {
+                query.remove.push(variablePath);
+            }
+        }
+    }
+    else
+    {
+        option.currentValue = true;
+        option.icon = "far fa-check-square";
+        // add this one
+        query.add = [option.varPath];
+    }
+    http_post("/_references",JSON.stringify(query),null,null,null);
+
+    superCm.setMenuOption(contextMenuIndex, optionIndex, option);
+    superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
+
+}
+
 
 function context_menu_click_function(option)
 {
@@ -857,6 +893,52 @@ function prepare_context_menu(dataString,modelPath)
         showSubmenu.push(entry);
     }
 
+    //another entry for the variables
+    var variablesSubmenu=[];
+    var selectableVariables = data.selectableVariables[".properties"].leaves;
+    var selectedVariables = data.selectedVariables[".properties"].leaves;
+    for (variable of selectableVariables)
+    {
+        let icon = "far fa-square";
+        var currentValue = false;
+        if (selectedVariables.includes(variable)) {icon = "far fa-check-square";currentValue =true; }
+        //let mycolor = colors[tag].color;
+        //let mypattern = colors[tag].pattern;
+        //if (mypattern == null) mypattern = "&nbsp &nbsp &nbsp";
+        //else mypattern = "&nbsp "+mypattern + " &nbsp";
+        //let mycolorString = `<span style='background-color:${mycolor};text-color:red;font-family:monospace'> <font color='white'> ${mypattern}</font> </span> &nbsp ${tag}`;
+
+        var splitted = variable.split('.');
+        var name =splitted[splitted.length-1];
+
+
+        var entry = {
+            icon:icon,
+            label:name,
+            name:name,
+            currentValue : currentValue,
+            varPath:variable,
+            selectedVariables:selectedVariables,
+            modelPath:modelPath,
+            action: function(option, contextMenuIndex, optionIndex){
+                    var opt = option;
+                    var idx = contextMenuIndex; var
+                    optIdx = optionIndex;
+                    context_menu_variable_select_click(opt,idx,optIdx);
+                }
+
+        }
+        variablesSubmenu.push(entry);
+    }
+     var entry = {
+            //icon: icon,
+            label:"variables",
+            submenu:variablesSubmenu
+        };
+    showSubmenu.push(entry);
+
+
+
 
     //add the show/hide to the menu
     menu.push({
@@ -900,7 +982,7 @@ function prepare_context_menu(dataString,modelPath)
 
     let newThresholdsSubmenu = [];
     //selected variables?
-    let selectedVariables = data.selectedVariables[".properties"].leaves;
+    //let selectedVariables = data.selectedVariables[".properties"].leaves;
     let scoreVariables = data.scoreVariables[".properties"].leaves;
 
     let currentColors = data.currentColors[".properties"].value;
