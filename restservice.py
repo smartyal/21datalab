@@ -1,3 +1,4 @@
+import argparse
 import flask
 import json
 import logging
@@ -778,29 +779,34 @@ def all(path):
         return flask.Response("",mimetype="text/html"),501
 
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser()
-    parser.add_argument("--port", help="port for the restservice")
-    parser.add_argument("model", help="display a square of a given number",
-                        type=str)
+
+    parser.add_argument('--port', help='Port on which the restservice is listening', default=6001, type=int)
+    parser.add_argument('--plugin_directory',
+                        help='Adds a directory to the list of directories from which plugins are loaded',
+                        action='append',
+                        default=[])
+    parser.add_argument('model', help='Full path to model or name of a model in the models subdirectory', nargs='?', default=None)
+
     args = parser.parse_args()
-
-    #print(args.port)
-
-    if not args.port:
-        port = 6001
-    else:
-        port = args.port
-
-
+    model_path = args.model
+    port = args.port
+    plugin_directories = args.plugin_directory
 
     m = model.Model()
-    if args.model:
-        print("load model from disk: " + args.model)
-        m.load(args.model)
-    else:
-        print("no model - create standard test model")
-        m.create_test(1)
+    for plugin_directory in plugin_directories:
+        print('Importing plugins from directory \"{:}\"'.format(plugin_directory))
+        m.import_plugins_from_directory(plugin_directory)
+    if model_path is not None:
+        if model_path == "occupancy":
+            print("starting occupany demo")
+            m.create_test(2)
+        elif model_path == "dynamictest":
+            print("starting the dynamic test")
+            m.create_test(3)
+        else:
+            print("load model from disk: " + model_path)
+            m.load(model_path)
 
     web.run(host='0.0.0.0', port=port, debug=False)#, threaded = False)
 

@@ -1,8 +1,8 @@
+import glob
 import json
 import copy
 import importlib
 import threading
-import time
 import logging
 import pytz
 
@@ -17,6 +17,8 @@ import time
 import uuid
 import hashlib
 import random
+# type hints
+from typing import List
 
 import modeltemplates
 
@@ -396,6 +398,9 @@ class Node():
         """
         self.model = myModel # this is not a copy!!
         self.id = myId
+
+    def __repr__(self):
+        return 'Node(id={:}, value={:})'.format(self.id, self.get_value())
 
     def get_value(self):
         """ Returns:
@@ -854,7 +859,7 @@ class Model():
         self.templates={} # holding all templates from ./plugins
         self.lock = threading.RLock()
         self.executeFunctionRunning = False # set to true, makes sure only one functions runs at a time
-        self.import_plugins()
+        self.import_default_plugins()
         self.differentialHandles ={} # containing model_copy entries to support differential queries
         self.diffHandleCounter = 0  # used only for debugging
         self.differentialHandlesMaxPerUser = 10
@@ -1105,52 +1110,40 @@ class Model():
         """
         return {"name":self.currentModelName}
 
-
-    def import_plugins(self):
-        """ find all plugins (= all .py files in the ./plugin folder
+    def import_plugins_from_directory(self, plugin_directory: str):
+        """ find all plugins from plugin_directory.
             take from there the templates from the files and the functions
-            this function is execution on startup of the model
-
         """
-        #mydir =os.path.dirname(os.path.realpath(__file__))
-        mydir = myGlobalDir
-        os.chdir(mydir)#to enable import easily
-        sys.path.append(mydir + '/plugins') # for the importlib to find the stuff
-        sys.path.append(mydir + '/private')  # for the importlib to find the stuff
+        if plugin_directory not in sys.path:
+            sys.path.append(plugin_directory)  # for the importlib to find the stuff
 
-        plugins = os.listdir(mydir+'/plugins')
-        try:
-            privates = os.listdir(mydir+'/private')
-            #for the privates, take only the ones carrying the line "#21datalabplugin"
-            for fileName in privates:
-                if fileName.startswith('__'):
-                    continue
-                if fileName.startswith('.'):
-                    continue
-                fullName = mydir+'/private/'+fileName
-                f=open(fullName,"r")
-                if f.readline()[0:16]=="#21datalabplugin":
-                    plugins.append(fileName)
-                f.close()
-        except Exception as ex:
-            self.logger.warning(f"problems during /private folder import {ex}")
-        for fileName in plugins:
+        plugin_filenames = glob.glob(os.path.join(plugin_directory, '**/*.py'), recursive=True)
+        for fileName in plugin_filenames:
             if fileName.startswith('__'):
                 continue # avoid __pycache__ things
-            moduleName = fileName[:-3]
+            filename_relative = os.path.relpath(fileName, plugin_directory)
+            moduleName = os.path.splitext(filename_relative)[0].replace(os.path.sep, '.')
             module = importlib.import_module(moduleName)
             #now analyze all objects in the module
             for objName in dir(module):
                 if objName.startswith('__'):
                     continue # these are python generated info objects, we don't want them
                 element = getattr(module,objName)
-                if type(element ) is dict:
+                if type(element) is dict:
                     #this is a template information
                     self.templates[moduleName+"."+objName]=copy.deepcopy(element)
                 elif callable(element):
                     #this is a function, get more info
-                    newFunction = {"module":module,"function":element}
+                    newFunction = {"module":module, "function":element}
                     self.functions[moduleName+"."+objName]=newFunction
+
+    def import_default_plugins(self):
+        """ find all plugins (= all .py files in the ./plugin folder
+            take from there the templates from the files and the functions
+            this function is execution on startup of the model
+
+        """
+        self.import_plugins_from_directory(os.path.join(myGlobalDir, 'plugins'))
 
     def get_id(self,ids):
         """ convert a descriptor or a list into only ids (which can be used as entry to the model dictionary
@@ -2672,7 +2665,24 @@ class Model():
             self.disable_observers()
             try:
                 if type(fileName) is str:
-                    f = open("./models/"+fileName+".model.json","r")
+                    model_directory = None
+                    model_filename = None
+                    if os.path.isabs(fileName):
+                        model_directory = os.path.dirname(fileName)
+                        model_filename = os.path.basename(fileName)
+                    else:
+                        file_directory = os.path.dirname(fileName)
+                        if len(file_directory) == 0:
+                            # we are only given a filename, use 21datalab subfolder models as directory
+                            model_directory = os.path.join(os.path.dirname(__file__), "models")
+                            model_filename = fileName
+                        else:
+                            # we are given a relative path + filename
+                            model_directory = os.path.dirname(fileName)
+                            model_filename = os.path.basename(fileName)
+
+                    #if os.path.dirname(fileName)
+                    f = open(os.path.join(model_directory, model_filename) + ".model.json","r")
                     model = json.loads(f.read())
                     self.model = model
                     f.close()
@@ -2690,7 +2700,7 @@ class Model():
                     if includeData:
                         if self.get_node_info(nodeId)["type"] == "table":
                             table = self.get_browse_path(nodeId)
-                            data = numpy.load("./models/" + fileName+'.'+table + ".npy")
+                            data = numpy.load(os.path.join(model_directory, model_filename) + "." + table + ".npy")
                             ids = self.get_leaves_ids(table+".columns")
                             for id, column in zip(ids, data):
                                 self.set_value(id,column)
