@@ -185,7 +185,7 @@ class TimeSeriesWidgetDataServer():
             try:
                 response = requests.get(self.url + path, timeout=globalRESTTimeout,proxies=self.proxySetting)
             except Exception as ex:
-                self.logger.error("requests.get"+str(timeout)+" msg:"+str(ex))
+                self.logger.error("requests.get msg:"+str(ex))
 
         elif method.upper() == "POST":
             now = datetime.datetime.now()
@@ -193,7 +193,7 @@ class TimeSeriesWidgetDataServer():
                 response = requests.post(self.url + path, data=json.dumps(reqData), timeout=globalRESTTimeout,
                                          proxies=self.proxySetting)
             except Exception as ex:
-                self.logger.error("requets.post" + str(timeout) + " msg:" + str(ex))
+                self.logger.error("requets.post " + str(ex))
 
         after = datetime.datetime.now()
         diff = (after-now).total_seconds()
@@ -1103,7 +1103,7 @@ class TimeSeriesWidget():
            3) assign them to the figure with add_tools()
            4) create a toolbar and add it to the layout by hand
         """
-        """
+
         if self.server.get_mirror()["panOnlyX"][".properties"]["value"]==True:
             self.wheelZoomTool = WheelZoomTool(dimensions="width")
             self.panTool = PanTool(dimensions="width")
@@ -1117,7 +1117,7 @@ class TimeSeriesWidget():
         self.wheelZoomToolX = WheelZoomTool(dimensions = "width")
         self.panTool = PanTool()
         tools = [self.wheelZoomTool,self.wheelZoomToolX,self.panTool]
-
+        """
 
         if settings["hasAnnotation"] == True:
             self.boxSelectTool = BoxSelectTool(dimensions="width")
@@ -2283,6 +2283,7 @@ class TimeSeriesWidget():
             if self.streamingMode:
                 self.userZoomRunning = True # the user is starting with pannin, we old the ui updates during user pan
 
+        """
         if eventType == "PanEnd":
             #self.refresh_plot()
             if self.streamingMode:
@@ -2290,8 +2291,10 @@ class TimeSeriesWidget():
             #self.logger.debug(f"{self.toolBarBox.toolbar.active_pan}")
             self.autoAdjustY = False
             self.refresh_plot()
+        """
 
-        if eventType == "LODEnd":
+        #if eventType == "LODEnd":
+        if eventType in ["LODEnd","PanEnd"]:
             if self.streamingMode:
                 self.userZoomRunning = False # the user is finished with zooming, we can now push data to the UI again
                 # also update the zoom level during streaming
