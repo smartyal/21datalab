@@ -2582,6 +2582,23 @@ class Model():
         with self.lock:
             try:
                 m = self.get_model_for_web()  # leave out the tables
+
+                model_directory = None
+                model_filename = None
+                if os.path.isabs(fileName):
+                    model_directory = os.path.dirname(fileName)
+                    model_filename = os.path.basename(fileName)
+                else:
+                    file_directory = os.path.dirname(fileName)
+                    if len(file_directory) == 0:
+                        # we are only given a filename, use 21datalab subfolder models as directory
+                        model_directory = os.path.join(os.path.dirname(__file__), "models")
+                        model_filename = fileName
+                    else:
+                        # we are given a relative path + filename
+                        model_directory = os.path.dirname(fileName)
+                        model_filename = os.path.basename(fileName)
+
                 if includeData:
                     for nodeId in self.model:
                         if self.get_node_info(nodeId)["type"] == "table":
@@ -2592,8 +2609,9 @@ class Model():
                             for node in columnNodes:
                                 myList.append(self.get_value(node["id"]))
                             table = numpy.stack(myList,axis=0)
-                            numpy.save("./models/" + fileName + "."+tablePath+".npy", table)
-                f = open("./models/"+fileName + ".model.json", "w")
+                            #numpy.save("./models/" + fileName + "."+tablePath+".npy", table)
+                            numpy.save(os.path.join(model_directory, model_filename)+ "." + tablePath + ".npy", table)
+                f = open(os.path.join(model_directory, model_filename)+ ".model.json", "w")
                 f.write(json.dumps(m, indent=4))
                 f.close()
                 self.currentModelName = fileName
