@@ -147,7 +147,7 @@ def motif_miner(functionNode):
 
     return True
 
-def generate_peaks(resultVector,functionNode,logger,timeNode,MotifLen,motifTimeLen,MotifStart,MotifEnd):
+def generate_peaks(resultVector,functionNode,logger,timeNode,MotifLen,MotifStart,MotifEnd):
     v = resultVector.copy()
     motifTimeLen = MotifEnd-MotifStart
     v[False == numpy.isfinite(v)] = 0  # pad inf as zero for the peak detector
