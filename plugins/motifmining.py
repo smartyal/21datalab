@@ -57,6 +57,7 @@ def motif_miner(functionNode):
     tableNode = functionNode.get_child("table").get_targets()[0]
     timeNode = tableNode.get_child("timeField").get_targets()[0]
 
+
     """
         preparation:
             - find the current widget, take the current selected selection for my motif
@@ -83,11 +84,17 @@ def motif_miner(functionNode):
     scoreNode = functionNode.get_child("score")
     scoreNode.connect_to_table(tableNode)  # this will make it part of the table and write it all to numpy.inf
 
+
+
+
+
     #now get the actual motif data
     motifVariable = motif.get_child("variable").get_targets()[0]
     start = motif.get_child("startTime").get_value()
     end = motif.get_child("endTime").get_value()
-    motifEpochLen = date2secs(end)-date2secs(start)
+    #motifEpochLen = date2secs(end)-date2secs(start)
+    motifEpochStart = date2secs(start)
+    motifEpochEnd = date2secs(end)
     logger.debug(f"motif: {motifVariable.get_browse_path()},  {start} .. {end} ")
     timeIndices = timeNode.get_time_indices(start,end)
 
@@ -135,13 +142,14 @@ def motif_miner(functionNode):
             resultVector[scoreTimes+i]=result
     scoreNode.set_value(resultVector)
 
-    generate_peaks(resultVector,functionNode,logger,timeNode,(len(yMotif) * subSamplingFactor),motifEpochLen)
+    generate_peaks(resultVector,functionNode,logger,timeNode,(len(yMotif) * subSamplingFactor),motifEpochStart,motifEpochEnd)
 
 
     return True
 
-def generate_peaks(resultVector,functionNode,logger,timeNode,MotifLen,motifTimeLen):
+def generate_peaks(resultVector,functionNode,logger,timeNode,MotifLen,motifTimeLen,MotifStart,MotifEnd):
     v = resultVector.copy()
+    motifTimeLen = MotifEnd-MotifStart
     v[False == numpy.isfinite(v)] = 0  # pad inf as zero for the peak detector
     peakIndices = detect_peaks(v, min_dist=0.7 * MotifLen)
     logger.debug(f"found {len(peakIndices)} peaks")
@@ -164,10 +172,11 @@ def generate_peaks(resultVector,functionNode,logger,timeNode,MotifLen,motifTimeL
 
     newAnnotations=[]
     for peak in peakepochs:
-        anno={"type":"time","startTime":"","endTime":"","tags":["pattern_match"]}
-        anno["startTime"]=epochToIsoString(peak, zone=timezone('Europe/Berlin'))
-        anno["endTime"] = epochToIsoString(peak+motifTimeLen, zone=timezone('Europe/Berlin'))
-        newAnnotations.append(anno)
+        if peak > (MotifEnd+motifTimeLen/2) and peak < (MotifStart-motifTimeLen/2):
+            anno={"type":"time","startTime":"","endTime":"","tags":["pattern_match"]}
+            anno["startTime"]=epochToIsoString(peak, zone=timezone('Europe/Berlin'))
+            anno["endTime"] = epochToIsoString(peak+motifTimeLen, zone=timezone('Europe/Berlin'))
+            newAnnotations.append(anno)
 
     #delete previous annotations
     myModel.disable_observers()
