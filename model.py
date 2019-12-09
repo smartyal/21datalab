@@ -2608,6 +2608,7 @@ class Model():
 
         """
         self.logger.debug(f"save model as {fileName} with data {includeData}")
+        self.publish_event(f"saving model {fileName}...")
         with self.lock:
             try:
                 m = self.get_model_for_web()  # leave out the tables
@@ -2644,9 +2645,11 @@ class Model():
                 f.write(json.dumps(m, indent=4))
                 f.close()
                 self.currentModelName = fileName
+                self.publish_event(f"model {fileName} saved.")
                 return True
             except Exception as e:
                 self.logger.error("problem sving "+str(e))
+                self.publish_event(f"saving model {fileName} error")
                 return False
 
     def move(self, nodeList, newParent, newIndex=None):
@@ -2709,6 +2712,7 @@ class Model():
         result = False
         self.logger.info(f"load {fileName}, includeData {includeData}")
         with self.lock:
+            self.publish_event(f"loading model {fileName}...")
             self.disable_observers()
             try:
                 if type(fileName) is str:
@@ -2729,6 +2733,7 @@ class Model():
                             model_filename = os.path.basename(fileName)
 
                     #if os.path.dirname(fileName)
+
                     f = open(os.path.join(model_directory, model_filename) + ".model.json","r")
                     model = json.loads(f.read())
                     self.model = model
@@ -2753,9 +2758,11 @@ class Model():
                                 self.set_value(id,column)
 
                 self.enable_observers()
+                self.publish_event(f"loading model {fileName} done.")
                 result = True
             except Exception as e:
                 self.logger.error("problem loading"+str(e))
+                self.publish_event(f"loading model {fileName} error.")
                 self.enable_observers()
                 result = False
 
@@ -2873,6 +2880,27 @@ class Model():
 
             return diff
 
+
+    def publish_event(self, event):
+        """
+            send out an event e.g. for status information
+            event to send looks like
+                event = { "id": 1123,
+                            "event": "system.status"
+                            "data:"{"nodeId":xx, "value":..,"function":... ...}
+                            }
+            Args
+                event [string or dict]
+        """
+
+        self.modelUpdateCounter += 1
+
+        if type(event) is str:
+            event={"event":"system.status","data":{"text":event}}
+        event["id"]=self.modelUpdateCounter
+
+        for observerObject in self.observers:
+            observerObject.update(event)
 
 
     def disable_observers(self):

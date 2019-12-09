@@ -1156,7 +1156,11 @@ function prepare_context_menu(dataString,modelPath)
             icon: 'fas fa-cog',
             label : "settings",
             disabled : false,
-            submenu:tailSubMenu
+            submenu:tailSubMenu,
+            action:function(opt,idx,optIdx){
+                my_test_insert();
+
+            }
 
         }
     ];
@@ -1164,6 +1168,18 @@ function prepare_context_menu(dataString,modelPath)
     menu = menu.concat(menuTail);
     return menu;
 }
+
+
+function my_test_insert()
+{
+    return;
+    http_get("/customuicockpit.htm",null,null, null,function(isLast,status,data,params)
+    {
+        console.log("returned");
+    });
+}
+
+
 
 
 $( document ).ready(function() {

@@ -396,7 +396,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2015-02-11T14:48:00+01:00",
+        "value": "2015-02-11T21:29:36.196792+01:00",
         "browsePath": "root.visualization.workbench.startTime"
     },
     "131": {
@@ -407,7 +407,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2015-02-18T08:46:00+01:00",
+        "value": "2015-02-17T03:11:15.627712+01:00",
         "browsePath": "root.visualization.workbench.endTime"
     },
     "132": {
@@ -776,7 +776,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 102,
+        "value": 103,
         "browsePath": "root.logisticRegression.control.executionCounter"
     },
     "229": {
@@ -787,7 +787,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.049981,
+        "value": 0.059247,
         "browsePath": "root.logisticRegression.control.lastExecutionDuration"
     },
     "230": {
@@ -798,7 +798,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-11-23T23:17:32.689533",
+        "value": "2019-12-09T18:57:18.732232",
         "browsePath": "root.logisticRegression.control.lastStartTime"
     },
     "231": {
@@ -5904,7 +5904,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 139,
+        "value": 140,
         "browsePath": "root.visualization.workbench.observerBack.triggerCounter"
     },
     "654": {
@@ -5915,7 +5915,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-11-23T23:17:32.725515",
+        "value": "2019-12-09T18:57:18.778486",
         "browsePath": "root.visualization.workbench.observerBack.lastTriggerTime"
     },
     "655": {
@@ -6241,7 +6241,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 156,
+        "value": 157,
         "browsePath": "root.visualization.selfservice0.observerBack.triggerCounter"
     },
     "681": {
@@ -6252,7 +6252,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-11-23T23:17:32.726513",
+        "value": "2019-12-09T18:57:18.780486",
         "browsePath": "root.visualization.selfservice0.observerBack.lastTriggerTime"
     },
     "682": {
@@ -8306,7 +8306,7 @@
             "thresholds": false,
             "annotations": true,
             "scores": false,
-            "background": false,
+            "background": true,
             "variables": true
         },
         "browsePath": "root.visualization.workbench.visibleElements"
@@ -8489,7 +8489,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 347,
+        "value": 348,
         "browsePath": "root.visualization.workbench.observerVisibleElements.triggerCounter"
     },
     "15683200324838571042": {
@@ -8500,7 +8500,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-11-23T23:17:38.805363",
+        "value": "2019-12-09T18:57:16.821729",
         "browsePath": "root.visualization.workbench.observerVisibleElements.lastTriggerTime"
     },
     "13071347114919871021": {
@@ -12302,7 +12302,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 15,
+        "value": 17,
         "browsePath": "root.system.progress.triggerCounter"
     },
     "10857910486653991896": {
@@ -12313,7 +12313,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-11-23T23:17:32.752140",
+        "value": "2019-12-09T18:57:18.801474",
         "browsePath": "root.system.progress.lastTriggerTime"
     },
     "16724694746718170912": {
@@ -12491,7 +12491,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 8,
+        "value": 9,
         "browsePath": "root.system.relevantChanges.triggerCounter"
     },
     "12027250451543955530": {
@@ -12502,7 +12502,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-11-23T23:17:32.732511",
+        "value": "2019-12-09T18:57:18.786482",
         "browsePath": "root.system.relevantChanges.lastTriggerTime"
     },
     "13880253212629121141": {
