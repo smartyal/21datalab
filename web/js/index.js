@@ -864,7 +864,7 @@ function prepare_context_menu(dataString,modelPath)
 
 
     var showSubmenu = [];
-    let elements = ["annotations","background","thresholds","scores"];
+    let elements = ["annotations","background","thresholds","scores","motifs"];
     var jsonValue = data.visibleElements[".properties"].value;
     for (let element of elements)
     {
@@ -1019,6 +1019,47 @@ function prepare_context_menu(dataString,modelPath)
     }
 
 
+    let newMotifSubmenu = [];
+    //selected variables?
+    //let selectedVariables = data.selectedVariables[".properties"].leaves;
+    //let scoreVariables = data.scoreVariables[".properties"].leaves;
+
+    //let currentColors = data.currentColors[".properties"].value;
+    for (variable of selectedVariables)
+    {
+        if (scoreVariables.includes(variable))
+        {
+            //skip score variables
+            continue;
+        }
+        if (variable in currentColors)
+        {
+            var mycolor = currentColors[variable].lineColor;
+        }
+        else
+        {
+            var mycolor = "black";
+        }
+        let mycolorString = `<span style='background-color:${mycolor};text-color:red;font-family:monospace'> <font color='white'> &nbsp - &nbsp </font> </span> &nbsp ${variable}`;
+
+        var entry = {
+            label:mycolorString,
+            setValue:{type:"motif",variable:variable},
+            modelPath:modelPath,
+            action: function(option, contextMenuIndex, optionIndex){
+                    var opt = option;
+                    var idx = contextMenuIndex; var
+                    optIdx = optionIndex;
+                    context_menu_new_annotation_click(opt,idx,optIdx);
+                }
+        }
+
+        newMotifSubmenu.push(entry);
+    }
+
+
+
+
 
 
 
@@ -1039,6 +1080,11 @@ function prepare_context_menu(dataString,modelPath)
                     icon: 'fas fa-arrows-alt-v',
                     label: 'threshold',
                     submenu: newThresholdsSubmenu
+                },
+                {
+                    icon : 'fas fa-water',
+                    label : 'motif',
+                    submenu:newMotifSubmenu
                 }
             ]
         }
@@ -1078,6 +1124,7 @@ function prepare_context_menu(dataString,modelPath)
         if (child == ".properties") continue; // ignore this entry
         var entryPath = data.contextMenuSettings[child][".properties"].leaves[0];
         var value = data.contextMenuSettings[child][".properties"].leavesValues[0];
+        var validation = data.contextMenuSettings[child][".properties"].leavesValidation[0];
         console.log(child + " > " + entryPath+ ":"+value);
 
         let icon = "far fa-square";

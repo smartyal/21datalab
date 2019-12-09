@@ -409,6 +409,23 @@ class Node():
         """
         return self.model.get_value(self.id)
 
+
+    def add_references(self,targetNodes,deleteAll=False):
+        """
+            add references from the node to the targets
+            Args:
+                targetNodes: node or list of nodes to reference to
+                deleteAll: if set true, we delete all existing references before creating the new
+            Returns
+                True/False for success/error
+        """
+        if deleteAll:
+            self.model.remove_forward_refs(self.id)#this deletes all existing
+        if type(targetNodes) is not list:
+            targetNodes = [targetNodes]
+        targetIds = [node.get_id() for node in targetNodes]
+        return self.model.add_forward_refs(self.id,targetIds)
+
     def set_value(self,value):
         """
             special support for "column" types: if a scalar is given, we make a "full" array
@@ -693,9 +710,9 @@ class Node():
         #check if we are part of it already
         for column in tableNode.get_child("columns").get_leaves():
             if column.get_id() == self.get_id():
-                return
+                return True
         #now connect it to the table
-        return self.model.add_forward_refs(tableNode.get_child("columns").get_id(), [self.id])
+        return self.model.add_forward_refs(tableNode.get_child("columns").get_id(), [self.id],allowDuplicates=False)
 
     def get_columns(self):
         """
@@ -1033,6 +1050,14 @@ class Model():
             props["leaves"]=forwards
             props["leavesIds"]=leaves
             props["leavesValues"] = [self.get_value(id) if self.model[id]["type"] not in ["file","column"] else None for id in leaves]
+            validation = []
+            for id in leaves:
+                prop = self.get_node_info(id)
+                if "validation" in prop:
+                    validation.append(prop["validation"])
+                else:
+                    validation.append(None)
+            props["leavesValidation"] = validation
         result[".properties"]=props
 
         #now the children
@@ -2446,13 +2471,17 @@ class Model():
         """
 
         with self.lock:
-            if self.executeFunctionRunning:
-                self.logger.warning(f"function {desc} can't be executed, busy")
-                return "busy"
+
 
             id = self.get_id(desc)
             if self.model[id]["type"]!= "function":
                 return False
+            functionNode = self.get_node(id)
+            executionType = functionNode.get_child("control").get_child("executionType").get_value()
+            if self.executeFunctionRunning and executionType in ["async","sync"]:
+                self.logger.warning(f"function {desc} can't be executed, busy")
+                return "busy"
+
             functionName = self.model[id]["functionPointer"]
             if not functionName in  self.functions:
                 self.logger.error("can't find function in global list")
@@ -2466,13 +2495,10 @@ class Model():
                 #now update our global list
                 self.functions[functionName]["module"] = module
                 self.functions[functionName]["function"] = functionPointer
-            #now check if sync execution
-            functionNode= self.get_node(id)
-            executionType = functionNode.get_child("control").get_child("executionType").get_value()
-        #here, the lock is open again!
 
+        #here, the lock is open again!
         try:
-            if executionType == "async":
+            if executionType == "async" or executionType == "threaded":
                 thread = threading.Thread(target=self.__execution_thread, args=[id])
                 thread.start()
                 return True
@@ -2497,9 +2523,12 @@ class Model():
         try:
 
             with self.lock:
-                if self.executeFunctionRunning:
-                    return
-                self.executeFunctionRunning = True
+                functionNode = self.get_node(id)
+                executionType = functionNode.get_child("control").get_child("executionType").get_value()
+                if executionType in ["sync","async"]:
+                    if self.executeFunctionRunning:
+                        return
+                    self.executeFunctionRunning = True
 
                 self.logger.info(f"in execution Thread, executing {id}")
                 #check the function

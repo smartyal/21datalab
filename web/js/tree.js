@@ -316,7 +316,8 @@ class TreeWidget
 
         $('#'+this.treeContainerId+'-editNodeModalButtonSave').click( () => {
             var id = $('#'+this.treeContainerId+'-editNodeModalId').val();
-            var value = JSON.parse($('#'+this.treeContainerId+'-editNodeModalValue').val());
+            var rawValue = $('#'+this.treeContainerId+'-editNodeModalValue').val();
+            var value = JSON.parse(rawValue);
             var query=[{"id":id,"value":value}];
             http_post("/setProperties",JSON.stringify(query),null,null,null);
         });
@@ -345,14 +346,14 @@ class TreeWidget
                 let paramKey = $(el).attr("data-property-id");
                 // In case it doesn't have one it means it was a new set of property key value pair
                 if (paramKey != undefined) {
-                    let paramValue = $('input', el).val();
-                    params[paramKey] = paramValue;
+                    let paramValue =  $('input', el).val();
+                    params[paramKey] = JSON.parse(paramValue);
                 }
                 else {
                     // Get the propery id from the
                     paramKey = $('.property-id', el).val();
                     let paramValue = $('.property-value', el).val();
-                    params[paramKey] = paramValue;
+                    params[paramKey] = JSON.parse(paramValue);
                 }
             });
 

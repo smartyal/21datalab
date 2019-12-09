@@ -21,7 +21,7 @@ import pytz
 
 
 from bokeh.models import DatetimeTickFormatter, ColumnDataSource, BoxSelectTool, BoxAnnotation, Label, LegendItem, Legend, HoverTool, BoxEditTool, TapTool
-from bokeh.models import Range1d,DataRange1d, Span
+from bokeh.models import Range1d,DataRange1d, Span,LinearAxis
 from bokeh import events
 from bokeh.models.widgets import RadioButtonGroup, Paragraph, Toggle, MultiSelect, Button, Select, CheckboxButtonGroup,Dropdown
 from bokeh.plotting import figure, curdoc
@@ -235,8 +235,8 @@ class TimeSeriesWidgetDataServer():
                         self.annotations[node["browsePath"]]["startTime"] = date2secs(self.annotations[node["browsePath"]]["startTime"])*1000
                     if "endTime" in self.annotations[node["browsePath"]]:
                         self.annotations[node["browsePath"]]["endTime"] = date2secs(self.annotations[node["browsePath"]]["endTime"]) * 1000
-                    if self.annotations[node["browsePath"]]["type"] == "threshold":
-                        #we also pick the target
+                    if self.annotations[node["browsePath"]]["type"] in ["threshold","motif"]:
+                        #we also pick the target, only the first!
                         self.annotations[node["browsePath"]]["variable"]=self.annotations[node["browsePath"]]["variable"][0]
             self.logger.debug("server annotations" + json.dumps(self.annotations, indent=4))
 
@@ -397,10 +397,9 @@ class TimeSeriesWidgetDataServer():
                 if "endTime" in annotation:
                     annotation["endTime"] = date2secs(
                         annotation["endTime"]) * 1000
-                if annotation["type"] == "threshold":
-                    # we also pick the target
-                    annotation["variable"] = \
-                        annotation["variable"][0]
+                if annotation["type"] in ["threshold","motif"]:
+                    # we also pick the target, only the first
+                    annotation["variable"] =  annotation["variable"][0]
                 annotations[node["id"]]=annotation
         #self.logger.debug("server annotations" + json.dumps(self.annotations, indent=4))
         self.annotations = copy.deepcopy(annotations)
@@ -544,6 +543,20 @@ class TimeSeriesWidgetDataServer():
                 {"browsePath": annoPath + '.variable', "type": "referencer", "targets": [var]}
 
             ]
+        elif type == "motif":
+            nodesToCreate = [
+                {"browsePath": annoPath, "type": "annotation"},
+                {"browsePath": annoPath + '.type', "type": "const", "value": "motif"},
+                {"browsePath": annoPath + '.startTime', "type": "const", "value": self.bokeh_time_to_string(start)},
+                {"browsePath": annoPath + '.endTime', "type": "const", "value": self.bokeh_time_to_string(end)},
+                {"browsePath": annoPath + '.tags', "type": "const", "value": [tag]},
+                {"browsePath": annoPath + '.variable', "type": "referencer", "targets": [var]}
+
+            ]
+        else:
+            self.logger.error(f"can't create anno type {type}")
+            return None
+
         self.logger.debug("creating anno %s",str(nodesToCreate))
         res = self.__web_call('POST','_create',nodesToCreate)
 
@@ -568,7 +581,7 @@ class TimeSeriesWidgetDataServer():
         self.logger.debug(f"ser .adjust_annotation {anno}")
         self.annotations[anno["id"]].update(anno)
         path = anno["id"]# we build a "fancy" browsepath as nodeid.name.name
-        if anno['type'] == "time":
+        if anno['type'] in ["time","motif"]:
             #for time annotation we write the startTime and endTime
             nodesToModify =[
                 {"browsePath": path + ".startTime", "value":self.bokeh_time_to_string(anno["startTime"])},
@@ -668,6 +681,7 @@ class TimeSeriesWidget():
         self.annotationTags = []
         self.hoverTool = None
         self.showThresholds = True # initial value to show or not the thresholds (if they are enabled)
+        self.showMotifs = False
         self.streamingMode = False # is set to true if streaming mode is on
         self.annotations = {} #   holding the bokeh objects of the annotations
         self.userZoomRunning = False # set to true during user pan/zoom to avoid stream updates at that time
@@ -792,7 +806,7 @@ class TimeSeriesWidget():
             visibleElementsNew = newMirror["visibleElements"][".properties"]["value"]
             visibleTagsNew = newMirror["hasAnnotation"]["visibleTags"][".properties"]["value"]
 
-            for entry in ["thresholds","annotations","scores","background"]:
+            for entry in ["thresholds","annotations","scores","background","motifs"]:
                 #check for turn on:
                 if entry in visibleElementsNew and visibleElementsNew[entry] == True:
                     if not entry in visibleElementsOld or visibleElementsOld[entry] == False:
@@ -805,6 +819,8 @@ class TimeSeriesWidget():
                             self.__dispatch_function(self.show_scores)
                         elif entry == "background":
                             self.__dispatch_function(self.show_backgrounds)
+                        elif entry == "motifs":
+                            self.__dispatch_function(self.show_motifs)
 
 
                 if entry in visibleElementsOld and visibleElementsOld[entry] == True:
@@ -818,6 +834,8 @@ class TimeSeriesWidget():
                             self.__dispatch_function(self.hide_scores)
                         elif entry == "background":
                             self.__dispatch_function(self.hide_backgrounds)
+                        elif entry == "motifs":
+                            self.__dispatch_function(self.hide_motifs)
 
             #visible tag selections for annotations has changed
             if (visibleTagsOld != visibleTagsNew) and self.showAnnotations:
@@ -891,6 +909,11 @@ class TimeSeriesWidget():
             self.boxSelectTool.dimensions = "height"
             self.set_active_drag_tool(self.boxSelectTool)
             self.currentAnnotationTag = "threshold"
+            self.currentAnnotationVariable = entry["variable"]
+        elif entry["type"] == "motif":
+            self.boxSelectTool.dimensions = "width"
+            self.set_active_drag_tool(self.boxSelectTool)
+            self.currentAnnotationTag = "motif"
             self.currentAnnotationVariable = entry["variable"]
 
 
@@ -966,8 +989,8 @@ class TimeSeriesWidget():
 
                         #now recreate
                         self.draw_annotation(anno, visible=True) #show right away
-            if anno["type"] == "threshold":
-                # for thresholds we do not support delete/create per backend, only modify
+            if anno["type"] in ["threshold","motif"]:
+                # for thresholds/motifs we do not support delete/create per backend, only modify
                 # so check for modifications here
                 # it might not be part of the renderers: maybe thresholds are currently off
                 if annoId in self.renderers and not self._compare_anno(anno,self.renderers[annoId]["info"]):
@@ -980,7 +1003,10 @@ class TimeSeriesWidget():
                         if self.boxModifierAnnotationName == annoId:
                             self.box_modifier_hide()
                     # now recreate
-                    self.draw_threshold(anno)
+                    if anno["type"] =="threshold":
+                        self.draw_threshold(anno)
+                    else:
+                        self.draw_motif(anno)
 
         #now execute the changes
         if 0:
@@ -1054,6 +1080,7 @@ class TimeSeriesWidget():
         self.hoverTool = None # forget the old hovers
         self.showBackgrounds = False
         self.showThresholds = False
+        self.showMotifs = False
         self.showScores = False
         self.buttonWidth = 70
 
@@ -1204,6 +1231,8 @@ class TimeSeriesWidget():
 
         self.plot.xaxis.ticker = DatetimeTicker(desired_num_ticks=4)# give more room for the date time string (default was 6)
 
+        self.build_second_y_axis()
+
         self.refresh_plot()
 
         #hook in the callback of the figure
@@ -1287,15 +1316,19 @@ class TimeSeriesWidget():
                 buttonControls.append(button)
 
 
-        if 0: # turn this helper button on to put some debug code
-            self.debugButton= Button(label="debug",width=self.buttonWidth)
+        if 1: # turn this helper button on to put some debug code
+            self.debugButton= Button(label="debug")
             self.debugButton.on_click(self.debug_button_cb)
+            self.debugButton2 = Button(label="debug2")
+            self.debugButton2.on_click(self.debug_button_2_cb)
             buttonControls.append(self.debugButton)
+            buttonControls.append(self.debugButton2)
 
 
         layoutControls.extend(buttonControls)
 
         #build the layout
+
 
         self.layout = layout([row(children=[self.plot, self.tools], sizing_mode="fixed")], row(layoutControls, width=int(self.width*0.6),sizing_mode="scale_width"))
         #self.layout = layout([row(children=[self.plot, self.tools], sizing_mode="fixed")])
@@ -1319,6 +1352,9 @@ class TimeSeriesWidget():
 
         if "scores" in visibleElements and visibleElements["scores"] == True:
             self.show_scores()
+
+        if "motifs" in visibleElements and visibleElements["motifs"] == True:
+            self.show_motifs()
 
         if self.server.get_mirror()["streamingMode"][".properties"]["value"] == True:
             self.start_streaming()
@@ -1356,29 +1392,59 @@ class TimeSeriesWidget():
             store =[self.wheelZoomTool,self.panTool]+store[2:]
             self.toolBarBox.toolbar.tools = store
 
+    def build_second_y_axis(self):
+        self.plot.extra_y_ranges = {"y2": Range1d(start=0, end=1)}
+        self.y2Axis = LinearAxis(y_range_name="y2")
+        self.y2Axis.visible = False
+        self.plot.add_layout(self.y2Axis, 'right')
+        self.y2Axis.visible=False
+        #self.plot.circle(list(range(len(new_df['zip']))), new_df['station count'], y_range_name='NumStations', color='blue')
+
+
+    def debug_button_2_cb(self):
+        self.logger.debug("debug button cb2 ")
+
+        dur  = (self.plot.x_range.end-self.plot.x_range.start)/4
+        start = self.plot.x_range.start + dur
+        end = self.plot.x_range.end - dur
+        infinity = 1000000
+
+        source = ColumnDataSource(dict(x=[start, end], y1=[-infinity, -infinity], y2=[infinity, infinity]))
+
+        area = VArea(x="x", y1="y1", y2="y2",
+                     fill_color="gray",
+                     name="tests",
+                     fill_alpha=0.3,
+                     hatch_color="black",
+                     hatch_pattern="v",
+                     hatch_alpha=0.5)
+
+        myrenderer = GlyphRenderer(data_source=source, glyph=area, name="tests")
+        self.add_renderers([myrenderer])
+
+
+
 
 
     def debug_button_cb(self):
+        self.logger.debug("debug button cb ")
+        #make a trial marker for the display of a match
+        dur = (self.plot.x_range.end-self.plot.x_range.start)/4
 
-        self.debugButton.css_classes = ['button_21']
-        self.logger.debug("ACTIVE: " + str(self.plot.toolbar.active_drag))
-        self.logger.debug("ACTIVEtoolBarBox: " + str(self.toolBarBox.toolbar.active_drag))
+        var = "root.HyBIFData.variables.TRetZ1"
 
-        x = random.randint(1,10)
+        indices = [idx for idx,t in enumerate(self.data.data["__time"]) if (t>self.plot.x_range.start+dur and t<self.plot.x_range.end-dur)]
+        times =[self.data.data["__time"][idx] for idx in indices]
+        vals = [self.data.data[var][idx] for idx in indices]
+
+        color = self.lines[var].glyph.line_color
+        self.plot.line(times,vals, color=color, line_width=24,line_alpha = 0.3, line_cap="round",  name="test",line_dash="dotted",line_dash_offset=25)
 
 
-        self.debug={}
-        if x>4 :
-            self.debug["next"] = self.boxSelectTool
-        else:
-            self.debug["next"] = self.boxModifierTool
+        pass
 
-        self.set_active_drag_tool(self.debug["next"])
+        
 
-        #self.logger.debug("set active: " + str(self.debug["next"]))
-        #self.debug["value"] = self.toolBarBox.toolbar.tools
-        #self.toolBarBox.toolbar.tools = []
-        #self.setup_toolbar()
 
 
     def setup_toolbar(self):
@@ -1694,6 +1760,9 @@ class TimeSeriesWidget():
             self.dispatchList.append({"function":function,"arg":arg})
 
 
+    def is_second_axis(self,name):
+        return ".score" in name
+
     def adjust_y_axis_limits(self):
         """
             this function automatically adjusts the limts of the y-axis that the data fits perfectly in the plot window
@@ -1706,7 +1775,7 @@ class TimeSeriesWidget():
         lineData = []
         selected = self.server.get_variables_selected()
         for item in self.data.data:
-            if item in selected:
+            if item in selected and not self.is_second_axis(item):
                 lineData.extend(self.data.data[item])
 
         if len(lineData) > 0:
@@ -1754,7 +1823,7 @@ class TimeSeriesWidget():
         for annoId, anno in self.server.get_annotations().items():
             #self.logger.debug("check anno "+annoName+" "+anno["type"])
             candidate = False
-            if anno["type"] == "time":
+            if anno["type"] in ["time","motif"]:
                 if anno["startTime"]<x and anno["endTime"]>x:
                     #we are inside this annotation:
                     candidate=True
@@ -1796,7 +1865,7 @@ class TimeSeriesWidget():
         boxYHeight = (self.plot.y_range.end - self.plot.y_range.start) * 4
         boxXWidth = (self.plot.x_range.end - self.plot.x_range.start)
 
-        if anno["type"] == "time":
+        if anno["type"] in ["time","motif"]:
             start = anno["startTime"]
             end = anno["endTime"]
             self.boxModifierData.data = {'x': [start, end], 'y': [boxYCenter, boxYCenter], 'width': [5, 5], 'height': [boxYHeight, boxYHeight]}
@@ -1842,7 +1911,7 @@ class TimeSeriesWidget():
         if self.boxModifierVisible == False:
             return
         anno = self.server.get_annotations()[self.boxModifierAnnotationName]
-        if anno["type"] == "time":
+        if anno["type"] in ["time","motif"]:
             #adjust the limits to span the rectangles on full view area
             boxYCenter = float((self.plot.y_range.start + self.plot.y_range.end)/2)
             boxYHeight = (self.plot.y_range.end - self.plot.y_range.start)*4
@@ -1873,7 +1942,7 @@ class TimeSeriesWidget():
         self.logger.debug(f" box_modifier_modify {anno}")
 
 
-        if anno["type"] == "time":
+        if anno["type"] in ["time","motif"]:
             if self.boxModifierData.data['x'][1] <= self.boxModifierData.data['x'][0]:
                 #end before start not possible
                 self.logger.warning("box_modifier_modify end before start error")
@@ -2088,9 +2157,17 @@ class TimeSeriesWidget():
 
 
                 else:
-                    #this is a real line
-                    self.lines[variableName] = self.plot.line(timeNode, variableName, color=color,
-                                                  source=self.data, name=variableName,line_width=2)  # x:"time", y:variableName #the legend must havee different name than the source bug
+                    if ".score" in variableName:
+                        # this is a score 0..1 line
+                        self.lines[variableName] = self.plot.line(timeNode, variableName, color="gray", line_dash="dotted",
+                                                                  source=self.data, name=variableName, line_width=2,
+                                                                  y_range_name="y2")  # x:
+                    else:
+
+
+                        #this is a real line
+                        self.lines[variableName] = self.plot.line(timeNode, variableName, color=color,
+                                                      source=self.data, name=variableName,line_width=2)  # x:"time", y:variableName #the legend must havee different name than the source bug
                     #legend only for lines
                     self.legendItems[variableName] = LegendItem(label=variableName,
                                                                 renderers=[self.lines[variableName]])
@@ -2103,6 +2180,8 @@ class TimeSeriesWidget():
 
                 if self.showThresholds:
                     self.show_thresholds_of_line(variableName)
+                if self.showMotifs:
+                    self.show_motifs_of_line(variableName)
 
         #compile the new colors
         nowColors = {}
@@ -2202,6 +2281,7 @@ class TimeSeriesWidget():
         #remove the according thresholds if any
         for lin in deleteLines:
             self.remove_renderers(self.find_thresholds_of_line(lin),deleteFromLocal=True)
+            self.remove_renderers(self.find_motifs_of_line(lin),deleteFromLocal=True)
 
 
 
@@ -2443,6 +2523,24 @@ class TimeSeriesWidget():
                     self.draw_threshold(anno)#,anno["variable"])
 
 
+    def show_motifs(self):
+        self.showMotifs = True
+        for annoName,anno in self.server.get_annotations().items():
+            #self.logger.debug("@show_thresholds "+annoName+" "+anno["type"])
+            if anno["type"]=="motif":
+                # we only show the annotations where the lines are also there
+                self.logger.debug("@show_motifs "+annoName+" "+anno["type"]+"and the lines are currently"+str(list(self.lines.keys())))
+                if anno["variable"] in self.lines:
+                    self.draw_motif(anno)#,anno["variable"])
+
+    def hide_motifs(self):
+        self.showMotifs = False
+        self.box_modifier_hide()
+        annotations = self.server.get_annotations()
+        timeAnnos = [anno for anno in annotations.keys() if annotations[anno]["type"] == "motif"]
+        self.remove_renderers(deleteList=timeAnnos, deleteFromLocal=True)
+
+
     def hide_thresholds(self):
         """ hide the current annotatios in the widget of type time"""
         self.showThresholds=False
@@ -2565,6 +2663,49 @@ class TimeSeriesWidget():
         for anno in deleteList:
             if anno in self.annotations:
                 del self.annotations[anno]
+
+
+    def draw_motif(self,anno):
+        """ draw the boxannotation for a motif
+            Args:
+                 modelPath(string): the path to the annotation, the modelPath-node must contain children startTime, endTime, colors, tags
+        """
+        self.logger.debug(f"draw motif {anno}")
+        try:
+            #if the box is there already, then we skip
+            if anno["id"] in self.renderers:
+                self.logger.warning(f"have this already {anno['id']}")
+                return
+            color = self.lines[anno["variable"]].glyph.line_color
+
+            start = anno["startTime"]
+            end = anno["endTime"]
+
+            infinity = 1000000
+            # we must use varea, as this is the only one glyph that supports hatches and does not create a blue box when zooming out
+            # self.logger.debug(f"have pattern with hatch {pattern}, tag {tag}, color{color} ")
+            source = ColumnDataSource(dict(x=[start, end], y1=[-infinity, -infinity], y2=[infinity, infinity]))
+
+            area = VArea(x="x", y1="y1", y2="y2",
+                         fill_color="black",
+                         name=anno["id"],
+                         fill_alpha=globalAlpha,
+                         hatch_color=color,
+                         hatch_pattern="v",
+                         hatch_alpha=0.5)
+
+
+            #    bokeh hack to avoid adding the renderers directly: we create a renderer from the glyph and store it for later bulk assing to the plot
+            # which is a lot faster than one by one
+            myrenderer = GlyphRenderer(data_source=source, glyph=area, name=anno['id'])
+            self.add_renderers([myrenderer])
+
+            self.renderers[anno["id"]] = {"renderer": myrenderer, "info": copy.deepcopy(anno),
+                                      "source": source}  # we keep this renderer to speed up later
+
+        except Exception as ex:
+            self.logger.error("error draw motif"+str(ex))
+            return None
 
 
     def draw_annotation(self, anno, visible=False):
@@ -2737,6 +2878,22 @@ class TimeSeriesWidget():
                     result.append(k)
         self.logger.debug("@find_thresholds of line returns "+path+" => "+str(result))
         return result
+
+    def find_motifs_of_line(self,path):
+        result = []
+        for k,v in self.server.get_annotations().items():
+            if v["type"] == "motif":
+                if v["variable"] == path:
+                    result.append(k)
+        self.logger.debug("@find_motifs_of_line of line returns "+path+" => "+str(result))
+        return result
+
+    def show_motifs_of_line(self,path):
+        self.logger.debug("@show_motifs_of_line " + path)
+        motifs = self.find_motifs_of_line(path)
+        annotations = self.server.get_annotations()
+        for motif in motifs:
+            self.draw_motif(annotations[motif])  # ,path)
 
     def show_thresholds_of_line(self,path):
         self.logger.debug("@show_threasholds_of_line "+path)
@@ -3031,6 +3188,11 @@ class TimeSeriesWidget():
             self.logger.debug(f"deletelist {deleteList}")
             self.remove_renderers(deleteList=deleteList)
             self.server.delete_annotations(deleteList)
+
+        elif tag =="motif":
+            variable = self.currentAnnotationVariable
+            newAnno = self.server.add_annotation(start,end,tag,type="motif",var=variable)
+            self.draw_motif(newAnno)
 
 
         elif "threshold" not in tag:
