@@ -172,7 +172,7 @@ def generate_peaks(resultVector,functionNode,logger,timeNode,MotifLen,MotifStart
 
     newAnnotations=[]
     for peak in peakepochs:
-        if peak > (MotifEnd+motifTimeLen/2) and peak < (MotifStart-motifTimeLen/2):
+        if peak > (MotifEnd+motifTimeLen/2) or peak < (MotifStart-motifTimeLen/2):
             anno={"type":"time","startTime":"","endTime":"","tags":["pattern_match"]}
             anno["startTime"]=epochToIsoString(peak, zone=timezone('Europe/Berlin'))
             anno["endTime"] = epochToIsoString(peak+motifTimeLen, zone=timezone('Europe/Berlin'))
