@@ -1156,7 +1156,13 @@ function prepare_context_menu(dataString,modelPath)
             icon: 'fas fa-cog',
             label : "settings",
             disabled : false,
-            submenu:tailSubMenu,
+            submenu:tailSubMenu
+
+        },
+        {
+            icon: 'fas fa-bug',
+            label : "debug",
+            disabled : false,
             action:function(opt,idx,optIdx){
                 my_test_insert();
 
@@ -1172,11 +1178,24 @@ function prepare_context_menu(dataString,modelPath)
 
 function my_test_insert()
 {
-    return;
-    http_get("/customuicockpit.htm",null,null, null,function(isLast,status,data,params)
-    {
-        console.log("returned");
-    });
+
+
+    superCm.destroyMenu();
+    var data=http_get("/customui/cockpit.htm");
+
+
+    $("#cockpit").remove();
+    $("#cockpitplaceholder").html(data);
+
+    var cockpit = $('#cockpit');
+    cockpit.draggable({handle: ".modal-header"});                                   //make it movable
+    cockpit.modal({backdrop: 'static',keyboard: false, focus:false});               //don't close it on click outside
+    cockpit.prepend('<style scoped> .modal-backdrop { display: none;}</style>');    //allow click outside
+    cockpit.attr("path","root.here");
+
+
+    cockpit.modal('show');
+
 }
 
 
