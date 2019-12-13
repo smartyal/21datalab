@@ -471,9 +471,14 @@ class TimeSeriesWidgetDataServer():
     def get_mirror(self):
         return self.mirror
 
-    def fetch_mirror(self):
-        self.mirror = self.__web_call("post", "_getbranchpretty", self.path)
+    def fetch_mirror(self,small = False):
+        if small:
+            query = {"node":self.path,"depth":1}
+        else:
+            query = self.path
+        self.mirror = self.__web_call("post", "_getbranchpretty", query)
         return self.mirror
+
 
     def get_current_colors(self):
         return self.mirror["currentColors"][".properties"]["value"]
@@ -1316,7 +1321,7 @@ class TimeSeriesWidget():
                 buttonControls.append(button)
 
 
-        if 1: # turn this helper button on to put some debug code
+        if 0: # turn this helper button on to put some debug code
             self.debugButton= Button(label="debug")
             self.debugButton.on_click(self.debug_button_cb)
             self.debugButton2 = Button(label="debug2")

@@ -85,6 +85,8 @@ POST /_getall       -                           [<node.json>]           ## give 
 POST /_getallhashed   -                         [<node.json>]           ## give the whole address space, for columns and files we get a hash
 POST /_getbranch    <nodedeccripttor>           {node.json}             ## get a part of the model
 POST _getbranchpretty <nodedesciptor>           {prettybranch.json}     ## get a branch but easy internal access 
+POST /_getbranchpretty <branchquery.json>       {prettybranch.json}     ## get a branch but easy internal access also giving more options
+POST /_getnodes         <getnodes.json>         <getNodesresponse.json> ## various ways to query nodes
 POST /setProperties   [<node.json>]               [<node.json>]         ## the node.json only contains properties to change
 POST /_get          [<nodescriptor>]            [<node.json>]           ## get node including children as json
 POST /_getvalue     [<nodedescriptor>]          [<values>]              ## get a list of values, not available are returned as none
@@ -245,8 +247,23 @@ branch["visualization"]["workbench"]["hasAnnotation"][".properties]["value"]
     "child2":
 
 }
+branchquery.json
+{
+    node:<desc>
+    depth:x     //give a depth of the branch resolving
+}
 
 
+getnodes.json
+{
+    nodes : [<desc>] a list of nodes
+    resultKey: one of "id", "browsePath"
+    includeLongValues: True/False 
+}
+getNodesresponse.json
+{
+    node:nodedict
+}
 
 '''
 
@@ -315,9 +332,26 @@ def all(path):
             response = json.dumps(mymodel, indent=4)  # some pretty printing for debug
             responseCode = 200
 
+        elif (str(path) == "_getnodes") and str(flask.request.method) in ["POST","GET"]:
+            logger.debug(f"getnodes")
+            includeLong = data["includeLongValues"]
+            key = data["resultKey"]
+            response = {}
+            for node in data["nodes"]:
+                dic=m.get_node_info(node,excludeValue=True)
+                if key == "browsePath":
+                    response[m.get_browse_path(node)]=dic
+            response = json.dumps(response, indent=4)  # some pretty printing for debug
+            responseCode = 200
+
+
+
         elif (str(path) == "_getbranchpretty") and str(flask.request.method) in ["POST","GET"]:
             logger.debug("get branch pretty")
-            mymodel = m.get_branch_pretty(data)
+            if type(data) is str:
+                mymodel = m.get_branch_pretty(data)
+            elif type(data) is dict:
+                mymodel= m.get_branch_pretty(data["node"],data["depth"])
             response = json.dumps(mymodel, indent=4)  # some pretty printing for debug
             responseCode = 200
 

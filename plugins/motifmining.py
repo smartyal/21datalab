@@ -29,6 +29,7 @@ motifMinerTemplate = {
         {"name": "algorithm", "type": "const"},         # the alorithm used, one of ...
         {"name": "widget","type":"referencer"} ,        # the widget to which this miner belongs which is used (to find the selected motif
         {"name": "table","type":"referencer"},          # for the variables and times
+        {"name": "peakThreshold","type":"const"},
         mycontrol[0]
     ]
 }

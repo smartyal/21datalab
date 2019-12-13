@@ -667,6 +667,26 @@ function context_menu_click_function(option)
     superCm.destroyMenu(); // hide it
 }
 
+function context_menu_click_pipeline(option)
+{
+    console.log("context_menu_click_pipeline, launch   " + option.data);
+    //show the cockpit
+    var query = [option.data+".cockpit"];
+
+    http_post("_getvalue",JSON.stringify(query), null,null, function(obj,status,data,params)
+    {
+        if (status == 200)
+        {
+            console.log("data");
+            var cockpit = JSON.parse(data)[0];
+            launch_cockpit(cockpit);
+        }
+    });
+    superCm.destroyMenu(); // hide it
+}
+
+
+
 function context_menu_new_annotation_click(option,contextMenuIndex, optionIndex)
 {
     console.log("context menue new annotation",option.setValue);
@@ -1097,7 +1117,7 @@ function prepare_context_menu(dataString,modelPath)
             separator: true
         }];
 
-    for (fkt of data.contextMenuFunctions[".properties"].leaves)
+    for (fkt of data.contextMenuFunctions[".properties"].targets)
     {
         var splitted = fkt.split(".");
         var entry={
@@ -1108,6 +1128,16 @@ function prepare_context_menu(dataString,modelPath)
         };
         menuUserFunctions.push(entry);
     }
+    for (pipeline of data.contextMenuPipelines[".properties"].targets)
+    {
+        var splitted = pipeline.split(".");
+        var entry={
+            icon: 'fas fa-gamepad',
+            label: '<font size="3" color="#d9b100">'+splitted[splitted.length -1]+'</font>',
+            data: pipeline,
+            action: function(option, contextMenuIndex, optionIndex){context_menu_click_pipeline(option); }
+        };
+        menuUserFunctions.push(entry);    }
     if (menuUserFunctions.length>1)
     {
         menu=menu.concat(menuUserFunctions);
@@ -1178,10 +1208,14 @@ function prepare_context_menu(dataString,modelPath)
 
 function my_test_insert()
 {
-
-
     superCm.destroyMenu();
-    var data=http_get("/customui/cockpit.htm");
+    launch_cockpit("/customui/cockpit.htm");
+
+}
+
+function launch_cockpit(url)
+{
+    var data=http_get(url);
 
 
     $("#cockpit").remove();
@@ -1191,13 +1225,16 @@ function my_test_insert()
     cockpit.draggable({handle: ".modal-header"});                                   //make it movable
     cockpit.modal({backdrop: 'static',keyboard: false, focus:false});               //don't close it on click outside
     cockpit.prepend('<style scoped> .modal-backdrop { display: none;}</style>');    //allow click outside
-    cockpit.attr("path","root.here");
+    cockpit.attr("path","root.Motif Miner");
+    cockpit_init("root.Motif Miner");
 
-
+    $('#cockpit').on('hidden.bs.modal', cockpit_close);
     cockpit.modal('show');
 
 }
 
+/* move this to cockpit widget later
+*/
 
 
 

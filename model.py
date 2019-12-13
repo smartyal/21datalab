@@ -25,6 +25,7 @@ import modeltemplates
 # for Observer
 from queue import Queue
 from queue import Empty
+import utils
 
 
 """
@@ -838,7 +839,7 @@ class Observer:
                             while not self.eventQueues[eventIdentification]["queue"].empty():
                                 myEvent = self.eventQueues[eventIdentification]["queue"].get(False)
 
-                        event_string = f'id:{myEvent["id"]}\nevent: {myEvent["event"]}\ndata: {myEvent["data"]}\n\n'
+                        event_string = f'id:{myEvent["id"]}\nevent: {myEvent["event"]}\ndata: {json.dumps(myEvent["data"])}\n\n'
                         #self.logger.debug(f"Qyield {id(self)} : {myEvent}")
                         yield event_string
 
@@ -956,17 +957,29 @@ class Model():
             if id:
                 return Node(self,id)
 
-    def get_node_info(self,desc):
+    def get_node_info(self,desc,includeLongValues=True):
         """
             Args:
                 desc (string): give a browsepath ("root.myfolder.myvariable") or a nodeId ("10")
+                includeLongValue if true, we include values for columns and files
             Returns:
                 (dict): a dictionary holding all properties of the node includin references and children
         """
         with self.lock:
             id = self.__get_id(desc)
             if not id: return None
-            return copy.deepcopy(self.model[id])
+            if includeLongValues:
+                return copy.deepcopy(self.model[id])
+            else:
+                #we do not include values of columns and files
+                if self.model[id]["type"] in ["column","file"]:
+                    return  {k:v for k,v in self.model[id].items() if k!="value"}
+                else:
+                    #take all
+                    return copy.deepcopy(self.model[id])
+
+
+
 
     def __get_node_with_children(self,id,nodes,includeForwardRefs=True):
         """
@@ -1028,7 +1041,7 @@ class Model():
 
         return copy.deepcopy(nodes)
 
-    def __get_node_with_children_pretty(self,id):
+    def __get_node_with_children_pretty(self,id,depth = None):
         """
             recursive helper for get_branch_pretty
             args:
@@ -1044,10 +1057,11 @@ class Model():
         if node["type"] not in ["file", "column"]:
             # we also take the value then
             props["value"] = copy.deepcopy(node["value"])
-        if node["type"] == "referencer":
+        if node["type"] == "referencer" and (depth is None or depth>0):
             leaves = self.get_leaves_ids(id)
             forwards = [self.get_browse_path(leaf) for leaf in leaves]
             props["leaves"]=forwards
+            props["targets"] = [self.get_browse_path(id) for id in self.model[id]["forwardRefs"]]
             props["leavesIds"]=leaves
             props["leavesValues"] = [self.get_value(id) if self.model[id]["type"] not in ["file","column"] else None for id in leaves]
             validation = []
@@ -1060,15 +1074,19 @@ class Model():
             props["leavesValidation"] = validation
         result[".properties"]=props
 
-        #now the children
-        for childId in node["children"]:
-            result[self.model[childId]["name"]]=self.__get_node_with_children_pretty(childId)
+        if depth is None or depth>0:
+            #now the children
+            nextDepth = None
+            if depth is not None:
+                nextDepth = depth -1
+            for childId in node["children"]:
+                result[self.model[childId]["name"]]=self.__get_node_with_children_pretty(childId,nextDepth)
 
         return result
 
 
 
-    def get_branch_pretty(self,desc):
+    def get_branch_pretty(self,desc,depth=None):
         """
             get a branch in the form
             "child1":{"child3":... ".type":, ".value"
@@ -1076,11 +1094,17 @@ class Model():
             the properties occurr in ".property" style, the children are direct entries
             we only use names
             for the referencers, the ".forwardRefs" are the leaves with full path: ["root.folder1.tzarget2","root.varibale.bare"..]
+            Args:
+                desc [string] the root node to start from
+                depth [int] the depth to look into
         """
         with self.lock:
+            #p=utils.Profiling("get_branch_pretty")
             id = self.__get_id(desc)
             if not id: return None
-            return self.__get_node_with_children_pretty(id)
+            res = self.__get_node_with_children_pretty(id,depth)
+            #self.logger.debug(p)
+            return res
 
 
 
@@ -1462,6 +1486,7 @@ class Model():
         """
 
         model = {}
+        p=utils.Profiling("get_model_for_web")
         with self.lock:
             for nodeId, nodeDict in self.model.items():
                 if nodeDict["type"] in ["column","file"]:
@@ -1486,6 +1511,7 @@ class Model():
                     #this node is not a colum, can still hold huge data
                     model[nodeId] = copy.deepcopy(nodeDict)  # values can be list, dict and deeper objects nodeDict
                 model[nodeId]["browsePath"] = self.get_browse_path(nodeId) #also add the browsepath
+        self.logger.debug(f"{p}")
         return model
 
 
@@ -2999,7 +3025,9 @@ class Model():
                                         event = {
                                             "id": self.modelUpdateCounter,
                                             "event": observer["eventString"]["value"],
-                                            "data": {"nodeId":observerId,"sourceId":nodeId}}
+                                            "data": {"nodeId":observerId,"sourceId":nodeId,"sourcePath":self.get_browse_path(nodeId)}}
+                                        if self.model[nodeId]["type"] not in ["column","file"]:
+                                            event["data"]["value"]=self.model[nodeId]["value"]
                                         #some special handling
                                         try:
                                             if event["event"] == "system.progress":

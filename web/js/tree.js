@@ -731,18 +731,20 @@ class TreeWidget
 
         // Go over the properties of the node and create a form with all the properties that can be edited
         // let keysToIgnore = ["id", "browsePath", "children", "parent", "forwardRefs", "backRefs", "value"];
-        let keysToIgnore = ["value"];
+        let keysToIgnore = [];//["value"];
 
         for (let key in modelNode) {
             if (keysToIgnore.indexOf(key) == -1) {
-                console.log("Create entry for: " + key);
+                console.log("Create entry for: " + key+":"+JSON.stringify(modelNode[key]));
+                var stri = JSON.stringify(modelNode[key]);
+                var value = stri.replace(/"/g, "'");
 
                 $('#'+this.treeContainerId+'-advancedEditModalBody').append(
                     `<div class="form-group row" data-property-id="` + key + `">
                         <label class="col-5"> ` + key + `</label>
 
                         <div class="col-5">
-                            <input type="text" class="form-control" value="` + modelNode[key] + `">
+                            <input type="text" class="form-control" value='`+stri+`'>
                         </div>
                         <div class="col-2">
                             <div class="card-header-actions">
