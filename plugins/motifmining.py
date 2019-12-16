@@ -51,12 +51,25 @@ motifJumperTemplate = {
 
 
 def motif_miner(functionNode):
+
     logger = functionNode.get_logger()
     logger.info("==>>>> in motif_miner " + functionNode.get_browse_path())
     progressNode = functionNode.get_child("control").get_child("progress")
     progressNode.set_value(0)
     tableNode = functionNode.get_child("table").get_targets()[0]
     timeNode = tableNode.get_child("timeField").get_targets()[0]
+    subSamplingFactor = functionNode.get_child("subSamplingFactor").get_value()
+    sigmaNoise = functionNode.get_child("addNoise").get_value()
+    annotations = functionNode.get_child("annotations")
+    myModel = functionNode.get_model()
+
+    polynomPre = functionNode.get_child("subtractPolynomOrder").get_value()
+    if polynomPre != "none":
+        polynomPre = "subtract_poly_"+str(int(polynomPre))
+    logger.debug(f"polynome pre is {polynomPre}")
+    algo = functionNode.get_child("algorithm").get_value()
+
+
 
 
     """
@@ -81,52 +94,53 @@ def motif_miner(functionNode):
         logger.error("have no motif")
         return False
 
-    # prepare the result variable
+
+    # prepare the result: delete previous scores and annotations
     scoreNode = functionNode.get_child("score")
     scoreNode.connect_to_table(tableNode)  # this will make it part of the table and write it all to numpy.inf
+    myModel.disable_observers()
+    annos = annotations.get_children()
+    if annos:
+        for anno in annos:
+            anno.delete()
+
+    myModel.enable_observers()
+    myModel.notify_observers(annotations.get_id(), "children")  # trigger the widgets to delete the annotations
 
 
 
 
-
-    #now get the actual motif data
+    #prepare the motif
     motifVariable = motif.get_child("variable").get_targets()[0]
     start = motif.get_child("startTime").get_value()
     end = motif.get_child("endTime").get_value()
-    #motifEpochLen = date2secs(end)-date2secs(start)
     motifEpochStart = date2secs(start)
     motifEpochEnd = date2secs(end)
     logger.debug(f"motif: {motifVariable.get_browse_path()},  {start} .. {end} ")
     timeIndices = timeNode.get_time_indices(start,end)
+    logger.debug(f" motif len {len(timeIndices)}")
+    y = motifVariable.get_value().copy()    # y holds the full data
+    y = gaussian_filter(y, sigma=2)         # smoothen it
+    t = timeIndices[::subSamplingFactor]    #downsampling of the data
+    yMotif = y[t].copy()                    # yMotif holds the motif data downsampled
+    noise = np.random.normal(0, sigmaNoise, len(yMotif))
+    yMotif = yMotif + noise                 # adds a small amount of noise to the template in order to not create pathological results
 
+
+    # prepare the result
     motifTimeLen = (timeIndices[-1]-timeIndices[0])
     scoreIndices = numpy.arange(timeIndices[0]-1*motifTimeLen, timeIndices[-1]+ 200*motifTimeLen   )
-
-    logger.debug(f" motif len {len(timeIndices)} score region len {len(scoreIndices)}")
-
-    y = motifVariable.get_value().copy()
-
-
-    #preprocessing of the data
-    sigmaGauss = 2
-    subSamplingFactor = 2
-    mu, sigmaNoise = 0.0, 0.001
-    y = gaussian_filter(y, sigma=sigmaGauss)  #smoothen
-    t = timeIndices[::subSamplingFactor]#downsampling of the data
     scoreTimes = scoreIndices[::subSamplingFactor]
 
-    # preprocessing of the motif
-    yMotif = y[t].copy()
+
 
     #y = y[::subSamplingFactor] # full data
     y=y[scoreTimes]
 
-    #preprocessing of the motif
-    # adds a small amount of noise to the template in order to not create pathological results
-    noise = np.random.normal(mu, sigmaNoise, len(yMotif))
-    yMotif = yMotif + noise
 
-    result = motif_mining(template=yMotif, y=y, preprocesssing_method='subtract_poly_3', sim_method='euclidean', normalize=False,progressNode=progressNode)
+    #result = motif_mining(template=yMotif, y=y, preprocesssing_method='polynomPre', sim_method='euclidean', normalize=False,progressNode=progressNode)
+    result = motif_mining(template=yMotif, y=y, preprocesssing_method=polynomPre, sim_method=algo,
+                          normalize=False, progressNode=progressNode)
 
     result[-len(yMotif):]=result[-len(yMotif)] #the end seams to be noisy, keep it stable
     result = normalize_range(result, 0, 1.0)
@@ -179,12 +193,7 @@ def generate_peaks(resultVector,functionNode,logger,timeNode,MotifLen,MotifStart
             anno["endTime"] = epochToIsoString(peak+motifTimeLen, zone=timezone('Europe/Berlin'))
             newAnnotations.append(anno)
 
-    #delete previous annotations
-    myModel.disable_observers()
-    annos = annotations.get_children()
-    if annos:
-        for anno in annos:
-            anno.delete()
+
 
     for anno in newAnnotations:
         # create the annotation in the model
@@ -205,7 +214,7 @@ def motif_mining(template: np.ndarray, y: np.ndarray, sim_method: str = 'pearson
     """
         Args: prepreocessing_method : "subtract
     """
-
+    print("prepoc method is"+preprocesssing_method)
     intervalStart = time.time()
 
     m = len(template)
@@ -224,7 +233,9 @@ def motif_mining(template: np.ndarray, y: np.ndarray, sim_method: str = 'pearson
 
         if len(t) > 5:
             if "subtract_poly" in preprocesssing_method:
+
                 degree = int(preprocesssing_method[-1:])
+                print(f"have degree {degree}")
                 t, _ = subtract_polynomial_model(t, degree=degree)
                 yi, _ = subtract_polynomial_model(yi, degree=degree)
 
@@ -238,7 +249,7 @@ def motif_mining(template: np.ndarray, y: np.ndarray, sim_method: str = 'pearson
             c[i] = pc
 
 
-        if sim_method == 'conv':
+        if sim_method == 'convolution':
             c[i] = np.abs(np.dot(t, yi))
 
         if sim_method == 'euclidean':

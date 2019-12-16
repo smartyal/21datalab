@@ -1189,16 +1189,18 @@ function prepare_context_menu(dataString,modelPath)
             submenu:tailSubMenu
 
         },
+        /*
         {
             icon: 'fas fa-bug',
             label : "debug",
             disabled : false,
             action:function(opt,idx,optIdx){
-                my_test_insert();
+                //my_test_insert();
 
             }
 
         }
+        */
     ];
 
     menu = menu.concat(menuTail);
@@ -1206,12 +1208,6 @@ function prepare_context_menu(dataString,modelPath)
 }
 
 
-function my_test_insert()
-{
-    superCm.destroyMenu();
-    launch_cockpit("/customui/cockpit.htm");
-
-}
 
 function launch_cockpit(url)
 {
