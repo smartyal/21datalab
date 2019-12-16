@@ -886,7 +886,12 @@ class TimeSeriesWidget():
             if oldMirror["panOnlyX"][".properties"]["value"] != newMirror["panOnlyX"][".properties"]["value"]:
                 self.set_pan_tool(newMirror["panOnlyX"][".properties"]["value"])
 
-
+            if "showMarker" in newMirror:
+                if oldMirror["showMarker"][".properties"]["value"] != newMirror["showMarker"][".properties"]["value"]:
+                    if newMirror["showMarker"][".properties"]["value"]:
+                        self.__dispatch_function(self.show_marker)
+                    else:
+                        self.__dispatch_function(self.hide_marker)
 
 
 
@@ -898,6 +903,22 @@ class TimeSeriesWidget():
             #self.logger.debug(f"draw anno!")
             self.__dispatch_function(self.draw_new_annotation)
 
+
+    def hide_marker(self):
+        self.remove_renderers([lin+".marker" for lin in self.lines])
+    def show_marker(self):
+        self.logger.debug("show marker")
+
+        for variableName in self.lines:
+
+            markerName = variableName + ".marker"
+            color = self.lines[variableName].glyph.line_color
+            marker = self.plot.circle("__time", variableName, line_color=color, fill_color=color,
+                                      source=self.data, name=markerName,
+                                      size=3)  # x:"time", y:variableName #the legend must havee different name than the source bug
+
+
+        pass
 
     def sync_x_axis(self,times=None):
         self.logger.debug(f"sync_x_axis x ")
@@ -1067,6 +1088,7 @@ class TimeSeriesWidget():
                     self.logger.debug("=>>>>>>>>>>>>>>>>>DELETE FROM plot:" + r.name)
                     deleteList.append(r.name)
 
+
             if deleteList != []:
                 # now make a second run and check the _score variables of the deletlist
                 deleteScoreNames = [deletePath.split('.')[-1]+"_score" for deletePath in deleteList]
@@ -1074,11 +1096,16 @@ class TimeSeriesWidget():
                     if r.name and r.name.split('.')[-1] in deleteScoreNames:
                         deleteList.append(r.name) #take the according score as well
 
+
                 # now prepare the new list:
                 newVariablesSelected = [var for var in self.server.get_variables_selected() if var not in deleteList]
                 self.logger.debug("new var list" + str(newVariablesSelected))
                 self.server.set_variables_selected(newVariablesSelected)
                 # self.__dispatch_function(self.refresh_plot)
+
+                #now delete potential markers
+                self.remove_renderers([lin+".marker" for lin in deleteList])
+
         except Exception as ex:
             self.logger.error("problem during __legend_check" + str(ex))
 
@@ -2150,6 +2177,10 @@ class TimeSeriesWidget():
         #first, get fresh data
         settings= self.server.get_settings()
         variables = self.server.get_variables_selected()
+        mirr = self.server.get_mirror()
+        showMarker = False
+        if "showMarker" in mirr:
+            showMarker = mirr["showMarker"][".properties"]["value"]
         #self.logger.debug("@__plot_lines:from server var selected %s",str(newVars))
         variablesRequest = variables.copy()
         variablesRequest.append("__time")   #make sure we get the time included
@@ -2210,6 +2241,10 @@ class TimeSeriesWidget():
                         #this is a real line
                         self.lines[variableName] = self.plot.line(timeNode, variableName, color=color,
                                                       source=self.data, name=variableName,line_width=2)  # x:"time", y:variableName #the legend must havee different name than the source bug
+                        if showMarker:
+                            markerName = variableName+".marker"
+                            marker = self.plot.circle(timeNode, variableName, line_color=color, fill_color=color,
+                                                      source=self.data, name=markerName,size=3)  # x:"time", y:variableName #the legend must havee different name than the source bug
                     #legend only for lines
                     self.legendItems[variableName] = LegendItem(label=variableName,
                                                                 renderers=[self.lines[variableName]])
@@ -2324,6 +2359,9 @@ class TimeSeriesWidget():
         for lin in deleteLines:
             self.remove_renderers(self.find_thresholds_of_line(lin),deleteFromLocal=True)
             self.remove_renderers(self.find_motifs_of_line(lin),deleteFromLocal=True)
+            marker = self.find_renderer(lin+".marker")
+            if marker:
+                self.remove_renderers([marker])
 
 
 
@@ -2920,6 +2958,10 @@ class TimeSeriesWidget():
                     result.append(k)
         self.logger.debug("@find_thresholds of line returns "+path+" => "+str(result))
         return result
+
+
+
+
 
     def find_motifs_of_line(self,path):
         result = []

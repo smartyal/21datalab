@@ -744,7 +744,7 @@ function context_menu_edit(option,contextMenuIndex,optionIndex)
 
                 var data = JSON.parse(data);
                 var fields=[];
-                if (data.type['.properties'].value == "time")
+                if ((data.type['.properties'].value == "time") || (data.type['.properties'].value=="motif"))
                 {
                     //time annotations
                     $('#annotationedittitle').text("Edit Annotation")
