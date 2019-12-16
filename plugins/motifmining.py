@@ -62,6 +62,7 @@ def motif_miner(functionNode):
     sigmaNoise = functionNode.get_child("addNoise").get_value()
     annotations = functionNode.get_child("annotations")
     myModel = functionNode.get_model()
+    signalNode = functionNode.get_child("control").get_child("signal")
 
     polynomPre = functionNode.get_child("subtractPolynomOrder").get_value()
     if polynomPre != "none":
@@ -97,6 +98,7 @@ def motif_miner(functionNode):
 
     # prepare the result: delete previous scores and annotations
     scoreNode = functionNode.get_child("score")
+    functionNode.get_child("peaks").set_value([])
     scoreNode.connect_to_table(tableNode)  # this will make it part of the table and write it all to numpy.inf
     myModel.disable_observers()
     annos = annotations.get_children()
@@ -121,6 +123,8 @@ def motif_miner(functionNode):
     logger.debug(f" motif len {len(timeIndices)}")
     y = motifVariable.get_value().copy()    # y holds the full data
     y = gaussian_filter(y, sigma=2)         # smoothen it
+    #normalize y
+    #y = normalize_range(y,0,1)              #normalize
     t = timeIndices[::subSamplingFactor]    #downsampling of the data
     yMotif = y[t].copy()                    # yMotif holds the motif data downsampled
     noise = np.random.normal(0, sigmaNoise, len(yMotif))
@@ -135,29 +139,87 @@ def motif_miner(functionNode):
 
 
     #y = y[::subSamplingFactor] # full data
-    y=y[scoreTimes]
+    #y=y[scoreTimes]
 
+    #we will now go through the data and each 2 seconds update the results with the new results
+    runningR = True
+    runningL = True
+    blockSize = 10 # times the motif len
+    blockStartR = timeIndices[0]        # start is the motif start time for the serach to the right
+    blockStartL = timeIndices[0]-(blockSize-1)*motifTimeLen        # start is the motif start time for the search to the left
 
-    #result = motif_mining(template=yMotif, y=y, preprocesssing_method='polynomPre', sim_method='euclidean', normalize=False,progressNode=progressNode)
-    result = motif_mining(template=yMotif, y=y, preprocesssing_method=polynomPre, sim_method=algo,
+    signalNode.set_value("none")
+
+    while runningR or runningL:
+        percentR = float((blockStartR-timeIndices[0])/(len(t) - blockStartR))
+        percentL = float(timeIndices[0]-blockStartL)/float(timeIndices[0])
+        progressNode.set_value(max(percentL,percentR))
+
+        logger.debug(f"processing block {blockStartR} {len(y)}")
+
+        oldResult = scoreNode.get_value().copy()
+        resultVector = numpy.full(len(oldResult),numpy.inf,dtype=numpy.float64)
+
+        if runningR:
+            #search to the right
+            scoreIndices = numpy.arange(blockStartR, blockStartR+blockSize * motifTimeLen)
+            scoreTimes = scoreIndices[::subSamplingFactor]
+            yWindow = y[scoreTimes]
+            result = motif_mining(template=yMotif, y=yWindow, preprocesssing_method=polynomPre, sim_method=algo,
                           normalize=False, progressNode=progressNode)
 
-    result[-len(yMotif):]=result[-len(yMotif)] #the end seams to be noisy, keep it stable
-    result = normalize_range(result, 0, 1.0)
 
-    #put result
-    resultVector = scoreNode.get_value()
-    indices = numpy.asarray(list(range(0,len(resultVector),subSamplingFactor)))
+            #resultVector = scoreNode.get_value()
+            indices = numpy.asarray(list(range(0,len(resultVector),subSamplingFactor)))
 
-    if 0: # for full
-        for i in range(subSamplingFactor):
-            resultVector[indices+i]=result
-    else:
-        for i in range(subSamplingFactor):
-            resultVector[scoreTimes+i]=result
-    scoreNode.set_value(resultVector)
+            if 0: # for full
+                for i in range(subSamplingFactor):
+                    resultVector[indices+i]=result
+            else:
+                for i in range(subSamplingFactor):
+                    resultVector[scoreTimes+i]=result
+            #scoreNode.set_value(resultVector)
 
-    generate_peaks(resultVector,functionNode,logger,timeNode,(len(yMotif) * subSamplingFactor),motifEpochStart,motifEpochEnd)
+            blockStartR += (blockSize-1)*motifTimeLen
+            if blockStartR > (len(y)-(blockSize*motifTimeLen)):
+                runningR=False
+
+        if runningL:
+            #search to the right
+            scoreIndices = numpy.arange(blockStartL, blockStartL+blockSize * motifTimeLen)
+            scoreTimes = scoreIndices[::subSamplingFactor]
+            yWindow = y[scoreTimes]
+            result = motif_mining(template=yMotif, y=yWindow, preprocesssing_method=polynomPre, sim_method=algo,
+                          normalize=False, progressNode=progressNode)
+
+
+            #resultVector = scoreNode.get_value()
+            indices = numpy.asarray(list(range(0,len(resultVector),subSamplingFactor)))
+
+            if 0: # for full
+                for i in range(subSamplingFactor):
+                    resultVector[indices+i]=result
+            else:
+                for i in range(subSamplingFactor):
+                    resultVector[scoreTimes+i]=result
+            #scoreNode.set_value(resultVector)
+
+            blockStartL -= (blockSize-1)*motifTimeLen
+            if blockStartL < 0:
+                runningL=False
+
+        transferIndices = numpy.isfinite(resultVector)  # set the inf to 0 where we have new results
+        oldResult[transferIndices]=resultVector[transferIndices]
+        scoreNode.set_value(oldResult)
+
+        if signalNode.get_value()=="stop":
+            runningR = False
+            runningL = False
+
+        generate_peaks(resultVector, functionNode, logger, timeNode, (len(yMotif) * subSamplingFactor), motifEpochStart,
+                       motifEpochEnd)
+
+    #generate_peaks(resultVector,functionNode,logger,timeNode,(len(yMotif) * subSamplingFactor),motifEpochStart,motifEpochEnd)
 
 
     return True
@@ -166,7 +228,8 @@ def generate_peaks(resultVector,functionNode,logger,timeNode,MotifLen,MotifStart
     v = resultVector.copy()
     motifTimeLen = MotifEnd-MotifStart
     v[False == numpy.isfinite(v)] = 0  # pad inf as zero for the peak detector
-    peakIndices = detect_peaks(v, min_dist=0.7 * MotifLen)
+    level = numpy.float(functionNode.get_parent().get_child("peakSearch").get_child("threshold").get_value())
+    peakIndices = detect_peaks(v, min_dist=0.7 * MotifLen, min_level = level)
     logger.debug(f"found {len(peakIndices)} peaks")
     peaksValues = v[peakIndices]
     if 0: #sort
@@ -179,7 +242,11 @@ def generate_peaks(resultVector,functionNode,logger,timeNode,MotifLen,MotifStart
 
 
     peakDates = [epochToIsoString(peak, zone=timezone('Europe/Berlin')) for peak in peakepochs]
-    functionNode.get_child("peaks").set_value(peakDates)
+    if peakDates:
+        current = functionNode.get_child("peaks").get_value()
+        if type(current) is not list:
+            current = []
+        functionNode.get_child("peaks").set_value(current.extend(peakDates))
 
     #now generate annotations
     annotations = functionNode.get_child("annotations")
@@ -193,8 +260,7 @@ def generate_peaks(resultVector,functionNode,logger,timeNode,MotifLen,MotifStart
             anno["endTime"] = epochToIsoString(peak+motifTimeLen, zone=timezone('Europe/Berlin'))
             newAnnotations.append(anno)
 
-
-
+    myModel.disable_observers()
     for anno in newAnnotations:
         # create the annotation in the model
         newAnno = annotations.create_child(type="annotation")
@@ -220,22 +286,24 @@ def motif_mining(template: np.ndarray, y: np.ndarray, sim_method: str = 'pearson
     m = len(template)
     n = len(y)
     c = np.zeros((n,))
-    for i in np.arange(0, n):
+    for i in np.arange(0, n-m):
         if time.time()>intervalStart+1:
             intervalStart = time.time()
             if progressNode:
-                progressNode.set_value(float(i)/n)
+                #progressNode.set_value(float(i)/n)
+                pass
 
         x1 = i
         x2 = np.minimum(i + m, n)
         yi = y[x1:x2]
+        print(f"len {x1} {x2} {m} {n} {x2-x1} ")
         t = template[:(x2-x1)]
 
         if len(t) > 5:
             if "subtract_poly" in preprocesssing_method:
 
                 degree = int(preprocesssing_method[-1:])
-                print(f"have degree {degree}")
+                #print(f"have degree {degree}")
                 t, _ = subtract_polynomial_model(t, degree=degree)
                 yi, _ = subtract_polynomial_model(yi, degree=degree)
 

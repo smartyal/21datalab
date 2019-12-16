@@ -1128,20 +1128,25 @@ function prepare_context_menu(dataString,modelPath)
         };
         menuUserFunctions.push(entry);
     }
-    for (pipeline of data.contextMenuPipelines[".properties"].targets)
+    if ("contextMenuPipelines" in data)
     {
-        var splitted = pipeline.split(".");
-        var entry={
-            icon: 'fas fa-gamepad',
-            label: '<font size="3" color="#d9b100">'+splitted[splitted.length -1]+'</font>',
-            data: pipeline,
-            action: function(option, contextMenuIndex, optionIndex){context_menu_click_pipeline(option); }
-        };
-        menuUserFunctions.push(entry);    }
+        for (pipeline of data.contextMenuPipelines[".properties"].targets)
+        {
+            var splitted = pipeline.split(".");
+            var entry={
+                icon: 'fas fa-gamepad',
+                label: '<font size="3" color="#d9b100">'+splitted[splitted.length -1]+'</font>',
+                data: pipeline,
+                action: function(option, contextMenuIndex, optionIndex){context_menu_click_pipeline(option); }
+            };
+            menuUserFunctions.push(entry);
+        }
+    }
     if (menuUserFunctions.length>1)
     {
         menu=menu.concat(menuUserFunctions);
     }
+
 
 
 
