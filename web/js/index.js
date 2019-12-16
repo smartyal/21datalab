@@ -1236,6 +1236,37 @@ function launch_cockpit(url)
 
 /* move this to cockpit widget later
 */
+function cockpit_motif_jump_next()
+{
+    cockpit_motif_jump(1);
+}
+
+function cockpit_motif_jump_prev()
+{
+    cockpit_motif_jump(-1);
+}
+function cockpit_motif_jump(inc)
+{
+    //start the mining process
+    let pathInc =$("#cockpit").attr("path")+".peakSearch.jumpInc";
+
+    var query = [{browsePath:pathInc,value:inc}];
+
+    http_post('/setProperties',JSON.stringify(query), null, this, (self,status,data,params) => {
+        if (status>201)
+        {
+            //backend responded bad, we must set the frontend back
+
+            console.log("context_menu_set_visible_elements",status);
+        }
+        else
+        {
+            let path =$("#cockpit").attr("path")+".peakSearch";
+            http_post("/_execute",JSON.stringify(path),null,null,null);
+        }
+    });
+
+}
 
 
 

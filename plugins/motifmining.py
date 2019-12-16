@@ -243,10 +243,13 @@ def generate_peaks(resultVector,functionNode,logger,timeNode,MotifLen,MotifStart
 
     peakDates = [epochToIsoString(peak, zone=timezone('Europe/Berlin')) for peak in peakepochs]
     if peakDates:
+        print(f"peakDATES {peakDates}")
         current = functionNode.get_child("peaks").get_value()
-        if type(current) is not list:
+        if not type(current) is list:
             current = []
-        functionNode.get_child("peaks").set_value(current.extend(peakDates))
+        current.extend(peakDates)
+        print(f"update current {current}")
+        functionNode.get_child("peaks").set_value(current)
 
     #now generate annotations
     annotations = functionNode.get_child("annotations")
@@ -296,7 +299,7 @@ def motif_mining(template: np.ndarray, y: np.ndarray, sim_method: str = 'pearson
         x1 = i
         x2 = np.minimum(i + m, n)
         yi = y[x1:x2]
-        print(f"len {x1} {x2} {m} {n} {x2-x1} ")
+        #print(f"len {x1} {x2} {m} {n} {x2-x1} ")
         t = template[:(x2-x1)]
 
         if len(t) > 5:
@@ -348,6 +351,8 @@ def motif_jumper(functionNode):
     widgetNode = minerNode.get_child("widget").get_targets()[0]
 
     dates = minerNode.get_child("peaks").get_value()
+    if type(dates) is not list:
+        dates = []
     currentIndex = functionNode.get_child("jumpPos").get_value()
     inc = functionNode.get_child("jumpInc").get_value()
 
@@ -358,20 +363,21 @@ def motif_jumper(functionNode):
 
     logger.debug(f"jump to index {nextIndex}  : {dates[nextIndex]}")
 
-    motif = minerNode.get_child("motif").get_targets()[0]
-    motifStart = motif.get_child("startTime").get_value()
-    motifEnd = motif.get_child("endTime").get_value()
+    if len(dates):
+        motif = minerNode.get_child("motif").get_targets()[0]
+        motifStart = motif.get_child("startTime").get_value()
+        motifEnd = motif.get_child("endTime").get_value()
 
-    currentViewStart = widgetNode.get_child("startTime").get_value()
-    currentViewEnd = widgetNode.get_child("endTime").get_value()
-    currentViewWidth = date2secs(currentViewEnd)- date2secs(currentViewStart)
+        currentViewStart = widgetNode.get_child("startTime").get_value()
+        currentViewEnd = widgetNode.get_child("endTime").get_value()
+        currentViewWidth = date2secs(currentViewEnd)- date2secs(currentViewStart)
 
-    windowStart = date2secs(dates[nextIndex])-currentViewWidth/2
-    windowEnd = date2secs(dates[nextIndex])+currentViewWidth/2
+        windowStart = date2secs(dates[nextIndex])-currentViewWidth/2
+        windowEnd = date2secs(dates[nextIndex])+currentViewWidth/2
 
 
 
-    widgetNode.get_child("startTime").set_value(epochToIsoString(windowStart,zone=timezone('Europe/Berlin')))
-    widgetNode.get_child("endTime").set_value(epochToIsoString(windowEnd, zone=timezone('Europe/Berlin')))
+        widgetNode.get_child("startTime").set_value(epochToIsoString(windowStart,zone=timezone('Europe/Berlin')))
+        widgetNode.get_child("endTime").set_value(epochToIsoString(windowEnd, zone=timezone('Europe/Berlin')))
 
     return True

@@ -150,7 +150,7 @@
                         Jump to Results..
                         <div class="form-group row">
                             <div class="col-3">
-                               <button type="button" class="btn btn-primary"   onclick="cockpit_motif_run()">   <i class="fas fa-step-backward"></i>previous</button>
+                               <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump_prev()">   <i class="fas fa-step-backward"></i>previous</button>
                             </div>
 
                             <div class="col-3 id="doublechecktext12">
@@ -162,8 +162,8 @@
                                 </select>
                             </div>
                             <div class="col-6">
-                                <button type="button" class="btn btn-primary"   >  <i class="fas fa-search-location"></i> here </button>
-                                <button type="button" class="btn btn-primary"   >  <i class="fas fa-step-forward"></i>next</button>
+                                <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump_here()">  <i class="fas fa-search-location"></i> here </button>
+                                <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump_next()">  <i class="fas fa-step-forward"></i>next</button>
                             </div>
                         </div>
 
@@ -311,6 +311,8 @@ function cockpit_apply_settings()
 }
 
 
+
+
 function cockpit_motif_init_progress_bar()
 {
     cockpiteventSource = new EventSource('/event/stream');
@@ -333,6 +335,8 @@ function cockpit_motif_init_progress_bar()
         {
             $('#cockpit-motif-progress').text("");
         }
+
+        //update_peak_values();
     });
 
 }
