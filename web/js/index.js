@@ -502,8 +502,9 @@ function hook_context_menu(divId,modelPath)
 function show_context_menu(e,modelPath)
 {
    console.log("show_context_menu() ",modelPath);
+   var query = {"node":modelPath,"depth":100,"ignore":["observer","hasAnnotation.anno","hasAnnotation.new","selectable"]}
     //get the current state from the backend
-   http_post("_getbranchpretty",modelPath, e,null, function(obj,status,data,params)
+   http_post("_getbranchpretty",JSON.stringify(query), e,null, function(obj,status,data,params)
         {
             if (status==200)
             {
@@ -913,21 +914,18 @@ function prepare_context_menu(dataString,modelPath)
         showSubmenu.push(entry);
     }
 
+    var selectedVariables = data.selectedVariables[".properties"].leaves;
+
+    /*
     //another entry for the variables
     var variablesSubmenu=[];
     var selectableVariables = data.selectableVariables[".properties"].leaves;
-    var selectedVariables = data.selectedVariables[".properties"].leaves;
+
     for (variable of selectableVariables)
     {
         let icon = "far fa-square";
         var currentValue = false;
         if (selectedVariables.includes(variable)) {icon = "far fa-check-square";currentValue =true; }
-        //let mycolor = colors[tag].color;
-        //let mypattern = colors[tag].pattern;
-        //if (mypattern == null) mypattern = "&nbsp &nbsp &nbsp";
-        //else mypattern = "&nbsp "+mypattern + " &nbsp";
-        //let mycolorString = `<span style='background-color:${mycolor};text-color:red;font-family:monospace'> <font color='white'> ${mypattern}</font> </span> &nbsp ${tag}`;
-
         var splitted = variable.split('.');
         var name =splitted[splitted.length-1];
 
@@ -956,7 +954,7 @@ function prepare_context_menu(dataString,modelPath)
             submenu:variablesSubmenu
         };
     showSubmenu.push(entry);
-
+    */
 
 
 

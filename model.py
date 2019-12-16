@@ -1041,13 +1041,15 @@ class Model():
 
         return copy.deepcopy(nodes)
 
-    def __get_node_with_children_pretty(self,id,depth = None):
+    def __get_node_with_children_pretty(self,id,depth = None,ignore = []):
         """
             recursive helper for get_branch_pretty
             args:
                 nodes: the nodes so far
 
         """
+
+        t=utils.Profiling(f"id {self.get_browse_path(id)}, ignore = {ignore}")
 
         result = {}
 
@@ -1058,20 +1060,27 @@ class Model():
             # we also take the value then
             props["value"] = copy.deepcopy(node["value"])
         if node["type"] == "referencer" and (depth is None or depth>0):
+            tt = utils.Profiling("get leaves")
             leaves = self.get_leaves_ids(id)
+            print(tt)
+            tt.start("get leaves data")
             forwards = [self.get_browse_path(leaf) for leaf in leaves]
             props["leaves"]=forwards
+            tt.lap("1")
             props["targets"] = [self.get_browse_path(id) for id in self.model[id]["forwardRefs"]]
             props["leavesIds"]=leaves
             props["leavesValues"] = [self.get_value(id) if self.model[id]["type"] not in ["file","column"] else None for id in leaves]
+            tt.lap("2")
             validation = []
             for id in leaves:
-                prop = self.get_node_info(id)
+                prop = self.get_node_info(id,includeLongValues=False)
                 if "validation" in prop:
                     validation.append(prop["validation"])
                 else:
                     validation.append(None)
+            tt.lap("3")
             props["leavesValidation"] = validation
+            print(tt)
         result[".properties"]=props
 
         if depth is None or depth>0:
@@ -1080,13 +1089,18 @@ class Model():
             if depth is not None:
                 nextDepth = depth -1
             for childId in node["children"]:
-                result[self.model[childId]["name"]]=self.__get_node_with_children_pretty(childId,nextDepth)
-
+                childPath = self.get_browse_path(childId)
+                if any([ignoreName in childPath for ignoreName in ignore]):
+                    #self.logger.debug(f"ignore {childPath}")
+                    pass
+                else:
+                    result[self.model[childId]["name"]]=self.__get_node_with_children_pretty(childId,nextDepth,ignore)
+        print(t)
         return result
 
 
 
-    def get_branch_pretty(self,desc,depth=None):
+    def get_branch_pretty(self,desc,depth=None,ignore = []):
         """
             get a branch in the form
             "child1":{"child3":... ".type":, ".value"
@@ -1102,7 +1116,7 @@ class Model():
             #p=utils.Profiling("get_branch_pretty")
             id = self.__get_id(desc)
             if not id: return None
-            res = self.__get_node_with_children_pretty(id,depth)
+            res = self.__get_node_with_children_pretty(id,depth,ignore)
             #self.logger.debug(p)
             return res
 

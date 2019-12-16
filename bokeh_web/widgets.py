@@ -215,6 +215,8 @@ class TimeSeriesWidgetDataServer():
         self.logger.debug(f"get_selected_variables_sync => {self.selectedVariables}")
         return selectedVars
 
+    def get_path(self):
+        return self.path
 
     def load_annotations(self):
         self.logger.debug("load_annotations")
@@ -473,9 +475,9 @@ class TimeSeriesWidgetDataServer():
 
     def fetch_mirror(self,small = False):
         if small:
-            query = {"node":self.path,"depth":1}
+            query = {"node":self.path,"depth":1,"ignore":["observer"]}
         else:
-            query = self.path
+            query = {"node":self.path,"depth":100,"ignore":["observer","hasAnnotation.anno","hasAnnotation.new"]}
         self.mirror = self.__web_call("post", "_getbranchpretty", query)
         return self.mirror
 
@@ -802,6 +804,20 @@ class TimeSeriesWidget():
 
         elif data["event"] == "timeSeriesWidget.visibleElements":
             self.logger.debug("update the visible Elements")
+            eventData  = json.loads(data["data"])
+
+            #check for start/EndTime
+            if "sourcePath" in eventData:
+                serverPath = self.server.get_path()
+                for var in ["startTime","endTime"]:
+                    if eventData["sourcePath"] == serverPath+"."+var:
+                        if self.server.get_mirror()[var][".properties"]["value"] == eventData["value"]:
+                            self.logger.info("sync x asis not needed")
+                            return # ignore this event
+                            #must sync the x axis
+
+
+
 
             oldMirror = copy.deepcopy(self.server.get_mirror())
             visibleElementsOld = oldMirror["visibleElements"][".properties"]["value"]
@@ -1823,7 +1839,7 @@ class TimeSeriesWidget():
     def box_modifier_tap(self, x=None, y=None):
 
         self.logger.debug(f"box_modifier_tap x:{x} y:{y}")
-
+        candidates = []
         #check if we are inside a visible annotation
         for annoId, anno in self.server.get_annotations().items():
             #self.logger.debug("check anno "+annoName+" "+anno["type"])
@@ -1838,8 +1854,28 @@ class TimeSeriesWidget():
             if candidate:
                 if self.find_renderer(anno["id"]):
                     #we are inside this anno and it is visible,
-                    self.box_modifier_show(annoId, anno)
-                    return
+                    candidates.append(annoId)
+                    if self.boxModifierVisible:
+                        pass # we rotate activation later
+                    else:
+                        self.box_modifier_show(annoId, anno)
+                        return
+
+        if candidates:
+            if self.boxModifierAnnotationName in candidates:
+
+                candidates.append(candidates[0])  # if wrap around
+                next = candidates.index(self.boxModifierAnnotationName)+1
+                annoNext = candidates[next]
+                #self.logger.debug(f"candidates, next {annoNext}")
+                self.box_modifier_show(annoNext, self.server.get_annotations()[annoNext])
+                return
+            else:
+                annoId = candidates[0]
+                #self.logger.debug(f"only {annoId}")
+                self.box_modifier_show(annoId,self.server.get_annotations()[annoId])
+                return
+
 
         #we are not inside an annotation, we hide the box modifier
         self.box_modifier_hide(auto=True)
@@ -1856,9 +1892,9 @@ class TimeSeriesWidget():
         if self.boxModifierVisible:
             if self.boxModifierAnnotationName == annoName:
                 #this one is already visible, we are done
-                return
+                return False
             else:
-                #if another is already visible, we hide it first
+                # if another is already visible, we hide it first
                 # but we keep the tool active, so don't call box_modifier_hide() here
                 self.boxModifierRectVertical.visible = False  # hide the renderer
                 self.boxModifierRectHorizontal.visible = False  # hide the renderer
@@ -1890,6 +1926,7 @@ class TimeSeriesWidget():
 
         self.set_active_drag_tool(self.boxModifierTool)
         self.server.select_annotation(annoName)
+        return True
 
     def box_modifier_hide(self,auto = False):
         """

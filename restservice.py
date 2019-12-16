@@ -251,6 +251,7 @@ branchquery.json
 {
     node:<desc>
     depth:x     //give a depth of the branch resolving
+    ignore : ["observer"] ignore all nodes (and their children) containins "observer"
 }
 
 
@@ -347,11 +348,14 @@ def all(path):
 
 
         elif (str(path) == "_getbranchpretty") and str(flask.request.method) in ["POST","GET"]:
-            logger.debug("get branch pretty")
+            logger.debug(f"get branch pretty {data}")
             if type(data) is str:
                 mymodel = m.get_branch_pretty(data)
             elif type(data) is dict:
-                mymodel= m.get_branch_pretty(data["node"],data["depth"])
+                ignore = []
+                if "ignore" in data:
+                    ignore = data["ignore"]
+                mymodel= m.get_branch_pretty(data["node"],data["depth"],ignore)
             response = json.dumps(mymodel, indent=4)  # some pretty printing for debug
             responseCode = 200
 
