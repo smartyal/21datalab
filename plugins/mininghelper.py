@@ -164,7 +164,9 @@ def template_matching_1d(template: np.ndarray, y: np.ndarray, sim_method: str = 
 
 # %%
 
-def detect_peaks(y: np.ndarray, min_level: float = 0.8, max_level: float = 1.0, min_dist: int = 10):
-    peaks, _ = find_peaks(y, height=(min_level, max_level), distance=min_dist)
+def detect_peaks(y: np.ndarray, min_level: float = 0.8, max_level: float = 1.01, min_dist: int = 10):
+    #peaks, _ = find_peaks(y, height=(min_level, max_level), distance=min_dist)
 
+    peaks, _ = find_peaks(y, height=min_level, distance=min_dist)
+    #print("detect peaks",_)
     return peaks

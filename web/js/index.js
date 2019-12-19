@@ -674,13 +674,14 @@ function context_menu_click_pipeline(option)
     //show the cockpit
     var query = [option.data+".cockpit"];
 
-    http_post("_getvalue",JSON.stringify(query), null,null, function(obj,status,data,params)
+    http_post("_getvalue",JSON.stringify(query), option.data,null, function(obj,status,data,params)
     {
         if (status == 200)
         {
+            let path = params;
             console.log("data");
             var cockpit = JSON.parse(data)[0];
-            launch_cockpit(cockpit);
+            launch_cockpit(cockpit,path);
         }
     });
     superCm.destroyMenu(); // hide it
@@ -1212,7 +1213,7 @@ function prepare_context_menu(dataString,modelPath)
 
 
 
-function launch_cockpit(url)
+function launch_cockpit(url,path)
 {
     var data=http_get(url);
 
@@ -1224,47 +1225,16 @@ function launch_cockpit(url)
     cockpit.draggable({handle: ".modal-header"});                                   //make it movable
     cockpit.modal({backdrop: 'static',keyboard: false, focus:false});               //don't close it on click outside
     cockpit.prepend('<style scoped> .modal-backdrop { display: none;}</style>');    //allow click outside
-    cockpit.attr("path","root.Motif Miner");
-    cockpit_init("root.Motif Miner");
+    cockpit.attr("path",path);
+    cockpit_init(path);
 
     $('#cockpit').on('hidden.bs.modal', cockpit_close);
     cockpit.modal('show');
 
 }
 
-/* move this to cockpit widget later
-*/
-function cockpit_motif_jump_next()
-{
-    cockpit_motif_jump(1);
-}
 
-function cockpit_motif_jump_prev()
-{
-    cockpit_motif_jump(-1);
-}
-function cockpit_motif_jump(inc)
-{
-    //start the mining process
-    let pathInc =$("#cockpit").attr("path")+".peakSearch.jumpInc";
 
-    var query = [{browsePath:pathInc,value:inc}];
-
-    http_post('/setProperties',JSON.stringify(query), null, this, (self,status,data,params) => {
-        if (status>201)
-        {
-            //backend responded bad, we must set the frontend back
-
-            console.log("context_menu_set_visible_elements",status);
-        }
-        else
-        {
-            let path =$("#cockpit").attr("path")+".peakSearch";
-            http_post("/_execute",JSON.stringify(path),null,null,null);
-        }
-    });
-
-}
 
 
 

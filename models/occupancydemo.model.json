@@ -10,7 +10,8 @@
             "265",
             "490",
             "15325922506801289201",
-            "15449664376381869170"
+            "15449664376381869170",
+            "401335041852249076"
         ],
         "parent": "0",
         "id": "1",
@@ -57,7 +58,8 @@
             "335",
             "377",
             "419",
-            "461"
+            "461",
+            "17988038100535752004"
         ],
         "forwardRefs": [],
         "value": null,
@@ -105,7 +107,8 @@
             "15562365708235252411",
             "6164874497511815225",
             "1139084450084691387",
-            "13051312829226100872"
+            "13051312829226100872",
+            "865469451512511712"
         ],
         "value": null,
         "browsePath": "root.occupancyData.columns"
@@ -186,6 +189,7 @@
             "451",
             "477",
             "8037118344379379709",
+            "57832287729083089",
             "129"
         ],
         "forwardRefs": [],
@@ -347,10 +351,13 @@
             "8639743599502979877",
             "12067833386036335427",
             "14940877245906809241",
-            "17333622775446030886"
+            "17333622775446030886",
+            "7406513117600242278",
+            "15499764811511790654"
         ],
         "backRefs": [
-            "526"
+            "526",
+            "8268473328863278363"
         ],
         "forwardRefs": [],
         "value": null,
@@ -394,9 +401,11 @@
         "type": "variable",
         "parent": "127",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "13071347114919871021"
+        ],
         "forwardRefs": [],
-        "value": "2015-02-11T21:29:36.196792+01:00",
+        "value": "2015-02-11T14:48:00+01:00",
         "browsePath": "root.visualization.workbench.startTime"
     },
     "131": {
@@ -405,9 +414,11 @@
         "type": "variable",
         "parent": "127",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "13071347114919871021"
+        ],
         "forwardRefs": [],
-        "value": "2015-02-17T03:11:15.627712+01:00",
+        "value": "2015-02-18T08:46:00+01:00",
         "browsePath": "root.visualization.workbench.endTime"
     },
     "132": {
@@ -451,7 +462,8 @@
         "forwardRefs": [
             "135",
             "135",
-            "135"
+            "135",
+            "5016083082530735616"
         ],
         "value": null,
         "browsePath": "root.visualization.workbench.hasAnnotation.annotations"
@@ -467,7 +479,9 @@
             "12087524232013076239",
             "343730187545534790",
             "12525839204663670532",
-            "12761865699925107392"
+            "12761865699925107392",
+            "1660366744481031556",
+            "9827970231469342531"
         ],
         "backRefs": [
             "134",
@@ -517,6 +531,10 @@
             "region": {
                 "color": "grey",
                 "pattern": null
+            },
+            "pattern_match": {
+                "color": "#808080",
+                "pattern": "v"
             }
         },
         "browsePath": "root.visualization.workbench.hasAnnotation.colors"
@@ -739,9 +757,7 @@
         "type": "variable",
         "parent": "223",
         "children": [],
-        "backRefs": [
-            "16724694746718170912"
-        ],
+        "backRefs": [],
         "forwardRefs": [],
         "value": 1,
         "browsePath": "root.logisticRegression.control.progress"
@@ -776,7 +792,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 103,
+        "value": 108,
         "browsePath": "root.logisticRegression.control.executionCounter"
     },
     "229": {
@@ -787,7 +803,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.059247,
+        "value": 0.03798,
         "browsePath": "root.logisticRegression.control.lastExecutionDuration"
     },
     "230": {
@@ -798,7 +814,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-12-09T18:57:18.732232",
+        "value": "2019-12-19T10:16:19.944892",
         "browsePath": "root.logisticRegression.control.lastStartTime"
     },
     "231": {
@@ -892,7 +908,9 @@
             "12869446842341427166",
             "10037962942117189690",
             "17278772546530602553",
-            "3290018521614930827"
+            "3290018521614930827",
+            "17458476392270869597",
+            "16877488974742249835"
         ],
         "backRefs": [
             "502"
@@ -1534,7 +1552,9 @@
             "7170631808486119632",
             "8942338558043545701",
             "4061505148126840696",
-            "14416109136585452177"
+            "14416109136585452177",
+            "15854833061619641496",
+            "9529609379040281464"
         ],
         "backRefs": [
             "506"
@@ -2141,7 +2161,9 @@
             "17640034587522951501",
             "4974999501758125695",
             "2249089757963016189",
-            "8816607637457517034"
+            "8816607637457517034",
+            "9511147345800615806",
+            "14157890313946690696"
         ],
         "backRefs": [
             "510"
@@ -2748,7 +2770,9 @@
             "12981873129990996515",
             "4862900714212492611",
             "5015795202456801704",
-            "3001498895958458636"
+            "3001498895958458636",
+            "4424392630173794069",
+            "2829637590551602556"
         ],
         "backRefs": [
             "514"
@@ -3355,7 +3379,9 @@
             "16903257970932551931",
             "7068749202611719166",
             "3743075514298201744",
-            "11469838046218193048"
+            "11469838046218193048",
+            "7281795057327842401",
+            "961223804198789988"
         ],
         "backRefs": [
             "518"
@@ -3962,7 +3988,9 @@
             "9238325138459475619",
             "16686710309681776898",
             "798609426837414278",
-            "4266710680940548039"
+            "4266710680940548039",
+            "13421890725389874289",
+            "9042709344084277240"
         ],
         "backRefs": [
             "522"
@@ -5792,7 +5820,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 115,
+        "value": 117,
         "browsePath": "root.visualization.workbench.observerVariables.triggerCounter"
     },
     "645": {
@@ -5803,7 +5831,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-11-23T22:53:00.638851",
+        "value": "2019-12-18T13:21:37.125746",
         "browsePath": "root.visualization.workbench.observerVariables.lastTriggerTime"
     },
     "646": {
@@ -5904,7 +5932,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 140,
+        "value": 145,
         "browsePath": "root.visualization.workbench.observerBack.triggerCounter"
     },
     "654": {
@@ -5915,7 +5943,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-12-09T18:57:18.778486",
+        "value": "2019-12-19T10:16:19.975875",
         "browsePath": "root.visualization.workbench.observerBack.lastTriggerTime"
     },
     "655": {
@@ -6016,7 +6044,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 20,
+        "value": 60,
         "browsePath": "root.visualization.workbench.observerStream.triggerCounter"
     },
     "663": {
@@ -6027,7 +6055,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-11-04T22:59:43.794585",
+        "value": "2019-12-18T13:21:14.657707",
         "browsePath": "root.visualization.workbench.observerStream.lastTriggerTime"
     },
     "664": {
@@ -6241,7 +6269,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 157,
+        "value": 162,
         "browsePath": "root.visualization.selfservice0.observerBack.triggerCounter"
     },
     "681": {
@@ -6252,7 +6280,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-12-09T18:57:18.780486",
+        "value": "2019-12-19T10:16:19.976873",
         "browsePath": "root.visualization.selfservice0.observerBack.lastTriggerTime"
     },
     "682": {
@@ -8306,8 +8334,9 @@
             "thresholds": false,
             "annotations": true,
             "scores": false,
-            "background": true,
-            "variables": true
+            "background": false,
+            "variables": true,
+            "motifs": false
         },
         "browsePath": "root.visualization.workbench.visibleElements"
     },
@@ -8375,7 +8404,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 792,
+        "value": 883,
         "browsePath": "root.visualization.workbench.observerAnnotations.triggerCounter"
     },
     "13646722735659859395": {
@@ -8386,7 +8415,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-11-23T23:17:29.923802",
+        "value": "2019-12-19T10:22:13.456934",
         "browsePath": "root.visualization.workbench.observerAnnotations.lastTriggerTime"
     },
     "12416654533870087467": {
@@ -8489,7 +8518,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 348,
+        "value": 444,
         "browsePath": "root.visualization.workbench.observerVisibleElements.triggerCounter"
     },
     "15683200324838571042": {
@@ -8500,7 +8529,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-12-09T18:57:16.821729",
+        "value": "2019-12-19T10:22:21.208594",
         "browsePath": "root.visualization.workbench.observerVisibleElements.lastTriggerTime"
     },
     "13071347114919871021": {
@@ -8513,7 +8542,9 @@
         "forwardRefs": [
             "11875433610643090774",
             "1188292716290351284",
-            "8639743599502979877"
+            "8639743599502979877",
+            "130",
+            "131"
         ],
         "value": null,
         "browsePath": "root.visualization.workbench.observerVisibleElements.targets"
@@ -9040,8 +9071,9 @@
         "forwardRefs": [],
         "value": {
             "busy": true,
-            "region": true,
-            "free": true
+            "region": false,
+            "free": true,
+            "pattern_match": false
         },
         "browsePath": "root.visualization.workbench.hasAnnotation.visibleTags"
     },
@@ -9056,8 +9088,8 @@
         ],
         "forwardRefs": [],
         "value": {
-            "type": "threshold",
-            "variable": "root.occupancyData.variables.Humidity"
+            "type": "time",
+            "tag": "free"
         },
         "browsePath": "root.visualization.workbench.nextNewAnnotation"
     },
@@ -9100,7 +9132,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 62,
+        "value": 66,
         "browsePath": "root.visualization.workbench.observerNewAnnotation.triggerCounter"
     },
     "67741450388327913": {
@@ -9111,7 +9143,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-11-14T14:11:13.259451",
+        "value": "2019-12-19T10:16:07.715270",
         "browsePath": "root.visualization.workbench.observerNewAnnotation.lastTriggerTime"
     },
     "2805595053862460105": {
@@ -9284,7 +9316,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2015-02-13T10:41:26.496569+01:00",
+        "value": "2015-02-13T09:10:09.229276+01:00",
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.9d81b911.startTime"
     },
     "9341502561540537992": {
@@ -9408,7 +9440,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2015-02-13T23:44:28.078859+01:00",
+        "value": "2015-02-13T22:13:10.811566+01:00",
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.e99b3132.startTime"
     },
     "2496301013736804100": {
@@ -9458,6 +9490,9 @@
             },
             "root.thresholdScorer.output.Temperature_score": {
                 "lineColor": "red"
+            },
+            "root.new_motifMinerTemplate_4430.MotifMiner.score": {
+                "lineColor": "gray"
             }
         },
         "browsePath": "root.visualization.workbench.currentColors"
@@ -12302,7 +12337,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 17,
+        "value": 149,
         "browsePath": "root.system.progress.triggerCounter"
     },
     "10857910486653991896": {
@@ -12313,7 +12348,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-12-09T18:57:18.801474",
+        "value": "2019-12-19T10:22:05.228872",
         "browsePath": "root.system.progress.lastTriggerTime"
     },
     "16724694746718170912": {
@@ -12324,7 +12359,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [
-            "225"
+            "11462529451254355315"
         ],
         "value": null,
         "browsePath": "root.system.progress.targets"
@@ -12491,7 +12526,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 9,
+        "value": 14,
         "browsePath": "root.system.relevantChanges.triggerCounter"
     },
     "12027250451543955530": {
@@ -12502,7 +12537,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-12-09T18:57:18.786482",
+        "value": "2019-12-19T10:16:19.979872",
         "browsePath": "root.system.relevantChanges.lastTriggerTime"
     },
     "13880253212629121141": {
@@ -12947,5 +12982,918 @@
         ],
         "value": null,
         "browsePath": "root.visualization.selfservice5.contextMenuSettings.streaming Mode"
+    },
+    "7406513117600242278": {
+        "id": "7406513117600242278",
+        "name": "showMarker",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.workbench.showMarker"
+    },
+    "17458476392270869597": {
+        "id": "17458476392270869597",
+        "name": "showMarker",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice0.showMarker"
+    },
+    "15854833061619641496": {
+        "id": "15854833061619641496",
+        "name": "showMarker",
+        "type": "const",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice1.showMarker"
+    },
+    "9511147345800615806": {
+        "id": "9511147345800615806",
+        "name": "showMarker",
+        "type": "const",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice2.showMarker"
+    },
+    "4424392630173794069": {
+        "id": "4424392630173794069",
+        "name": "showMarker",
+        "type": "const",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice3.showMarker"
+    },
+    "7281795057327842401": {
+        "id": "7281795057327842401",
+        "name": "showMarker",
+        "type": "const",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice4.showMarker"
+    },
+    "13421890725389874289": {
+        "id": "13421890725389874289",
+        "name": "showMarker",
+        "type": "const",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.visualization.selfservice5.showMarker"
+    },
+    "1660366744481031556": {
+        "id": "1660366744481031556",
+        "name": "0feeb379",
+        "type": "annotation",
+        "parent": "135",
+        "children": [
+            "2920127502609154322",
+            "16753490938037516784",
+            "14167798662185592540",
+            "4303969473532840571",
+            "57832287729083089"
+        ],
+        "backRefs": [
+            "12226988837753147426"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.0feeb379"
+    },
+    "2920127502609154322": {
+        "id": "2920127502609154322",
+        "name": "type",
+        "type": "const",
+        "parent": "1660366744481031556",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "motif",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.0feeb379.type"
+    },
+    "16753490938037516784": {
+        "id": "16753490938037516784",
+        "name": "startTime",
+        "type": "const",
+        "parent": "1660366744481031556",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-13T08:04:25.053318+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.0feeb379.startTime"
+    },
+    "14167798662185592540": {
+        "id": "14167798662185592540",
+        "name": "endTime",
+        "type": "const",
+        "parent": "1660366744481031556",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-13T17:59:19.342757+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.0feeb379.endTime"
+    },
+    "4303969473532840571": {
+        "id": "4303969473532840571",
+        "name": "tags",
+        "type": "const",
+        "parent": "1660366744481031556",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "motif"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.0feeb379.tags"
+    },
+    "57832287729083089": {
+        "id": "57832287729083089",
+        "name": "variable",
+        "type": "referencer",
+        "parent": "1660366744481031556",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "120"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.0feeb379.variable"
+    },
+    "401335041852249076": {
+        "id": "401335041852249076",
+        "name": "motifMiner",
+        "type": "folder",
+        "parent": "1",
+        "children": [
+            "10998118072370379813",
+            "2915518221520914070",
+            "2680764281827867399",
+            "16344679377884364987"
+        ],
+        "backRefs": [
+            "15499764811511790654"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.motifMiner"
+    },
+    "10998118072370379813": {
+        "id": "10998118072370379813",
+        "name": "MotifMiner",
+        "type": "function",
+        "parent": "401335041852249076",
+        "children": [
+            "12226988837753147426",
+            "865469451512511712",
+            "10547512889149865709",
+            "8268473328863278363",
+            "17988038100535752004",
+            "280389949557983769",
+            "3490434795173453250",
+            "15946607831162735765",
+            "9754810057187342824",
+            "5016083082530735616",
+            "5642357875023677979"
+        ],
+        "backRefs": [
+            "4520372586088418027"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "functionPointer": "motifmining.motif_miner",
+        "autoReload": true,
+        "browsePath": "root.motifMiner.MotifMiner"
+    },
+    "12226988837753147426": {
+        "id": "12226988837753147426",
+        "name": "motif",
+        "type": "referencer",
+        "parent": "10998118072370379813",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "1660366744481031556"
+        ],
+        "value": null,
+        "browsePath": "root.motifMiner.MotifMiner.motif"
+    },
+    "865469451512511712": {
+        "id": "865469451512511712",
+        "name": "score",
+        "type": "column",
+        "parent": "10998118072370379813",
+        "children": [],
+        "backRefs": [
+            "116"
+        ],
+        "forwardRefs": [],
+        "value": "len 9752",
+        "browsePath": "root.motifMiner.MotifMiner.score"
+    },
+    "10547512889149865709": {
+        "id": "10547512889149865709",
+        "name": "algorithm",
+        "type": "const",
+        "parent": "10998118072370379813",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "pearson_center",
+        "validation": {
+            "values": [
+                "euclidean",
+                "pearson",
+                "pearson_center",
+                "convolution"
+            ]
+        },
+        "browsePath": "root.motifMiner.MotifMiner.algorithm"
+    },
+    "8268473328863278363": {
+        "id": "8268473328863278363",
+        "name": "widget",
+        "type": "referencer",
+        "parent": "10998118072370379813",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "127"
+        ],
+        "value": null,
+        "browsePath": "root.motifMiner.MotifMiner.widget"
+    },
+    "17988038100535752004": {
+        "id": "17988038100535752004",
+        "name": "table",
+        "type": "referencer",
+        "parent": "10998118072370379813",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "114"
+        ],
+        "value": null,
+        "browsePath": "root.motifMiner.MotifMiner.table"
+    },
+    "280389949557983769": {
+        "id": "280389949557983769",
+        "name": "peaks",
+        "type": "variable",
+        "parent": "10998118072370379813",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "2015-02-12T07:40:00+01:00",
+            "2015-02-15T07:53:00+01:00"
+        ],
+        "browsePath": "root.motifMiner.MotifMiner.peaks"
+    },
+    "3490434795173453250": {
+        "id": "3490434795173453250",
+        "name": "addNoise",
+        "type": "const",
+        "parent": "10998118072370379813",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0.001,
+        "browsePath": "root.motifMiner.MotifMiner.addNoise"
+    },
+    "15946607831162735765": {
+        "id": "15946607831162735765",
+        "name": "subSamplingFactor",
+        "type": "const",
+        "parent": "10998118072370379813",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 1,
+        "browsePath": "root.motifMiner.MotifMiner.subSamplingFactor"
+    },
+    "9754810057187342824": {
+        "id": "9754810057187342824",
+        "name": "subtractPolynomOrder",
+        "type": "const",
+        "parent": "10998118072370379813",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "none",
+        "validation": {
+            "values": [
+                "none",
+                1,
+                2,
+                3
+            ]
+        },
+        "browsePath": "root.motifMiner.MotifMiner.subtractPolynomOrder"
+    },
+    "5016083082530735616": {
+        "id": "5016083082530735616",
+        "name": "annotations",
+        "type": "folder",
+        "parent": "10998118072370379813",
+        "children": [],
+        "backRefs": [
+            "134"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.motifMiner.MotifMiner.annotations"
+    },
+    "5642357875023677979": {
+        "id": "5642357875023677979",
+        "name": "control",
+        "type": "folder",
+        "parent": "10998118072370379813",
+        "children": [
+            "15253596536538640030",
+            "11462529451254355315",
+            "10954863567548694535",
+            "637426215851148006",
+            "12695124393040584113",
+            "2356084669063915686",
+            "17389826042746726166",
+            "14246104909690209583"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.motifMiner.MotifMiner.control"
+    },
+    "15253596536538640030": {
+        "id": "15253596536538640030",
+        "name": "status",
+        "type": "variable",
+        "parent": "5642357875023677979",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "finished",
+        "browsePath": "root.motifMiner.MotifMiner.control.status"
+    },
+    "11462529451254355315": {
+        "id": "11462529451254355315",
+        "name": "progress",
+        "type": "variable",
+        "parent": "5642357875023677979",
+        "children": [],
+        "backRefs": [
+            "17283235606112782456",
+            "16724694746718170912"
+        ],
+        "forwardRefs": [],
+        "value": 1,
+        "browsePath": "root.motifMiner.MotifMiner.control.progress"
+    },
+    "10954863567548694535": {
+        "id": "10954863567548694535",
+        "name": "result",
+        "type": "variable",
+        "parent": "5642357875023677979",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "ok",
+        "browsePath": "root.motifMiner.MotifMiner.control.result"
+    },
+    "637426215851148006": {
+        "id": "637426215851148006",
+        "name": "signal",
+        "type": "variable",
+        "parent": "5642357875023677979",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "stop",
+        "browsePath": "root.motifMiner.MotifMiner.control.signal"
+    },
+    "12695124393040584113": {
+        "id": "12695124393040584113",
+        "name": "executionCounter",
+        "type": "variable",
+        "parent": "5642357875023677979",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 27,
+        "browsePath": "root.motifMiner.MotifMiner.control.executionCounter"
+    },
+    "2356084669063915686": {
+        "id": "2356084669063915686",
+        "name": "lastExecutionDuration",
+        "type": "variable",
+        "parent": "5642357875023677979",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 1.552774,
+        "browsePath": "root.motifMiner.MotifMiner.control.lastExecutionDuration"
+    },
+    "17389826042746726166": {
+        "id": "17389826042746726166",
+        "name": "lastStartTime",
+        "type": "variable",
+        "parent": "5642357875023677979",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2019-12-19T10:22:03.672171",
+        "browsePath": "root.motifMiner.MotifMiner.control.lastStartTime"
+    },
+    "14246104909690209583": {
+        "id": "14246104909690209583",
+        "name": "executionType",
+        "type": "const",
+        "parent": "5642357875023677979",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "threaded",
+        "browsePath": "root.motifMiner.MotifMiner.control.executionType"
+    },
+    "2915518221520914070": {
+        "id": "2915518221520914070",
+        "name": "peakSearch",
+        "type": "function",
+        "parent": "401335041852249076",
+        "children": [
+            "4520372586088418027",
+            "15503604190603529556",
+            "12838071190582717935",
+            "9058897404016321308",
+            "5464777273696932993"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "functionPointer": "motifmining.motif_jumper",
+        "autoReload": true,
+        "browsePath": "root.motifMiner.peakSearch"
+    },
+    "4520372586088418027": {
+        "id": "4520372586088418027",
+        "name": "miner",
+        "type": "referencer",
+        "parent": "2915518221520914070",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "10998118072370379813"
+        ],
+        "value": null,
+        "browsePath": "root.motifMiner.peakSearch.miner"
+    },
+    "15503604190603529556": {
+        "id": "15503604190603529556",
+        "name": "jumpPos",
+        "type": "variable",
+        "parent": "2915518221520914070",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 1,
+        "browsePath": "root.motifMiner.peakSearch.jumpPos"
+    },
+    "12838071190582717935": {
+        "id": "12838071190582717935",
+        "name": "jumpInc",
+        "type": "const",
+        "parent": "2915518221520914070",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 1,
+        "browsePath": "root.motifMiner.peakSearch.jumpInc"
+    },
+    "9058897404016321308": {
+        "id": "9058897404016321308",
+        "name": "threshold",
+        "type": "const",
+        "parent": "2915518221520914070",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0.7,
+        "browsePath": "root.motifMiner.peakSearch.threshold"
+    },
+    "5464777273696932993": {
+        "id": "5464777273696932993",
+        "name": "control",
+        "type": "folder",
+        "parent": "2915518221520914070",
+        "children": [
+            "17494623717155789251",
+            "15167020716229809361",
+            "6385185628909230498",
+            "17827806060079803071",
+            "7623040957332667077",
+            "8725284362219980624",
+            "6991312699040976896",
+            "14265234627034276476"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.motifMiner.peakSearch.control"
+    },
+    "17494623717155789251": {
+        "id": "17494623717155789251",
+        "name": "status",
+        "type": "variable",
+        "parent": "5464777273696932993",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "finished",
+        "browsePath": "root.motifMiner.peakSearch.control.status"
+    },
+    "15167020716229809361": {
+        "id": "15167020716229809361",
+        "name": "progress",
+        "type": "variable",
+        "parent": "5464777273696932993",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 1,
+        "browsePath": "root.motifMiner.peakSearch.control.progress"
+    },
+    "6385185628909230498": {
+        "id": "6385185628909230498",
+        "name": "result",
+        "type": "variable",
+        "parent": "5464777273696932993",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "ok",
+        "browsePath": "root.motifMiner.peakSearch.control.result"
+    },
+    "17827806060079803071": {
+        "id": "17827806060079803071",
+        "name": "signal",
+        "type": "variable",
+        "parent": "5464777273696932993",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "nosignal",
+        "browsePath": "root.motifMiner.peakSearch.control.signal"
+    },
+    "7623040957332667077": {
+        "id": "7623040957332667077",
+        "name": "executionCounter",
+        "type": "variable",
+        "parent": "5464777273696932993",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 7,
+        "browsePath": "root.motifMiner.peakSearch.control.executionCounter"
+    },
+    "8725284362219980624": {
+        "id": "8725284362219980624",
+        "name": "lastExecutionDuration",
+        "type": "variable",
+        "parent": "5464777273696932993",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0.015997,
+        "browsePath": "root.motifMiner.peakSearch.control.lastExecutionDuration"
+    },
+    "6991312699040976896": {
+        "id": "6991312699040976896",
+        "name": "lastStartTime",
+        "type": "variable",
+        "parent": "5464777273696932993",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2019-12-18T13:26:50.773511",
+        "browsePath": "root.motifMiner.peakSearch.control.lastStartTime"
+    },
+    "14265234627034276476": {
+        "id": "14265234627034276476",
+        "name": "executionType",
+        "type": "const",
+        "parent": "5464777273696932993",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "threaded",
+        "browsePath": "root.motifMiner.peakSearch.control.executionType"
+    },
+    "2680764281827867399": {
+        "id": "2680764281827867399",
+        "name": "progress",
+        "type": "observer",
+        "parent": "401335041852249076",
+        "children": [
+            "9894136659441874083",
+            "14978729848249813801",
+            "9110591990822317188",
+            "17283235606112782456",
+            "4866577992401405828",
+            "4019348684348165229",
+            "6235510311018510344",
+            "10593915740513220358",
+            "17715526377335957902",
+            "12186974042080251746"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.motifMiner.progress"
+    },
+    "9894136659441874083": {
+        "id": "9894136659441874083",
+        "name": "enabled",
+        "type": "const",
+        "parent": "2680764281827867399",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.motifMiner.progress.enabled"
+    },
+    "14978729848249813801": {
+        "id": "14978729848249813801",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "2680764281827867399",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 108,
+        "browsePath": "root.motifMiner.progress.triggerCounter"
+    },
+    "9110591990822317188": {
+        "id": "9110591990822317188",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "2680764281827867399",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2019-12-19T10:22:05.227873",
+        "browsePath": "root.motifMiner.progress.lastTriggerTime"
+    },
+    "17283235606112782456": {
+        "id": "17283235606112782456",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "2680764281827867399",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "11462529451254355315"
+        ],
+        "value": null,
+        "browsePath": "root.motifMiner.progress.targets"
+    },
+    "4866577992401405828": {
+        "id": "4866577992401405828",
+        "name": "properties",
+        "type": "const",
+        "parent": "2680764281827867399",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.motifMiner.progress.properties"
+    },
+    "4019348684348165229": {
+        "id": "4019348684348165229",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "2680764281827867399",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.motifMiner.progress.onTriggerFunction"
+    },
+    "6235510311018510344": {
+        "id": "6235510311018510344",
+        "name": "triggerSourceId",
+        "type": "variable",
+        "parent": "2680764281827867399",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "11462529451254355315",
+        "browsePath": "root.motifMiner.progress.triggerSourceId"
+    },
+    "10593915740513220358": {
+        "id": "10593915740513220358",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "2680764281827867399",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.motifMiner.progress.hasEvent"
+    },
+    "17715526377335957902": {
+        "id": "17715526377335957902",
+        "name": "eventString",
+        "type": "const",
+        "parent": "2680764281827867399",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "motifminer.progress",
+        "browsePath": "root.motifMiner.progress.eventString"
+    },
+    "12186974042080251746": {
+        "id": "12186974042080251746",
+        "name": "eventData",
+        "type": "const",
+        "parent": "2680764281827867399",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "text": "observer status update"
+        },
+        "browsePath": "root.motifMiner.progress.eventData"
+    },
+    "16344679377884364987": {
+        "id": "16344679377884364987",
+        "name": "cockpit",
+        "type": "const",
+        "parent": "401335041852249076",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "/customui/motifminer1cockpit.htm",
+        "browsePath": "root.motifMiner.cockpit"
+    },
+    "15499764811511790654": {
+        "id": "15499764811511790654",
+        "name": "contextMenuPipelines",
+        "type": "referencer",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "401335041852249076"
+        ],
+        "value": null,
+        "browsePath": "root.visualization.workbench.contextMenuPipelines"
+    },
+    "16877488974742249835": {
+        "id": "16877488974742249835",
+        "name": "contextMenuPipelines",
+        "type": "referencer",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice0.contextMenuPipelines"
+    },
+    "9529609379040281464": {
+        "id": "9529609379040281464",
+        "name": "contextMenuPipelines",
+        "type": "referencer",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice1.contextMenuPipelines"
+    },
+    "14157890313946690696": {
+        "id": "14157890313946690696",
+        "name": "contextMenuPipelines",
+        "type": "referencer",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice2.contextMenuPipelines"
+    },
+    "2829637590551602556": {
+        "id": "2829637590551602556",
+        "name": "contextMenuPipelines",
+        "type": "referencer",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice3.contextMenuPipelines"
+    },
+    "961223804198789988": {
+        "id": "961223804198789988",
+        "name": "contextMenuPipelines",
+        "type": "referencer",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice4.contextMenuPipelines"
+    },
+    "9042709344084277240": {
+        "id": "9042709344084277240",
+        "name": "contextMenuPipelines",
+        "type": "referencer",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.selfservice5.contextMenuPipelines"
+    },
+    "9827970231469342531": {
+        "id": "9827970231469342531",
+        "name": "94ae0d16",
+        "type": "annotation",
+        "parent": "135",
+        "children": [
+            "7023572293285491841",
+            "906739830975031652",
+            "13709711198194476648",
+            "1994521752809814382"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.94ae0d16"
+    },
+    "7023572293285491841": {
+        "id": "7023572293285491841",
+        "name": "type",
+        "type": "const",
+        "parent": "9827970231469342531",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "time",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.94ae0d16.type"
+    },
+    "906739830975031652": {
+        "id": "906739830975031652",
+        "name": "startTime",
+        "type": "const",
+        "parent": "9827970231469342531",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-15T20:54:39.325363+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.94ae0d16.startTime"
+    },
+    "13709711198194476648": {
+        "id": "13709711198194476648",
+        "name": "endTime",
+        "type": "const",
+        "parent": "9827970231469342531",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2015-02-16T06:27:16.729291+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.94ae0d16.endTime"
+    },
+    "1994521752809814382": {
+        "id": "1994521752809814382",
+        "name": "tags",
+        "type": "const",
+        "parent": "9827970231469342531",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "free"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.94ae0d16.tags"
     }
 }

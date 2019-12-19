@@ -1049,7 +1049,7 @@ class Model():
 
         """
 
-        t=utils.Profiling(f"id {self.get_browse_path(id)}, ignore = {ignore}")
+        #t=utils.Profiling(f"id {self.get_browse_path(id)}, ignore = {ignore}")
 
         result = {}
 
@@ -1060,17 +1060,17 @@ class Model():
             # we also take the value then
             props["value"] = copy.deepcopy(node["value"])
         if node["type"] == "referencer" and (depth is None or depth>0):
-            tt = utils.Profiling("get leaves")
+            #tt = utils.Profiling("get leaves")
             leaves = self.get_leaves_ids(id)
-            print(tt)
-            tt.start("get leaves data")
+            #print(tt)
+            #tt.start("get leaves data")
             forwards = [self.get_browse_path(leaf) for leaf in leaves]
             props["leaves"]=forwards
-            tt.lap("1")
+            #tt.lap("1")
             props["targets"] = [self.get_browse_path(id) for id in self.model[id]["forwardRefs"]]
             props["leavesIds"]=leaves
             props["leavesValues"] = [self.get_value(id) if self.model[id]["type"] not in ["file","column"] else None for id in leaves]
-            tt.lap("2")
+            #tt.lap("2")
             validation = []
             for id in leaves:
                 prop = self.get_node_info(id,includeLongValues=False)
@@ -1078,9 +1078,9 @@ class Model():
                     validation.append(prop["validation"])
                 else:
                     validation.append(None)
-            tt.lap("3")
+            #tt.lap("3")
             props["leavesValidation"] = validation
-            print(tt)
+            #print(tt)
         result[".properties"]=props
 
         if depth is None or depth>0:
@@ -1095,7 +1095,7 @@ class Model():
                     pass
                 else:
                     result[self.model[childId]["name"]]=self.__get_node_with_children_pretty(childId,nextDepth,ignore)
-        print(t)
+        #print(t)
         return result
 
 

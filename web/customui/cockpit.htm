@@ -46,10 +46,17 @@
                             <div class="col-3">Selected Motif Variable</div>
                             <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-variable" readonly> </div>
                         </div>
+
                         <div class="form-group row">
                             <div class="col-3">Selected Motif Start Time</div>
                             <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-start" readonly> </div>
                         </div>
+
+                        <div class="form-group row">
+                            <div class="col-3">Selected Motif End Time</div>
+                            <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-end" readonly> </div>
+                        </div>
+
                         <div class="form-group row">
                             <div class="col-3">Current Selection</div>
                             <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-current" readonly> </div>
@@ -189,15 +196,20 @@
             </div>
             <div class="modal-footer">
 
-                <button type="button" class="btn btn-primary"   id ="doublecheckButtonSave2">Close</button>
+                <button type="button" class="btn btn-primary"  data-dismiss="modal" id ="doublecheckButtonSave2">Close</button>
             </div>
         </div>
     <script>
 
 
 
+
+
+
+
 var cockpiteventSource = 0;
 var cockpitPath = "";
+var cockpitWidgetPath = "";
 function cockpit_init(path)
 {
     cockpitPath = path;
@@ -229,13 +241,17 @@ function cockpit_load_settings()
                     var data = JSON.parse(data);
                     let variable = data.variable[".properties"].leaves[0];
                     let start = data.startTime[".properties"].value;
+                    let end = data.endTime[".properties"].value;
                     $("#cockpit-select-motif-variable").val(variable);
                     $("#cockpit-select-motif-start").val(start);
+                    $("#cockpit-select-motif-end").val(end);
+
 
                }
             });
 
             let widgetPath = minerData.widget[".properties"].leaves[0];
+            cockpitWidgetPath = widgetPath;
             http_post("_getbranchpretty",widgetPath, null,null, function(obj,status,data,params)
             {
                 if (status == 200)
@@ -362,6 +378,54 @@ function cockpit_motif_stop()
 }
 
 
+
+function cockpit_find_motif()
+{
+
+
+    let start  =  $("#cockpit-select-motif-start").val();
+    let end = $("#cockpit-select-motif-end").val();
+
+
+    var query = [{browsePath:cockpitWidgetPath+".startTime",value:start},{browsePath:cockpitWidgetPath+".endTime",value:end}];
+    http_post('/setProperties',JSON.stringify(query), null, null, null);
+
+
+}
+
+/* move this to cockpit widget later
+*/
+function cockpit_motif_jump_next()
+{
+    cockpit_motif_jump(1);
+}
+
+function cockpit_motif_jump_prev()
+{
+    cockpit_motif_jump(-1);
+}
+function cockpit_motif_jump(inc)
+{
+    //start the mining process
+    let pathInc =$("#cockpit").attr("path")+".peakSearch.jumpInc";
+
+    var query = [{browsePath:pathInc,value:inc}];
+
+    http_post('/setProperties',JSON.stringify(query), null, this, (self,status,data,params) => {
+        if (status>201)
+        {
+            //backend responded bad, we must set the frontend back
+
+            console.log("context_menu_set_visible_elements",status);
+        }
+        else
+        {
+            let path =$("#cockpit").attr("path")+".peakSearch";
+            http_post("/_execute",JSON.stringify(path),null,null,null);
+        }
+    });
+
+}
 
 
 

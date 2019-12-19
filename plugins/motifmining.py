@@ -15,9 +15,42 @@ from model import date2secs
 mycontrol = [__functioncontrolfolder]
 mycontrol[0]["children"][-1]["value"]="threaded"
 
+"""
+HOW TO USE the motif miner
+
+
+prepare the template
+- add the template to the model
+- connect the referencer MotifMiner.widget
+- connect the referencer MotifMiner.table
+- add the MotifMiner.annotations folder to the referencer of your annotations (typically widget.hasAnnotation.annotaions)
+
+
+prepare the widget:
+- widget.hasAnnotation.colors: add this entry:
+    "pattern_match": {"color": "#808080","pattern": "v"} 
+- hasAnnotation.visibleTags need an entry "pattern_match"
+- also make sure the widget.startTime,widget.endTime is being watched by the visibleElement observer (so we can use the "jump" function in the cockpit) 
 
 
 
+- selecte the motif
+- either in the tree or:
+    open the cockpit (hook it to the context menu first)
+    select the motif in the time series view
+    click 
+    
+- prepare the output 
+- hit run, wait 3 sec, hit stop
+- now the score variable should show the right length, it can be used to display
+
+"""
+
+
+
+
+
+"""
 motifMinerTemplate = {
     "name": "motifMiner",
     "type": "function",
@@ -47,6 +80,71 @@ motifJumperTemplate = {
         __functioncontrolfolder
     ]
 }
+
+"""
+
+motifMinerTemplate = {
+    "name": "MotifMiner1",
+    "type": "folder",
+    "children":[
+        {
+            "name": "MotifMiner",
+            "type": "function",
+            "functionPointer": "motifmining.motif_miner",  # filename.functionname
+            "autoReload": True,  # set this to true to reload the module on each execution
+            "children": [
+                {"name": "motif", "type": "referencer"},        # the one motif we are using
+                {"name": "score", "type": "column"},
+                {"name": "algorithm", "type": "const","value":"pearson",
+                    "validation":{"values":["euclidean","pearson","pearson_center","convolution"]}},         # the alorithm used, one of ...
+                {"name": "widget","type":"referencer"} ,        # the widget to which this miner belongs which is used (to find the selected motif
+                {"name": "table","type":"referencer"},          # for the variables and times
+                {"name": "table","type":"referencer"},          # for the variables and times
+                {"name": "peaks","type":"variable"},
+                {"name": "addNoise","type":"const","value":0.001},
+                {"name": "subSamplingFactor","type":"const","value":2},
+                {"name": "subtractPolynomOrder", "type": "const", "value": 2,"validation":{"values":["none",1,2,3]}},
+                {"name": "annotations","type":"folder"},        # the results
+                mycontrol[0]
+            ]
+        },
+        {
+            "name": "peakSearch",
+            "type": "function",
+            "functionPointer": "motifmining.motif_jumper",  # filename.functionname
+            "autoReload": True,  # set this to true to reload the module on each execution
+            "children": [
+                {"name": "miner", "type": "referencer","references":["MotifMiner1.MotifMiner"]},  # the one motif we are using
+                {"name": "jumpPos", "type": "variable", "value":0},
+                {"name": "jumpInc", "type": "const", "value":1},  # 1,-1 for forward backwards
+                {"name": "threshold", "type": "const","value":0.5},  # the detection threshold
+                __functioncontrolfolder
+            ]
+        },
+        {
+            "name": "progress",
+            "type": "observer",
+            "children": [
+                {"name": "enabled", "type": "const", "value": True},  # turn on/off the observer
+                {"name": "triggerCounter", "type": "variable", "value": 0},  # increased on each trigger
+                {"name": "lastTriggerTime", "type": "variable", "value": ""},  # last datetime when it was triggered
+                {"name": "targets", "type": "referencer","references":["MotifMiner1.MotifMiner.control.progress"]},  # pointing to the nodes observed
+                {"name": "properties", "type": "const", "value": ["value"]},
+                # properties to observe [“children”,“value”, “forwardRefs”]
+                {"name": "onTriggerFunction", "type": "referencer"},  # the function(s) to be called when triggering
+                {"name": "triggerSourceId", "type": "variable"},
+                # the sourceId of the node which caused the observer to trigger
+                {"name": "hasEvent", "type": "const", "value": True},
+                # set to event string iftrue if we want an event as well
+                {"name": "eventString", "type": "const", "value": "motifminer.progress"},  # the string of the event
+                {"name": "eventData", "type": "const", "value": {"text": "observer status update"}}
+                # the value-dict will be part of the SSE event["data"] , the key "text": , this will appear on the page,
+            ]
+        },
+        {"name": "cockpit", "type": "const", "value": "/customui/motifminer1cockpit.htm"}  #the cockpit for the motif miner
+    ]
+}
+
 
 
 
@@ -100,11 +198,15 @@ def motif_miner(functionNode):
     scoreNode = functionNode.get_child("score")
     functionNode.get_child("peaks").set_value([])
     scoreNode.connect_to_table(tableNode)  # this will make it part of the table and write it all to numpy.inf
-    myModel.disable_observers()
-    annos = annotations.get_children()
-    if annos:
-        for anno in annos:
-            anno.delete()
+    try:
+        myModel.disable_observers()
+        annos = annotations.get_children()
+        if annos:
+            for anno in annos:
+                anno.delete()
+    except:
+        myModel.enable_observers()
+        return False
 
     myModel.enable_observers()
     myModel.notify_observers(annotations.get_id(), "children")  # trigger the widgets to delete the annotations
@@ -218,6 +320,7 @@ def motif_miner(functionNode):
 
         generate_peaks(resultVector, functionNode, logger, timeNode, (len(yMotif) * subSamplingFactor), motifEpochStart,
                        motifEpochEnd)
+        time.sleep(0.8) # this makes a yield to other threads
 
     #generate_peaks(resultVector,functionNode,logger,timeNode,(len(yMotif) * subSamplingFactor),motifEpochStart,motifEpochEnd)
 
@@ -229,7 +332,7 @@ def generate_peaks(resultVector,functionNode,logger,timeNode,MotifLen,MotifStart
     motifTimeLen = MotifEnd-MotifStart
     v[False == numpy.isfinite(v)] = 0  # pad inf as zero for the peak detector
     level = numpy.float(functionNode.get_parent().get_child("peakSearch").get_child("threshold").get_value())
-    peakIndices = detect_peaks(v, min_dist=0.7 * MotifLen, min_level = level)
+    peakIndices = detect_peaks(v, min_dist=3 * MotifLen, min_level = level)
     logger.debug(f"found {len(peakIndices)} peaks")
     peaksValues = v[peakIndices]
     if 0: #sort
