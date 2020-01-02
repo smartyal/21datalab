@@ -624,6 +624,54 @@ function context_menu_tag_select_click(option,contextMenuIndex, optionIndex)
 
 }
 
+function context_menu_tag_select_click_all(option,contextMenuIndex, optionIndex)
+{
+    console.log("context_menu_tag_select_click all",option);
+    //make the true/false check box adjustment
+
+
+    if (option.currentValue == true)
+    {
+        option.currentValue = false;
+        option.icon = "far fa-square";
+    }
+    else
+    {
+        option.currentValue = true;
+        option.icon = "far fa-check-square";
+    }
+
+    //now set them all
+    for(key in option.data)
+    {
+        option.data[key]=option.currentValue;
+    }
+
+    var query = [{browsePath:option.modelPath+".hasAnnotation.visibleTags",value:option.data}];
+    http_post('/setProperties',JSON.stringify(query), null, this, null);
+
+    // now we also need to set all checkboxes accordingly
+    // for all options: set current value and set icon
+
+    allOptions = superCm.getMenuOptions(contextMenuIndex)
+    for (key in allOptions)
+    {
+        let thisOption = allOptions[key];
+        thisOption.currentValue = option.currentValue;
+        thisOption.icon = option.icon;
+        superCm.setMenuOption(contextMenuIndex, key, thisOption);
+    }
+
+
+
+    superCm.setMenuOption(contextMenuIndex, optionIndex, option);
+    superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
+
+}
+
+
+
+
 function context_menu_variable_select_click(option,contextMenuIndex, optionIndex)
 {
     console.log("context_menu_variable_select_click",option);
@@ -855,6 +903,25 @@ function prepare_context_menu(dataString,modelPath)
 
     // for switching on and off the annotation tags
     let annotationsSubmenu = [];
+
+
+    //the "all" entry
+    var entry = {
+            icon:"far fa-check-square",
+            label:"(all)",
+            entry:" all",
+            data:visibleTags,
+            modelPath:modelPath,
+            currentValue:true,
+            action: function(option, contextMenuIndex, optionIndex){
+                    var opt = option;
+                    var idx = contextMenuIndex; var
+                    optIdx = optionIndex;
+                    context_menu_tag_select_click_all(opt,idx,optIdx);
+                }
+        }
+    annotationsSubmenu.push(entry);
+
     for (tag in visibleTags)
     {
         let icon = "far fa-square";
