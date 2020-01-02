@@ -86,6 +86,35 @@ def threshold_scorer_2_init(functionNode):
     outputNode.get_child("_differential").set_value(numpy.full(tableLen,False,dtype=numpy.float64))
 
 
+def get_time_indices_of_annotation_tag(annotations,timeNode,filterTags):
+    """
+        this functions returns a vector of true/false, it is true if we have an annotations of the given tags on that time
+        Args:
+            annotations: list of annotations nodes
+            timeNode: the time node of the table
+            tags : a list of tags to look for
+        Return:
+            vector to mask the time areas
+    """
+    tableLen = len(timeNode.get_value())
+    timeIndices = numpy.full(tableLen, False,dtype=numpy.bool)  # True on the time points we want to score, , false for not score here
+
+    if "threshold" in filterTags:
+        filterTags.remove("threshold")
+    if filterTags !=[]:
+        for anno in annotations:
+            if anno.get_child("type").get_value() != "time":
+                continue # only time annotations
+            tags = anno.get_child("tags").get_value()
+            if not any([tag in filterTags for tag in tags]):
+                continue
+            #take the indices
+            indices = list(timeNode.get_time_indices(anno.get_child("startTime").get_value(),anno.get_child("endTime").get_value()))
+            timeIndices[indices]=True #fancy indexing
+    return timeIndices
+
+
+
 def threshold_scorer_2(functionNode):
     """
         the threshold-scorer:
@@ -193,7 +222,14 @@ def threshold_scorer_2(functionNode):
         thisMax = anno.get_child("max").get_value()
         if type(thisMax) is type(None):
             thisMax = numpy.inf
-        thresholds[id] = {"min": thisMin, "max": thisMax}
+        tags = anno.get_child("tags").get_value()
+        if "threshold" in tags:
+            tags.remove("threshold")
+        entry = {"min": thisMin, "max": thisMax,"tags":tags}
+        if id not in thresholds:
+            thresholds[id] = [entry]
+        else:
+            thresholds[id].append(entry)
 
 
     total_score = numpy.full(tableLen,numpy.inf,dtype=numpy.float64) # rest all
@@ -201,12 +237,36 @@ def threshold_scorer_2(functionNode):
         id = node.get_id()
         if id in thresholds:
             #must score
-            logger.debug(f"must score {node.get_browse_path()} with {thresholds[id]['min']}, {thresholds[id]['max']}")
+            logger.debug(f"must score {node.get_browse_path()} ")#with {thresholds[id]['min']}, {thresholds[id]['max']}")
             values = node.get_value()
             #now find where the limits are over/under
-            outOfLimit = numpy.logical_or( values < thresholds[id]['min'], values > thresholds[id]['max'] )
-            outOfLimit = numpy.logical_and(outOfLimit,timeIndices)
-            outOfLimitIndices = numpy.where(outOfLimit==True)
+            variableTotal = numpy.full(len(values), True,dtype=numpy.bool)
+
+            #we start with the global valid thresholds
+            for entry in thresholds[id]:
+                if entry["tags"] != []:
+                    continue # we don't handle thresholds now with are linked to certain annotations
+                outOfLimit = numpy.logical_or( values < entry['min'], values > entry['max'] )
+                outOfLimit = numpy.logical_and(outOfLimit,timeIndices) #this is the global time filter (regions etc)
+                variableTotal = numpy.logical_and(outOfLimit,variableTotal)
+
+            for entry in thresholds[id]:
+                if entry["tags"] == []:
+                    continue # those have been handled above
+                outOfLimit = numpy.logical_or( values < entry['min'], values > entry['max'] )
+                outOfLimit = numpy.logical_and(outOfLimit,timeIndices) #this is the global time filter (regions etc)
+                #additionally the specific filters:
+
+                localFilter = get_time_indices_of_annotation_tag(annos1,timeNode,entry['tags'])
+                outOfLimit = numpy.logical_and(outOfLimit,localFilter)
+                #now we blend the previous result with this results such that we invalidate previous results on the
+                #specific time are and then put in our local result
+                variableTotal = numpy.logical_and(variableTotal,~localFilter)
+                variableTotal = numpy.logical_or(outOfLimit,variableTotal)
+
+
+
+            outOfLimitIndices = numpy.where(variableTotal==True)
             outPutNode = functionNode.get_child("output").get_child( node.get_name()+"_score")
             if functionNode.get_child("incremental").get_value():
                 score = outPutNode.get_value() # take the old and merge
