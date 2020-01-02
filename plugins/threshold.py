@@ -216,6 +216,11 @@ def threshold_scorer_2(functionNode):
             score[outOfLimitIndices] = values[outOfLimitIndices]
             total_score[numpy.isfinite(score)] = -1 #set one where the score is finite, there we have an anomaly
             outPutNode.set_value(score)
+        else:
+            #this variable is not to be scored but we should delete the old score
+            outputNode = functionNode.get_child("output").get_child( node.get_name()+"_score")
+            if outputNode:
+                outputNode.set_value(numpy.inf)
 
     totalOutputNode.set_value(total_score)
     return True
