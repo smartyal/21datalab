@@ -79,7 +79,7 @@ WEBCODES ---------------------
 
 WEBAPI -----------------------
 path                    REQUEST BOY               RESPONSE BODY
-POST /_create       [<createnode.json>]         [<node.json>]           ## give a list of new nodes, result contains all the created nodes  
+POST /_create       [<createnode.json>]         [<node.json>]           ## give a list of new nodes, result contains all the created nodes, if exists, we modify instead  
 POST /_delete       [<nodedescriptor>]          [<nodedescriptor>]      ## give list of deleted nodes back
 POST /_getall       -                           [<node.json>]           ## give the whole address space, fof colums and files we get "len 34"
 POST /_getallhashed   -                         [<node.json>]           ## give the whole address space, for columns and files we get a hash
@@ -533,17 +533,24 @@ def all(path):
             result = []
             responseCode = 201
             for blob in data:
-                targets = []
-                if "targets" in blob:
-                    targets = blob["targets"]
-                    del blob["targets"]
-                newNodeId = m.create_node_from_path(blob["browsePath"],blob)
-                if targets:
-                    m.add_forward_refs(newNodeId,targets)
-                logger.debug('creating'+blob["browsePath"]+', result:'+str(newNodeId))
-                result.append(newNodeId)
-                if not newNodeId:
-                    responseCode = 400
+                #check if new or modification
+                id = m.get_id(blob["browsePath"])
+                if id:
+                    #this is a modification
+                    adjust = m.set_properties(blob)
+                    result.append(id)
+                else:
+                    targets = []
+                    if "targets" in blob:
+                        targets = blob["targets"]
+                        del blob["targets"]
+                    newNodeId = m.create_node_from_path(blob["browsePath"],blob)
+                    if targets:
+                        m.add_forward_refs(newNodeId,targets)
+                    logger.debug('creating'+blob["browsePath"]+', result:'+str(newNodeId))
+                    result.append(newNodeId)
+                    if not newNodeId:
+                        responseCode = 400
             response = json.dumps(result)
             responseCode = 201
 

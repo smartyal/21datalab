@@ -645,6 +645,14 @@ class TimeSeriesWidgetDataServer():
     def refresh_settings(self):
         self.__get_settings()
 
+    def set_background_highlight(self,x,y,backStart,backEnd,remove=False):
+        if remove:
+            query = {"browsePath":self.path+".backgroundHighlight","type":"variable","value":{}}
+        else:
+            query = {"browsePath":self.path+".backgroundHighlight","type":"variable","value":{"x":x,"y":y,"left":backStart,"right":backEnd}}
+        self.__web_call("POST","_create",[query])
+
+
     def select_annotation(self,annoList):
         #anno list is a list of browsepaths
         query = {"deleteExisting": True, "parent": self.path + ".hasAnnotation.selectedAnnotations", "add": annoList}
@@ -697,6 +705,7 @@ class TimeSeriesWidget():
         self.threadsRunning = True # the threads are running: legend watch
         self.annotationsVisible = False # we are currently not showing annotations
         self.boxModifierVisible = False # we are currently no showing the modifiert lines
+        self.backgroundHighlightVisible = False # we currently show a background hightlighted
         self.renderers = {}  # each element is ["id":["renderer":object,"info":annoDict] these are the created renderers to be later used e.g. annotations
 
         self.streamingUpdateData = None
@@ -1903,9 +1912,45 @@ class TimeSeriesWidget():
                 self.box_modifier_show(annoId,self.server.get_annotations()[annoId])
                 return
 
+        else:
+
+            backgroundSelected = self.background_highlight_show(x,y)
+            if backgroundSelected:
+                return
+
+
 
         #we are not inside an annotation, we hide the box modifier
         self.box_modifier_hide(auto=True)
+
+    def background_highlight_show(self,x,y):
+        if self.backgroundHighlightVisible:
+            self.background_highlight_hide()
+
+        for r in self.plot.renderers:
+            if r.name:
+                if r.name.startswith("__background"):
+                    backStart = r.left
+                    backEnd = r.right
+                    if x >= backStart and x <= backEnd:
+                        alphaNow = r.fill_alpha
+                        r.fill_alpha = alphaNow + 0.5 * (1 - alphaNow)
+                        self.logger.debug("inside Background!")
+                        self.server.set_background_highlight(x,y,backStart,backEnd)
+                        self.backgroundHighlightVisible = True
+                        return True
+        return False
+
+    def background_highlight_hide(self):
+        if self.backgroundHighlightVisible:
+            self.backgroundHighlightVisible=False
+            for r in self.plot.renderers:
+                if r.name:
+                    if r.name.startswith("__background"):
+                        alphaNow = r.fill_alpha
+                        if alphaNow != globalAlpha:
+                            r.fill_alpha = globalAlpha
+                            self.server.set_background_highlight(0,0,0,0,remove=True)
 
 
     def box_modifier_show(self,annoName,anno):
@@ -2402,6 +2447,7 @@ class TimeSeriesWidget():
             self.show_backgrounds()
 
     def refresh_backgrounds(self):
+        self.background_highlight_hide()
         # we show the new backgrounds first and then delete the old to avoid the short empty time, looks a bit better
         deleteList = []
         for r in self.plot.renderers:
