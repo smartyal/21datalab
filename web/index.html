@@ -291,7 +291,258 @@
     <div id="cockpitplaceholder">
 
 
+        <div id="cockpit" class="modal fade" role="dialog" path="" style="width:600;height:700">
+
+            <div class="modal-dialog modal-lg" role="dialog" id="cockpitmodal">
+
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="doublechecktitl2e"><i class="fas fa-gamepad"></i> &nbsp &nbsp Threshold Error Drill Down</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="nav nav-tabs bg-secondary" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="tab-cockpit-first" data-toggle="tab" href="#cockpit-motif-select" role="tab">
+                                    Find Variable
+                                </a>
+                            </li>
+
+                        </ul>
+
+                        <div class="tab-content" id="myTabContent">
+
+                            <div class="tab-pane fade show active" id="tab-cockpit-first" role="tabpanel">
+                                <br>
+                                <div class="form-group row">
+                                    <div class="col-3">Error Area Start Time</div>
+                                    <div class="col-9"> <input class="form-control" type="text" id="cockpit-area-start"  readonly > </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-3">Error Area End Time</div>
+                                    <div class="col-9"> <input class="form-control" type="text" id="cockpit-area-end" readonly> </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <div class="col-3">Variables out of Threshold:</div>
+                                    <div class="col-9">
+                                        <ul class="list-group" id="cockpit-drill-variables">
+                                          <li class="list-group-item">dummy</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="modal-footer">
+
+                        <button type="button" class="btn btn-primary"  data-dismiss="modal" id ="doublecheckButtonSave2">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    <script>
+
+
+
+
+
+
+
+var cockpiteventSource = 0;
+var cockpitPath = "";
+var cockpitWidgetPath = "";
+var pipeLinePath = "";
+var widgetPath = "";
+var cockpitPipeLineData = {};
+
+function cockpit_init(path)
+{
+    console.log("in cockpit init");
+    cockpitPath = path;
+    $("#cockpit").attr("path",path);
+    //clear all
+    $("#cockpit-area-start").val("");
+    $("#cockpit-area-end").val("");
+    $("#cockpit-drill-variables").empty();
+
+    //get more info
+    http_post("_getbranchpretty",cockpitPath, null,null, function(obj,status,data,params)
+    {
+        if (status==200)
+        {
+            cockpitPipeLineData = JSON.parse(data);
+            widgetPath = cockpitPipeLineData.drilldown.widget[".properties"].targets[0];
+            cockpit_drill_down_enable_observers(cockpitPipeLineData);
+            //cockpit_update_results(); // do this once in the beginning, later it is triggered per event
+        }
+    });
+
+}
+
+
+
+
+function cockpit_drill_down_enable_observers(pipeLineData)
+{
+
+    let widgetPath = pipeLineData.drilldown.widget[".properties"].targets[0];
+    let pipeLinePath = pipeLineData[".properties"].browsePath;
+
+    let query = {   "parent": pipeLinePath+".selectionObserver.targets",
+                    "add":widgetPath+'.backgroundHighlight',
+                    "deleteExisting":true,
+                    }
+
+    http_post("_references",JSON.stringify(query), null,null, function(obj,status,data,params)
+    {
+        if (status==201)
+        {
+            //the reference has been set, now enable the observers both
+            let query = [
+               {"browsePath":pipeLinePath+".selectionObserver.enabled","value":true},
+               {"browsePath":pipeLinePath+".resultObserver.enabled","value":true}
+            ];
+            http_post("/setProperties",JSON.stringify(query), null,null,function(obj,status,data,params)
+            {
+                cockpit_drill_down_enable_event();
+                //finally trigger the drill down
+
+                http_post("/_execute",JSON.stringify(pipeLinePath+".drilldown"));
+            });
+        }
+
+    });
+}
+
+function cockpit_drill_down_enable_event()
+{
+    cockpiteventSource = new EventSource('/event/stream');
+    cockpiteventSource.addEventListener('drilldown.result', (e) => {
+        cockpit_update_results();
+    });
+
+}
+
+function cockpit_drill_down_disable_observers()
+{
+    let query = [
+       {"browsePath":cockpitPath+".selectionObserver.enabled","value":false},
+       {"browsePath":cockpitPath+".resultObserver.enabled","value":false}
+    ];
+    http_post("/setProperties",JSON.stringify(query));
+}
+
+function cockpit_close()
+{
+    console.log("drilldown cockpit close");
+    cockpit_drill_down_disable_observers();
+    cockpiteventSource.close();
+    cockpiteventSource = null;
+}
+
+ 
+
+function cockpit_update_results()
+{
+    console.log("cockpit_update_results");
+    //first get the current selection:
+    var query = [widgetPath+'.backgroundHighlight'];
+    http_post("_getvalue",JSON.stringify(query), null,null, function(obj,status,data,params)
+    {
+        if (status == 200)
+        {
+
+            var parsed = JSON.parse(data)[0];
+            if (JSON.stringify(parsed)=="{}")
+            {
+                //clear all
+                $("#cockpit-area-start").val("");
+                $("#cockpit-area-end").val("");
+                $("#cockpit-drill-variables").empty();
+            }
+            else
+            {
+                $("#cockpit-area-start").val(parsed.start);
+                $("#cockpit-area-end").val(parsed.end);
+                update_drill_variables();
+            }
+        }
+    });
+}
+
+
+function update_drill_variables()
+{
+    http_post("_getbranchpretty",cockpitPath, null,null, function(obj,status,data,params)
+    {
+        if (status==200)
+        {
+            var pipeLineData = JSON.parse(data);
+            var drillVars = pipeLineData.drilldown.drillVariables[".properties"].leaves;
+
+            http_post("_getbranchpretty",widgetPath+".selectedVariables",drillVars,null,function(obj,status,data,params)
+            {
+                if (status==200)
+                {
+                    var parsed = JSON.parse(data);
+                    selectedVariables = parsed[".properties"].leaves;
+                    let drillVars = params;
+                    $("#cockpit-drill-variables").empty();
+                    let counter = 0;
+                    for (var hit of drillVars)
+                    {
+                        let buttonString = "";
+                        if (!selectedVariables.includes(hit))
+                        {
+                            counter = counter+1;
+                            let id = 'id="drill-variable-'+counter.toString()+'"';
+                            buttonString='&nbsp<button type="button" class="btn btn-secondary btn-sm" ' +id +' onclick="drill_show_variable_click(this.id)" data-path="'+ hit +'">show</button>';
+                        }
+                        $("#cockpit-drill-variables").append('<li class="list-group-item">'+hit+buttonString+'</li>');
+                    }
+                }
+            });
+        }
+
+    });
+
+
+}
+
+function drill_show_variable_click(id)
+{
+    let path = $("#"+id).attr("data-path");
+
+    console.log("show "+path);
+    let query = {
+                    "parent": widgetPath+".selectedVariables",
+                    "add":path,
+                };
+    http_post("_references",JSON.stringify(query), null,null, null);
+}
+
+
+    </script>
     </div>
+</div>
+
+
+
+
+
+
+
+
+
 
 </body>
 

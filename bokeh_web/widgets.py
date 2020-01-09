@@ -649,7 +649,14 @@ class TimeSeriesWidgetDataServer():
         if remove:
             query = {"browsePath":self.path+".backgroundHighlight","type":"variable","value":{}}
         else:
-            query = {"browsePath":self.path+".backgroundHighlight","type":"variable","value":{"x":x,"y":y,"left":backStart,"right":backEnd}}
+            query = {"browsePath":self.path+".backgroundHighlight","type":"variable","value":{
+                "x":x/1000,
+                "y":y,
+                "left":backStart/1000,
+                "right":backEnd/1000,
+                "start":self.bokeh_time_to_string(backStart),
+                "end":self.bokeh_time_to_string(backEnd)
+            }}
         self.__web_call("POST","_create",[query])
 
 
@@ -1925,6 +1932,7 @@ class TimeSeriesWidget():
 
     def background_highlight_show(self,x,y):
         if self.backgroundHighlightVisible:
+            #havent found one
             self.background_highlight_hide()
 
         for r in self.plot.renderers:
@@ -1939,6 +1947,9 @@ class TimeSeriesWidget():
                         self.server.set_background_highlight(x,y,backStart,backEnd)
                         self.backgroundHighlightVisible = True
                         return True
+
+
+
         return False
 
     def background_highlight_hide(self):
@@ -1951,6 +1962,7 @@ class TimeSeriesWidget():
                         if alphaNow != globalAlpha:
                             r.fill_alpha = globalAlpha
                             self.server.set_background_highlight(0,0,0,0,remove=True)
+                            return
 
 
     def box_modifier_show(self,annoName,anno):

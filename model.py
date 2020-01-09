@@ -574,6 +574,13 @@ class Node():
             return None
         return self.get_properties()["forwardRefs"]
 
+    def get_target(self):
+        """ this function returns the first direct taret node of a referencer not resolving the leaves"""
+        if self.get_properties()["type"] == "referencer":
+            targets = self.get_properties()["forwardRefs"]
+            if targets:
+                return Node(self.model,targets[0])
+        return None
 
     def get_targets(self):
         """ this function returns the target Nodes of a referencer as a list, not resolving the leaves"""
@@ -884,9 +891,15 @@ class Model():
         self.currentModelName = "emptyModel" # the current name of the model
         self.modelUpdateCounter = 0 #this is for the tree observer, on any change, we update the counter
         self.observerStatus = {} # a dict holding the key = observerid and value : the needed status of an observer processing
+        self.executionQueue = Queue()
 
         self.observers = []
         self.sse_event_id = 1
+
+        self.start_function_execution_thread()
+
+    def __del__(self):
+        self.functionExecutionRunning = False # stop the execution thread of functions
 
     def __init_logger(self, level):
         """setup the logger object"""
@@ -1458,6 +1471,9 @@ class Model():
             if type(targets) is not list:
                 targets = [targets]
 
+            if targets==[]:
+                return True
+
             if not self.model[fromId]["type"]=="referencer":
                 self.logger.error("can't set forward ref on "+str(referencerDesc)+ "is not type referencer, is type"+self.model[fromId]["type"])
                 return False
@@ -1550,6 +1566,9 @@ class Model():
                 targets = self.model[fromId]["forwardRefs"].copy()
             else:
                 targets = self.get_id(targetDescriptors)
+
+            if targets == []:
+                return True# nothing to do
 
             for toId in targets:
                 if not toId:
@@ -2516,16 +2535,28 @@ class Model():
             id = self.get_id(desc)
             if self.model[id]["type"]!= "function":
                 return False
-            functionNode = self.get_node(id)
-            executionType = functionNode.get_child("control").get_child("executionType").get_value()
-            if self.executeFunctionRunning and executionType in ["async","sync"]:
-                self.logger.warning(f"function {desc} can't be executed, busy")
-                return "busy"
 
             functionName = self.model[id]["functionPointer"]
-            if not functionName in  self.functions:
+            if not functionName in self.functions:
                 self.logger.error("can't find function in global list")
                 return False
+
+            functionNode = self.get_node(id)
+
+            executionType = functionNode.get_child("control").get_child("executionType").get_value()
+            if executionType in ["async","sync"]:
+                self.executionQueue.put(id)
+                self.logger.info(f"function {desc} queued for execution")
+                return True
+            elif executionType =="threaded":
+                self.logger.info(f"function {desc} started in thread")
+                thread = threading.Thread(target=self.__execution_thread, args=[id])
+                thread.start()
+                return True
+            else:
+                self.logger.error(f"function {desc} cant be started, unknown execution type {executionType}")
+                return False
+
             #check if function is interactive, then we reload it right now
             if self.model[id]["autoReload"] == True:
             #if self.functions[functionName]["isInteractive"]:
@@ -2551,6 +2582,22 @@ class Model():
         except:
             return False
 
+    def start_function_execution_thread(self):
+        self.functionExecutionRunning = True
+        self.functionExecutionThread = threading.Thread(target=self._function_execution_thread)
+        self.functionExecutionThread.start()
+
+    def _function_execution_thread(self):
+        while self.functionExecutionRunning:
+            try:
+                nextId = self.executionQueue.get(timeout=1)
+                self.logger.info(f"now executing function {nextId}")
+                self.__execution_thread(nextId)
+            except:
+                pass
+
+
+
     def __execution_thread(self,id):
         """
             the thread function to execute functions
@@ -2563,20 +2610,22 @@ class Model():
         try:
 
             with self.lock:
-                functionNode = self.get_node(id)
-                executionType = functionNode.get_child("control").get_child("executionType").get_value()
-                if executionType in ["sync","async"]:
-                    if self.executeFunctionRunning:
-                        return
-                    self.executeFunctionRunning = True
 
-                self.logger.info(f"in execution Thread, executing {id}")
+                if self.model[id]["autoReload"] == True:
+                    # must reload the module
+                    functionName = self.model[id]["functionPointer"]
+                    module = importlib.reload(self.functions[functionName]["module"])
+                    functionPointer = getattr(module, functionName.split('.', 1).pop())
+                    # now update our global list
+                    self.functions[functionName]["module"] = module
+                    self.functions[functionName]["function"] = functionPointer
+
+
+                self.logger.info(f"in execution Thread {threading.get_ident()}, executing {id}")
                 #check the function
                 functionName = self.model[id]["functionPointer"]
-                #if not functionName in self.functions:
-                #    print("not found in global functions list")
-                #    return False
                 functionPointer = self.functions[functionName]['function']
+
                 #now set some controls
                 try:
                     node = self.get_node(id)
@@ -2596,6 +2645,7 @@ class Model():
 
             # model lock open: we execute without model lock
             result = functionPointer(node) # this is the actual execution
+
             #now we are back, set the status to finished
             duration = (datetime.datetime.now()-startTime).total_seconds()
 
@@ -2618,14 +2668,12 @@ class Model():
                     self.logger.error("problem setting results from execution of #"+str(id))
                     pass
 
-            self.executeFunctionRunning = False
-            return result
+
         except Exception as ex:
             self.logger.error("error inside execution thread, id " +str(id)+" functionname"+str(functionName)+str(sys.exc_info()[1])+" "+str(ex))
             controlNode.get_child("status").set_value("interrupted")
             controlNode.get_child("result").set_value("error")
-            self.executeFunctionRunning = False
-            return False
+        return
 
     def show(self):
         """

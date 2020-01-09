@@ -10,9 +10,10 @@ from model import epochToIsoString
 from mininghelper import *
 from pytz import timezone
 from model import date2secs
+import copy
 
 # use a list to avoid loading of this in the model
-mycontrol = [__functioncontrolfolder]
+mycontrol = [copy.deepcopy(__functioncontrolfolder)]
 mycontrol[0]["children"][-1]["value"]="threaded"
 
 """
