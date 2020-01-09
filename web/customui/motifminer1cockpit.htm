@@ -1,0 +1,459 @@
+ 
+ 
+<div id="cockpit" class="modal fade" role="dialog" path="" style="width:600;height:700">
+
+    <div class="modal-dialog modal-lg" role="dialog" id="cockpitmodal">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="doublechecktitl2e"><i class="fas fa-gamepad"></i> &nbsp &nbsp Motif Mining Cockpit</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs bg-secondary" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="tab-cockpit-motif-select" data-toggle="tab" href="#cockpit-motif-select" role="tab">
+                            Select Motif
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="tab-cockpit-motif-parameters" data-toggle="tab" href="#cockpit-motif-parameters" role="tab">
+                            Parameters
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                          <a class="nav-link" id="tab-cockpit-motif-search" data-toggle="tab" href="#cockpit-motif-search" role="tab">
+                            Search Area
+                          </a>
+                    </li>
+
+                    <li class="nav-item">
+                          <a class="nav-link" id="tab-cockpit-motif-run" data-toggle="tab" href="#cockpit-motif-run" role="tab">
+                            Run
+                          </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="myTabContent">
+
+                    <div class="tab-pane fade show active" id="cockpit-motif-select" role="tabpanel">
+                        <br>
+                        <div class="form-group row">
+                            <div class="col-3">Selected Motif Path</div>
+                            <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-path"  readonly style="text-align:right;"  > </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-3">Selected Motif Variable</div>
+                            <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-variable" readonly> </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col-3">Selected Motif Start Time</div>
+                            <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-start" readonly> </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col-3">Selected Motif End Time</div>
+                            <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-end" readonly> </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col-3">Current Selection</div>
+                            <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-current" readonly> </div>
+                        </div>
+
+                        <p align="right">
+                            <button type="button" class="btn btn-primary"   onclick="cockpit_select_motif()">    take current annotation </button>
+                            <button type="button" class="btn btn-primary"   onclick="cockpit_find_motif()"> <i class="fas fa-search-location"></i>  jump to motif</button>
+                        </p>
+                    </div>
+
+                    <div class="tab-pane fade" id="cockpit-motif-parameters" role="tabpanel">
+                        <br>
+
+                        <div class="form-group row">
+                            <div class="col-6">Evaluation Algorithm</div>
+                            <div class="col-6">
+                                <select class="form-control" id="cockpit-parameters-algorithm">
+                                    <option>euclidean</option>
+                                    <option>pearson</option>
+                                    <option>warping 1</option>
+                                    <option>warping 2</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col-6"> Noise Level</div>
+                            <div class="col-6">
+                                <input   class="form-control"  id="cockpit-parameters-noise" placeholder="1">
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col-6">Polynom Subtraction Degree </div>
+                            <div class="col-6">
+                                <select class="form-control" id="cockpit-parameters-polynom">
+                                    <option>disable</option>
+                                    <option>1 </option>
+                                    <option>2 </option>
+                                    <option>3 </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col-6">Subsampling Factor</div>
+                            <div class="col-6">
+                                <input   class="form-control"   id="cockpit-parameters-subsampling" placeholder="1">
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col-6">Detection Threshold</div>
+                            <div class="col-6">
+                                <input   class="form-control"   id="cockpit-parameters-threshold" placeholder="1">
+                            </div>
+                        </div>
+
+
+                        <div class="form-group row">
+                            <div class="col-12">
+                                <p align="right">
+                                    <button type="button" class="btn btn-primary"  onclick="cockpit_apply_settings()">apply</button>
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="tab-pane fade" id="cockpit-motif-search" role="tabpanel">
+                        <div class="col-9">
+                        <br>
+                        <select class = "custom-select"   multiple="multiple">
+                            <option >currently not supported 1</option>
+                        </select>
+                        <br><br>
+                        <p align="right">
+                            <button type="button" class="btn btn-primary"   onclick="cockpit_find_motif()"> apply</button>
+                        </p>
+                        </div>
+                    </div>
+
+
+
+
+
+
+                    <div class="tab-pane fade" id="cockpit-motif-run" role="tabpanel">
+                        <br>
+                        Motif Mining Process &nbsp &nbsp
+                        <button type="button" class="btn btn-primary"   onclick="cockpit_motif_run()">  run </button>
+                        &nbsp
+                        <button type="button" class="btn btn-primary"   onclick="cockpit_motif_stop()"> stop </button>
+                        <br>
+                        <br>
+                        Jump to Results..
+                        <div class="form-group row">
+                            <div class="col-3">
+                               <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump_prev()">   <i class="fas fa-step-backward"></i>previous</button>
+                            </div>
+                            <!--
+                            <div class="col-3 id="doublechecktext12">
+                                <select class="form-control" id="sel1">
+                                    <option>loc 1</option>
+                                    <option>219-08-15T14:44:15.445+02:005</option>
+                                    <option>3</option>
+                                    <option>4</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump_here()">  <i class="fas fa-search-location"></i> here </button>
+                             -->
+                            <div class="col-6">
+                                <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump_next()">  <i class="fas fa-step-forward"></i>next</button>
+                            </div>
+                        </div>
+
+
+
+
+
+                        <div class="progress">
+                            <div id="cockpit-motif-progress" class="progress-bar" role="progressbar" style="width:50%"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+
+
+
+
+
+
+
+
+            </div>
+            <div class="modal-footer">
+
+                <button type="button" class="btn btn-primary"  data-dismiss="modal" id ="doublecheckButtonSave2">Close</button>
+            </div>
+        </div>
+    <script>
+
+
+
+
+
+
+
+var cockpiteventSource = 0;
+var cockpitPath = "";
+var cockpitWidgetPath = "";
+function cockpit_init(path)
+{
+    cockpitPath = path;
+    $("#cockpit").attr("path",path);
+
+    cockpit_load_settings();
+    console.log("in cockpit init");
+    cockpit_motif_init_progress_bar();
+}
+
+function cockpit_apply_settings()
+{
+    let algorithm = JSON.parse($("#cockpit-parameters-algorithm").val());
+    let noise = JSON.parse($("#cockpit-parameters-noise").val());
+    let polynom =  JSON.parse($("#cockpit-parameters-polynom").val());
+    let subsampling = JSON.parse($("#cockpit-parameters-subsampling").val());
+    let threshold =  JSON.parse($("#cockpit-parameters-threshold").val());
+
+    let path =$("#cockpit").attr("path");
+
+    var query = [
+        {"browsePath":path+".MotifMiner.algorithm","value":algorithm},
+        {"browsePath":path+".MotifMiner.addNoise","value":noise},
+        {"browsePath":path+".MotifMiner.subtractPolynomOrder","value":polynom},
+        {"browsePath":path+".MotifMiner.subSamplingFactor","value":subsampling},
+        {"browsePath":path+".peakSearch.threshold","value":threshold}
+    ];
+    http_post("/setProperties",JSON.stringify(query))
+
+}
+
+
+
+
+function cockpit_motif_init_progress_bar()
+{
+    cockpiteventSource = new EventSource('/event/stream');
+    cockpiteventSource.addEventListener('motifminer.progress', (e) => {
+        // Do something - event data will be in e.data,
+        // message will be of type 'eventType'
+
+        let data = e.data;
+        //replace potential single quotes
+        data = data.replace(/\'/g, "\"");
+        var valeur=JSON.parse(data).value;
+        valeur = valeur*100;
+        console.log("EVENT system.progress" + valeur );
+        $('#cockpit-motif-progress').css('width', valeur+'%').attr('aria-valuenow', valeur);
+        if (valeur != 100)
+        {
+            $('#cockpit-motif-progress').text(JSON.parse(data).function);
+        }
+        else
+        {
+            $('#cockpit-motif-progress').text("");
+        }
+
+        //update_peak_values();
+    });
+
+}
+function cockpit_close()
+{
+    console.log("motif cockpit close");
+    cockpiteventSource.close();
+}
+
+
+function cockpit_motif_run()
+{
+    //start the mining process
+    let path =$("#cockpit").attr("path")+".MotifMiner";
+    http_post("/_execute",JSON.stringify(path),null,null,null);
+}
+
+function cockpit_motif_stop()
+{
+    let path =$("#cockpit").attr("path")+".MotifMiner.control.signal";
+    var query = [{"browsePath":path,"value":"stop"}];
+    http_post("/setProperties",JSON.stringify(query))
+}
+
+
+
+function cockpit_find_motif()
+{
+
+
+    let start  =  $("#cockpit-select-motif-start").val();
+    let end = $("#cockpit-select-motif-end").val();
+
+
+    var query = [{browsePath:cockpitWidgetPath+".startTime",value:start},{browsePath:cockpitWidgetPath+".endTime",value:end}];
+    http_post('/setProperties',JSON.stringify(query), null, null, null);
+
+
+}
+
+/* move this to cockpit widget later
+*/
+function cockpit_motif_jump_next()
+{
+    cockpit_motif_jump(1);
+}
+
+function cockpit_motif_jump_prev()
+{
+    cockpit_motif_jump(-1);
+}
+function cockpit_motif_jump(inc)
+{
+    //start the mining process
+    let pathInc =$("#cockpit").attr("path")+".peakSearch.jumpInc";
+
+    var query = [{browsePath:pathInc,value:inc}];
+
+    http_post('/setProperties',JSON.stringify(query), null, this, (self,status,data,params) => {
+        if (status>201)
+        {
+            //backend responded bad, we must set the frontend back
+
+            console.log("context_menu_set_visible_elements",status);
+        }
+        else
+        {
+            let path =$("#cockpit").attr("path")+".peakSearch";
+            http_post("/_execute",JSON.stringify(path),null,null,null);
+        }
+    });
+
+}
+
+
+function cockpit_select_motif()
+{
+
+    var query=cockpitWidgetPath+".hasAnnotation.selectedAnnotations";
+    http_post('/_getleaves',JSON.stringify(query), null, this, (self,status,data,params) => {
+        if (status==200)
+        {
+            let motif = JSON.parse(data)[0]["browsePath"];
+            $("#cockpit-select-motif-path").val(motif);
+            let path =$("#cockpit").attr("path");
+            var query = {"deleteExisting":true,"parent":path+".MotifMiner.motif","add":[motif]};
+            http_post("/_references",JSON.stringify(query),null,null,null);
+            cockpit_load_settings(); // refresh all values
+        }
+    });
+}
+
+function cockpit_load_settings()
+{
+    http_post("_getbranchpretty",cockpitPath, null,null, function(obj,status,data,params)
+    {
+        if (status==200)
+        {
+            var pipeLineData = JSON.parse(data);
+            var minerData = pipeLineData.MotifMiner;
+
+            //first the motif selection data
+            var motifPath = minerData.motif[".properties"].leaves[0];
+            if (motifPath)
+            {
+                $("#cockpit-select-motif-path").val(motifPath);
+
+                http_post("_getbranchpretty",motifPath, null,null, function(obj,status,data,params)
+                {
+                    if (status == 200)
+                    {
+
+                        var data = JSON.parse(data);
+                        let variable = data.variable[".properties"].leaves[0];
+                        let start = data.startTime[".properties"].value;
+                        let end = data.endTime[".properties"].value;
+                        $("#cockpit-select-motif-variable").val(variable);
+                        $("#cockpit-select-motif-start").val(start);
+                        $("#cockpit-select-motif-end").val(end);
+
+
+                   }
+                });
+            }
+
+            let widgetPath = minerData.widget[".properties"].leaves[0];
+            cockpitWidgetPath = widgetPath;
+            http_post("_getbranchpretty",widgetPath, null,null, function(obj,status,data,params)
+            {
+                if (status == 200)
+                {
+
+                    var data = JSON.parse(data);
+                    let selectedAnnotation = data.hasAnnotation.selectedAnnotations[".properties"].leaves[0];
+                    $("#cockpit-select-motif-current").val(selectedAnnotation);
+                }
+            });
+
+            //now the settings
+            $("#cockpit-parameters-algorithm").empty(); //delete the selections
+            var selected = minerData.algorithm[".properties"].value;
+            for (let opt of minerData.algorithm[".properties"].validation.values)
+            {
+                if (opt == selected)
+                {
+                    $("#cockpit-parameters-algorithm").append("<option selected>"+JSON.stringify(opt)+"</option>");
+                }
+                else
+                {
+                    $("#cockpit-parameters-algorithm").append("<option>"+JSON.stringify(opt)+"</option>");
+                }
+            }
+
+            $("#cockpit-parameters-noise").val(JSON.stringify(minerData.addNoise[".properties"].value));
+            $("#cockpit-parameters-subsampling").val(JSON.stringify(minerData.subSamplingFactor[".properties"].value));
+            $("#cockpit-parameters-threshold").val(JSON.stringify(pipeLineData.peakSearch.threshold[".properties"].value));
+
+            $("#cockpit-parameters-polynom").empty();
+            selected = minerData.subtractPolynomOrder[".properties"].value;
+            for (let opt of  minerData.subtractPolynomOrder[".properties"].validation.values)
+            {
+                if (opt == selected)
+                {
+                    $("#cockpit-parameters-polynom").append("<option selected>"+JSON.stringify(opt)+"</option>");
+                }
+                else
+                {
+                    $("#cockpit-parameters-polynom").append("<option>"+JSON.stringify(opt)+"</option>");
+                }
+            }
+
+
+        }
+    });
+
+
+
+
+}
+
+
+
+
+    </script> 
+    </div>
+</div>
+
+ 
