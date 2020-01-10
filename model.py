@@ -1094,6 +1094,9 @@ class Model():
             #tt.lap("3")
             props["leavesValidation"] = validation
             #print(tt)
+        #make sure we have the browsepath on board
+        if "browsePath" not in props:
+            props["browsePath"]=self.get_browse_path(id)
         result[".properties"]=props
 
         if depth is None or depth>0:

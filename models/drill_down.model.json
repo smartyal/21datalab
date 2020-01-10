@@ -12,7 +12,8 @@
             "15325922506801289201",
             "15449664376381869170",
             "401335041852249076",
-            "7829874660641965519"
+            "7829874660641965519",
+            "889472755450363353"
         ],
         "parent": "0",
         "id": "1",
@@ -191,8 +192,8 @@
             "477",
             "8037118344379379709",
             "57832287729083089",
-            "410171257234273586",
-            "129"
+            "129",
+            "410171257234273586"
         ],
         "forwardRefs": [],
         "value": "len 9752",
@@ -361,7 +362,8 @@
         "backRefs": [
             "526",
             "8268473328863278363",
-            "12034750812704414320"
+            "12034750812704414320",
+            "9182799315225148019"
         ],
         "forwardRefs": [],
         "value": null,
@@ -12344,7 +12346,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 758,
+        "value": 760,
         "browsePath": "root.system.progress.triggerCounter"
     },
     "10857910486653991896": {
@@ -12355,7 +12357,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-01-10T09:49:47.594857",
+        "value": "2020-01-10T21:55:12.926693",
         "browsePath": "root.system.progress.lastTriggerTime"
     },
     "16724694746718170912": {
@@ -13694,7 +13696,8 @@
         "backRefs": [],
         "forwardRefs": [
             "401335041852249076",
-            "7829874660641965519"
+            "7829874660641965519",
+            "889472755450363353"
         ],
         "value": null,
         "browsePath": "root.visualization.workbench.contextMenuPipelines"
@@ -13837,7 +13840,14 @@
             "5739668523211799770"
         ],
         "forwardRefs": [],
-        "value": {},
+        "value": {
+            "x": 1423903520.2287128,
+            "y": 24.198589796800658,
+            "left": 1423849680.0,
+            "right": 1423951080.0,
+            "start": "2015-02-13T18:48:00+01:00",
+            "end": "2015-02-14T22:58:00+01:00"
+        },
         "browsePath": "root.visualization.workbench.backgroundHighlight"
     },
     "7829874660641965519": {
@@ -13980,7 +13990,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 295,
+        "value": 296,
         "browsePath": "root.thresholdErrorDrillDown.drilldown.control.executionCounter"
     },
     "11899958376149879077": {
@@ -13991,7 +14001,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.022689,
+        "value": 0.019413,
         "browsePath": "root.thresholdErrorDrillDown.drilldown.control.lastExecutionDuration"
     },
     "18092480021167876438": {
@@ -14002,7 +14012,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-01-10T09:49:47.568171",
+        "value": "2020-01-10T21:55:12.899284",
         "browsePath": "root.thresholdErrorDrillDown.drilldown.control.lastStartTime"
     },
     "17266841046230591844": {
@@ -14208,7 +14218,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 637,
+        "value": 638,
         "browsePath": "root.thresholdErrorDrillDown.resultObserver.triggerCounter"
     },
     "6841058389092640615": {
@@ -14219,7 +14229,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-01-10T09:49:47.590860",
+        "value": "2020-01-10T21:55:12.917698",
         "browsePath": "root.thresholdErrorDrillDown.resultObserver.lastTriggerTime"
     },
     "457779939748634160": {
@@ -14380,5 +14390,463 @@
         ],
         "value": null,
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.84f7b7d5.variable"
+    },
+    "889472755450363353": {
+        "id": "889472755450363353",
+        "name": "new_thresholdDrillDownPipeLine_b86f",
+        "type": "folder",
+        "parent": "1",
+        "children": [
+            "566589047218797656",
+            "1739422461467325564",
+            "4436961720619908755",
+            "2032026389095976051"
+        ],
+        "backRefs": [
+            "15499764811511790654"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f"
+    },
+    "566589047218797656": {
+        "id": "566589047218797656",
+        "name": "drilldown",
+        "type": "function",
+        "parent": "889472755450363353",
+        "children": [
+            "9182799315225148019",
+            "8036229471099173019",
+            "10836113158740108680"
+        ],
+        "backRefs": [
+            "14849909427135687203"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "functionPointer": "threshold.threshold_drill_down",
+        "autoReload": true,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.drilldown"
+    },
+    "9182799315225148019": {
+        "id": "9182799315225148019",
+        "name": "widget",
+        "type": "referencer",
+        "parent": "566589047218797656",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "127"
+        ],
+        "value": null,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.drilldown.widget"
+    },
+    "8036229471099173019": {
+        "id": "8036229471099173019",
+        "name": "drillVariables",
+        "type": "referencer",
+        "parent": "566589047218797656",
+        "children": [],
+        "backRefs": [
+            "2915110314277866458"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.drilldown.drillVariables"
+    },
+    "10836113158740108680": {
+        "id": "10836113158740108680",
+        "name": "control",
+        "type": "folder",
+        "parent": "566589047218797656",
+        "children": [
+            "17604984437362550956",
+            "17035752364593268000",
+            "11225784944599471821",
+            "104665173128384341",
+            "11393175939033202515",
+            "17382490358662430745",
+            "13619146200605473944",
+            "3656736839716828066"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.drilldown.control"
+    },
+    "17604984437362550956": {
+        "id": "17604984437362550956",
+        "name": "status",
+        "type": "variable",
+        "parent": "10836113158740108680",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "idle",
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.drilldown.control.status"
+    },
+    "17035752364593268000": {
+        "id": "17035752364593268000",
+        "name": "progress",
+        "type": "variable",
+        "parent": "10836113158740108680",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.drilldown.control.progress"
+    },
+    "11225784944599471821": {
+        "id": "11225784944599471821",
+        "name": "result",
+        "type": "variable",
+        "parent": "10836113158740108680",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "ok",
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.drilldown.control.result"
+    },
+    "104665173128384341": {
+        "id": "104665173128384341",
+        "name": "signal",
+        "type": "variable",
+        "parent": "10836113158740108680",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "nosignal",
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.drilldown.control.signal"
+    },
+    "11393175939033202515": {
+        "id": "11393175939033202515",
+        "name": "executionCounter",
+        "type": "variable",
+        "parent": "10836113158740108680",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.drilldown.control.executionCounter"
+    },
+    "17382490358662430745": {
+        "id": "17382490358662430745",
+        "name": "lastExecutionDuration",
+        "type": "variable",
+        "parent": "10836113158740108680",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.drilldown.control.lastExecutionDuration"
+    },
+    "13619146200605473944": {
+        "id": "13619146200605473944",
+        "name": "lastStartTime",
+        "type": "variable",
+        "parent": "10836113158740108680",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "not yet",
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.drilldown.control.lastStartTime"
+    },
+    "3656736839716828066": {
+        "id": "3656736839716828066",
+        "name": "executionType",
+        "type": "const",
+        "parent": "10836113158740108680",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "async",
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.drilldown.control.executionType"
+    },
+    "1739422461467325564": {
+        "id": "1739422461467325564",
+        "name": "cockpit",
+        "type": "const",
+        "parent": "889472755450363353",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.cockpit"
+    },
+    "4436961720619908755": {
+        "id": "4436961720619908755",
+        "name": "selectionObserver",
+        "type": "observer",
+        "parent": "889472755450363353",
+        "children": [
+            "11891413046482708447",
+            "9106866239914580111",
+            "11701312109347968367",
+            "11456079224649482846",
+            "6573095225273720786",
+            "14849909427135687203",
+            "7051268427032829644",
+            "15278752704201235360",
+            "4358216857191240090",
+            "17952112405035314365"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.selectionObserver"
+    },
+    "11891413046482708447": {
+        "id": "11891413046482708447",
+        "name": "enabled",
+        "type": "const",
+        "parent": "4436961720619908755",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.selectionObserver.enabled"
+    },
+    "9106866239914580111": {
+        "id": "9106866239914580111",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "4436961720619908755",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.selectionObserver.triggerCounter"
+    },
+    "11701312109347968367": {
+        "id": "11701312109347968367",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "4436961720619908755",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.selectionObserver.lastTriggerTime"
+    },
+    "11456079224649482846": {
+        "id": "11456079224649482846",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "4436961720619908755",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.selectionObserver.targets"
+    },
+    "6573095225273720786": {
+        "id": "6573095225273720786",
+        "name": "properties",
+        "type": "const",
+        "parent": "4436961720619908755",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.selectionObserver.properties"
+    },
+    "14849909427135687203": {
+        "id": "14849909427135687203",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "4436961720619908755",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "566589047218797656"
+        ],
+        "value": null,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.selectionObserver.onTriggerFunction"
+    },
+    "7051268427032829644": {
+        "id": "7051268427032829644",
+        "name": "triggerSourceId",
+        "type": "variable",
+        "parent": "4436961720619908755",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.selectionObserver.triggerSourceId"
+    },
+    "15278752704201235360": {
+        "id": "15278752704201235360",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "4436961720619908755",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.selectionObserver.hasEvent"
+    },
+    "4358216857191240090": {
+        "id": "4358216857191240090",
+        "name": "eventString",
+        "type": "const",
+        "parent": "4436961720619908755",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "observerdefaultevent",
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.selectionObserver.eventString"
+    },
+    "17952112405035314365": {
+        "id": "17952112405035314365",
+        "name": "eventData",
+        "type": "const",
+        "parent": "4436961720619908755",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "text": "observer status update"
+        },
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.selectionObserver.eventData"
+    },
+    "2032026389095976051": {
+        "id": "2032026389095976051",
+        "name": "resultObserver",
+        "type": "observer",
+        "parent": "889472755450363353",
+        "children": [
+            "2809384766575564547",
+            "16371041533981833190",
+            "7810166055524632448",
+            "17798179759554184242",
+            "11547346997481530965",
+            "2915110314277866458",
+            "17095772140765504428",
+            "17933602282604516223",
+            "15956684093836711751",
+            "4608196448006857019"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.resultObserver"
+    },
+    "2809384766575564547": {
+        "id": "2809384766575564547",
+        "name": "enabled",
+        "type": "const",
+        "parent": "2032026389095976051",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.resultObserver.enabled"
+    },
+    "16371041533981833190": {
+        "id": "16371041533981833190",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "2032026389095976051",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.resultObserver.triggerCounter"
+    },
+    "7810166055524632448": {
+        "id": "7810166055524632448",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "2032026389095976051",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.resultObserver.lastTriggerTime"
+    },
+    "17798179759554184242": {
+        "id": "17798179759554184242",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "2032026389095976051",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.resultObserver.targets"
+    },
+    "11547346997481530965": {
+        "id": "11547346997481530965",
+        "name": "properties",
+        "type": "const",
+        "parent": "2032026389095976051",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "forwardRefs"
+        ],
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.resultObserver.properties"
+    },
+    "2915110314277866458": {
+        "id": "2915110314277866458",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "2032026389095976051",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "8036229471099173019"
+        ],
+        "value": null,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.resultObserver.onTriggerFunction"
+    },
+    "17095772140765504428": {
+        "id": "17095772140765504428",
+        "name": "triggerSourceId",
+        "type": "variable",
+        "parent": "2032026389095976051",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.resultObserver.triggerSourceId"
+    },
+    "17933602282604516223": {
+        "id": "17933602282604516223",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "2032026389095976051",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.resultObserver.hasEvent"
+    },
+    "15956684093836711751": {
+        "id": "15956684093836711751",
+        "name": "eventString",
+        "type": "const",
+        "parent": "2032026389095976051",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "drilldown.result",
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.resultObserver.eventString"
+    },
+    "4608196448006857019": {
+        "id": "4608196448006857019",
+        "name": "eventData",
+        "type": "const",
+        "parent": "2032026389095976051",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "text": "observer status update"
+        },
+        "browsePath": "root.new_thresholdDrillDownPipeLine_b86f.resultObserver.eventData"
     }
 }
