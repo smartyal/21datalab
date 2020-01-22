@@ -284,12 +284,7 @@ class TimeSeriesWidgetDataServer():
         #another call to get it right
         nodes = self.__web_call("post", "_getleaves", timerefpath)
         self.timeNode = nodes[0]["browsePath"]
-        #get the score nodes if any
-        nodes = self.__web_call('POST', "_getleaves", self.path + '.scoreVariables')
-        if not nodes:
-            self.scoreVariables = []
-        else:
-            self.scoreVariables = [node["browsePath"] for node in nodes]
+  
 
         #now for the annotations
         if (self.settings["hasAnnotation"] == True) or (self.settings["hasThreshold"] == True):
@@ -479,7 +474,29 @@ class TimeSeriesWidgetDataServer():
         else:
             query = {"node":self.path,"depth":100,"ignore":["observer","hasAnnotation.anno","hasAnnotation.new"]}
         self.mirror = self.__web_call("post", "_getbranchpretty", query)
+        self.update_score_variables_from_mirror()
         return self.mirror
+
+    def fetch_score_variables(self):
+
+        old = copy.deepcopy(self.scoreVariables)
+
+        nodes = self.__web_call("post", "_getleaves", self.path + ".scoreVariables")
+        scoreVariables = [node["browsePath"] for node in nodes]
+        self.scoreVariables = copy.deepcopy(scoreVariables)
+        self.logger.debug(f"fetch_score_variables => {self.scoreVariables}")
+
+        if old != self.scoreVariables:
+            return True # have something new
+        else:
+            return False
+
+    def update_score_variables_from_mirror(self):
+        scoreVars = []
+        for id,node in self.mirror["scoreVariables"][".properties"]["leavesProperties"].items():
+            scoreVars.append(node["browsePath"])
+        self.scoreVariables = scoreVars
+
 
 
     def get_current_colors(self):
@@ -778,6 +795,7 @@ class TimeSeriesWidget():
             #refresh the lines
             self.server.get_selected_variables_sync() # get the new set of lines
             self.logger.debug("dispatch the refresh lines")
+            self.__dispatch_function(self.update_scores)
             self.__dispatch_function(self.refresh_plot)
         elif data["event"] == "timeSeriesWidget.background":
             self.logger.debug("dispatch the refresh background")
@@ -919,6 +937,10 @@ class TimeSeriesWidget():
             #self.logger.debug(f"draw anno!")
             self.__dispatch_function(self.draw_new_annotation)
 
+    def update_scores(self):
+        if self.server.fetch_score_variables():
+           if self.showScores:
+                self.show_scores()
 
     def hide_marker(self):
         self.remove_renderers([lin+".marker" for lin in self.lines])
@@ -2273,6 +2295,7 @@ class TimeSeriesWidget():
                         self.data.add(getData[variable],name=variable)
 
         self.logger.debug(f"self.data {self.data}")
+        self.adjust_y_axis_limits()
         timeNode = "__time"
         #now plot var
         for variableName in newVars:
@@ -2336,7 +2359,7 @@ class TimeSeriesWidget():
             self.plot.legend.items = legendItems #replace them
 
         self.set_x_axis()
-        self.adjust_y_axis_limits()
+        #self.adjust_y_axis_limits()
 
 
     def range_cb(self, attribute,old, new):

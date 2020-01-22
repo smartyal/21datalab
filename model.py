@@ -17,6 +17,7 @@ import time
 import uuid
 import hashlib
 import random
+import traceback
 # type hints
 from typing import List
 
@@ -631,7 +632,9 @@ class Node():
         """ Returns: the name of the node without the path """
         return self.model.get_node_info(self.id)["name"]
 
-    
+    def get_node(self,desc):
+        return self.model.get_node(desc)
+
     def get_table_time_node(self):
         """ if the current node belongs to a table, then we can get the time node
         a node 
@@ -1085,12 +1088,15 @@ class Model():
             props["leavesValues"] = [self.get_value(id) if self.model[id]["type"] not in ["file","column"] else None for id in leaves]
             #tt.lap("2")
             validation = []
+            props["leavesProperties"]={}
             for id in leaves:
                 prop = self.get_node_info(id,includeLongValues=False)
                 if "validation" in prop:
                     validation.append(prop["validation"])
                 else:
                     validation.append(None)
+                props["leavesProperties"][id]=prop
+                props["leavesProperties"][id]["browsePath"]=self.get_browse_path(id)
             #tt.lap("3")
             props["leavesValidation"] = validation
             #print(tt)
@@ -2673,7 +2679,7 @@ class Model():
 
 
         except Exception as ex:
-            self.logger.error("error inside execution thread, id " +str(id)+" functionname"+str(functionName)+str(sys.exc_info()[1])+" "+str(ex))
+            self.logger.error("error inside execution thread, id " +str(id)+" functionname"+str(functionName)+str(sys.exc_info()[1])+" "+str(ex)+" "+str(traceback.format_exc()))
             controlNode.get_child("status").set_value("interrupted")
             controlNode.get_child("result").set_value("error")
         return
