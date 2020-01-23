@@ -1490,23 +1490,71 @@ class TimeSeriesWidget():
     def debug_button_2_cb(self):
         self.logger.debug("debug button cb2 ")
 
+        total = 100
+
+
+        if not 'extraAnnos' in self.__dict__:
+            self.extraAnnos = []
+
         dur  = (self.plot.x_range.end-self.plot.x_range.start)/4
         start = self.plot.x_range.start + dur
         end = self.plot.x_range.end - dur
         infinity = 1000000
 
-        source = ColumnDataSource(dict(x=[start, end], y1=[-infinity, -infinity], y2=[infinity, infinity]))
 
-        area = VArea(x="x", y1="y1", y2="y2",
-                     fill_color="gray",
-                     name="tests",
-                     fill_alpha=0.3,
-                     hatch_color="black",
-                     hatch_pattern="v",
-                     hatch_alpha=0.5)
+        dic={}
+        for x in range(100):
+            dic["x_"+str(x)]=[start,end]
+            dic["y1_"+str(x)]=[-infinity, -infinity]
+            dic["y2_"+str(x)]=[infinity, infinity]
 
-        myrenderer = GlyphRenderer(data_source=source, glyph=area, name="tests")
-        self.add_renderers([myrenderer])
+        source2 = ColumnDataSource(dic)
+
+        newones = []
+
+        for x in range(200):
+
+
+
+            name = "tset"+str(x)
+
+            if x==50:
+                source = ColumnDataSource(dict(x=[start, end], y1=[-infinity, -infinity], y2=[infinity, infinity]))
+                area = VArea(x="x", y1="y1", y2="y2",
+                             fill_color="gray",
+                             name=name,
+                             fill_alpha=0.3,
+                             hatch_color="black",
+                             hatch_pattern="v",
+                             hatch_alpha=0.5)
+                myrenderer = GlyphRenderer(data_source=source, glyph=area, name=name)
+
+            """
+            area = VArea(x="x_"+str(x), y1="y1_"+str(x), y2="y2_"+str(x),
+                         fill_color="gray",
+                         name=name,
+                         fill_alpha=0.3,
+                         hatch_color="black",
+                         hatch_pattern="v",
+                         hatch_alpha=0.5
+                         )
+            myrenderer = GlyphRenderer(data_source=source2, glyph=area, name=name)
+            """
+            
+
+
+
+
+            myrenderer = BoxAnnotation(left=start,right=end,fill_color="red",name=name)
+
+
+            self.logger.debug(f"add renderer {name}")
+            newones.append(myrenderer)
+
+
+        self.add_renderers(newones)
+
+        self.extraAnnos.extend(newones)
 
 
 
@@ -1514,17 +1562,10 @@ class TimeSeriesWidget():
 
     def debug_button_cb(self):
         self.logger.debug("debug button cb ")
-        #make a trial marker for the display of a match
-        dur = (self.plot.x_range.end-self.plot.x_range.start)/4
+        if not 'extraAnnos' in self.__dict__:
+            self.extraAnnos = []
 
-        var = "root.HyBIFData.variables.TRetZ1"
-
-        indices = [idx for idx,t in enumerate(self.data.data["__time"]) if (t>self.plot.x_range.start+dur and t<self.plot.x_range.end-dur)]
-        times =[self.data.data["__time"][idx] for idx in indices]
-        vals = [self.data.data[var][idx] for idx in indices]
-
-        color = self.lines[var].glyph.line_color
-        self.plot.line(times,vals, color=color, line_width=24,line_alpha = 0.3, line_cap="round",  name="test",line_dash="dotted",line_dash_offset=25)
+        self.remove_renderers(renderers=self.extraAnnos)
 
 
         pass
@@ -2076,8 +2117,13 @@ class TimeSeriesWidget():
     def adjust_annotation(self,anno):
         if anno["type"]=="time":
             if self.find_renderer(anno["id"]):
-                source=self.renderers[anno["id"]]["source"]
-                source.patch({'x':[ (0,anno["startTime"]),(1,anno["endTime"]) ]})
+                if anno["rendererType"] == "VArea":
+                    source=self.renderers[anno["id"]]["source"]
+                    source.patch({'x':[ (0,anno["startTime"]),(1,anno["endTime"]) ]})
+                else:
+                    #boxannotation must be recreated
+                    self.remove_renderers(anno["id"])
+                    self.draw_annotation(anno,visible=True)
 
                 #self.renderers[anno["id"]]["source"]["x"]=[anno["startTime"],anno["endTime"]]
 
@@ -2793,6 +2839,7 @@ class TimeSeriesWidget():
                 if not any([True for tag in v["info"]["tags"] if tag in self.showAnnotationTags]):
                     removeList.append(v["renderer"])
 
+        self.logger.debug(f"add {len(addList)} annotations to plot")
         self.plot.renderers.extend(addList)
         self.remove_renderers(renderers=removeList)
 
@@ -2918,20 +2965,26 @@ class TimeSeriesWidget():
                                     hatch_color="black",
                                     hatch_pattern=pattern,
                                     hatch_alpha=1)
+                myrenderer = GlyphRenderer(data_source=source, glyph=area, name=anno['id'])
+                rendererType = "VArea"
             else:
+                #we use a Boxannotation as this is a lot more efficient in bokeh
+                """ 
                 area = VArea(x="x", y1="y1", y2="y2",
                                     fill_color=color,
                                     name=anno["id"],
                                     fill_alpha=globalAlpha)
-
+                """
+                myrenderer = BoxAnnotation(left=start,right=end,fill_color=color,fill_alpha=globalAlpha,name=anno['id'])
+                rendererType = "BoxAnnotation"
 
             # bokeh hack to avoid adding the renderers directly: we create a renderer from the glyph and store it for later bulk assing to the plot
             # which is a lot faster than one by one
-            myrenderer = GlyphRenderer(data_source=source,glyph=area,name=anno['id'])
+
             if visible:
                 self.add_renderers([myrenderer])
 
-            self.renderers[anno["id"]] = {"renderer": myrenderer, "info": copy.deepcopy(anno),"source": source}  # we keep this renderer to speed up later
+            self.renderers[anno["id"]] = {"renderer": myrenderer, "info": copy.deepcopy(anno),"source": source,"rendererType":rendererType}  # we keep this renderer to speed up later
 
         except Exception as ex:
             self.logger.error("error draw annotation"+str(ex))
