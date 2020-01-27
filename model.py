@@ -1195,9 +1195,11 @@ class Model:
         """
         return {"name":self.currentModelName}
 
-    def import_plugins_from_directory(self, plugin_directory: str):
+    def import_plugins_from_directory(self, plugin_directory: str, check_file_marker = True):
         """ find all plugins from plugin_directory.
             take from there the templates from the files and the functions
+            Args:
+                check_file_marker: if set to True, we expect a "#21datalabplugin" string in the first line
         """
         if plugin_directory not in sys.path:
             sys.path.append(plugin_directory)  # for the importlib to find the stuff
@@ -1206,8 +1208,18 @@ class Model:
         for fileName in plugin_filenames:
             if fileName.startswith('__'):
                 continue # avoid __pycache__ things
+            #we need to check if extra plugins have the "#21datalabplugin
+            if check_file_marker:
+                absolutePath = os.path.join(myGlobalDir,fileName)
+                f = open(absolutePath,"r")
+                firstLine = f.readline()
+                f.close()
+                if firstLine != "#21datalabplugin\n":
+                    continue
+
             filename_relative = os.path.relpath(fileName, plugin_directory)
             moduleName = os.path.splitext(filename_relative)[0].replace(os.path.sep, '.')
+            self.logger.info(f"import plugin lib {moduleName}")
             module = importlib.import_module(moduleName)
             #now analyze all objects in the module
             for objName in dir(module):
@@ -1221,14 +1233,15 @@ class Model:
                     #this is a function, get more info
                     newFunction = {"module":module, "function":element}
                     self.functions[moduleName+"."+objName]=newFunction
-
     def import_default_plugins(self):
         """ find all plugins (= all .py files in the ./plugin folder
             take from there the templates from the files and the functions
+            don't check them for #21datalabplugin marker
+
             this function is execution on startup of the model
 
         """
-        self.import_plugins_from_directory(os.path.join(myGlobalDir, 'plugins'))
+        self.import_plugins_from_directory(os.path.join(myGlobalDir, 'plugins'),check_file_marker=False)
 
     def get_id(self,ids):
         """ convert a descriptor or a list into only ids (which can be used as entry to the model dictionary
