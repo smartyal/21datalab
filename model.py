@@ -866,7 +866,7 @@ class Observer:
         self.model.detach_observer(self)
 
 
-class Model():
+class Model:
     nodeTemplate = {"id": None, "name": None, "type": "folder", "parent": None, "children": [], "backRefs": [],"forwardRefs":[],"value":None}
 
 
@@ -2596,6 +2596,8 @@ class Model():
         self.functionExecutionThread = threading.Thread(target=self._function_execution_thread)
         self.functionExecutionThread.start()
 
+
+
     def _function_execution_thread(self):
         while self.functionExecutionRunning:
             try:
@@ -2605,6 +2607,8 @@ class Model():
             except:
                 pass
 
+    def delete(self):
+        self.functionExecutionRunning = False
 
 
     def __execution_thread(self,id):
@@ -3279,7 +3283,9 @@ class Model():
 
         except Exception as ex:
             self.logger.error(f" {ex} , {sys.exc_info()[0]}")
+            helperModel.delete()
 
+        helperModel.delete()
         self.enable_observers()
 
     def create_test(self,testNo=1):
