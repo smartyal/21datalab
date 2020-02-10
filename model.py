@@ -18,6 +18,7 @@ import uuid
 import hashlib
 import random
 import traceback
+
 # type hints
 from typing import List
 
@@ -27,6 +28,8 @@ import modeltemplates
 from queue import Queue
 from queue import Empty
 import utils
+
+from timeseries import TimeSeriesTable
 
 
 """
@@ -90,301 +93,6 @@ def epochToIsoString(epoch,zone=pytz.UTC):
     dat=dat.astimezone(zone) # we must do this later conversion due to a bug in tz lib
     return dat.isoformat()
 
-class Table():
-
-   #accept columnNames as list of strings for the names of the columns
-    def __init__(self,columnNames=[]):
-        self.__init_logger(logging.DEBUG)
-        if type(columnNames)==type(dict()):
-            columnNames = list(columnNames.keys())
-        #self.columnNames = columnNames
-        self.data = None #  data is a list (each element is a row of the data)
-        self.meta ={} # to store some meta information
-        self.meta["columnNames"] = columnNames
-
-        pass
-
-    def __init_logger(self,level):
-        self.logger = logging.getLogger("Table()")
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
-        self.logger.setLevel(level)
-
-    def get_meta_information(self):
-        return self.meta
-
-    def get_column_names_dict(self):
-        namesDict = {}
-        for name in self.meta["columnNames"]:
-            namesDict[name]=""
-        return namesDict
-
-    def get_number_of_rows(self):
-        return len(self.data)
-
-    def update_meta(self,updateDict={}):
-        return copy.deepcopy(self.meta.update(updateDict))
-
-    # exist already, replace, else enlarge table
-    def write_column(self,columnName,values):
-       pass
-
-    def __get_current_rows(self):
-        pass
-
-    #accept dict or list in right order
-    def add_row(self,row):
-        vector = []
-        if type(row)==type(dict()):
-            #make correct order first
-            for name in self.meta["columnNames"]:
-                vector.append(row[name])
-        elif type(row) == list (list()):
-            pass # this is what we expect
-        else:
-            print("wrong input type to table")
-            return False
-
-        entry = numpy.asarray(vector, dtype="float64")
-        if self.data == None:
-            self.data = [entry] # first entry
-        else:
-            self.data.append(entry)
-
-        return True
-
-
-    #returns a value table, including postprocessing
-    def get_value_table(self,variables,startTime=None,endTime=None,noBins=None,agg="sample",includeTimeStamps=None):
-        if 0:#startTime==None and endTime==None and noBins==None:
-            try:
-                table = numpy.stack(self.data,axis=0)
-                return table.T
-            except:
-                return None
-        else:
-            self.logger.info("query with processing")
-            #check the start and end times
-
-            timeIndex = self.__get_column_index(self.get_meta_information()["timeId"])
-            startTimeOfTable = self.data[0][timeIndex]
-            endTimeOfTable = self.data[-1][timeIndex]
-            if startTime == None:
-                queryStart = startTimeOfTable
-            else:
-                queryStart = date2secs(startTime)
-            if endTime == None:
-                queryEnd = endTimeOfTable
-            else:
-                queryEnd = date2secs(endTime)
-            #check sanity of interval
-            if queryStart < startTimeOfTable :
-                self.logger.warn("start time query before table start")
-                return None
-            if queryEnd > endTimeOfTable:
-                self.logger.warn("end time of query after table end")
-                return None
-            print("hier2")
-            #now iterate over the variables and aggregate them
-            if agg == "sample":
-                #here, we pick some data out
-                startRow = self.__get_row_index_from_time(queryStart)
-                endRow = self.__get_row_index_from_time(queryEnd)
-                totalRows = endRow-startRow+1
-                if noBins == None:
-                    rowStep = 1
-                    noBins = totalRows
-                else:
-                    rowStep = float(totalRows) / float(noBins)
-                currentRow = startRow
-                result = []
-                variablesIndices = [] # holding the list of variables as indices in our table
-                for var in variables:
-                    variablesIndices.append(self.__get_column_index(var))
-                if includeTimeStamps:
-                    variablesIndices.append(self.__get_column_index(self.get_meta_information()["timeId"]))
-                for i in range(noBins):
-                    currentRowIndex = int(startRow + float(i)*rowStep)
-                    pickRow = self.data[currentRowIndex]
-                    #now select only the wanted indices
-                    reducedRow = [pickRow[i] for i in variablesIndices]
-                    #now select only the wanted variables
-                    result.append(reducedRow)
-
-                table = numpy.stack(result,axis=0)
-                return table.T
-            else:
-                #other aggrataion not supported
-                return None
-
-
-
-    #return the column index of a given nodeId
-    def __get_column_index(self,nodeId):
-        if nodeId not in self.meta["columnNames"]:
-            return None
-        return self.meta["columnNames"].index(nodeId)
-
-
-
-    def __get_row_index_from_time(self,searchTime):
-        timeIndex = self.__get_time_index()
-        index = 0
-        for row in self.data:
-            if row[timeIndex]>searchTime:
-                if index>0:
-                    index -= 1
-                return index
-            if row[timeIndex]==searchTime:
-                return index
-            index += 1
-        return None
-
-
-
-
-
-    def __get_time_index(self):
-       return self.__get_column_index(self.get_meta_information()["timeId"])
-
-
-
-    def save(self,fileName):
-        numpytable = self.get_value_table()
-        numpy.save(fileName, numpytable)
-        keyfile = open(fileName+ ".meta.json", "w")
-        keyfile.write(json.dumps(self.get_meta_information(), indent=4))
-        keyfile.close()
-
-    def load(self,fileName):
-        try:
-            f = open(fileName+ ".meta.json", "r")
-            self.meta = json.loads(f.read())
-            f.close()
-            self.data = numpy.load(fileName + ".npy")
-            return True
-        except:
-            print("table: problem loading",fileName,sys.exc_info()[1])
-            return False
-
-
-
-class TimeSeriesTables():
-    def __init__(self):
-        self.tables=[]
-        self.__init_logger(logging.DEBUG)
-        pass
-
-
-    def __init_logger(self,level):
-        self.logger = logging.getLogger("TimeSeriesTables")
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
-        self.logger.setLevel(level)
-
-    # row is a dict with all variables, try to find a matching table, if not, create a new one
-    def __get_table(self,row,timeId=None):
-        workTable = None
-        for table in self.tables:
-            if table.get_column_names_dict().keys()==row.keys():
-                #this is the right table
-                workTable = table
-                break
-        if not workTable:
-            #haven't found it, make new table
-            workTable = Table(row)
-            if timeId:
-                workTable.update_meta({"timeId":timeId})
-            self.tables.append(workTable)
-        return workTable
-
-    # find to which table the variable belongs
-    # the desc param can be a browsepath or be a list of
-    #     the table can only be found if all of the variables are in the same table
-    def __find_table(self,desc):
-        if type(desc)==type(str()):
-            for table in self.tables:
-                if desc in table.get_column_names_dict():
-                    return table
-            return None
-        elif type(desc) == type(list()):
-            lastTable = None
-            for key in desc:
-                if not lastTable:
-                    lastTable = self.__find_table(key)
-                else:
-                    nowTable = self.__find_table(key)
-                    if nowTable != lastTable:
-                        return None
-            return lastTable
-
-
-    #get the number of rows of the table to which this id belongs
-    def get_number_of_rows(self,desc):
-        workTable = self.__find_table(desc)
-        if workTable:
-            return workTable.get_number_of_rows()
-        else:
-            return None
-
-    #the row is dict containing "name":value and one "time":"2018-01-05T...."
-    # here, we will also convert all types
-    def add_row(self,row):
-        #first check if the row contains the time
-
-        timeId= None
-        for key in row:
-            value = row[key]
-            if type(value) == type(datetime.datetime(1,1,1,1,1)):
-                date2secs(value)
-                #timeDelta = value-datetime.datetime (1970,1 , 1, 0, 0)
-                row[key]=date2secs(value)
-                timeId = key
-
-
-        #now find the right table
-        workTable = self.__get_table(row,timeId=timeId)
-        return workTable.add_row(row)
-
-
-    #params: variables is an ordered list
-    def get_value_table(self,variables,startTime=None,endTime=None,noBins=100,agg="sample",includeTimeStamps = None):
-        workTable = self.__find_table(variables)
-        if not workTable: return None
-        return workTable.get_value_table(variables, startTime=startTime, endTime=endTime, noBins=noBins, agg=agg, includeTimeStamps=includeTimeStamps)
-        '''
-        if not startTime and not endTime:
-            #get full table
-            return workTable.get_value_table(variables,startTime=startTime, endTime=endTime, noBins=noBins, agg=agg)
-        else:
-            return workTable.get_value_table(variables, startTime=startTime, endTime=endTime, noBins=noBins, agg=agg)
-        '''
-
-    def save(self,fileName):
-        index = 0
-        for table in self.tables:
-            table.save(fileName+".table_"+str(index))
-            index +=1
-
-    def load(self,fileName):
-        index = 0
-        running = True
-        #delete all existing tables
-        self.tables=[]
-        while running:
-            #load the keys and the data
-            try:
-                newTable = Table()
-                if not newTable.load(fileName+".table_"+str(index)):
-                    break
-                self.tables.append(newTable)
-                index+=1
-            except:
-                print("not found, index",index)
 
 #used as an OOP wrapper for the flat and procedural style of the model class
 class Node():
@@ -882,7 +590,7 @@ class Model:
         self.__init_logger(logging.DEBUG)
         self.globalIdCounter=1 # increased on every creation of a node, it holds the last inserted node id
         self.idCreationHash = True # if this is true, we create the id per hash, not per counter
-        self.timeSeriesTables = TimeSeriesTables()
+        self.ts = TimeSeriesTable()
         self.functions={} # a dictionary holding all functions from ./plugins
         self.templates={} # holding all templates from ./plugins
         self.lock = threading.RLock()
@@ -900,6 +608,7 @@ class Model:
         self.sse_event_id = 1
 
         self.start_function_execution_thread()
+
 
     def __del__(self):
         self.functionExecutionRunning = False # stop the execution thread of functions
@@ -1336,6 +1045,8 @@ class Model:
                 newNode.update(properties)
             if value != None:
                 newNode["value"]=value
+            if type == "timeseries":
+                self.create_time_series(newId)
             self.model[parentId]["children"].append(newId)
             self.model[newId]=newNode
             self.__notify_observers(parentId,"children")
@@ -1749,6 +1460,8 @@ class Model:
                 if parentId in self.model:
                     self.model[parentId]["children"].remove(id)
                     childNotify.append(parentId)
+                if self.model[id]["type"]=="timeseries":
+                    self.delete_time_series(id)
                 del self.model[id]
 
             #now notify only those who still exist
@@ -1761,44 +1474,6 @@ class Model:
 
             return True
 
-    def delete_node_old(self,desc):
-        """
-            delete a node and all its recursive children; if we have referencer nodes on the way which have to be deleted, then
-            we also remove their references in the model
-            Args:
-             desc(string): the descriptor of the node
-            Returns:
-                True for success
-                False for node not found
-        """
-        with self.lock:
-            id = self.get_id(desc)
-            if not id:
-                return False
-
-            nodesToDelete = self.find_all_children_recursive([id])
-
-            nodesToDelete = self.model[id]["children"].copy()
-            print("remove",id,"and children",nodesToDelete)
-            for node in nodesToDelete:
-                self.delete_node(node)
-            #if we are done with the inner, we can now remove all dependencies
-            #for a referencer we remove forwards to others and the accoring backwards to me
-            if self.model[id]["type"]=="referencer":
-                forwards = self.model[id]["forwardRefs"].copy()
-                for forwardRefId in forwards:
-                    self.remove_forward_ref(id,forwardRefId)
-
-            #for all type of nodes, remove potential backward refs
-            backs = self.model[id]["backRefs"].copy()
-            for backRefId in backs:
-                self.remove_back_ref(id,backRefId)
-            #now remove me from the parent
-            self.model[self.model[id]["parent"]]["children"].remove(id)
-            self.__notify_observers(id,"children")
-            #now remove me
-            del self.model[id]
-            return True
 
     # if desc.type is a var, function then we just set the value
     # if it's a timeseries" then we set a column in a table, padded if needed
@@ -2220,12 +1895,6 @@ class Model:
                 self.model[id]["value"].append(value)#finally put the value
 
 
-    def old_get_timeseries_len(self,desc): #deprecated
-        with self.lock:
-            id = self.get_id(desc)
-            if not id: return False
-            if self.model[id]["type"]!="timeseries": return False
-            return self.timeSeriesTables.get_number_of_rows(desc)
 
     #return the id of the table, give a column variable
     def __find_table(self,desc):
@@ -2532,10 +2201,10 @@ class Model:
                         print("," + property + "=" + str(self.model[rootId][property]), end="")
                 except:
                     print("," + property + "=" + str(self.model[rootId][property]), end="")
-                #value = str(self.model[rootId][property])
-                #if len(value)>40:
-                #    value = value[0:37]+"..."
-                #print("," + property + "=" +value, end="")
+
+        if self.model[rootId]["type"]=="timeseries":
+            print(","+self.time_series_get_info(rootId), end="")
+
         print("")
         for child in self.model[rootId]["children"]:
             self.__show_subtree(child)
@@ -2622,6 +2291,12 @@ class Model:
 
     def delete(self):
         self.functionExecutionRunning = False
+
+    def exit(self):
+        self.delete()
+
+    def close(self):
+        self.delete()
 
 
     def __execution_thread(self,id):
@@ -3301,6 +2976,74 @@ class Model:
         helperModel.delete()
         self.enable_observers()
 
+    # ########################################
+    # time series api
+
+    def time_series_create(self,desc):
+        id = self.get_id(desc)
+        return self.ts.create(id)
+
+    def time_series_delete(self,desc):
+        id = self.get_id(desc)
+        return self.ts.delete(id)
+
+    def time_series_insert_data(self, desc, values=None, times=None):
+        id = self.get_id(desc)
+        if not id in self.model:
+            return None
+        return self.ts.insert(id,values, times)
+
+    def time_series_set(self,desc,values=None,times=None):
+        id = self.get_id(desc)
+        if not id in self.model:
+            return None
+        return self.ts.set(id,values=None,times=None)
+
+    def time_series_get_table(self, desc, start=None, end=None, copy=False, resampleTimes=None):
+        """
+            returns raw data dict with {name:{"values":[..],"__time":[...], "name2":{"values":[..], "__time":[..]
+        """
+        ids = self.get_id(desc)
+        return self.ts.get_table(ids,start,end,copy,resampleTimes)
+
+    def time_series_get_info(self,name=None):
+        return self.ts.get_info(name)
+
+    def time_series_insert_blobs(self, blobs):
+        """ blob is a dict or list of dicts of key and values containing one time base like
+        {
+            "a": [1.5,1.6,1.7]m
+            "b": [2,3,4]
+            "__time" :[100001,100002,100003]
+        }
+        """
+        if not type(blobs) is list:
+            blobs=[blobs]
+
+        newBlobs=[]
+        #convert all to ids
+        for blob in blobs:
+            newBlob={}
+            for k,v in blob.items():
+                if k=="__time":
+                    newBlob[k]=v
+                else:
+                    #does this id already exist?
+                    id = self.get_id(k)
+                    if id:
+                        newBlob[id]=v
+                    else:
+                        #this node does not exist yet, see if we can make it from the browsepath
+                        id = self.create_node_from_path(k,{"type":"timeseries"})
+                        if id:
+                            newBlob[id]=v
+                        else:
+                            #we can't find it and can't create it, so give up
+                            self.logger.error(f"can't blob insert the variable {k}")
+            newBlobs.append(newBlob)
+        return self.ts.insert_blobs(newBlobs)
+
+
     def create_test(self,testNo=1):
         """
             this functions crates tests for demostrating purposes
@@ -3637,35 +3380,6 @@ if __name__ == '__main__':
 
         return m
 
-    def ts_test1():
-        m=Model()
-        m.create_node("root", name="folder1")
-        m.create_node("root.folder1", name="folder2")
-        m.create_node("2", name="second")
-        m.create_node("root", name="myreferencer", type="referencer")
-        m.create_node("root.folder1", name="myvar", type="variable")
-        m.create_node("root",name="data",type ="folder")
-        for node in ["varA","varB","varC","time"]:
-            m.create_node("root.data",name=node,type="timeseries")
-        #m.show()
-        #now write some data
-        start=datetime.datetime.now()
-        timeNow = datetime.datetime.now()
-        for i in range(5):
-            dataDict ={"root.data.varA":i,"root.data.varB":float(i)/10,"root.data.time":timeNow+datetime.timedelta(i)}
-            #dataDict = {"8": i, "9": float(i) / 10,
-            #            "11": timeNow + datetime.timedelta(i)}
-            #dataDict=m.get_id(dataDict)
-            m.add_timeseries(dataDict)
-        print("done inserting",(datetime.datetime.now()-start))
-        start = datetime.datetime.now()
-        table = m.get_timeseries_table(dataDict)
-        print("readBack",len(table))
-        if len(table)<10:
-            print(table)
-        print("time for readback",(datetime.datetime.now()-start))
-
-        m.show()
 
     def test_template():
         m=Model()
@@ -3750,35 +3464,7 @@ if __name__ == '__main__':
         print("value",myvar.get_value())
 
 
-    def table_query_test():
-        m = Model()
-        m.create_node("root", name="a",type="timeseries")
-        m.create_node("root", name="b", type="timeseries")
-        m.create_node("root", name="c", type="timeseries")
-        m.create_node("root", name="d", type="timeseries")
-        m.create_node("root", name="e", type="timeseries")
-        m.create_node("root", name="time", type="timeseries")
-        m.show()
-        # now write some data
-        start = datetime.datetime.now()
-        timeNow = datetime.datetime.now()
-        for i in range(5000):
-            timeNow = start+ datetime.timedelta(i)
-            dataDict = {"root.a": i,
-                        "root.b": 1+i/10,
-                        "root.c":1+i/100,
-                        "root.d":1+i/1000,
-                        "root.time": timeNow
-                        }
-            m.add_timeseries(dataDict)
-        print("done inserting", (datetime.datetime.now() - start))
 
-        #now make a timed query
-        queryStart = start +datetime.timedelta(100)
-        queryEnd = start +datetime.timedelta(1100)
-        vars=["root.a","root.c","root.d","root.time"]
-        table = m.get_timeseries_table(vars,queryStart,queryEnd,10)
-        print (table)
 
 
     def testfunctions_test():
