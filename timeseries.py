@@ -38,44 +38,61 @@ class TimeSeries:
         self.values[mask]=values[mask]
         return True
 
-    def set(self,values,times):
-        if len(values)!= len(times):
-            return False
-        self.values = numpy.copy(numpy.asarray(values))
-        self.times = numpy.copy(numpy.asarray(times))
+    def set(self,values=None,times=None):
+        if type(values) != type(None):
+            self.values = numpy.copy(numpy.asarray(values))
+        if type(times) != type(None):
+            self.times = numpy.copy(numpy.asarray(times))
         return True
 
-    def get(self, start=None, end=None, copy=False, resampleTimes = None):
+    def get(self, start=None, end=None, copy=False, resampleTimes = None, noBins = None, includeIntervalLimits = False):
         """
             returns raw data dict with { {"values":[..],"__time":[...], "name2":{"values":[..], "__time":[..]
 
         """
 
-
-
         if start:
             startIndex = numpy.searchsorted(self.times, start)
         else:
             startIndex = 0
+
         if end:
             endIndex = numpy.searchsorted(self.times, end)
         else:
-            endIndex =numpy.min(numpy.argwhere(~numpy.isfinite(self.times)))
+            endIndex = len(self.times)-1
 
-        result = {"__time": None, "values": None}
+
         if not resampleTimes:
-            if copy:
-                result["__time"] = numpy.copy(self.times[startIndex:endIndex])
-                result["values"] = numpy.copy(self.values[startIndex:endIndex])
+
+            if includeIntervalLimits:
+                if startIndex != 0:
+                    startIndex = startIndex -1
+                if endIndex <= len(self.times) -2 :
+                    endIndex = endIndex +1
+            if noBins:
+                #we pick samples only if we have more than requested
+                if (endIndex-startIndex)>noBins:
+                    takeIndices = numpy.linspace(startIndex, endIndex, noBins, endpoint=False, dtype=int)
+                else:
+                    takeIndices = numpy.arange(startIndex, endIndex)
             else:
-                result["__time"] = self.times[startIndex:endIndex]
-                result["values"] = self.values[startIndex:endIndex]
+                takeIndices = numpy.arange(startIndex,endIndex)
+
+            times = self.times[takeIndices]
+            values = self.values[takeIndices]
         else:
             oldTimes = self.times[startIndex:endIndex]
             oldValues = self.values[startIndex:endIndex]
             newValues = self.__resample(resampleTimes,oldTimes,oldValues)
-            result["__time"] = resampleTimes
-            result["values"] = newValues
+            times = resampleTimes
+            values = newValues
+
+
+
+        if copy:
+            result = {"__time": numpy.copy(times), "values":numpy.copy(values)}
+        else:
+            result = {"__time": times, "values": values}
 
         return result
 
@@ -136,13 +153,16 @@ class TimeSeriesTable:
         del self.store[name]
         return True
 
+    def clear(self):
+        self.store={}
+
     def insert(self,name,values=None,times=None):
         return self.store[name].write(values,times)
 
     def set(self,name,values = None,times = None):
         return self.store[name].set(values,times)
 
-    def get_table(self, names, start=None, end=None, copy=False, resampleTimes=None):
+    def get_table(self, names, start=None, end=None, copy=False, resampleTimes=None, noBins = None, includeIntervalLimits=False):
         """
             returns raw data dict with {name:{"values":[..],"__time":[...], "name2":{"values":[..], "__time":[..]
         """
@@ -151,7 +171,7 @@ class TimeSeriesTable:
         result = {}
         for name in names:
             if name in self.store:
-                result[name]=self.store[name].get(start,end,copy,resampleTimes)
+                result[name]=self.store[name].get(start=start,end=end,copy=copy,resampleTimes=resampleTimes,noBins=noBins,includeIntervalLimits=includeIntervalLimits)
         return result
 
     def get_info(self,name = None):
@@ -161,7 +181,12 @@ class TimeSeriesTable:
                 s=s+f"{k}: {v.get()}"+"\n"
             return s
         else:
-            return f"time series len { len(self.store[name].get()['__time'])}"
+            if not name in self.store:
+                return f"time series data not found"
+            else:
+                dat = self.store[name].get()['values']
+
+                return f"time series len {len(dat)}, data:{dat[0:min(len(dat),10)]}"
 
 
     def insert_blobs(self,blobs):
@@ -192,3 +217,31 @@ class TimeSeriesTable:
             if k not in self.store:
                 self.create(k)
             self.store[k].insert(values=v,times=blob["__time"])
+
+
+
+
+    def save(self,name):
+        saveDict = {}
+        for k,v in self.store.items():
+            ts = v.get()
+            saveDict[k] = ts["values"]
+            saveDict[k+"__time"] = ts["__time"]
+
+        numpy.savez(name, **saveDict)
+
+    def load(self,name):
+        get = numpy.load(name+".npz")
+        for entry in get.files:
+            if entry.endswith("__time"):
+                id = entry[:-6]
+            else:
+                id = entry
+            if not id in self.store:
+                self.create(id)
+            if entry.endswith("__time"):
+                self.store[id].set(times=get[entry])
+            else:
+                self.store[id].set(values=get[entry])
+        return True
+

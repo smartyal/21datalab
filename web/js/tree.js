@@ -28,7 +28,7 @@ class TreeWidget
             root : "far fa-folder tree-icon-class",
             folder : "far fa-folder tree-icon-class",
             variable:"fas fa-random tree-icon-class",
-            timeseries : "fas fa-chart-line fa-xs tree-icon-class",
+            timeseries : "fas fa-stream fa-xs tree-icon-class",
             table :"fas fa-table tree-icon-class",
             annotation: "fas fa-pencil-alt tree-icon-class",
             widget : "fas fa-chart-line fa-xs tree-icon-class",

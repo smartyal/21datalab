@@ -513,7 +513,8 @@ def all(path):
                 else:
                     includeBackGround = None
                 try:
-                    result = m.get_timeseries_table(data["nodes"],startTime=startTime,endTime=endTime,noBins=int(data["bins"]),includeTimeStamps=includeTimeStamps,format="dict",includeBackGround=includeBackGround)
+                    #result = m.get_timeseries_table(data["nodes"],startTime=startTime,endTime=endTime,noBins=int(data["bins"]),includeTimeStamps=includeTimeStamps,format="dict",includeBackGround=includeBackGround)
+                    result = m.time_series_get_table(data["nodes"], start=startTime, end=endTime, noBins=int(data["bins"]), format="flat",toList=True)
                     if type(result) != type(None):
                         if includeTimeStamps:
                             pass #XXX todo: include the timestamps converted to a certain format
@@ -683,7 +684,7 @@ def all(path):
                         data["nodes"]=[data["nodes"]]
                     newNodesIds = []
                     for nodeid in data["nodes"]:
-                        if m.get_node_info(nodeid)["type"] != "column":
+                        if m.get_node_info(nodeid)["type"] not in ["column","timeseries"]:
                             logger.warning("we ignore this node, is not a colum"+str(nodeid))
                         else:
                             newNodesIds.append(m.get_id(nodeid))

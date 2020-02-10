@@ -77,6 +77,7 @@ def setup_logging(loglevel=logging.DEBUG,tag = ""):
 
 #import model
 from model import date2secs,secs2date, secs2dateString
+from model import epochToIsoString
 import themes #for nice colorsing
 
 
@@ -449,15 +450,23 @@ class TimeSeriesWidgetDataServer():
              "endTime" :   end,
             "bins":bins,
             "includeTimeStamps": "02:00",
+            "includeIntervalLimits" : True
         }
         r=self.__web_call("POST","_getdata",body)
         if not r:
             return None
         #convert the time to ms since epoch
-        r["__time"]=(numpy.asarray(r["__time"])*1000).tolist()
+        for entry in r:
+            if entry.endswith("__time"):
+                times = numpy.asarray(r[entry])
+                debug = copy.deepcopy(times.tolist())
+                r[entry]=(times*1000).tolist()
+                print(f"times {debug}")
+                print(f"times {entry} {[epochToIsoString(t) for t in debug]}")
         #make them all lists and make all inf/nan etc to nan
         for k,v in r.items():
             r[k]=[value if numpy.isfinite(value) else numpy.nan for value in v]
+
         #self.logger.debug(str(r))
         return r
 
@@ -711,7 +720,8 @@ class TimeSeriesWidget():
         self.legendItems ={} # keeping the legend items
         self.legend ={}
         self.hasLegend = False
-        self.data = None
+        #self.data = None
+        self.columnData = {}
         self.inPeriodicCb = False
         self.dispatchList = [] # a list of function to be executed in the bokeh app context
                                 # this is needed e.g. to assign values to renderes etc
@@ -737,6 +747,7 @@ class TimeSeriesWidget():
         self.showAnnotationTags = [] # a list with tags to display currently
         self.showAnnotations = False # curently displaying annotations
         self.currentAnnotationVariable = None
+        self.currentAnnotationTag = None
 
         self.renderersLock = threading.Lock()
         self.renderersGarbage = [] # a list of renderers to be deleted when time allowes
@@ -951,12 +962,38 @@ class TimeSeriesWidget():
 
             markerName = variableName + ".marker"
             color = self.lines[variableName].glyph.line_color
-            marker = self.plot.circle("__time", variableName, line_color=color, fill_color=color,
-                                      source=self.data, name=markerName,
+            marker = self.plot.circle(x="x",y="y", line_color=color, fill_color=color,
+                                      source=self.columnData[variableName], name=markerName,
                                       size=3)  # x:"time", y:variableName #the legend must havee different name than the source bug
 
 
         pass
+
+    def update_column_datas(self,newData):
+
+        if self.columnData =={}:
+            self.logger.info("init the colum data")
+            for var in self.server.get_variables_selectable():
+                self.columnData[var]=ColumnDataSource({"x":[],"y":[]})
+
+        if "__time" in newData:
+            del newData["time"]
+
+
+        for var in newData:
+            if not var.endswith("__time"):
+                dic = {"y":newData[var],
+                       "x":newData[var+"__time"],
+                       var:[88]*len(newData[var]),
+                       var+"__time":[77]*len(newData[var]),
+                       "{"+var+"}":[99]*len(newData[var]),
+                       "z":list(range(300))
+                       }
+                if var in self.columnData:
+                    self.columnData[var].data = dic #update
+                else:
+                    self.columnData[var] = ColumnDataSource(dic)
+
 
     def sync_x_axis(self,times=None):
         self.logger.debug(f"sync_x_axis x ")
@@ -969,7 +1006,7 @@ class TimeSeriesWidget():
         variablesRequest.append("__time")  # make sure we get the time included
         newData = self.server.get_data(variablesRequest, start, end,
                                                         self.server.get_settings()["bins"])  # for debug
-        self.data.data = newData
+        self.update_column_datas(newData)
 
         self.set_x_axis(start, end)
         #self.plot.x_range.start = start
@@ -1402,7 +1439,7 @@ class TimeSeriesWidget():
                 buttonControls.append(button)
 
 
-        if 0: # turn this helper button on to put some debug code
+        if 1: # turn this helper button on to put some debug code
             self.debugButton= Button(label="debug")
             self.debugButton.on_click(self.debug_button_cb)
             self.debugButton2 = Button(label="debug2")
@@ -1561,14 +1598,16 @@ class TimeSeriesWidget():
 
 
     def debug_button_cb(self):
-        self.logger.debug("debug button cb ")
-        if not 'extraAnnos' in self.__dict__:
-            self.extraAnnos = []
 
-        self.remove_renderers(renderers=self.extraAnnos)
+        newData = {}
+
+        for k,v in self.columnData.items():
+            newData[k]=ColumnDataSource(v.data)
+        self.columnData = newData
 
 
-        pass
+
+
 
         
 
@@ -1657,6 +1696,33 @@ class TimeSeriesWidget():
         self.logger.debug("testCB "+"attr"+str(attr)+"\n old"+str(old)+"\n new"+str(new))
         self.logger.debug("ACTIVE: "+str(self.plot.toolbar.active_drag))
 
+    def remove_hover(self):
+
+        self.hoverTool.renderers=[]
+
+
+        self.logger.debug(f"remove hover")
+
+        #self.remove_hover_2()
+        #self.__dispatch_function(self.remove_hover_2)
+        #self.__dispatch_function(self.__make_tooltips)
+        #self.__make_tooltips()
+
+    def remove_hover_2(self):
+        self.logger.debug(f"remove hover2")
+
+        self.hoverTool.renderers = []
+        store = self.toolBarBox.toolbar.tools
+        newTools = []
+        for entry in self.toolBarBox.toolbar.tools:
+            if type(entry) != HoverTool:
+                newTools.append(entry)
+        self.toolBarBox.toolbar.tools = newTools
+        self.hoverTool = None
+
+        #self.__make_tooltips()
+
+
     def __make_tooltips(self):
         #make the hover tool
         """
@@ -1667,35 +1733,89 @@ class TimeSeriesWidget():
 
         """
 
-        if not self.hoverTool:
-            #we do this only once
+        #check if lines have changed:
+        if self.hoverTool:
+            newLines = set([v for k,v in self.lines.items() if not self.server.is_score_variable(k) ]) # only the non-score lines
+            hoverLines = set(self.hoverTool.renderers)
+            if newLines != hoverLines:
 
-            self.logger.info("MAKE TOOLTIPS"+str(self.hoverCounter))
-            hover = HoverTool(renderers=[])
-            #hover.tooltips = [("name","$name"),("time", "@__time{%Y-%m-%d %H:%M:%S.%3N}"),("value","@$name{0.000}")] #show one digit after dot
-            hover.tooltips = [("name", "$name"), ("time", "@{__time}{%f}"),
-                             ("value", "@$name{0.000}")]  # show one digit after dot
-            #hover.formatters={'__time': 'datetime'}
-            custom = """var local = moment(value).tz('%s'); return local.format();"""%self.server.get_settings()["timeZone"]
-            hover.formatters = {'__time': CustomJSHover(code=custom)}
-            if self.server.get_settings()["hasHover"] in ['vline','hline','mouse']:
-                hover.mode = self.server.get_settings()["hasHover"]
-            hover.line_policy = 'nearest'
-            self.plot.add_tools(hover)
-            self.hoverTool = hover
-            self.toolBarBox.toolbar.tools.append(hover)  # apply he hover tool to the toolbar
+                self.logger.debug(f"reset hover tool newLines {newLines}, hoverLines{hoverLines}")
+                self.hoverTool.renderers = []
+                store = self.toolBarBox.toolbar.tools
+                newTools = []
+                for entry in self.toolBarBox.toolbar.tools:
+                    if type(entry) != HoverTool:
+                        newTools.append(entry)
+                self.toolBarBox.toolbar.tools = newTools
+                self.hoverTool = None
 
-        # we do this every time
-        # reapply the renderers to the hover tool
-        renderers = []
-        self.hoverTool.renderers = []
+
         renderers = []
         for k, v in self.lines.items():
 
             if not self.server.is_score_variable(k):
                 self.logger.debug(f"add line {k} t hover")
                 renderers.append(v)
-        self.hoverTool.renderers = renderers
+
+        if not self.hoverTool:
+            #we do this only once
+
+            self.logger.info("MAKE TOOLTIPS"+str(self.hoverCounter))
+            hover = HoverTool(renderers=renderers) #must apply them here to be able to dynamically change them
+            #hover.tooltips = [("name","$name"),("time", "@__time{%Y-%m-%d %H:%M:%S.%3N}"),("value","@$name{0.000}")] #show one digit after dot
+            #hover.tooltips = [("name", "$name"), ("time", "@{__time}{%f}"),
+            #                 ("value", "@$name{0.000}")]  # show one digit after dot
+
+
+            hover.tooltips = [("name", "$name"), ("time", "@{x}{%f}"),
+                              ("value", "@y{0.000}")]  # show one digit after dot
+            if 0:
+                mytooltip = """
+                    <script>
+                        //.bk-tooltip>div:not(:first-child) {display:none;}
+                        console.log("hier hallo");
+                    </script>
+    
+                    <b>X: </b> @x <br>
+                    <b>Y: </b> @y
+                """
+            #hover.tooltips = mytooltip
+
+            #hover.formatters={'__time': 'datetime'}
+            #custom = """var local = moment(value).tz('%s'); return local.format();"""%self.server.get_settings()["timeZone"]
+            custom = """var local = moment(value).tz('%s'); return local.format();""" % self.server.get_settings()["timeZone"]
+            #custom2 = """var neu;neu = source.data['test'][0]; return String(value);"""
+            #self.testSource = ColumnDataSource({"test":[67]*1000})
+            #hover.formatters = {'__time': CustomJSHover(code=custom)}
+            custom3 = """ console.log(cb_data);"""
+            hover.formatters = {'x': CustomJSHover(code=custom)}#, 'z':CustomJSHover(args=dict(source=self.testSource),code=custom2)}
+            #hover.callback=CustomJS(code=custom3)
+
+            if self.server.get_settings()["hasHover"] in ['vline','hline','mouse']:
+                hover.mode = self.server.get_settings()["hasHover"]
+            hover.mode = "mouse"
+            hover.line_policy = 'nearest'
+            self.plot.add_tools(hover)
+
+            self.hoverTool = hover
+            self.toolBarBox.toolbar.tools.append(hover)  # apply he hover tool to the toolbar
+
+
+
+
+        # we do this every time
+        # reapply the renderers to the hover tool
+        if 0:
+            renderers = []
+            self.hoverTool.renderers = []
+            renderers = []
+            for k, v in self.lines.items():
+
+                if not self.server.is_score_variable(k):
+                    self.logger.debug(f"add line {k} t hover")
+                    renderers.append(v)
+            self.hoverTool.renderers = renderers
+
 
 
     def stream_update_backgrounds(self):
@@ -1780,17 +1900,19 @@ class TimeSeriesWidget():
                     #    self.logger.debug(f" {k}:{v}")
 
                     self.logger.debug(f"apply data {self.streamingUpdateData.keys()},")
-                    if set(self.streamingUpdateData.keys()) != set(self.data.data.keys()):
-                        self.logger.error(f"keys not match {self.streamingUpdateData.keys()},{self.data.data.keys()}, skip this data")
+                    if set(self.streamingUpdateData.keys()) != set(self.columnData.keys()):
+                        self.logger.error(f"keys not match {self.streamingUpdateData.keys()},{self.columnData.keys()}, skip this data")
                         self.streamingUpdateData = None
                     else:
-                        self.data.data = self.streamingUpdateData# #update the plot
-                        self.logger.debug(f"streaming start {self.data.data['__time'][0]} end {self.data.data['__time'][-1]}, interv {self.streamingInterval}")
+                        self.update_column_datas(self.streamingUpdateData)
+                        #self.data.data = self.streamingUpdateData# #update the plot
+                        mini,maxi = self.get_min_max_times(self.streamingUpdateData)
+                        self.logger.debug(f"streaming start {mini} end {maxi}, interv {self.streamingInterval}")
                         #self.plot.x_range.start = self.data.data["__time"][0]
                         #self.plot.x_range.end = self.data.data["__time"][-1]
                         if self.streamingMode:
                             #only in streaming Mode we set the axis new
-                            self.set_x_axis(self.data.data["__time"][0],self.data.data["__time"][-1])
+                            self.set_x_axis(mini,maxi)
                         self.adjust_y_axis_limits()
                         if self.showBackgrounds:
                             #we also try to update the backgrounds here
@@ -1861,7 +1983,8 @@ class TimeSeriesWidget():
         #clear out the figure
         self.hasLegend = False # to make sure the __init_figure makes a new legend
         self.plot.renderers = [] # no more renderers
-        self.data = None #no more data
+        #self.data = None #no more data
+        self.columnData={}
         self.lines = {} #no more lines
 
 
@@ -1901,9 +2024,9 @@ class TimeSeriesWidget():
 
         lineData = []
         selected = self.server.get_variables_selected()
-        for item in self.data.data:
+        for item in self.columnData:
             if item in selected and not self.is_second_axis(item):
-                lineData.extend(self.data.data[item])
+                lineData.extend(self.columnData[item].data["y"])
 
         if len(lineData) > 0:
             all_data = numpy.asarray(lineData, dtype=numpy.float)
@@ -2322,69 +2445,91 @@ class TimeSeriesWidget():
             self.logger.error(f"no data received")
             return
         if self.rangeStart == None:
+            mini,maxi = self.get_min_max_times(getData)
             #write it back
-            self.rangeStart = getData["__time"][0]
-            self.rangeEnd   = getData["__time"][-1]
+            self.rangeStart = mini#getData["__time"][0]
+            self.rangeEnd   = maxi#getData["__time"][-1]
             self.server.set_x_range(self.rangeStart, self.rangeEnd)
 
+        #del getData["__time"]
+        #getData["__time"]=[0]*settings["bins"] # dummy for the hover
+
+
+        """
         if newVars == []:
-            self.data.data = getData  # also apply the data to magically update
+            #self.data.data = getData  # also apply the data to magically update
+            for k,v in getData.items():
+                if not k.endswith("__time"):
+                    self.columnData[k].data ={"y":v,"x":getData[k+"__time"]}
         else:
             self.logger.debug("new column data source")
             if self.data is None:
                 #first time
                 self.data = ColumnDataSource(getData)  # this will magically update the plot, we replace all data
+                #also new store
+                self.columnData  = {}
+                for k,v in getData.items():
+                    if not k.endswith("__time"):
+                        self.columnData[k]=ColumnDataSource({"y":v,"x":getData[k+"__time"]})
+
             else:
                 #add more data
                 for variable in getData:
-                    if variable not in self.data.data:
-                        self.data.add(getData[variable],name=variable)
+                    if variable not in self.columnData:#data.data:
+                        self.columnData[variable]=ColumnDataSource({"y":v,"x":getData[k+"__time"]})
+                        #self.data.add(getData[variable],name=variable)
+        """
+        self.update_column_datas(getData)
 
-        self.logger.debug(f"self.data {self.data}")
+        self.logger.debug(f"self.columnData {self.columnData}")
         self.adjust_y_axis_limits()
-        timeNode = "__time"
+        #timeNode = "__time"
         #now plot var
         for variableName in newVars:
+            if variableName.endswith('__time'):
+                continue
             color = self.__get_free_color(variableName)
             self.logger.debug("new color ist"+color)
-            if variableName != timeNode:
-                self.logger.debug(f"plotting line {variableName}, is score: {self.server.is_score_variable(variableName)}")
-                if self.server.is_score_variable(variableName):
-                    self.lines[variableName] = self.plot.circle(timeNode, variableName, line_color="red", fill_color=None,
-                                                  source=self.data, name=variableName,size=7)  # x:"time", y:variableName #the legend must havee different name than the source bug
 
+            self.logger.debug(f"plotting line {variableName}, is score: {self.server.is_score_variable(variableName)}")
+            if self.server.is_score_variable(variableName):
+                #this is a red circle score varialbe
+                self.lines[variableName] = self.plot.circle(x="x", y="y", line_color="red", fill_color=None,
+                                                            source=self.columnData[variableName], name=variableName,size=7)  # x:"time", y:variableName #the legend must havee different name than the source bug
 
-
+            else:
+                if ".score" in variableName:
+                    # this is a score 0..1 line
+                    self.lines[variableName] = self.plot.line(x="x", y="y", color="gray", line_dash="dotted",
+                                                              source=self.columnData[variableName], name=variableName, line_width=2,
+                                                              y_range_name="y2")  # x:
                 else:
-                    if ".score" in variableName:
-                        # this is a score 0..1 line
-                        self.lines[variableName] = self.plot.line(timeNode, variableName, color="gray", line_dash="dotted",
-                                                                  source=self.data, name=variableName, line_width=2,
-                                                                  y_range_name="y2")  # x:
-                    else:
 
 
-                        #this is a real line
-                        self.lines[variableName] = self.plot.line(timeNode, variableName, color=color,
-                                                      source=self.data, name=variableName,line_width=2)  # x:"time", y:variableName #the legend must havee different name than the source bug
-                        if showMarker:
-                            markerName = variableName+".marker"
-                            marker = self.plot.circle(timeNode, variableName, line_color=color, fill_color=color,
-                                                      source=self.data, name=markerName,size=3)  # x:"time", y:variableName #the legend must havee different name than the source bug
-                    #legend only for lines
-                    self.legendItems[variableName] = LegendItem(label=variableName,
-                                                                renderers=[self.lines[variableName]])
+                    #this is a real line
+                    #self.debugStore =copy.deepcopy(getData)
+                    #self.lines[variableName] = self.plot.line(x=variableName+"__time", y=variableName, color=color,
+                    #                              source=self.data, name=variableName,line_width=2)  # x:"time", y:variableName #the legend must havee different name than the source bug
+                    self.lines[variableName] = self.plot.line(x="x", y="y", color=color,source=self.columnData[variableName], name=variableName,line_width=2)
 
-                #we set the lines and glypsh to no change their behaviour when selections are done, unfortunately, this doesn't work, instead we now explicitly unselect in the columndatasource
-                self.lines[variableName].nonselection_glyph = None  # autofading of not selected lines/glyphs is suppressed
-                self.lines[variableName].selection_glyph = None     # self.data.selected = Selection(indices = [])
+                    if showMarker:
+                        markerName = variableName+".marker"
+                        marker = self.plot.circle(x="x",y="y", line_color=color, fill_color=color,
+                                                  source=self.columnData[variableName], name=markerName,size=3)  # x:"time", y:variableName #the legend must havee different name than the source bug
+                #legend only for lines
+                self.legendItems[variableName] = LegendItem(label=variableName,
+                                                            renderers=[self.lines[variableName]])
 
-                #self.legendItems[variableName] = LegendItem(label=variableName,renderers=[self.lines[variableName]])
+            #we set the lines and glypsh to no change their behaviour when selections are done, unfortunately, this doesn't work, instead we now explicitly unselect in the columndatasource
+            self.lines[variableName].nonselection_glyph = None  # autofading of not selected lines/glyphs is suppressed
+            self.lines[variableName].selection_glyph = None     # self.data.selected = Selection(indices = [])
 
-                if self.showThresholds:
-                    self.show_thresholds_of_line(variableName)
-                if self.showMotifs:
-                    self.show_motifs_of_line(variableName)
+            #self.legendItems[variableName] = LegendItem(label=variableName,renderers=[self.lines[variableName]])
+
+            if self.showThresholds:
+                self.show_thresholds_of_line(variableName)
+            if self.showMotifs:
+                self.show_motifs_of_line(variableName)
 
         #compile the new colors
         nowColors = {}
@@ -2422,6 +2567,20 @@ class TimeSeriesWidget():
             self.userZoomRunning = True
         #print("range cb"+str(attribute),self.rangeStart,self.rangeEnd)
         #self.logger.debug(f"leaving range_cb with userzoom running {self.userZoomRunning}")
+
+    def get_min_max_times(self,newData):
+        mini = 1000*1000*1000*1000*1000
+        maxi = 0
+        for k,v in newData.items():
+            if k.endswith("__time"):
+                check=[mini]
+                check.extend(v)
+                mini =  min(check)
+                check=[maxi]
+                check.extend(v)
+                maxi=max(check)
+        return mini,maxi
+
 
     def set_x_axis(self,start=None,end=None):
         if start:
@@ -2488,6 +2647,8 @@ class TimeSeriesWidget():
             marker = self.find_renderer(lin+".marker")
             if marker:
                 self.remove_renderers([marker])
+
+            #del self.columnData[lin] #delete the ColumnDataSource
 
 
 
@@ -2598,10 +2759,15 @@ class TimeSeriesWidget():
             #option = self.annotationButtons.active # gives a 0,1 list, get the label now
             #tags = self.server.get_settings()["tags"]
             #mytag = self.annotationTags[option]
+            for k,v in self.columnData.items():
+                v.selected =Selection(indices=[])
+
             mytag =self.currentAnnotationTag
             #self.logger.info("TAGS"+str(self.annotationTags)+"   "+str(option))
-            self.data.selected = Selection(indices=[])  # suppress real selection
-            self.edit_annotation_cb(event.__dict__["geometry"]["x0"],event.__dict__["geometry"]["x1"],mytag,event.__dict__["geometry"]["y0"],event.__dict__["geometry"]["y1"])
+
+            #self.data.selected = Selection(indices=[])  # suppress real selection
+            if mytag != None:
+                self.edit_annotation_cb(event.__dict__["geometry"]["x0"],event.__dict__["geometry"]["x1"],mytag,event.__dict__["geometry"]["y0"],event.__dict__["geometry"]["y1"])
         if eventType == "Tap":
             #self.logger.debug(f"TAP {self.annotationsVisible}, {event.__dict__['sx']}")
             #plot all attributes
@@ -3231,7 +3397,7 @@ class TimeSeriesWidget():
             self.logger.debug(f"after round {data[backGroundNodeId]}")
 
 
-        for value, time in zip(data[backGroundNodeId], data["__time"]):
+        for value, time in zip(data[backGroundNodeId], data[backGroundNodeId+"__time"]):
             # must set the startTime?
             if not startTime:
                 if not numpy.isfinite(value):

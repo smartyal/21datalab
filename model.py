@@ -585,7 +585,17 @@ class Model:
             all templates and functions are imported
             a model holds all modelling information and data to work on
         """
-        self.model = {"1":{"name":"root","type":"folder","children":[],"parent":"0","id":"1","backRefs":[],"forwardRefs":[]}}
+        self.version = 0.1
+        self.model = {"1":{
+            "name":"root",
+            "type":"folder",
+            "children":[],
+            "parent":"0",
+            "id":"1",
+            "backRefs":[],
+            "forwardRefs":[],
+            "version":self.version
+           }}
         self.disableObserverCounter = 0 # a counting sema (under manual lock) for the disabling: if zero the notify_observers is active otherwise not
         self.__init_logger(logging.DEBUG)
         self.globalIdCounter=1 # increased on every creation of a node, it holds the last inserted node id
@@ -1461,7 +1471,7 @@ class Model:
                     self.model[parentId]["children"].remove(id)
                     childNotify.append(parentId)
                 if self.model[id]["type"]=="timeseries":
-                    self.delete_time_series(id)
+                    self.time_series_delete(id)
                 del self.model[id]
 
             #now notify only those who still exist
@@ -1773,6 +1783,7 @@ class Model:
                     return len(self.model[columnIds[0]]["value"])
             except:
                 return None
+
 
 
 
@@ -2539,15 +2550,33 @@ class Model:
                         if int(nodeId)>self.globalIdCounter:
                             self.globalIdCounter = int(nodeId) # here, we recover the global id counter
                     if includeData:
-                        if self.get_node_info(nodeId)["type"] == "table":
-                            table = self.get_browse_path(nodeId)
-                            data = numpy.load(os.path.join(model_directory, model_filename) + "." + table + ".npy")
-                            ids = self.get_leaves_ids(table+".columns")
-                            for id, column in zip(ids, data):
-                                self.set_value(id,column)
+                        #compatibility loader
+                        if "version" in self.model["1"] and self.model["1"]["version"]>=0.1:
+                            #new loader
+                            pass
+                        else:
+                            self.logger.debug("time series compatibility loader")
+                            if self.get_node_info(nodeId)["type"] == "table":
+                                table = self.get_browse_path(nodeId)
+                                data = numpy.load(os.path.join(model_directory, model_filename) + "." + table + ".npy")
+                                #now find the time data, apply it to all variables
+                                timeId=self.find_table_time_node(table)
+                                ids = self.get_leaves_ids(table+".columns")
+                                for id, column in zip(ids, data):
+                                    if id==timeId:
+                                        times = column
+                                    else:
+                                        self.ts.create(id)
+                                        self.set_properties({"type":"timeseries"},id)
+                                        self.ts.set(id,values=column)
+                                for id in ids:
+                                    if id == timeId:
+                                        continue
+                                    self.ts.set(id,times=times)
 
                 self.enable_observers()
                 self.publish_event(f"loading model {fileName} done.")
+                self.model["1"]["version"]=self.version #update the version
                 result = True
             except Exception as e:
                 self.logger.error("problem loading"+str(e))
@@ -2999,12 +3028,64 @@ class Model:
             return None
         return self.ts.set(id,values=None,times=None)
 
-    def time_series_get_table(self, desc, start=None, end=None, copy=False, resampleTimes=None):
+    def time_series_get_table(self,variables,start=None,end=None,noBins=None,includeIntervalLimits=False,resampleTimes=None,format="default",toList = False):
         """
-            returns raw data dict with {name:{"values":[..],"__time":[...], "name2":{"values":[..], "__time":[..]
+            get a time series table from variables. The table is returned as a list[list] object
+            all variables requested must be of type "column" and must belong to the same table:
+            all columns requested here must have a direct backreference to the same node of type "columns"
+            todo: also allow "columns" to point to folders or multiple hierarchies of referencing/folders
+
+            Args:
+                variables (list(nodedescriptors)): nodes to be part the data table requested (ordered!)
+                startime, endTime: the start and endtime of the table given as seconds since epoch
+                                #we also allow the special case of endTime = 0 and startTime = -interval
+                                # we also allow the special case of startTime given and end time= 0
+                noBins(int): the number of samples to be returned inside the table between start end endtime,
+                             if None is given, we return all samples (rows) we have in the table and to not aggregate
+                agg(string): the aggregation function to be used when we downsample the data,
+                    "sample": this means, we just pick out values (we sample) the data set, this is actually not an aggregation
+                includeTimesStampe (bool): currently ignored
+                includeBackGround (bool): currently ignored
+            Returns(dict)
+                key : value
+                "__time" : list of timestamps for the returned table in epoch seconds
+                "variable1": the list of float values of one of the requested variables
         """
-        ids = self.get_id(desc)
-        return self.ts.get_table(ids,start,end,copy,resampleTimes)
+        with self.lock:
+            #first check if all requested timeseries exist and have type time series
+            #vars = [] #self.get_id(variables)
+            varIds = {} # id:result descriptor
+            for var in variables:
+                varId = self.get_id(var)
+                if varId == None:
+                    self.logger.error(f"requested variable {var} does not exist")
+                    return False
+                if self.model[varId]["type"]!="timeseries":
+                    self.logger.error(f"requested variable {var} not timeseries, instead {self.model[varId]['type']}")
+                    return False
+                varIds[varId]=var
+
+            table = self.ts.get_table(list(varIds.keys()), start=start, end=end, copy=copy, resampleTimes=resampleTimes, noBins = noBins, includeIntervalLimits=includeIntervalLimits)
+
+        #now wrap back the descriptor to the query, if is was a browsepath, we return and browsepath, if is was an id, we return id
+        # make some formatting
+        def convert(input,toList=toList):
+            if toList:
+                return list(input)
+            else:
+                return input
+
+        result = {}
+        for k,v in table.items():
+            if format=="flat":
+                result[varIds[k]]=convert(v["values"])
+                result[varIds[k]+"__time"]=convert(v["__time"])
+            else:
+                result[varIds[k]] = convert(v)
+        return result
+
+
+
 
     def time_series_get_info(self,name=None):
         return self.ts.get_info(name)
