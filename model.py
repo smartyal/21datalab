@@ -2430,17 +2430,7 @@ class Model:
                         model_filename = os.path.basename(fileName)
 
                 if includeData:
-                    for nodeId in self.model:
-                        if self.get_node_info(nodeId)["type"] == "table":
-                            tablePath = self.get_browse_path(nodeId)
-                            self.logger.debug("found table "+tablePath)
-                            columnNodes = self.get_leaves(tablePath+".columns")
-                            myList = []
-                            for node in columnNodes:
-                                myList.append(self.get_value(node["id"]))
-                            table = numpy.stack(myList,axis=0)
-                            #numpy.save("./models/" + fileName + "."+tablePath+".npy", table)
-                            numpy.save(os.path.join(model_directory, model_filename)+ "." + tablePath + ".npy", table)
+                    self.ts.save(os.path.join(model_directory, model_filename))
                 f = open(os.path.join(model_directory, model_filename)+ ".model.json", "w")
                 f.write(json.dumps(m, indent=4))
                 f.close()
@@ -2549,13 +2539,14 @@ class Model:
                         #we only recover the counter if necessary
                         if int(nodeId)>self.globalIdCounter:
                             self.globalIdCounter = int(nodeId) # here, we recover the global id counter
-                    if includeData:
-                        #compatibility loader
-                        if "version" in self.model["1"] and self.model["1"]["version"]>=0.1:
-                            #new loader
-                            pass
-                        else:
-                            self.logger.debug("time series compatibility loader")
+                if includeData:
+                    if "version" in self.model["1"] and self.model["1"]["version"]>=0.1:
+                        #new loader
+                        self.ts.load(os.path.join(model_directory, model_filename))
+                    else:
+                        self.logger.debug("time series compatibility loader")
+                        #we assume data in file and use the standard inmemory table storage
+                        for nodeId in self.model:
                             if self.get_node_info(nodeId)["type"] == "table":
                                 table = self.get_browse_path(nodeId)
                                 data = numpy.load(os.path.join(model_directory, model_filename) + "." + table + ".npy")
@@ -3026,7 +3017,7 @@ class Model:
         id = self.get_id(desc)
         if not id in self.model:
             return None
-        return self.ts.set(id,values=None,times=None)
+        return self.ts.set(id,values=values,times=times)
 
     def time_series_get_table(self,variables,start=None,end=None,noBins=None,includeIntervalLimits=False,resampleTimes=None,format="default",toList = False):
         """
