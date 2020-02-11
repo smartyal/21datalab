@@ -62,7 +62,7 @@ class TimeSeries:
             startIndex = 0
 
         if end:
-            endIndex = numpy.searchsorted(self.times, end)
+            endIndex = numpy.searchsorted(self.times, end) # this endIndex is one more than the last that we take
         else:
             endIndex = lastValidIndex
 
@@ -70,11 +70,11 @@ class TimeSeries:
             haveData = False
         else:
             #assure limits
-            if startIndex> lastValidIndex:
+            if startIndex > lastValidIndex:
                 #this means, all the data is left from the query, we should no provide data
                 haveData = False
-            if endIndex >= lastValidIndex:
-                endIndex = lastValidIndex
+            if endIndex > lastValidIndex+1:
+                endIndex = lastValidIndex+1
 
 
         if haveData:
@@ -88,11 +88,11 @@ class TimeSeries:
                 if noBins:
                     #we pick samples only if we have more than requested
                     if (endIndex-startIndex)>noBins:
-                        takeIndices = numpy.linspace(startIndex, endIndex, noBins, endpoint=True, dtype=int)
+                        takeIndices = numpy.linspace(startIndex, endIndex-1, noBins, endpoint=True, dtype=int)
                     else:
-                        takeIndices = numpy.arange(startIndex, endIndex+1) #arange excludes the last
+                        takeIndices = numpy.arange(startIndex, endIndex) #arange excludes the last
                 else:
-                    takeIndices = numpy.arange(startIndex,endIndex+1) #arange exludes the last
+                    takeIndices = numpy.arange(startIndex,endIndex) #arange exludes the last
 
                 times = self.times[takeIndices]
                 values = self.values[takeIndices]
