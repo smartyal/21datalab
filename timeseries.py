@@ -50,6 +50,11 @@ class TimeSeries:
             returns raw data dict with { {"values":[..],"__time":[...], "name2":{"values":[..], "__time":[..]
 
         """
+        haveData = True
+
+        remainingSpace = numpy.count_nonzero(numpy.isnan(self.times))
+        lastValidIndex = len(self.times)-remainingSpace-1
+
 
         if start:
             startIndex = numpy.searchsorted(self.times, start)
@@ -59,34 +64,47 @@ class TimeSeries:
         if end:
             endIndex = numpy.searchsorted(self.times, end)
         else:
-            endIndex = len(self.times)-1
+            endIndex = lastValidIndex
 
-
-        if not resampleTimes:
-
-            if includeIntervalLimits:
-                if startIndex != 0:
-                    startIndex = startIndex -1
-                if endIndex <= len(self.times) -2 :
-                    endIndex = endIndex +1
-            if noBins:
-                #we pick samples only if we have more than requested
-                if (endIndex-startIndex)>noBins:
-                    takeIndices = numpy.linspace(startIndex, endIndex, noBins, endpoint=False, dtype=int)
-                else:
-                    takeIndices = numpy.arange(startIndex, endIndex)
-            else:
-                takeIndices = numpy.arange(startIndex,endIndex)
-
-            times = self.times[takeIndices]
-            values = self.values[takeIndices]
+        if startIndex == endIndex:
+            haveData = False
         else:
-            oldTimes = self.times[startIndex:endIndex]
-            oldValues = self.values[startIndex:endIndex]
-            newValues = self.__resample(resampleTimes,oldTimes,oldValues)
-            times = resampleTimes
-            values = newValues
+            #assure limits
+            if startIndex> lastValidIndex:
+                #this means, all the data is left from the query, we should no provide data
+                haveData = False
+            if endIndex >= lastValidIndex:
+                endIndex = lastValidIndex
 
+
+        if haveData:
+            if not resampleTimes:
+
+                if includeIntervalLimits:
+                    if startIndex != 0:
+                        startIndex = startIndex -1
+                    if endIndex <= lastValidIndex -1 :
+                        endIndex = endIndex +1
+                if noBins:
+                    #we pick samples only if we have more than requested
+                    if (endIndex-startIndex)>noBins:
+                        takeIndices = numpy.linspace(startIndex, endIndex, noBins, endpoint=True, dtype=int)
+                    else:
+                        takeIndices = numpy.arange(startIndex, endIndex+1) #arange excludes the last
+                else:
+                    takeIndices = numpy.arange(startIndex,endIndex+1) #arange exludes the last
+
+                times = self.times[takeIndices]
+                values = self.values[takeIndices]
+            else:
+                oldTimes = self.times[startIndex:endIndex]
+                oldValues = self.values[startIndex:endIndex]
+                newValues = self.__resample(resampleTimes,oldTimes,oldValues)
+                times = resampleTimes
+                values = newValues
+        else:
+            times=[]
+            values=[]
 
 
         if copy:

@@ -2240,7 +2240,7 @@ class Model:
 
             functionName = self.model[id]["functionPointer"]
             if not functionName in self.functions:
-                self.logger.error("can't find function in global list")
+                self.logger.error(f"can't find function {functionName} in global list")
                 return False
 
             functionNode = self.get_node(id)
@@ -3102,7 +3102,7 @@ class Model:
         return self.ts.get_info(name)
 
 
-    def time_series_insert_blobs(self, tableDesc, blobs):
+    def time_series_insert_blobs(self, tableDesc, blobs=[]):
         """ blob is a dict or list of dicts of key and values containing one time base like
         the descriptors of teh variables can be ids, browsepaths or just names (without dots)
         if the descriptors are names, we try to find them in the model, they must exist there uniquely, otherwise
@@ -3125,6 +3125,8 @@ class Model:
         with self.lock:
             tableId = self.get_id(tableDesc)
             if not tableId:
+                #try to find the table from the first node
+
                 #table not found, create it
                 tableId = self.create_node_from_path(tableDesc,properties={"type":"table"})
                 if tableId:
@@ -3145,6 +3147,7 @@ class Model:
         desc2Id = {} # key: the descriptor from the input blob v: the id in the model
 
         tableVars = self.get_leaves(columnsId)
+        desc2Id = {dic["name"]:dic["id"] for dic in tableVars}  # key: the descriptor from the input blob v: the id in the model, preload with the names
 
         #convert all to ids
         newBlobs=[]
@@ -3163,7 +3166,7 @@ class Model:
                         #try to find
                         for var in tableVars:
                             if var["name"] == k:
-                                id = k["id"]
+                                id = v["id"]
                                 break
                         if not id:
                             #still not found, we need to create it
@@ -3177,6 +3180,7 @@ class Model:
 
                     newBlob[id] = v
             newBlobs.append(newBlob)
+        self.logger.debug(f"inserting {len(newBlobs)}")
         return self.ts.insert_blobs(newBlobs)
 
 
