@@ -3019,7 +3019,7 @@ class Model:
             return None
         return self.ts.set(id,values=values,times=times)
 
-    def time_series_get_table(self,variables,start=None,end=None,noBins=None,includeIntervalLimits=False,resampleTimes=None,format="default",toList = False):
+    def time_series_get_table(self,variables,tableDescriptor = None, start=None,end=None,noBins=None,includeIntervalLimits=False,resampleTimes=None,format="default",toList = False):
         """
             get a time series table from variables. The table is returned as a list[list] object
             all variables requested must be of type "column" and must belong to the same table:
@@ -3028,6 +3028,11 @@ class Model:
 
             Args:
                 variables (list(nodedescriptors)): nodes to be part the data table requested (ordered!)
+                tableDescriptor : a desc for the table where the variables reside
+                    possible addressing of te request nodes:
+                    1) ids or browsepaths of nodes (no tableDescriptor needed)
+                    2) names of nodes an tableDescriptor of the table (names must be unique in the columns of the table)
+
                 startime, endTime: the start and endtime of the table given as seconds since epoch
                                 #we also allow the special case of endTime = 0 and startTime = -interval
                                 # we also allow the special case of startTime given and end time= 0
@@ -3042,19 +3047,37 @@ class Model:
                 "__time" : list of timestamps for the returned table in epoch seconds
                 "variable1": the list of float values of one of the requested variables
         """
+        if tableDescriptor:
+            tableId = self.get_id(tableDescriptor)
+            tableVars = self.get_leaves(tableId+".columns")
+        else:
+            tableId = None
+
         with self.lock:
             #first check if all requested timeseries exist and have type time series
             #vars = [] #self.get_id(variables)
-            varIds = {} # id:result descriptor
+
+            varIds = {} # NodeId: request descriptor
             for var in variables:
                 varId = self.get_id(var)
-                if varId == None:
-                    self.logger.error(f"requested variable {var} does not exist")
-                    return False
+                if not varId:
+                    #try to find per columns and table desc
+                    found = False
+                    if tableId:
+                        for tableVar in tableVars:
+                            if tableVar["name"] == var:
+                                varId = tableVar["id"]
+                                found = True
+                                break
+
+                    if not found:
+                        self.logger.error(f"requested variable {var} does not exist")
+                        return False
                 if self.model[varId]["type"]!="timeseries":
                     self.logger.error(f"requested variable {var} not timeseries, instead {self.model[varId]['type']}")
                     return False
-                varIds[varId]=var
+
+                varIds[varId]=var #remeber it for later
 
             table = self.ts.get_table(list(varIds.keys()), start=start, end=end, copy=copy, resampleTimes=resampleTimes, noBins = noBins, includeIntervalLimits=includeIntervalLimits)
 
@@ -3075,14 +3098,20 @@ class Model:
                 result[varIds[k]] = convert(v)
         return result
 
-
-
-
     def time_series_get_info(self,name=None):
         return self.ts.get_info(name)
 
-    def time_series_insert_blobs(self, blobs):
+
+    def time_series_insert_blobs(self, tableDesc, blobs):
         """ blob is a dict or list of dicts of key and values containing one time base like
+        the descriptors of teh variables can be ids, browsepaths or just names (without dots)
+        if the descriptors are names, we try to find them in the model, they must exist there uniquely, otherwise
+        they cant be processed
+        we also autocreate the table or missing variables
+
+        the data will be put in a table:
+         - we try to find the table based on one of the variables, if not found, we create the table
+
         {
             "a": [1.5,1.6,1.7]m
             "b": [2,3,4]
@@ -3092,26 +3121,61 @@ class Model:
         if not type(blobs) is list:
             blobs=[blobs]
 
-        newBlobs=[]
+        #first, find the table
+        with self.lock:
+            tableId = self.get_id(tableDesc)
+            if not tableId:
+                #table not found, create it
+                tableId = self.create_node_from_path(tableDesc,properties={"type":"table"})
+                if tableId:
+                    columnsId = self.create_node(parent=tableId, name="columns", properties={"type": "referencer"})
+                    variablesId = self.create_node(parent=tableId, name="variables", properties={"type": "folder"})
+                else:
+                    self.logger.error(f"cant create table {tableDesc}")
+                    return False
+            else:
+                columnsId = self.get_child(tableId,"columns")
+                variablesId = self.get_child(tableId, "variables")
+
+            #now we know the tableId, columnsId, variablesId
+
+        # iterate over all blobs and find the ids of the names in the blobs, if not found, create it
+        # exchange the descriptors to ids
+
+        desc2Id = {} # key: the descriptor from the input blob v: the id in the model
+
+        tableVars = self.get_leaves(columnsId)
+
         #convert all to ids
+        newBlobs=[]
         for blob in blobs:
             newBlob={}
             for k,v in blob.items():
+
                 if k=="__time":
                     newBlob[k]=v
                 else:
                     #does this id already exist?
-                    id = self.get_id(k)
-                    if id:
-                        newBlob[id]=v
+                    if k in desc2Id:
+                        id = desc2Id[k]
                     else:
-                        #this node does not exist yet, see if we can make it from the browsepath
-                        id = self.create_node_from_path(k,{"type":"timeseries"})
-                        if id:
-                            newBlob[id]=v
+                        id = None
+                        #try to find
+                        for var in tableVars:
+                            if var["name"] == k:
+                                id = k["id"]
+                                break
+                        if not id:
+                            #still not found, we need to create it
+                            id = self.create_node(parent=variablesId,name=k,properties={"type": "timeseries"})
+                        if not id:
+                            self.logger.error(f"cant find  or create {name}")
+                            continue
                         else:
-                            #we can't find it and can't create it, so give up
-                            self.logger.error(f"can't blob insert the variable {k}")
+                            self.add_forward_refs(columnsId,[id])
+                            desc2Id[k]=id #remember to speed up next time
+
+                    newBlob[id] = v
             newBlobs.append(newBlob)
         return self.ts.insert_blobs(newBlobs)
 

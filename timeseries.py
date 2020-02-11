@@ -105,9 +105,10 @@ class TimeSeries:
                 newTimes: a numpy.array of time values (typically epoch seconds in UTC
                 oldTimes: the old time stamps of the values, must have same length as values
                 values: a numpy array of values to be up/down sampled
-                method: the method used when up/down sampling. we currently only support
-                            downsampling: sample values (we take the last value in time (sample and hold)
-                            upsampling: we also take the last old value in time (forward fill, sample and hold)
+                method: the method used when up/down sampling. we currently only support the
+                            "ffill":
+                                @downsampling: sample values (we take the last value in time (sample and hold)
+                                @upsampling: we also take the last old value in time (forward fill, sample and hold)
             Returns:
                 numpy array of type values of the length of newTimes with the up/down-sampled values
 
