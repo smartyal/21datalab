@@ -3031,33 +3031,54 @@ class Model:
                               toList = False,
                               resampleMethod = None):
         """
-            get a time series table from variables.
+            get a time series table from variables (nodes of type "timeseries").
 
 
             Args:
-                variables (list(nodedescriptors)): nodes to be part the data table requested (ordered!)
+                variables [list of ode descriptors]: nodes to be part the data table requested (ordered!)
+
                 tableDescriptor : a desc for the table where the variables reside
                     possible addressing of te request nodes:
                     1) ids or browsepaths of nodes (no tableDescriptor needed)
-                    2) names of nodes an tableDescriptor of the table (names must be unique in the columns of the table)
+                    2) names of nodes and tableDescriptor of the table (names must be unique in the columns of the table)
 
-                startime, endTime: the start and endtime of the table given as seconds since epoch
-                                #we also allow the special case of endTime = 0 and startTime = -interval
-                                # we also allow the special case of startTime given and end time= 0
+                startime, endTime [float]:
+                                the start and endtime of the table given as seconds since epoch
+                                we also allow the special case of endTime = 0 and startTime = -interval
+                                we also allow the special case of startTime given and end time= 0
+
                 noBins(int): the number of samples to be returned inside the table between start end endtime,
                              if None is given, we return all samples (rows) we have in the table and to not aggregate
-                includeIntervalLimits: if set to true, we will include one more data point each left and right of the requested time
-                resampleMethod [enum]: how to resample if we need to; options are:
-                    "samplehold" sample and hold
+
+                includeIntervalLimits [bool]: if set to true, we will include one more data point each left and right of the requested time
+
+                format:  [enum] "default", "flat", see return description
+
+
+                resampleMethod [enum]:
+                    how to resample if we need to; options are:
+                    None (if not specified): sample and hold
                     "linear": linear interpolation
                     "linearfill": linear interpolation and also interpolate "nan" or "inf" values in the original data
-                toList: set true to get list-objects instead of numpy.arrays
+
+                toList: (bool) True: return data as python list, False: return numpy arrays
+
+                examples:
+                - get all data of the variables
+                    data = m.get_time_series_table(["root.mytable.variables.a","root.mytable.variables.b"]) # get all data
+                - request max 300 values of data (this is what the UI does)
+                    data = m.get_time_series_table(["a","b"],"root.mytable",start=1581483065.323,end=1581483080.323,noBins=300,includeIntervalLimits=True)
+                - request data and resample to equiditant 25 sec spacing, also fill possible nan values with interpolation
+                    times = list(range(1581483065,1581483065+100,25))
+                    data = m.get_time_series_table(["a","b"],"root.mytable",resampleTimes = times,resampleMethod = "linearfill")
 
 
             Returns(dict)
-                key : descriptor of the variable given in the request
-                value: a dict
-                    "__time" : list of timestamps for the returned table in epoch seconds
+                formatting depends on the "format" option
+                 "defaut": return the result as {"var_a":{"values":[],"__time":[]}, "var_b":{"values":[],"__time":[]..}
+                    "flat" return the result as {"var_a":[], "var_a__time":[],"var_b":[],"var_b__time":[]....}
+                the variable descriptor are the ones given in the request
+                    "__time" : list of timestamps for the returned table in epoch seconds as float64
                     "values": the list of float values of one of the requested variables
         """
         if tableDescriptor:
