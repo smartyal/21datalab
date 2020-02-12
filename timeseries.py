@@ -262,6 +262,11 @@ class TimeSeriesTable:
             return False
 
 
+        for k,v in blob.items():
+            if numpy.isscalar(v):
+                blob[k]=numpy.asarray([v])
+
+
         lens = [len(v) for k,v in blob.items()]
         if len(set(lens)) != 1:
             #the lengths differ, we can't process
