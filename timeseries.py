@@ -45,14 +45,39 @@ class TimeSeries:
             self.times = numpy.copy(numpy.asarray(times))
         return True
 
-    def get(self, start=None, end=None, copy=False, resampleTimes = None, noBins = None, includeIntervalLimits = False):
+    def get(self, start=None, end=None, copy=False, resampleTimes = None, noBins = None, includeIntervalLimits = False, resampleMethod = None):
         """
-            returns raw data dict with { {"values":[..],"__time":[...], "name2":{"values":[..], "__time":[..]
+
+            request data and resample it
+            typical use cases:
+                1) give a start and end time and the number of bins: this returns a vector of noBins elements including start and end time
+                    if the data does not have enough points between start and end, we do NOT deliver more
+                    if the data does have more points than noBins between start and end , we downsample by picking values
+                2) use the resampleTimes option:
+                    give a vector resampleTimes containing time points at which we want to get results, if necessary, the data will be resampled using
+                    the resampleMethod
+
+            Args
+                start [float]: the start time of the data query in epoch seconds
+                end [float] : the end time of the data query in epoch seconds
+                copy [bool]: if False, we only get the pointer to the numpy array, not a copy. This saves time, but the data should only be read!
+                                 if True we get a full copy of the requested data
+                resampleTimes [numpy.array float]: the time points to return in the result
+                noBins : if start and end time is given, we can query a certain number of data points, the dat will be up/down sampled with sample and hold
+                includeIntervalLimits: if set to true, we will include one more data point each left and right of the requested time
+                resampleMethod [enum]: how to resample if we need to; options are:
+                    "samplehold" sample and hold
+                    "linear": linear interpolation
+                    "linearfill": linear interpolation and also interpolate "nan" or "inf" values in the original data
+
+
+            Return [dict]
+                 {"values":[..],"__time":[...]}
 
         """
         haveData = True
 
-        remainingSpace = numpy.count_nonzero(numpy.isnan(self.times))
+        remainingSpace = numpy.count_nonzero(numpy.isnan(self.times)) #the times will not have any intermediate nan, only at the end
         lastValidIndex = len(self.times)-remainingSpace-1
 
 
@@ -97,11 +122,22 @@ class TimeSeries:
                 times = self.times[takeIndices]
                 values = self.values[takeIndices]
             else:
-                oldTimes = self.times[startIndex:endIndex]
-                oldValues = self.values[startIndex:endIndex]
-                newValues = self.__resample(resampleTimes,oldTimes,oldValues)
+                #must resample the data
+                #oldTimes = self.times[startIndex:endIndex]
+                #oldValues = self.values[startIndex:endIndex]
+
+                if resampleMethod == "linear":
+                    values = numpy.interp(resampleTimes,self.times,self.values)
+                elif resampleMethod == "linearfill":
+                    #fill the nans with data
+                    indices = numpy.isfinite(self.values)
+                    values = numpy.interp(resampleTimes, self.times[indices], self.values[indices])
+                else:
+                    #the default is ffill
+                    values = self.__resample_ffill(resampleTimes, self.times, self.values)
                 times = resampleTimes
-                values = newValues
+
+
         else:
             times=[]
             values=[]
@@ -114,7 +150,7 @@ class TimeSeries:
 
         return result
 
-    def __resample(self,newTimes, oldTimes, values, method="ffill"):
+    def __resample_ffill(self,newTimes, oldTimes, values):
         """
             resample the values along a new time axis
             up/down samping is possible, and distances are possible
@@ -181,7 +217,7 @@ class TimeSeriesTable:
     def set(self,name,values = None,times = None):
         return self.store[name].set(values,times)
 
-    def get_table(self, names, start=None, end=None, copy=False, resampleTimes=None, noBins = None, includeIntervalLimits=False):
+    def get_table(self, names, start=None, end=None, copy=False, resampleTimes=None, noBins = None, includeIntervalLimits=False,resampleMethod = None):
         """
             returns raw data dict with {name:{"values":[..],"__time":[...], "name2":{"values":[..], "__time":[..]
         """
@@ -190,7 +226,7 @@ class TimeSeriesTable:
         result = {}
         for name in names:
             if name in self.store:
-                result[name]=self.store[name].get(start=start,end=end,copy=copy,resampleTimes=resampleTimes,noBins=noBins,includeIntervalLimits=includeIntervalLimits)
+                result[name]=self.store[name].get(start=start,end=end,copy=copy,resampleTimes=resampleTimes,noBins=noBins,includeIntervalLimits=includeIntervalLimits,resampleMethod=resampleMethod)
         return result
 
     def get_info(self,name = None):
@@ -224,6 +260,7 @@ class TimeSeriesTable:
     def __insert_blob(self,blob):
         if not "__time" in blob:
             return False
+
 
         lens = [len(v) for k,v in blob.items()]
         if len(set(lens)) != 1:

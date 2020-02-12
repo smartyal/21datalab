@@ -3019,12 +3019,20 @@ class Model:
             return None
         return self.ts.set(id,values=values,times=times)
 
-    def time_series_get_table(self,variables,tableDescriptor = None, start=None,end=None,noBins=None,includeIntervalLimits=False,resampleTimes=None,format="default",toList = False):
+    def time_series_get_table(self,
+                              variables,
+                              tableDescriptor = None,
+                              start=None,
+                              end=None,
+                              noBins=None,
+                              includeIntervalLimits=False,
+                              resampleTimes=None,
+                              format="default",
+                              toList = False,
+                              resampleMethod = None):
         """
-            get a time series table from variables. The table is returned as a list[list] object
-            all variables requested must be of type "column" and must belong to the same table:
-            all columns requested here must have a direct backreference to the same node of type "columns"
-            todo: also allow "columns" to point to folders or multiple hierarchies of referencing/folders
+            get a time series table from variables.
+
 
             Args:
                 variables (list(nodedescriptors)): nodes to be part the data table requested (ordered!)
@@ -3038,14 +3046,19 @@ class Model:
                                 # we also allow the special case of startTime given and end time= 0
                 noBins(int): the number of samples to be returned inside the table between start end endtime,
                              if None is given, we return all samples (rows) we have in the table and to not aggregate
-                agg(string): the aggregation function to be used when we downsample the data,
-                    "sample": this means, we just pick out values (we sample) the data set, this is actually not an aggregation
-                includeTimesStampe (bool): currently ignored
-                includeBackGround (bool): currently ignored
+                includeIntervalLimits: if set to true, we will include one more data point each left and right of the requested time
+                resampleMethod [enum]: how to resample if we need to; options are:
+                    "samplehold" sample and hold
+                    "linear": linear interpolation
+                    "linearfill": linear interpolation and also interpolate "nan" or "inf" values in the original data
+                toList: set true to get list-objects instead of numpy.arrays
+
+
             Returns(dict)
-                key : value
-                "__time" : list of timestamps for the returned table in epoch seconds
-                "variable1": the list of float values of one of the requested variables
+                key : descriptor of the variable given in the request
+                value: a dict
+                    "__time" : list of timestamps for the returned table in epoch seconds
+                    "values": the list of float values of one of the requested variables
         """
         if tableDescriptor:
             tableId = self.get_id(tableDescriptor)
@@ -3079,7 +3092,7 @@ class Model:
 
                 varIds[varId]=var #remeber it for later
 
-            table = self.ts.get_table(list(varIds.keys()), start=start, end=end, copy=copy, resampleTimes=resampleTimes, noBins = noBins, includeIntervalLimits=includeIntervalLimits)
+            table = self.ts.get_table(list(varIds.keys()), start=start, end=end, copy=copy, resampleTimes=resampleTimes, noBins = noBins, includeIntervalLimits=includeIntervalLimits,resampleMethod=resampleMethod)
 
         #now wrap back the descriptor to the query, if is was a browsepath, we return and browsepath, if is was an id, we return id
         # make some formatting
@@ -3095,7 +3108,7 @@ class Model:
                 result[varIds[k]]=convert(v["values"])
                 result[varIds[k]+"__time"]=convert(v["__time"])
             else:
-                result[varIds[k]] = convert(v)
+                result[varIds[k]] = {"values":convert(v["values"]),"__time":convert(v["__time"])}
         return result
 
     def time_series_get_info(self,name=None):
@@ -3180,7 +3193,7 @@ class Model:
 
                     newBlob[id] = v
             newBlobs.append(newBlob)
-        self.logger.debug(f"inserting {len(newBlobs)}")
+        self.logger.debug(f"inserting blobs {len(newBlobs)}")
         return self.ts.insert_blobs(newBlobs)
 
 
