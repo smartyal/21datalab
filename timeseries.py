@@ -88,9 +88,9 @@ class TimeSeries:
             startIndex = 0
 
         if end:
-            endIndex = numpy.searchsorted(self.times, end) # this endIndex is one more than the last that we take
+            endIndex = numpy.searchsorted(self.times, end, side="right") # this endIndex is one more than the last that we take
         else:
-            endIndex = lastValidIndex
+            endIndex = lastValidIndex +1
 
         if startIndex == endIndex:
             haveData = False

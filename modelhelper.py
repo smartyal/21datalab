@@ -41,7 +41,7 @@ def get_indices_from_interval(times,start,end):
     return numpy.where(mask)[0]
 
 
-def annotations_to_class_vector(annotations,times, tagsMap = {}, regionTag=None):
+def annotations_to_class_vector(annotations, times, tagsMap = {}, regionTag=None):
     """
         create a classification vector based on given time areas in the annotations
         for times where we don't classify, we return a numpy.nan
@@ -54,7 +54,7 @@ def annotations_to_class_vector(annotations,times, tagsMap = {}, regionTag=None)
                 if not given, we take all, typically the region tag is "region"
     # Returns:
         {
-            "values":list of class values
+            "values":list of class values, nan for undefined
             "__time": list of time values, this is either the input times, or a subset of the input times
         },
         tagMap: {tag:classid} the tagMap plus more entries if needed

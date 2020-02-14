@@ -119,6 +119,27 @@ class Node():
         """
         return self.model.get_value(self.id)
 
+    def get_time_series(self, start=None,
+                              end=None,
+                              noBins=None,
+                              includeIntervalLimits=False,
+                              resampleTimes=None,
+                              format="default",
+                              toList = False,
+                              resampleMethod = None):
+
+        browsePath = self.model.get_browse_path(self.id)
+
+        return self.model.time_series_get_table(variables = [browsePath],
+                                                tableDescriptor=None,
+                                                start=start,
+                                                end=end,
+                                                noBins=noBins,
+                                                includeIntervalLimits=includeIntervalLimits,
+                                                resampleTimes=resampleTimes,
+                                                format=format,
+                                                toList=toList,
+                                                resampleMethod=resampleMethod)
 
     def add_references(self,targetNodes,deleteAll=False):
         """
@@ -149,6 +170,11 @@ class Node():
                 value = numpy.full(length,value,dtype=numpy.float64)
 
         return self.model.set_value(self.id,value)
+
+    def set_time_series(self,values=None,times=None):
+        return self.model.time_series_set(self.id,values=values,times=times)
+
+
 
     def get_parent(self):
         """ Returns:
@@ -1055,10 +1081,10 @@ class Model:
                 newNode.update(properties)
             if value != None:
                 newNode["value"]=value
-            if type == "timeseries":
-                self.create_time_series(newId)
             self.model[parentId]["children"].append(newId)
-            self.model[newId]=newNode
+            self.model[newId] = newNode
+            if newNode["type"] == "timeseries":
+                self.time_series_create(newId)
             self.__notify_observers(parentId,"children")
             return newNode["id"]
 

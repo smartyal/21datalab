@@ -819,7 +819,7 @@ class TimeSeriesWidget():
                 #get fresh data, store it into a variable and make the update on dispatch in the context of bokeh
                 variables = self.server.get_variables_selected()
                 variablesRequest = variables.copy()
-                variablesRequest.append("__time")  # make sure we get the time included
+                #variablesRequest.append("__time")  # make sure we get the time included
                 #self.logger.debug(f"request stream data{self.streamingInterval}")
                 self.streamingUpdateDataInterval = self.streamingInterval #store this to check later if it has changed
                 self.streamingUpdateData = self.server.get_data(variablesRequest, -self.streamingInterval, None,
@@ -830,7 +830,7 @@ class TimeSeriesWidget():
                 self.logger.debug("get changed data")
                 variables = self.server.get_variables_selected()
                 variablesRequest = variables.copy()
-                variablesRequest.append("__time")  # make sure we get the time included
+                #variablesRequest.append("__time")  # make sure we get the time included
                 # self.logger.debug(f"request stream data{self.streamingInterval}")
                 #we fake the streminginterval
                 self.streamingInterval = self.rangeEnd - self.rangeStart
@@ -1900,7 +1900,7 @@ class TimeSeriesWidget():
                     #    self.logger.debug(f" {k}:{v}")
 
                     self.logger.debug(f"apply data {self.streamingUpdateData.keys()},")
-                    if set(self.streamingUpdateData.keys()) != set(self.columnData.keys()):
+                    if 0:#set(self.streamingUpdateData.keys()) != set(self.columnData.keys()):
                         self.logger.error(f"keys not match {self.streamingUpdateData.keys()},{self.columnData.keys()}, skip this data")
                         self.streamingUpdateData = None
                     else:
