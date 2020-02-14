@@ -1,6 +1,7 @@
 import numpy
 
 
+
 class TimeSeries:
     def __init__(self,allocSize = 10000):
         self.allocSize = allocSize
@@ -103,7 +104,7 @@ class TimeSeries:
 
 
         if haveData:
-            if not resampleTimes:
+            if type(resampleTimes) == type(None):
 
                 if includeIntervalLimits:
                     if startIndex != 0:

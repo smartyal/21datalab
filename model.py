@@ -707,7 +707,7 @@ class Model:
                 return copy.deepcopy(self.model[id])
             else:
                 #we do not include values of columns and files
-                if self.model[id]["type"] in ["column","file"]:
+                if self.model[id]["type"] in ["column","file","timeseries"]:
                     return  {k:v for k,v in self.model[id].items() if k!="value"}
                 else:
                     #take all
@@ -721,7 +721,7 @@ class Model:
             recursive helper for get_branch
 
         """
-        if self.model[id]["type"] in ["file","column"]:
+        if self.model[id]["type"] in ["file","column","timeseries"]:
             #we do not take these values
             nodes[id]={k:v for k,v in self.model[id].items() if k!="value"} # copy the whole but leave out the value
         elif self.model[id]["type"] == "referencer":
@@ -729,7 +729,7 @@ class Model:
             if includeForwardRefs:
                 #for referencers, we take the direct targets
                 for targetId in self.model[id]["forwardRefs"]:
-                    if self.model[targetId]["type"] in ["file", "column"]:
+                    if self.model[targetId]["type"] in ["file", "column","timeseries"]:
                         # we do not take these values
                         target = {k: v for k, v in self.model[id].items() if k != "value"}  # copy the whole but leave out the value
                     else:
@@ -791,7 +791,7 @@ class Model:
         node = self.model[id]
         #create my properties
         props = {k: copy.deepcopy(v) for k, v in node.items() if k not in ["value", "backRefs", "children"]}
-        if node["type"] not in ["file", "column"]:
+        if node["type"] not in ["file", "column","timeseries"]:
             # we also take the value then
             props["value"] = copy.deepcopy(node["value"])
         if node["type"] == "referencer" and (depth is None or depth>0):
@@ -804,7 +804,7 @@ class Model:
             #tt.lap("1")
             props["targets"] = [self.get_browse_path(id) for id in self.model[id]["forwardRefs"]]
             props["leavesIds"]=leaves
-            props["leavesValues"] = [self.get_value(id) if self.model[id]["type"] not in ["file","column"] else None for id in leaves]
+            props["leavesValues"] = [self.get_value(id) if self.model[id]["type"] not in ["file","column","timeseries"] else None for id in leaves]
             #tt.lap("2")
             validation = []
             props["leavesProperties"]={}
@@ -1262,7 +1262,7 @@ class Model:
         p=utils.Profiling("get_model_for_web")
         with self.lock:
             for nodeId, nodeDict in self.model.items():
-                if nodeDict["type"] in ["column","file"]:
+                if nodeDict["type"] in ["column","file","timeseries"]:
                     # with columns we filter out the values
                     node = {}
                     for nk, nv in nodeDict.items():
@@ -1517,6 +1517,10 @@ class Model:
         with self.lock:
             id = self.get_id(desc)
             if not id: return None
+
+            if self.model[id]["type"] == "timeseries":
+                return self.time_series_get_table(id)["values"]
+
             if "value" in self.model[id]:
                 return copy.deepcopy(self.model[id]["value"])
             else:
@@ -1539,7 +1543,7 @@ class Model:
         """
         newNode = {}
         for key in self.model[id]:
-            if key == "value" and self.model[id]["type"]=="column":
+            if key == "value" and self.model[id]["type"]in ["column","file","timeseries"]:
                 newNode["value"]=None
             elif key == "children" and resolveChildren:
                 #we also copy the children
@@ -2809,7 +2813,7 @@ class Model:
                                             "id": self.modelUpdateCounter,
                                             "event": observer["eventString"]["value"],
                                             "data": {"nodeId":observerId,"sourceId":nodeId,"sourcePath":self.get_browse_path(nodeId)}}
-                                        if self.model[nodeId]["type"] not in ["column","file"]:
+                                        if self.model[nodeId]["type"] not in ["column","file","timeseries"]:
                                             event["data"]["value"]=self.model[nodeId]["value"]
                                         #some special handling
                                         try:
@@ -3011,13 +3015,17 @@ class Model:
         id = self.get_id(desc)
         if not id in self.model:
             return None
-        return self.ts.insert(id,values, times)
+        result =  self.ts.insert(id,values, times)
+        self.__notify_observers(id, "value")
+        return result
 
     def time_series_set(self,desc,values=None,times=None):
         id = self.get_id(desc)
         if not id in self.model:
             return None
-        return self.ts.set(id,values=values,times=times)
+        result =  self.ts.set(id,values=values,times=times)
+        self.__notify_observers(id, "value")
+        return result
 
     def time_series_get_table(self,
                               variables,
@@ -3091,6 +3099,9 @@ class Model:
             #first check if all requested timeseries exist and have type time series
             #vars = [] #self.get_id(variables)
 
+            if not type(variables) is list:
+                variables= [variables]
+
             varIds = {} # NodeId: request descriptor
             for var in variables:
                 varId = self.get_id(var)
@@ -3130,6 +3141,11 @@ class Model:
                 result[varIds[k]+"__time"]=convert(v["__time"])
             else:
                 result[varIds[k]] = {"values":convert(v["values"]),"__time":convert(v["__time"])}
+
+        if len(variables) == 1:
+            #we only have one variable, so we return without descriptor
+            result = result[list(result.keys())[0]]
+
         return result
 
     def time_series_get_info(self,name=None):
@@ -3215,6 +3231,7 @@ class Model:
                     newBlob[id] = v
             newBlobs.append(newBlob)
         self.logger.debug(f"inserting blobs {len(newBlobs)}")
+        self.__notify_observers([v for k,v in desc2Id.items()], "value")
         return self.ts.insert_blobs(newBlobs)
 
 

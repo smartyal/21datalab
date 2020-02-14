@@ -2,6 +2,115 @@
 
 import numpy
 import json
+from model import date2secs
+
+def filter_annotations(annotations, tagsFilter=[]):
+    """
+        Args:
+            annotations: [list of Node()] the annotations to use
+            tagsFilter [list of strings]: if an annotation contains one of the tagFilters, then we accept it
+        Returns:
+            list of accepted annotations
+    """
+
+    annosOut = []
+    for anno in annotations:
+        tags = anno.get_child("tags").get_value()
+        for tag in tags:
+            if tag in tagsFilter:
+                annosOut.append(anno)
+                continue
+    return annosOut
+
+
+def get_mask_from_interval(times,start,end):
+    """
+        give start and end time as epoch or iso string and a time vector, return a mask which points are inside
+    """
+
+    start= date2secs(start)
+    end = date2secs(end)
+    left = numpy.searchsorted(times,start) #this is the first value > start
+    right = numpy.searchsorted(times,end)  #this is the first value > end
+    mask = numpy.full(len(times),False)
+    mask[left:right+1]=True
+    return mask
+
+def get_indices_from_interval(times,start,end):
+    mask = get_mask_from_interval(times,start,end)
+    return numpy.where(mask)[0]
+
+
+def annotations_to_class_vector(annotations,times, tagsMap = {}, regionTag=None):
+    """
+        create a classification vector based on given time areas in the annotations
+        for times where we don't classify, we return a numpy.nan
+        Args:
+            annotations: list of annotationNodes
+            tagsMap: a dict with "tags":classId, classIds
+            tagFilter: a list of strings to match, if one of them matches, we take the annotation, otherwise not
+
+            regionTag: the tag to be used as region filter: we only take times inside annotations with the tag regionTag
+                if not given, we take all, typically the region tag is "region"
+    # Returns:
+        {
+            "values":list of class values
+            "__time": list of time values, this is either the input times, or a subset of the input times
+        },
+        tagMap: {tag:classid} the tagMap plus more entries if needed
+
+    """
+    times = numpy.asarray(times)
+    values = numpy.full(len(times),numpy.nan,dtype=numpy.float64)
+
+
+    if tagsMap != {}:
+        #find the highestNumer
+        maxClassId = max([v for k,v in tagsMap.items()])
+    else:
+        maxClassId = -1
+
+    for anno in annotations:
+        tag = anno.get_child("tags").get_value()[0]
+        if tag == "region":
+            continue
+        if not anno.get_child("type").get_value() in ["time"]:
+            continue # we void thresholds and others
+        if tag not in tagsMap:
+            maxClassId = maxClassId +1
+            tagsMap[tag]= maxClassId #create entry
+
+        classId = tagsMap[tag]
+
+        startTime = anno.get_child("startTime").get_value()
+        endTime = anno.get_child("endTime").get_value()
+        indices = get_mask_from_interval(times,startTime, endTime)
+        values[indices] = classId
+
+
+
+    # now filter by region tag
+    if regionTag:
+        found = False
+        regionFilter = numpy.full(len(times),False)
+        for anno in annotations:
+            tag = anno.get_child("tags").get_value()[0]
+            if tag == "region":
+                startTime = anno.get_child("startTime").get_value()
+                endTime = anno.get_child("endTime").get_value()
+                mask = get_mask_from_interval(times,startTime, endTime)
+                regionFilter = regionFilter | mask
+                found = True
+        if found:
+            values [regionFilter == False]=numpy.nan # delete the entries
+        else:
+            #we have no "region" found, so no more filtering
+            pass
+
+    return values
+
+
+
 
 def annotations_to_vector(annotations, timeNode, inMap={}):
     """
