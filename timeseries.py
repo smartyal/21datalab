@@ -1,19 +1,30 @@
 import numpy
 
-
+def merge_times(time1,time2):
+    """
+        merge two time vectors and remove duplicates
+    """
+    times = numpy.append(time1,time2)
+    resortIndices = numpy.argsort(times)
+    times = times[resortIndices]
+    diff = numpy.diff(times)
+    diff = numpy.append([1],diff)# the diff has one less, so we add one more
+    indices = diff != 0
+    times = times[indices] # take only those indices which are different from the previous value
+    return times
 
 class TimeSeries:
-    def __init__(self,allocSize = 10000):
+    def __init__(self,values=[],times=[],allocSize = 10000):
         self.allocSize = allocSize
-        self.times = numpy.asarray([],dtype=numpy.float64)
-        self.values = numpy.asarray([],dtype=numpy.float64)
+        self.times = numpy.asarray(times,dtype=numpy.float64)
+        self.values = numpy.asarray(values,dtype=numpy.float64)
 
     def __realloc(self,size=0):
         alloc = numpy.full(self.allocSize+size, numpy.nan, dtype=numpy.float64)
         self.values=numpy.append(self.values,alloc)
         self.times =numpy.append(self.times,alloc)
 
-    def insert(self,values=None,times=None):
+    def insert(self, values=None, times=None, deleteDuplicates = True):
 
         if len(values)!= len(times):
             return False
@@ -30,6 +41,14 @@ class TimeSeries:
         self.values= self.values[resortIndices]
         self.times = self.times[resortIndices]
 
+        if deleteDuplicates:
+            diff = numpy.diff(self.times)
+            if any(diff == 0):
+                #there are duplicates in the data
+                diff = numpy.append([1],diff)
+                self.values = self.values([diff == 1])
+                self.times = self.times([diff == 1])
+
         return True
 
     def set_masked(self, values, mask):
@@ -45,6 +64,12 @@ class TimeSeries:
         if type(times) != type(None):
             self.times = numpy.copy(numpy.asarray(times))
         return True
+
+    def get_values(self):
+        return self.values
+
+    def get_times(self):
+        return self.times
 
     def get(self, start=None, end=None, copy=False, resampleTimes = None, noBins = None, includeIntervalLimits = False, resampleMethod = None):
         """
@@ -190,6 +215,19 @@ class TimeSeries:
 
         return newValues
 
+    def merge(self,timeseries):
+        """
+            merge another time series into this times series:
+            the times will be all time points existing
+            double times will be removed
+            the new values will get priority on dublicate times
+        """
+        mergeTimes = merge_times(self.times,timeseries.get_times())
+        oldValues = self.get(resampleTimes=mergeTimes)["values"]
+        newValues = timeseries.get(resampleTimes=mergeTimes)["values"]
+        indices=numpy.isfinite(newValues)
+        oldValues[indices]=newValues[indices]
+        self.set(oldValues,mergeTimes)
 
 class TimeSeriesTable:
     """
