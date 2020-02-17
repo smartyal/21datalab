@@ -1439,7 +1439,7 @@ class TimeSeriesWidget():
                 buttonControls.append(button)
 
 
-        if 1: # turn this helper button on to put some debug code
+        if 0: # turn this helper button on to put some debug code
             self.debugButton= Button(label="debug")
             self.debugButton.on_click(self.debug_button_cb)
             self.debugButton2 = Button(label="debug2")
