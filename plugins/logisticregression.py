@@ -62,7 +62,7 @@ def logistic_regression(functionNode):
     # if resamplePeriod is given, we take the interval for the sampling, if not given
     # we assume all data from the same timing, we take the times from the first variable and do not resample the data
     period = functionNode.get_child("resamplePeriod").get_value()
-    times = m.time_series_get_table(inputNodes[0].get_id())["__time"]
+    times = inputNodes[0].get_time_series()["__time"]
     if period:
         times = numpy.arange(times[0],times[-1],period)
 
@@ -78,7 +78,7 @@ def logistic_regression(functionNode):
     # now grab the values from the columns
     for node in inputNodes:
         #values = numpy.asarray(node.get_value())
-        values = m.time_series_get_table(node.get_id(),resampleTimes=times)["values"]
+        values = node.get_time_series(resampleTimes=times)["values"]
         trainingData.append(list(values[inputMask]))
     table = numpy.stack(trainingData, axis=0)
 
@@ -105,7 +105,7 @@ def logistic_regression(functionNode):
     # now grab the values from the columns
     scoreData = []
     for node in inputNodes:
-        data = m.time_series_get_table(node.get_id(),resampleTimes=scoreTimes)["values"]
+        data = node.get_time_series(resampleTimes=scoreTimes)["values"]
         scoreData.append(data)
 
     scoreTable = numpy.stack(scoreData, axis=0)

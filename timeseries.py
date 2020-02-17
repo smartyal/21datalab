@@ -149,9 +149,8 @@ class TimeSeries:
 
         if haveData:
             if type(resampleTimes) == type(None):
-                print(f"startIdex:{startIndex}:{self.times[startIndex]}, endIndex:{endIndex-1}:{self.times[endIndex-1]}, diff:{self.times[endIndex-1]-self.times[startIndex]}")
-
-                print(f"lastvalid {lastValidIndex}:{self.times[lastValidIndex]} ")
+                #print(f"startIdex:{startIndex}:{self.times[startIndex]}, endIndex:{endIndex-1}:{self.times[endIndex-1]}, diff:{self.times[endIndex-1]-self.times[startIndex]}")
+                #print(f"lastvalid {lastValidIndex}:{self.times[lastValidIndex]} ")
                 if includeIntervalLimits:
                     if startIndex != 0:
                         startIndex = startIndex -1
@@ -167,7 +166,7 @@ class TimeSeries:
                     takeIndices = numpy.arange(startIndex,endIndex) #arange exludes the last
 
                 times = self.times[takeIndices]
-                print(f"{(times[0])} => {(times[-1])}")
+                #print(f"{(times[0])} => {(times[-1])}")
                 values = self.values[takeIndices]
             else:
                 #must resample the data
