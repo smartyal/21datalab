@@ -95,7 +95,8 @@ GET  /pipelines      -                          [<pipeline.json>]       ## get t
 POST /_load         fileName (str)              -
 POST /_save         fileName (str)              -
 POST /_getdata      <dataquery.json>]
-POST /_appendRow     [<data.json>]  
+POST /_appendRow     [<data.json>] #deprecated
+POST /_insert       <datablob.json>
 POST /_references <referencequery.json>                                  ## adjust references, details see json
 POST /_execute      <nodedescriptor>            //nothing                ## execute a function
 GET  /templates      -                           [templatename]          ## get all available templates to be created
@@ -163,12 +164,18 @@ dataquery.json
     "bins" : 300
 }
 
-data.json
+datablob.json
 {
-    "root.folder1.var1": 1.3456,
-    "root.folder1.var2": 15,
-    "root.folder1.var3": -0.4,
-    "root.folder1.time": 1546437120.22644
+    table:"root.table",
+    blobs:
+        [{
+            "var1": [1.3456,2,3]
+            "var2": [15,16,17]
+            "var3": [-0.4,0,0]
+            "__time": [1546437120.2,1546437121.2,1546437122.2]
+        },
+        {...},..
+        ]
 }
 
 
@@ -465,15 +472,16 @@ def all(path):
                 responseCode = 404
 
 
-        elif (str(path)=="_appendRow"):
-            logger.debug("writeRow")
-            for blob in data:
-                result = m.append_table(blob)
-                if not result:
-                    responseCode = 400
-                    break
-            responseCode = 200
-            #m.show()
+        elif (str(path)=="_insert"):
+            logger.debug("insert Blobs")
+            table = data["table"]
+            blobs = data["blobs"]
+            result =  m.time_series_insert_blobs(table,blobs)
+            if not result:
+                responseCode = 400
+            else:
+                responseCode = 200
+                #m.show()
 
 
         elif (str(path)=="_getdata"):

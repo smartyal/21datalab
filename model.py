@@ -139,7 +139,7 @@ class Node():
                                                 resampleTimes=resampleTimes,
                                                 format=format,
                                                 toList=toList,
-                                                resampleMethod=resampleMethod)
+                                                resampleMethod=resampleMethod)[browsePath]
 
     def add_references(self,targetNodes,deleteAll=False):
         """
@@ -1545,7 +1545,7 @@ class Model:
             if not id: return None
 
             if self.model[id]["type"] == "timeseries":
-                return self.time_series_get_table(id)["values"]
+                return self.time_series_get_table(id)[id]["values"]
 
             if "value" in self.model[id]:
                 return copy.deepcopy(self.model[id]["value"])
@@ -3168,9 +3168,9 @@ class Model:
             else:
                 result[varIds[k]] = {"values":convert(v["values"]),"__time":convert(v["__time"])}
 
-        if len(variables) == 1:
-            #we only have one variable, so we return without descriptor
-            result = result[list(result.keys())[0]]
+        #if len(variables) == 1:
+        #    #we only have one variable, so we return without descriptor
+        #    result = result[list(result.keys())[0]]
 
         return result
 

@@ -1,5 +1,7 @@
 import numpy
 
+
+
 def merge_times(time1,time2):
     """
         merge two time vectors and remove duplicates
@@ -46,8 +48,14 @@ class TimeSeries:
             if any(diff == 0):
                 #there are duplicates in the data
                 diff = numpy.append([1],diff)
-                self.values = self.values([diff == 1])
-                self.times = self.times([diff == 1])
+                self.values = self.values[diff != 0]
+                self.times = self.times[diff != 0]
+                #now make sure that on all dublicates, we take the new values
+                for newTime,newValue in zip(times,values):
+                    pos = numpy.where(self.times == newTime)[0]
+                    if len(pos)!=0:
+                        self.values[pos] = newValue
+
 
         return True
 
@@ -107,7 +115,18 @@ class TimeSeries:
         lastValidIndex = len(self.times)-remainingSpace-1
 
 
+
+
+
         if start:
+            if start < 0:
+                # we support the -start time, endtime = None, typically used for streaming
+                # to query interval from the end
+                # get the last time and subtract the query time
+                lastTime = self.times[lastValidIndex]
+                start = lastTime + start  # look back from the end, note that start is negative
+                if start < 0:
+                    start = 0
             startIndex = numpy.searchsorted(self.times, start)
         else:
             startIndex = 0
@@ -130,11 +149,13 @@ class TimeSeries:
 
         if haveData:
             if type(resampleTimes) == type(None):
+                print(f"startIdex:{startIndex}:{self.times[startIndex]}, endIndex:{endIndex-1}:{self.times[endIndex-1]}, diff:{self.times[endIndex-1]-self.times[startIndex]}")
 
+                print(f"lastvalid {lastValidIndex}:{self.times[lastValidIndex]} ")
                 if includeIntervalLimits:
                     if startIndex != 0:
                         startIndex = startIndex -1
-                    if endIndex <= lastValidIndex -1 :
+                    if endIndex < lastValidIndex +1: #we can go one above, as the linspace and arange do not include the right
                         endIndex = endIndex +1
                 if noBins:
                     #we pick samples only if we have more than requested
@@ -146,6 +167,7 @@ class TimeSeries:
                     takeIndices = numpy.arange(startIndex,endIndex) #arange exludes the last
 
                 times = self.times[takeIndices]
+                print(f"{(times[0])} => {(times[-1])}")
                 values = self.values[takeIndices]
             else:
                 #must resample the data
@@ -250,8 +272,8 @@ class TimeSeriesTable:
     def clear(self):
         self.store={}
 
-    def insert(self,name,values=None,times=None):
-        return self.store[name].write(values,times)
+    #def insert(self,name,values=None,times=None):
+    #    return self.store[name].write(values,times)
 
     def set(self,name,values = None,times = None):
         return self.store[name].set(values,times)
