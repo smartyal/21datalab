@@ -2417,6 +2417,13 @@ class Model:
             controlNode.get_child("result").set_value("error")
         return
 
+    def get_error(self):
+        s=f"{sys.exc_info()[1]}, {traceback.format_exc()}"
+        return s
+
+    def log_error(self):
+        self.logger.error(self.get_error())
+
     def show(self):
         """
             show the current model as a ascii tree on he console
