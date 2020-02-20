@@ -745,11 +745,9 @@ def mask_from_regions(regions, times):
 
 def out_of_limits(values,mini,maxi):
     """
-    returns a true/fals for out of limits, able to handle nans
-
+        returns a true/fals for out of limits, able to handle nans/infs
     """
 
-    print("out_of_limits")
     work = numpy.copy(values)
     workNan = ~numpy.isfinite(work)
     work[workNan] = -numpy.inf  # so we don't get a toosmall at nans
