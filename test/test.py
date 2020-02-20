@@ -543,6 +543,13 @@ def branch_test():
 
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", help="port for the restservice")
+    args = parser.parse_args()
+    print(args.port)
+
 
     #t = Timer()
     #m=model.Model()
@@ -588,7 +595,7 @@ if __name__ == "__main__":
     #req_test()
     #sse_client_test()
     #sse_test_2()
-    branch_test()
+    #branch_test()
 
 
 

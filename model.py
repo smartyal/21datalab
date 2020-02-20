@@ -1,8 +1,8 @@
+import glob
 import json
 import copy
 import importlib
 import threading
-import time
 import logging
 import pytz
 
@@ -17,12 +17,19 @@ import time
 import uuid
 import hashlib
 import random
+import traceback
+
+# type hints
+from typing import List
 
 import modeltemplates
 
 # for Observer
 from queue import Queue
 from queue import Empty
+import utils
+
+from timeseries import TimeSeriesTable
 
 
 """
@@ -86,301 +93,6 @@ def epochToIsoString(epoch,zone=pytz.UTC):
     dat=dat.astimezone(zone) # we must do this later conversion due to a bug in tz lib
     return dat.isoformat()
 
-class Table():
-
-   #accept columnNames as list of strings for the names of the columns
-    def __init__(self,columnNames=[]):
-        self.__init_logger(logging.DEBUG)
-        if type(columnNames)==type(dict()):
-            columnNames = list(columnNames.keys())
-        #self.columnNames = columnNames
-        self.data = None #  data is a list (each element is a row of the data)
-        self.meta ={} # to store some meta information
-        self.meta["columnNames"] = columnNames
-
-        pass
-
-    def __init_logger(self,level):
-        self.logger = logging.getLogger("Table()")
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
-        self.logger.setLevel(level)
-
-    def get_meta_information(self):
-        return self.meta
-
-    def get_column_names_dict(self):
-        namesDict = {}
-        for name in self.meta["columnNames"]:
-            namesDict[name]=""
-        return namesDict
-
-    def get_number_of_rows(self):
-        return len(self.data)
-
-    def update_meta(self,updateDict={}):
-        return copy.deepcopy(self.meta.update(updateDict))
-
-    # exist already, replace, else enlarge table
-    def write_column(self,columnName,values):
-       pass
-
-    def __get_current_rows(self):
-        pass
-
-    #accept dict or list in right order
-    def add_row(self,row):
-        vector = []
-        if type(row)==type(dict()):
-            #make correct order first
-            for name in self.meta["columnNames"]:
-                vector.append(row[name])
-        elif type(row) == list (list()):
-            pass # this is what we expect
-        else:
-            print("wrong input type to table")
-            return False
-
-        entry = numpy.asarray(vector, dtype="float64")
-        if self.data == None:
-            self.data = [entry] # first entry
-        else:
-            self.data.append(entry)
-
-        return True
-
-
-    #returns a value table, including postprocessing
-    def get_value_table(self,variables,startTime=None,endTime=None,noBins=None,agg="sample",includeTimeStamps=None):
-        if 0:#startTime==None and endTime==None and noBins==None:
-            try:
-                table = numpy.stack(self.data,axis=0)
-                return table.T
-            except:
-                return None
-        else:
-            self.logger.info("query with processing")
-            #check the start and end times
-
-            timeIndex = self.__get_column_index(self.get_meta_information()["timeId"])
-            startTimeOfTable = self.data[0][timeIndex]
-            endTimeOfTable = self.data[-1][timeIndex]
-            if startTime == None:
-                queryStart = startTimeOfTable
-            else:
-                queryStart = date2secs(startTime)
-            if endTime == None:
-                queryEnd = endTimeOfTable
-            else:
-                queryEnd = date2secs(endTime)
-            #check sanity of interval
-            if queryStart < startTimeOfTable :
-                self.logger.warn("start time query before table start")
-                return None
-            if queryEnd > endTimeOfTable:
-                self.logger.warn("end time of query after table end")
-                return None
-            print("hier2")
-            #now iterate over the variables and aggregate them
-            if agg == "sample":
-                #here, we pick some data out
-                startRow = self.__get_row_index_from_time(queryStart)
-                endRow = self.__get_row_index_from_time(queryEnd)
-                totalRows = endRow-startRow+1
-                if noBins == None:
-                    rowStep = 1
-                    noBins = totalRows
-                else:
-                    rowStep = float(totalRows) / float(noBins)
-                currentRow = startRow
-                result = []
-                variablesIndices = [] # holding the list of variables as indices in our table
-                for var in variables:
-                    variablesIndices.append(self.__get_column_index(var))
-                if includeTimeStamps:
-                    variablesIndices.append(self.__get_column_index(self.get_meta_information()["timeId"]))
-                for i in range(noBins):
-                    currentRowIndex = int(startRow + float(i)*rowStep)
-                    pickRow = self.data[currentRowIndex]
-                    #now select only the wanted indices
-                    reducedRow = [pickRow[i] for i in variablesIndices]
-                    #now select only the wanted variables
-                    result.append(reducedRow)
-
-                table = numpy.stack(result,axis=0)
-                return table.T
-            else:
-                #other aggrataion not supported
-                return None
-
-
-
-    #return the column index of a given nodeId
-    def __get_column_index(self,nodeId):
-        if nodeId not in self.meta["columnNames"]:
-            return None
-        return self.meta["columnNames"].index(nodeId)
-
-
-
-    def __get_row_index_from_time(self,searchTime):
-        timeIndex = self.__get_time_index()
-        index = 0
-        for row in self.data:
-            if row[timeIndex]>searchTime:
-                if index>0:
-                    index -= 1
-                return index
-            if row[timeIndex]==searchTime:
-                return index
-            index += 1
-        return None
-
-
-
-
-
-    def __get_time_index(self):
-       return self.__get_column_index(self.get_meta_information()["timeId"])
-
-
-
-    def save(self,fileName):
-        numpytable = self.get_value_table()
-        numpy.save(fileName, numpytable)
-        keyfile = open(fileName+ ".meta.json", "w")
-        keyfile.write(json.dumps(self.get_meta_information(), indent=4))
-        keyfile.close()
-
-    def load(self,fileName):
-        try:
-            f = open(fileName+ ".meta.json", "r")
-            self.meta = json.loads(f.read())
-            f.close()
-            self.data = numpy.load(fileName + ".npy")
-            return True
-        except:
-            print("table: problem loading",fileName,sys.exc_info()[1])
-            return False
-
-
-
-class TimeSeriesTables():
-    def __init__(self):
-        self.tables=[]
-        self.__init_logger(logging.DEBUG)
-        pass
-
-
-    def __init_logger(self,level):
-        self.logger = logging.getLogger("TimeSeriesTables")
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
-        self.logger.setLevel(level)
-
-    # row is a dict with all variables, try to find a matching table, if not, create a new one
-    def __get_table(self,row,timeId=None):
-        workTable = None
-        for table in self.tables:
-            if table.get_column_names_dict().keys()==row.keys():
-                #this is the right table
-                workTable = table
-                break
-        if not workTable:
-            #haven't found it, make new table
-            workTable = Table(row)
-            if timeId:
-                workTable.update_meta({"timeId":timeId})
-            self.tables.append(workTable)
-        return workTable
-
-    # find to which table the variable belongs
-    # the desc param can be a browsepath or be a list of
-    #     the table can only be found if all of the variables are in the same table
-    def __find_table(self,desc):
-        if type(desc)==type(str()):
-            for table in self.tables:
-                if desc in table.get_column_names_dict():
-                    return table
-            return None
-        elif type(desc) == type(list()):
-            lastTable = None
-            for key in desc:
-                if not lastTable:
-                    lastTable = self.__find_table(key)
-                else:
-                    nowTable = self.__find_table(key)
-                    if nowTable != lastTable:
-                        return None
-            return lastTable
-
-
-    #get the number of rows of the table to which this id belongs
-    def get_number_of_rows(self,desc):
-        workTable = self.__find_table(desc)
-        if workTable:
-            return workTable.get_number_of_rows()
-        else:
-            return None
-
-    #the row is dict containing "name":value and one "time":"2018-01-05T...."
-    # here, we will also convert all types
-    def add_row(self,row):
-        #first check if the row contains the time
-
-        timeId= None
-        for key in row:
-            value = row[key]
-            if type(value) == type(datetime.datetime(1,1,1,1,1)):
-                date2secs(value)
-                #timeDelta = value-datetime.datetime (1970,1 , 1, 0, 0)
-                row[key]=date2secs(value)
-                timeId = key
-
-
-        #now find the right table
-        workTable = self.__get_table(row,timeId=timeId)
-        return workTable.add_row(row)
-
-
-    #params: variables is an ordered list
-    def get_value_table(self,variables,startTime=None,endTime=None,noBins=100,agg="sample",includeTimeStamps = None):
-        workTable = self.__find_table(variables)
-        if not workTable: return None
-        return workTable.get_value_table(variables, startTime=startTime, endTime=endTime, noBins=noBins, agg=agg, includeTimeStamps=includeTimeStamps)
-        '''
-        if not startTime and not endTime:
-            #get full table
-            return workTable.get_value_table(variables,startTime=startTime, endTime=endTime, noBins=noBins, agg=agg)
-        else:
-            return workTable.get_value_table(variables, startTime=startTime, endTime=endTime, noBins=noBins, agg=agg)
-        '''
-
-    def save(self,fileName):
-        index = 0
-        for table in self.tables:
-            table.save(fileName+".table_"+str(index))
-            index +=1
-
-    def load(self,fileName):
-        index = 0
-        running = True
-        #delete all existing tables
-        self.tables=[]
-        while running:
-            #load the keys and the data
-            try:
-                newTable = Table()
-                if not newTable.load(fileName+".table_"+str(index)):
-                    break
-                self.tables.append(newTable)
-                index+=1
-            except:
-                print("not found, index",index)
 
 #used as an OOP wrapper for the flat and procedural style of the model class
 class Node():
@@ -397,12 +109,53 @@ class Node():
         self.model = myModel # this is not a copy!!
         self.id = myId
 
+    def __repr__(self):
+        return 'Node(id={:}, value={:})'.format(self.id, self.get_value())
+
     def get_value(self):
         """ Returns:
                 the "value" property of the node
                 None if node has no "value"
         """
         return self.model.get_value(self.id)
+
+    def get_time_series(self, start=None,
+                              end=None,
+                              noBins=None,
+                              includeIntervalLimits=False,
+                              resampleTimes=None,
+                              format="default",
+                              toList = False,
+                              resampleMethod = None):
+
+        browsePath = self.model.get_browse_path(self.id)
+
+        return self.model.time_series_get_table(variables = [browsePath],
+                                                tableDescriptor=None,
+                                                start=start,
+                                                end=end,
+                                                noBins=noBins,
+                                                includeIntervalLimits=includeIntervalLimits,
+                                                resampleTimes=resampleTimes,
+                                                format=format,
+                                                toList=toList,
+                                                resampleMethod=resampleMethod)[browsePath]
+
+    def add_references(self,targetNodes,deleteAll=False):
+        """
+            add references from the node to the targets
+            Args:
+                targetNodes: node or list of nodes to reference to
+                deleteAll: if set true, we delete all existing references before creating the new
+            Returns
+                True/False for success/error
+        """
+        if deleteAll:
+            self.model.remove_forward_refs(self.id)#this deletes all existing
+        if type(targetNodes) is not list:
+            targetNodes = [targetNodes]
+        targetIds = [node.get_id() for node in targetNodes]
+        return self.model.add_forward_refs(self.id,targetIds)
 
     def set_value(self,value):
         """
@@ -417,6 +170,11 @@ class Node():
                 value = numpy.full(length,value,dtype=numpy.float64)
 
         return self.model.set_value(self.id,value)
+
+    def set_time_series(self,values=None,times=None):
+        return self.model.time_series_set(self.id,values=values,times=times)
+
+
 
     def get_parent(self):
         """ Returns:
@@ -476,15 +234,27 @@ class Node():
             return self.get_child(name)
 
 
-    def get_children(self):
+    def get_children(self, deepLevel=1):
         """  Returns:
             a list of Node()-objects which are the children of the current node
+            args:
+                deepLevel: set >1 to get children and childrens' children
         """
         nodeInfo = self.model.get_node_info(self.id)
-        children=[]
-        for childId in nodeInfo['children']:
-            children.append(self.model.get_node(childId))
+        children = []
+        if nodeInfo["children"]:
+            children=[self.model.get_node(id) for id in nodeInfo['children'] ]
+
+            while deepLevel>1:
+                deepLevel -=1
+                childrenOld = children.copy()
+                for child in childrenOld:
+                    children.extend(child.get_children())
+                #remove dublicates via id:
+                childDict = {child.get_id():child for child in children} # same keys(id) will only be there once
+                children = list(childDict.values())
         return children
+
 
     def get_properties(self):
         """  Returns:
@@ -492,6 +262,13 @@ class Node():
         """
         nodeInfo = self.model.get_node_info(self.id)
         return copy.deepcopy(nodeInfo)
+
+    def get_type(self):
+        """
+            Retuns:
+                the type of the node
+        """
+        return self.get_property("type")
 
     def get_property(self,property):
         """
@@ -532,9 +309,16 @@ class Node():
             return None
         return self.get_properties()["forwardRefs"]
 
+    def get_target(self):
+        """ this function returns the first direct taret node of a referencer not resolving the leaves"""
+        if self.get_properties()["type"] == "referencer":
+            targets = self.get_properties()["forwardRefs"]
+            if targets:
+                return Node(self.model,targets[0])
+        return None
 
     def get_targets(self):
-        """ this function returns the target ids of a referencer as a list, not resolving the leaves"""
+        """ this function returns the target Nodes of a referencer as a list, not resolving the leaves"""
         if self.get_properties()["type"] != "referencer":
             return None
         targets = []
@@ -582,7 +366,9 @@ class Node():
         """ Returns: the name of the node without the path """
         return self.model.get_node_info(self.id)["name"]
 
-    
+    def get_node(self,desc):
+        return self.model.get_node(desc)
+
     def get_table_time_node(self):
         """ if the current node belongs to a table, then we can get the time node
         a node 
@@ -669,9 +455,9 @@ class Node():
         #check if we are part of it already
         for column in tableNode.get_child("columns").get_leaves():
             if column.get_id() == self.get_id():
-                return
+                return True
         #now connect it to the table
-        return self.model.add_forward_refs(tableNode.get_child("columns").get_id(), [self.id])
+        return self.model.add_forward_refs(tableNode.get_child("columns").get_id(), [self.id],allowDuplicates=False)
 
     def get_columns(self):
         """
@@ -705,9 +491,11 @@ class Observer:
         self.logger = self.model.logger
         self.lock = threading.RLock()
 
+
         #preload queue: this is a workaround as the browser does not get the first 2 events immideately
+        # it actually doesn't help ..?
         for i in range(2):
-            self.updateQueue.put({"event":"tree.update","id":"","data":""})
+            self.updateQueue.put({"event":"_preload","id":"","data":{"xy":str(i)}})
 
     def update(self, event):
         """
@@ -733,13 +521,17 @@ class Observer:
             events are "identical", if they have the same "event" and "data"
         """
 
+        self.logger.debug(f"Observer {id(self)} get_event()")
         stop_event_processing = False # This flag shows when to stop the event processing
 
         while not stop_event_processing:
             try:
                 # Try to retrieve an item from the update queue
                 event = self.updateQueue.get(block=True,timeout=self.minWaitTime)
-                eventIdentification = event["event"]+str(event["data"])
+                if "nodeId" in event["data"]:
+                    eventIdentification = event["event"]+event["data"]["nodeId"]
+                else:
+                    eventIdentification = event["event"]#+str(event["data"])
                 #now sort this event into the queues of eventids
                 if eventIdentification not in self.eventQueues:
                     # this is a new type/identificatin of event, create an entry in the event  queue
@@ -749,28 +541,50 @@ class Observer:
 
             except Exception as ex:
                 # this happens if we time out the queue get, no problem, just continue
-                #self.logger.error(f"Exception while handling event:{id(self)}: {ex}")
-                 continue
+                #self.logger.error(f"Exception observer {id(self)} thread self.updateQueue.get: {ex},{str(sys.exc_info()[0])}")
+                pass
 
             #now go over all the sorted event queues and check what to send out:
+            if 0:
+                #show the queues
+                for k,v in self.eventQueues.items():
+                    q = v["queue"]
+                    qLen = q.qsize()
+                    self.logger.debug(f"Queue {k}: len {qLen} {[q.queue[id] for id in range(qLen)]}")
             try:
                 now = time.time()
                 for eventIdentification,entry in self.eventQueues.items(): # entry is {"lasttimestampe": "queue":
-                    #self.logger.debug(f"for check {id(self)} {eventType} size: {entry['queue'].qsize()},last:{entry['lastTimeStamp']}, now:{now}")
+                    #self.logger.debug(f"observer {id(self)} check queue of {eventIdentification} size: {entry['queue'].qsize()},last:{entry['lastTimeStamp']}, now:{now}, ready: {now > (entry['lastTimeStamp']+self.minWaitTime)}")
                     if (not entry["queue"].empty()) and (now > (entry["lastTimeStamp"]+self.minWaitTime)):
                         #send this event, the timeout was met, we pull the first event from the queue, trash the remaining ones
+                        """
+                        old code
+                        
                         self.eventQueues[eventIdentification]["lastTimeStamp"]=now
                         #send out this event
                         myEvent = self.eventQueues[eventIdentification]["queue"].get()
-                        event_string = f"id:{myEvent['id']}\nevent: {myEvent['event']}\ndata: {myEvent['data']}\n\n"
-                        #self.logger.debug(f'Observer {id(self)} sending event: {myEvent["event"]}')
+                        event_string = f'id:{myEvent["id"]}\nevent: {myEvent["event"]}\ndata: {myEvent["data"]}\n\n'
+                        self.logger.debug(f'Observer {id(self)} sending event: {event_string}')
 
                         #pull empty the queue
                         if self.eventQueues[eventIdentification]['queue'].qsize():
                             self.logger.debug(f"Qtrash observerinstance{id(self)} eventident {eventIdentification} size {self.eventQueues[eventIdentification]['queue'].qsize()}")
                             while not self.eventQueues[eventIdentification]["queue"].empty():
                                self.eventQueues[eventIdentification]["queue"].get(False)
-                        #self.logger.debug(f"Qyield {id(self)} {myEvent['event']} {myEvent['id']}")
+                        self.logger.debug(f"Qyield {id(self)} : {myEvent}")
+                        yield event_string
+                        """
+                        self.eventQueues[eventIdentification]["lastTimeStamp"]=now
+                        #send out this event
+
+                        #pull empty the queue
+                        if self.eventQueues[eventIdentification]['queue'].qsize():
+                            #self.logger.debug(f"Qtrash observerinstance{id(self)} eventident {eventIdentification} size {self.eventQueues[eventIdentification]['queue'].qsize()}")
+                            while not self.eventQueues[eventIdentification]["queue"].empty():
+                                myEvent = self.eventQueues[eventIdentification]["queue"].get(False)
+
+                        event_string = f'id:{myEvent["id"]}\nevent: {myEvent["event"]}\ndata: {json.dumps(myEvent["data"])}\n\n'
+                        #self.logger.debug(f"Qyield {id(self)} : {myEvent}")
                         yield event_string
 
 
@@ -786,7 +600,7 @@ class Observer:
         self.model.detach_observer(self)
 
 
-class Model():
+class Model:
     nodeTemplate = {"id": None, "name": None, "type": "folder", "parent": None, "children": [], "backRefs": [],"forwardRefs":[],"value":None}
 
 
@@ -797,26 +611,43 @@ class Model():
             all templates and functions are imported
             a model holds all modelling information and data to work on
         """
-        self.model = {"1":{"name":"root","type":"folder","children":[],"parent":"0","id":"1","backRefs":[],"forwardRefs":[]}}
+        self.version = 0.1
+        self.model = {"1":{
+            "name":"root",
+            "type":"folder",
+            "children":[],
+            "parent":"0",
+            "id":"1",
+            "backRefs":[],
+            "forwardRefs":[],
+            "version":self.version
+           }}
         self.disableObserverCounter = 0 # a counting sema (under manual lock) for the disabling: if zero the notify_observers is active otherwise not
         self.__init_logger(logging.DEBUG)
         self.globalIdCounter=1 # increased on every creation of a node, it holds the last inserted node id
         self.idCreationHash = True # if this is true, we create the id per hash, not per counter
-        self.timeSeriesTables = TimeSeriesTables()
+        self.ts = TimeSeriesTable()
         self.functions={} # a dictionary holding all functions from ./plugins
         self.templates={} # holding all templates from ./plugins
         self.lock = threading.RLock()
         self.executeFunctionRunning = False # set to true, makes sure only one functions runs at a time
-        self.import_plugins()
+        self.import_default_plugins()
         self.differentialHandles ={} # containing model_copy entries to support differential queries
         self.diffHandleCounter = 0  # used only for debugging
         self.differentialHandlesMaxPerUser = 10
         self.currentModelName = "emptyModel" # the current name of the model
         self.modelUpdateCounter = 0 #this is for the tree observer, on any change, we update the counter
         self.observerStatus = {} # a dict holding the key = observerid and value : the needed status of an observer processing
+        self.executionQueue = Queue()
 
         self.observers = []
         self.sse_event_id = 1
+
+        self.start_function_execution_thread()
+
+
+    def __del__(self):
+        self.functionExecutionRunning = False # stop the execution thread of functions
 
     def __init_logger(self, level):
         """setup the logger object"""
@@ -837,6 +668,7 @@ class Model():
         """
             Args:
                 id (string): give a browsepath ("root.myfolder.myvariable") or a nodeId ("10")
+                or a "fancy" path mixed like "1000.min" where 1000 is a node id, only the first is allowed as Nodeid, the followings are names
             Returns:
                 (string): the node id as string
                 None if not found
@@ -848,11 +680,18 @@ class Model():
             names = id.split('.')
             if names[0]=="root":
                 names = names[1:]
+                actualSearchId = "1"
+
+            elif names[0] in self.model:
+                #self.logger.debug(f"fancy browsepath {names}")
+                actualSearchId = names[0]
+                names = names[1:]
+            else:
+                return None
         except:
             return None
 
         #now we start at root
-        actualSearchId = "1"
         for name in names:
             nextSearchId = None
             for childId in self.model[actualSearchId]["children"]:
@@ -879,24 +718,36 @@ class Model():
             if id:
                 return Node(self,id)
 
-    def get_node_info(self,desc):
+    def get_node_info(self,desc,includeLongValues=True):
         """
             Args:
                 desc (string): give a browsepath ("root.myfolder.myvariable") or a nodeId ("10")
+                includeLongValue if true, we include values for columns and files
             Returns:
                 (dict): a dictionary holding all properties of the node includin references and children
         """
         with self.lock:
             id = self.__get_id(desc)
             if not id: return None
-            return copy.deepcopy(self.model[id])
+            if includeLongValues:
+                return copy.deepcopy(self.model[id])
+            else:
+                #we do not include values of columns and files
+                if self.model[id]["type"] in ["column","file","timeseries"]:
+                    return  {k:v for k,v in self.model[id].items() if k!="value"}
+                else:
+                    #take all
+                    return copy.deepcopy(self.model[id])
+
+
+
 
     def __get_node_with_children(self,id,nodes,includeForwardRefs=True):
         """
             recursive helper for get_branch
 
         """
-        if self.model[id]["type"] in ["file","column"]:
+        if self.model[id]["type"] in ["file","column","timeseries"]:
             #we do not take these values
             nodes[id]={k:v for k,v in self.model[id].items() if k!="value"} # copy the whole but leave out the value
         elif self.model[id]["type"] == "referencer":
@@ -904,7 +755,7 @@ class Model():
             if includeForwardRefs:
                 #for referencers, we take the direct targets
                 for targetId in self.model[id]["forwardRefs"]:
-                    if self.model[targetId]["type"] in ["file", "column"]:
+                    if self.model[targetId]["type"] in ["file", "column","timeseries"]:
                         # we do not take these values
                         target = {k: v for k, v in self.model[id].items() if k != "value"}  # copy the whole but leave out the value
                     else:
@@ -950,6 +801,97 @@ class Model():
                 id = self.model[id]["parent"]
 
         return copy.deepcopy(nodes)
+
+    def __get_node_with_children_pretty(self,id,depth = None,ignore = []):
+        """
+            recursive helper for get_branch_pretty
+            args:
+                nodes: the nodes so far
+
+        """
+
+        #t=utils.Profiling(f"id {self.get_browse_path(id)}, ignore = {ignore}")
+
+        result = {}
+
+        node = self.model[id]
+        #create my properties
+        props = {k: copy.deepcopy(v) for k, v in node.items() if k not in ["value", "backRefs", "children"]}
+        if node["type"] not in ["file", "column","timeseries"]:
+            # we also take the value then
+            props["value"] = copy.deepcopy(node["value"])
+        if node["type"] == "referencer" and (depth is None or depth>0):
+            #tt = utils.Profiling("get leaves")
+            leaves = self.get_leaves_ids(id)
+            #print(tt)
+            #tt.start("get leaves data")
+            forwards = [self.get_browse_path(leaf) for leaf in leaves]
+            props["leaves"]=forwards
+            #tt.lap("1")
+            props["targets"] = [self.get_browse_path(id) for id in self.model[id]["forwardRefs"]]
+            props["leavesIds"]=leaves
+            props["leavesValues"] = [self.get_value(id) if self.model[id]["type"] not in ["file","column","timeseries"] else None for id in leaves]
+            #tt.lap("2")
+            validation = []
+            props["leavesProperties"]={}
+            for id in leaves:
+                prop = self.get_node_info(id,includeLongValues=False)
+                if "validation" in prop:
+                    validation.append(prop["validation"])
+                else:
+                    validation.append(None)
+                props["leavesProperties"][id]=prop
+                props["leavesProperties"][id]["browsePath"]=self.get_browse_path(id)
+            #tt.lap("3")
+            props["leavesValidation"] = validation
+            #print(tt)
+        #make sure we have the browsepath on board
+        if "browsePath" not in props:
+            props["browsePath"]=self.get_browse_path(id)
+        result[".properties"]=props
+
+        if depth is None or depth>0:
+            #now the children
+            nextDepth = None
+            if depth is not None:
+                nextDepth = depth -1
+            for childId in node["children"]:
+                childPath = self.get_browse_path(childId)
+                if any([ignoreName in childPath for ignoreName in ignore]):
+                    #self.logger.debug(f"ignore {childPath}")
+                    pass
+                else:
+                    result[self.model[childId]["name"]]=self.__get_node_with_children_pretty(childId,nextDepth,ignore)
+        #print(t)
+        return result
+
+
+
+    def get_branch_pretty(self,desc,depth=None,ignore = []):
+        """
+            get a branch in the form
+            "child1":{"child3":... ".type":, ".value"
+            "child2":{
+            the properties occurr in ".property" style, the children are direct entries
+            we only use names
+            for the referencers, the ".forwardRefs" are the leaves with full path: ["root.folder1.tzarget2","root.varibale.bare"..]
+            Args:
+                desc [string] the root node to start from
+                depth [int] the depth to look into
+        """
+        with self.lock:
+            #p=utils.Profiling("get_branch_pretty")
+            id = self.__get_id(desc)
+            if not id: return None
+            res = self.__get_node_with_children_pretty(id,depth,ignore)
+            #self.logger.debug(p)
+            return res
+
+
+
+
+
+
 
 
 
@@ -998,52 +940,53 @@ class Model():
         """
         return {"name":self.currentModelName}
 
-
-    def import_plugins(self):
-        """ find all plugins (= all .py files in the ./plugin folder
+    def import_plugins_from_directory(self, plugin_directory: str, check_file_marker = True):
+        """ find all plugins from plugin_directory.
             take from there the templates from the files and the functions
-            this function is execution on startup of the model
-
+            Args:
+                check_file_marker: if set to True, we expect a "#21datalabplugin" string in the first line
         """
-        #mydir =os.path.dirname(os.path.realpath(__file__))
-        mydir = myGlobalDir
-        os.chdir(mydir)#to enable import easily
-        sys.path.append(mydir + '/plugins') # for the importlib to find the stuff
-        sys.path.append(mydir + '/private')  # for the importlib to find the stuff
+        if plugin_directory not in sys.path:
+            sys.path.append(plugin_directory)  # for the importlib to find the stuff
 
-        plugins = os.listdir(mydir+'/plugins')
-        try:
-            privates = os.listdir(mydir+'/private')
-            #for the privates, take only the ones carrying the line "#21datalabplugin"
-            for fileName in privates:
-                if fileName.startswith('__'):
-                    continue
-                if fileName.startswith('.'):
-                    continue
-                fullName = mydir+'/private/'+fileName
-                f=open(fullName,"r")
-                if f.readline()[0:16]=="#21datalabplugin":
-                    plugins.append(fileName)
-                f.close()
-        except Exception as ex:
-            self.logger.warning(f"problems during /private folder import {ex}")
-        for fileName in plugins:
+        plugin_filenames = glob.glob(os.path.join(plugin_directory, '**/*.py'), recursive=True)
+        for fileName in plugin_filenames:
             if fileName.startswith('__'):
                 continue # avoid __pycache__ things
-            moduleName = fileName[:-3]
+            #we need to check if extra plugins have the "#21datalabplugin
+            if check_file_marker:
+                absolutePath = os.path.join(myGlobalDir,fileName)
+                f = open(absolutePath,"r")
+                firstLine = f.readline()
+                f.close()
+                if firstLine != "#21datalabplugin\n":
+                    continue
+
+            filename_relative = os.path.relpath(fileName, plugin_directory)
+            moduleName = os.path.splitext(filename_relative)[0].replace(os.path.sep, '.')
+            self.logger.info(f"import plugin lib {moduleName}")
             module = importlib.import_module(moduleName)
             #now analyze all objects in the module
             for objName in dir(module):
                 if objName.startswith('__'):
                     continue # these are python generated info objects, we don't want them
                 element = getattr(module,objName)
-                if type(element ) is dict:
+                if type(element) is dict:
                     #this is a template information
                     self.templates[moduleName+"."+objName]=copy.deepcopy(element)
                 elif callable(element):
                     #this is a function, get more info
-                    newFunction = {"module":module,"function":element}
+                    newFunction = {"module":module, "function":element}
                     self.functions[moduleName+"."+objName]=newFunction
+    def import_default_plugins(self):
+        """ find all plugins (= all .py files in the ./plugin folder
+            take from there the templates from the files and the functions
+            don't check them for #21datalabplugin marker
+
+            this function is execution on startup of the model
+
+        """
+        self.import_plugins_from_directory(os.path.join(myGlobalDir, 'plugins'),check_file_marker=False)
 
     def get_id(self,ids):
         """ convert a descriptor or a list into only ids (which can be used as entry to the model dictionary
@@ -1139,7 +1082,9 @@ class Model():
             if value != None:
                 newNode["value"]=value
             self.model[parentId]["children"].append(newId)
-            self.model[newId]=newNode
+            self.model[newId] = newNode
+            if newNode["type"] == "timeseries":
+                self.time_series_create(newId)
             self.__notify_observers(parentId,"children")
             return newNode["id"]
 
@@ -1253,9 +1198,9 @@ class Model():
             template["name"]=path.split('.')[-1]
             parentPath = '.'.join(path.split('.')[:-1])
             newNodeIds = self.__create_nodes_from_path_with_children(parentPath,[template])
-            print(newNodeIds)
+            self.logger.debug(f"create_template_from_path, new nodeids: {newNodeIds}")
 
-            #now adjust the references
+            #now adjust the references of new nodes and of the ones that were there
             for newNodeId in newNodeIds:
                 if "references" in self.model[newNodeId]:
                     #we must create forward references
@@ -1274,7 +1219,7 @@ class Model():
         with self.lock:
             return copy.deepcopy(self.templates)
 
-    def add_forward_refs(self,referencerDesc,targets):
+    def add_forward_refs(self,referencerDesc,targets,allowDuplicates = True):
         """
             adding forward references from a referencer to other nodes, the forward references are appended at the list
             of forward references of the referencer node
@@ -1295,6 +1240,9 @@ class Model():
             if type(targets) is not list:
                 targets = [targets]
 
+            if targets==[]:
+                return True
+
             if not self.model[fromId]["type"]=="referencer":
                 self.logger.error("can't set forward ref on "+str(referencerDesc)+ "is not type referencer, is type"+self.model[fromId]["type"])
                 return False
@@ -1304,10 +1252,19 @@ class Model():
                     continue
                 if toId == fromId:
                     continue
+                if not allowDuplicates:
+                    if toId in self.model[fromId]["forwardRefs"]:
+                        continue # ignore this forwards ref, we have it already
                 self.model[toId]["backRefs"].append(fromId)
                 self.model[fromId]["forwardRefs"].append(toId)
             self.__notify_observers(fromId,"forwardRefs")
             return True
+
+    def lock_model(self):
+        self.lock.acquire()
+
+    def release_model(self):
+        self.lock.release()
 
     def get_model(self):
         """
@@ -1328,9 +1285,10 @@ class Model():
         """
 
         model = {}
+        p=utils.Profiling("get_model_for_web")
         with self.lock:
             for nodeId, nodeDict in self.model.items():
-                if nodeDict["type"] in ["column","file"]:
+                if nodeDict["type"] in ["column","file","timeseries"]:
                     # with columns we filter out the values
                     node = {}
                     for nk, nv in nodeDict.items():
@@ -1352,15 +1310,18 @@ class Model():
                     #this node is not a colum, can still hold huge data
                     model[nodeId] = copy.deepcopy(nodeDict)  # values can be list, dict and deeper objects nodeDict
                 model[nodeId]["browsePath"] = self.get_browse_path(nodeId) #also add the browsepath
+        self.logger.debug(f"{p}")
         return model
 
 
-    def remove_forward_refs(self,sourceDesc,targetDescriptors = []):
+    def remove_forward_refs(self,sourceDesc,targetDescriptors = [], deleteDuplicates=False):
         """
             remove forward references from a referencer, this also removes the backreference from the target
             Args:
                 sourceDesc: the descriptor of the referencer node
                 targets: a list of descriptors, if missing we delete all
+                deleteDuplicates: if set true, we delete all referenes to a target if we hae more than one reference
+
             Returns:
                 True/False for success
         """
@@ -1375,11 +1336,21 @@ class Model():
             else:
                 targets = self.get_id(targetDescriptors)
 
+            if targets == []:
+                return True# nothing to do
+
             for toId in targets:
                 if not toId:
                     continue # we skip Nones coming from the get_id
-                self.model[fromId]["forwardRefs"].remove(toId)
-                self.model[toId]["backRefs"].remove(fromId)
+                if deleteDuplicates:
+                    # maybe multiple entries
+                    while toId in self.model[fromId]["forwardRefs"]: # maybe multiple entries
+                        self.model[fromId]["forwardRefs"].remove(toId)
+                        self.model[toId]["backRefs"].remove(fromId)
+                else:
+                    # we delete only one entry
+                    self.model[fromId]["forwardRefs"].remove(toId)
+                    self.model[toId]["backRefs"].remove(fromId)
             self.__notify_observers(fromId,"forwardRefs")
         return True
 
@@ -1525,6 +1496,8 @@ class Model():
                 if parentId in self.model:
                     self.model[parentId]["children"].remove(id)
                     childNotify.append(parentId)
+                if self.model[id]["type"]=="timeseries":
+                    self.time_series_delete(id)
                 del self.model[id]
 
             #now notify only those who still exist
@@ -1537,44 +1510,6 @@ class Model():
 
             return True
 
-    def delete_node_old(self,desc):
-        """
-            delete a node and all its recursive children; if we have referencer nodes on the way which have to be deleted, then
-            we also remove their references in the model
-            Args:
-             desc(string): the descriptor of the node
-            Returns:
-                True for success
-                False for node not found
-        """
-        with self.lock:
-            id = self.get_id(desc)
-            if not id:
-                return False
-
-            nodesToDelete = self.find_all_children_recursive([id])
-
-            nodesToDelete = self.model[id]["children"].copy()
-            print("remove",id,"and children",nodesToDelete)
-            for node in nodesToDelete:
-                self.delete_node(node)
-            #if we are done with the inner, we can now remove all dependencies
-            #for a referencer we remove forwards to others and the accoring backwards to me
-            if self.model[id]["type"]=="referencer":
-                forwards = self.model[id]["forwardRefs"].copy()
-                for forwardRefId in forwards:
-                    self.remove_forward_ref(id,forwardRefId)
-
-            #for all type of nodes, remove potential backward refs
-            backs = self.model[id]["backRefs"].copy()
-            for backRefId in backs:
-                self.remove_back_ref(id,backRefId)
-            #now remove me from the parent
-            self.model[self.model[id]["parent"]]["children"].remove(id)
-            self.__notify_observers(id,"children")
-            #now remove me
-            del self.model[id]
-            return True
 
     # if desc.type is a var, function then we just set the value
     # if it's a timeseries" then we set a column in a table, padded if needed
@@ -1608,6 +1543,10 @@ class Model():
         with self.lock:
             id = self.get_id(desc)
             if not id: return None
+
+            if self.model[id]["type"] == "timeseries":
+                return self.time_series_get_table(id)[id]["values"]
+
             if "value" in self.model[id]:
                 return copy.deepcopy(self.model[id]["value"])
             else:
@@ -1630,7 +1569,7 @@ class Model():
         """
         newNode = {}
         for key in self.model[id]:
-            if key == "value" and self.model[id]["type"]=="column":
+            if key == "value" and self.model[id]["type"]in ["column","file","timeseries"]:
                 newNode["value"]=None
             elif key == "children" and resolveChildren:
                 #we also copy the children
@@ -1714,10 +1653,13 @@ class Model():
         return backRefs
 
 
-    def get_referencers(self,desc):
+    def get_referencers_old(self,desc):
         """
             find the referencers pointing to a node via the "leaves algorithm"
             initially, we take the parent and the backref referencers
+            Args:
+                deep: we support the reverse leave-algorithms including any depth of children level after the last referencer,
+                e.g. a leaves-path of referencer -> referencer -> nodes -> child ->child is a valid match
         """
         with self.lock:
             id = self.__get_id(desc)
@@ -1731,6 +1673,40 @@ class Model():
             referencers = self.__get_referencer_parents(ids)
             return referencers
 
+
+    def get_referencers(self,desc,deepLevel = 1):
+        """
+            find the referencers pointing to a node via the "leaves algorithm"
+            initially, we take the parent and the backref referencers
+            Args:
+                deepLevel: we support the reverse leave-algorithms including any depth of children level after the last referencer,
+                e.g. a leaves-path of referencer -> referencer -> nodes -> child ->child is a valid match
+                we give the number of parent levels to include in the search at the leaves
+                default is 1, so the node itself and its parent
+
+        """
+        with self.lock:
+            id = self.__get_id(desc)
+            if not id:return None
+
+            if not deepLevel:
+                ids = [self.model[id]["parent"],id]
+            else:
+                ids = self._get_parents(id,deepLevel)
+
+            if "0" in ids:
+                ids.remove("0")
+
+            referencers = self.__get_referencer_parents(ids)
+            return referencers
+
+    def _get_parents(self,id,deepLevel = -1):
+        ids = []
+        while id != "1" and deepLevel >= 0:
+            ids.append(id)
+            deepLevel -=1
+            id = self.model[id]["parent"]
+        return ids
 
     #get a table with values like in the table stored, start and end times are optional
     # if start, end not given, then we get the full table with no postprocessing at all
@@ -1837,6 +1813,7 @@ class Model():
                     return len(self.model[columnIds[0]]["value"])
             except:
                 return None
+
 
 
 
@@ -1959,12 +1936,6 @@ class Model():
                 self.model[id]["value"].append(value)#finally put the value
 
 
-    def old_get_timeseries_len(self,desc): #deprecated
-        with self.lock:
-            id = self.get_id(desc)
-            if not id: return False
-            if self.model[id]["type"]!="timeseries": return False
-            return self.timeSeriesTables.get_number_of_rows(desc)
 
     #return the id of the table, give a column variable
     def __find_table(self,desc):
@@ -2271,10 +2242,10 @@ class Model():
                         print("," + property + "=" + str(self.model[rootId][property]), end="")
                 except:
                     print("," + property + "=" + str(self.model[rootId][property]), end="")
-                #value = str(self.model[rootId][property])
-                #if len(value)>40:
-                #    value = value[0:37]+"..."
-                #print("," + property + "=" +value, end="")
+
+        if self.model[rootId]["type"]=="timeseries":
+            print(","+self.time_series_get_info(rootId), end="")
+
         print("")
         for child in self.model[rootId]["children"]:
             self.__show_subtree(child)
@@ -2291,17 +2262,33 @@ class Model():
         """
 
         with self.lock:
-            if self.executeFunctionRunning:
-                self.logger.warning(f"function {desc} can't be executed, busy")
-                return "busy"
+
 
             id = self.get_id(desc)
             if self.model[id]["type"]!= "function":
                 return False
+
             functionName = self.model[id]["functionPointer"]
-            if not functionName in  self.functions:
-                self.logger.error("can't find function in global list")
+            if not functionName in self.functions:
+                self.logger.error(f"can't find function {functionName} in global list")
                 return False
+
+            functionNode = self.get_node(id)
+
+            executionType = functionNode.get_child("control").get_child("executionType").get_value()
+            if executionType in ["async","sync"]:
+                self.executionQueue.put(id)
+                self.logger.info(f"function {desc} queued for execution")
+                return True
+            elif executionType =="threaded":
+                self.logger.info(f"function {desc} started in thread")
+                thread = threading.Thread(target=self.__execution_thread, args=[id])
+                thread.start()
+                return True
+            else:
+                self.logger.error(f"function {desc} cant be started, unknown execution type {executionType}")
+                return False
+
             #check if function is interactive, then we reload it right now
             if self.model[id]["autoReload"] == True:
             #if self.functions[functionName]["isInteractive"]:
@@ -2311,13 +2298,10 @@ class Model():
                 #now update our global list
                 self.functions[functionName]["module"] = module
                 self.functions[functionName]["function"] = functionPointer
-            #now check if sync execution
-            functionNode= self.get_node(id)
-            executionType = functionNode.get_child("control").get_child("executionType").get_value()
-        #here, the lock is open again!
 
+        #here, the lock is open again!
         try:
-            if executionType == "async":
+            if executionType == "async" or executionType == "threaded":
                 thread = threading.Thread(target=self.__execution_thread, args=[id])
                 thread.start()
                 return True
@@ -2329,6 +2313,32 @@ class Model():
                 raise(Exception)
         except:
             return False
+
+    def start_function_execution_thread(self):
+        self.functionExecutionRunning = True
+        self.functionExecutionThread = threading.Thread(target=self._function_execution_thread)
+        self.functionExecutionThread.start()
+
+
+
+    def _function_execution_thread(self):
+        while self.functionExecutionRunning:
+            try:
+                nextId = self.executionQueue.get(timeout=1)
+                self.logger.info(f"now executing function {nextId}")
+                self.__execution_thread(nextId)
+            except:
+                pass
+
+    def delete(self):
+        self.functionExecutionRunning = False
+
+    def exit(self):
+        self.delete()
+
+    def close(self):
+        self.delete()
+
 
     def __execution_thread(self,id):
         """
@@ -2342,23 +2352,33 @@ class Model():
         try:
 
             with self.lock:
-                if self.executeFunctionRunning:
-                    return
-                self.executeFunctionRunning = True
 
-                self.logger.info(f"in execution Thread, executing {id}")
+                if self.model[id]["autoReload"] == True:
+                    # must reload the module
+                    functionName = self.model[id]["functionPointer"]
+                    module = importlib.reload(self.functions[functionName]["module"])
+                    functionPointer = getattr(module, functionName.split('.', 1).pop())
+                    # now update our global list
+                    self.functions[functionName]["module"] = module
+                    self.functions[functionName]["function"] = functionPointer
+
+
+                self.logger.info(f"in execution Thread {threading.get_ident()}, executing {id}")
                 #check the function
                 functionName = self.model[id]["functionPointer"]
-                #if not functionName in self.functions:
-                #    print("not found in global functions list")
-                #    return False
                 functionPointer = self.functions[functionName]['function']
+
                 #now set some controls
                 try:
                     node = self.get_node(id)
                     controlNode = node.get_child("control")
                     controlNode.get_child("status").set_value("running")
                     controlNode.get_child("result").set_value("pending")
+                    targetId = self.get_id("root.system.progress.targets")
+                    if targetId:
+                        self.remove_forward_refs(targetId)
+                        self.add_forward_refs(targetId,[controlNode.get_child("progress").get_id()])
+                    controlNode.get_child("progress").set_value(0)
                     #controlNode.get_child("signal").set_value("nosignal")
                     startTime = datetime.datetime.now()
                     controlNode.get_child("lastStartTime").set_value(startTime.isoformat())
@@ -2367,6 +2387,7 @@ class Model():
 
             # model lock open: we execute without model lock
             result = functionPointer(node) # this is the actual execution
+
             #now we are back, set the status to finished
             duration = (datetime.datetime.now()-startTime).total_seconds()
 
@@ -2378,6 +2399,7 @@ class Model():
                     #controlNode.get_child("signal").set_value("nosignal") #delete the signal
                     controlNode.get_child("status").set_value("finished")
                     controlNode.get_child("executionCounter").set_value(controlNode.get_child("executionCounter").get_value()+1)
+                    controlNode.get_child("progress").set_value(1)
                     if result == True:
                         controlNode.get_child("result").set_value("ok")
                     else:
@@ -2388,14 +2410,19 @@ class Model():
                     self.logger.error("problem setting results from execution of #"+str(id))
                     pass
 
-            self.executeFunctionRunning = False
-            return result
+
         except Exception as ex:
-            self.logger.error("error inside execution thread, id " +str(id)+" functionname"+str(functionName)+str(sys.exc_info()[1])+" "+str(ex))
+            self.logger.error("error inside execution thread, id " +str(id)+" functionname"+str(functionName)+str(sys.exc_info()[1])+" "+str(ex)+" "+str(traceback.format_exc()))
             controlNode.get_child("status").set_value("interrupted")
             controlNode.get_child("result").set_value("error")
-            self.executeFunctionRunning = False
-            return False
+        return
+
+    def get_error(self):
+        s=f"{sys.exc_info()[1]}, {traceback.format_exc()}"
+        return s
+
+    def log_error(self):
+        self.logger.error(self.get_error())
 
     def show(self):
         """
@@ -2417,27 +2444,39 @@ class Model():
                 includeData : if set to False, we DONT store the values of node types tables or files to disk
 
         """
+        self.logger.debug(f"save model as {fileName} with data {includeData}")
+        self.publish_event(f"saving model {fileName}...")
         with self.lock:
             try:
                 m = self.get_model_for_web()  # leave out the tables
+
+                model_directory = None
+                model_filename = None
+                if os.path.isabs(fileName):
+                    model_directory = os.path.dirname(fileName)
+                    model_filename = os.path.basename(fileName)
+                else:
+                    file_directory = os.path.dirname(fileName)
+                    if len(file_directory) == 0:
+                        # we are only given a filename, use 21datalab subfolder models as directory
+                        model_directory = os.path.join(os.path.dirname(__file__), "models")
+                        model_filename = fileName
+                    else:
+                        # we are given a relative path + filename
+                        model_directory = os.path.dirname(fileName)
+                        model_filename = os.path.basename(fileName)
+
                 if includeData:
-                    for nodeId in self.model:
-                        if self.get_node_info(nodeId)["type"] == "table":
-                            tablePath = self.get_browse_path(nodeId)
-                            self.logger.debug("found table "+tablePath)
-                            columnNodes = self.get_leaves(tablePath+".columns")
-                            myList = []
-                            for node in columnNodes:
-                                myList.append(self.get_value(node["id"]))
-                            table = numpy.stack(myList,axis=0)
-                            numpy.save("./models/" + fileName + "."+tablePath+".npy", table)
-                f = open("./models/"+fileName + ".model.json", "w")
+                    self.ts.save(os.path.join(model_directory, model_filename))
+                f = open(os.path.join(model_directory, model_filename)+ ".model.json", "w")
                 f.write(json.dumps(m, indent=4))
                 f.close()
                 self.currentModelName = fileName
+                self.publish_event(f"model {fileName} saved.")
                 return True
             except Exception as e:
                 self.logger.error("problem sving "+str(e))
+                self.publish_event(f"saving model {fileName} error")
                 return False
 
     def move(self, nodeList, newParent, newIndex=None):
@@ -2497,12 +2536,32 @@ class Model():
                 fileName(string) the name of the file without extension, we also accept a dict here: a list of nodes
                 includeData bool: if set to false, the values for tables and files will NOT be loaded
         """
+        result = False
         self.logger.info(f"load {fileName}, includeData {includeData}")
         with self.lock:
+            self.publish_event(f"loading model {fileName}...")
             self.disable_observers()
             try:
                 if type(fileName) is str:
-                    f = open("./models/"+fileName+".model.json","r")
+                    model_directory = None
+                    model_filename = None
+                    if os.path.isabs(fileName):
+                        model_directory = os.path.dirname(fileName)
+                        model_filename = os.path.basename(fileName)
+                    else:
+                        file_directory = os.path.dirname(fileName)
+                        if len(file_directory) == 0:
+                            # we are only given a filename, use 21datalab subfolder models as directory
+                            model_directory = os.path.join(os.path.dirname(__file__), "models")
+                            model_filename = fileName
+                        else:
+                            # we are given a relative path + filename
+                            model_directory = os.path.dirname(fileName)
+                            model_filename = os.path.basename(fileName)
+
+                    #if os.path.dirname(fileName)
+
+                    f = open(os.path.join(model_directory, model_filename) + ".model.json","r")
                     model = json.loads(f.read())
                     self.model = model
                     f.close()
@@ -2517,20 +2576,45 @@ class Model():
                         #we only recover the counter if necessary
                         if int(nodeId)>self.globalIdCounter:
                             self.globalIdCounter = int(nodeId) # here, we recover the global id counter
-                    if includeData:
-                        if self.get_node_info(nodeId)["type"] == "table":
-                            table = self.get_browse_path(nodeId)
-                            data = numpy.load("./models/" + fileName+'.'+table + ".npy")
-                            ids = self.get_leaves_ids(table+".columns")
-                            for id, column in zip(ids, data):
-                                self.set_value(id,column)
+                if includeData:
+                    if "version" in self.model["1"] and self.model["1"]["version"]>=0.1:
+                        #new loader
+                        self.ts.load(os.path.join(model_directory, model_filename))
+                    else:
+                        self.logger.debug("time series compatibility loader")
+                        #we assume data in file and use the standard inmemory table storage
+                        for nodeId in self.model:
+                            if self.get_node_info(nodeId)["type"] == "table":
+                                table = self.get_browse_path(nodeId)
+                                data = numpy.load(os.path.join(model_directory, model_filename) + "." + table + ".npy")
+                                #now find the time data, apply it to all variables
+                                timeId=self.find_table_time_node(table)
+                                ids = self.get_leaves_ids(table+".columns")
+                                for id, column in zip(ids, data):
+                                    if id==timeId:
+                                        times = column
+                                    else:
+                                        self.ts.create(id)
+                                        self.set_properties({"type":"timeseries"},id)
+                                        self.ts.set(id,values=column)
+                                for id in ids:
+                                    if id == timeId:
+                                        continue
+                                    self.ts.set(id,times=times)
 
                 self.enable_observers()
-                return True
+                self.publish_event(f"loading model {fileName} done.")
+                self.model["1"]["version"]=self.version #update the version
+                result = True
             except Exception as e:
                 self.logger.error("problem loading"+str(e))
+                self.publish_event(f"loading model {fileName} error.")
                 self.enable_observers()
-                return False
+                result = False
+
+            self.update() # automatically adjust all widgets and other known templates to the latest style
+
+        return result
 
 
     def create_differential_handle(self, user = None):
@@ -2643,6 +2727,27 @@ class Model():
             return diff
 
 
+    def publish_event(self, event):
+        """
+            send out an event e.g. for status information
+            event to send looks like
+                event = { "id": 1123,
+                            "event": "system.status"
+                            "data:"{"nodeId":xx, "value":..,"function":... ...}
+                            }
+            Args
+                event [string or dict]
+        """
+
+        self.modelUpdateCounter += 1
+
+        if type(event) is str:
+            event={"event":"system.status","data":{"text":event}}
+        event["id"]=self.modelUpdateCounter
+
+        for observerObject in self.observers:
+            observerObject.update(event)
+
 
     def disable_observers(self):
         with self.lock:
@@ -2711,7 +2816,7 @@ class Model():
                 #    print("debug cos")
 
 
-                backrefs =  self.get_referencers(nodeId)
+                backrefs =  self.get_referencers(nodeId,deepLevel=3) # deepLevel non standard, three parents! we support ref->ref->node->child->child->child
                 for id in backrefs:
                     if self.model[id]["name"] == "targets" and self.model[self.model[id]["parent"]]["type"] == "observer":
                         # this node is being observed,
@@ -2731,14 +2836,38 @@ class Model():
                                     for funcNodeId in self.get_leaves_ids(observer["onTriggerFunction"]["id"]):
                                         self.logger.debug(f"execute ontrigger function {funcNodeId}")
                                         self.execute_function(funcNodeId)
+                                    if "triggerSourceId" in observer:
+                                        self.model[observer["triggerSourceId"]["id"]]["value"] = nodeId
                                     if observer["hasEvent"]["value"] == True:
-                                        self.logger.debug(f"send event {observer['eventString']['value']}")
+                                        #self.logger.debug(f"send event {observer['eventString']['value']}")
                                         #also send the real event
                                         #self.modelUpdateCounter = self.modelUpdateCounter+1
                                         event = {
                                             "id": self.modelUpdateCounter,
                                             "event": observer["eventString"]["value"],
-                                            "data": observerId}
+                                            "data": {"nodeId":observerId,"sourceId":nodeId,"sourcePath":self.get_browse_path(nodeId)}}
+                                        if self.model[nodeId]["type"] not in ["column","file","timeseries"]:
+                                            event["data"]["value"]=self.model[nodeId]["value"]
+                                        #some special handling
+                                        try:
+                                            if event["event"] == "system.progress":
+                                                progressNode = self.get_node(self.get_leaves_ids("root.system.progress.targets")[0])
+                                                event["data"]["value"]=progressNode.get_value()
+                                                event["data"]["function"]=progressNode.get_parent().get_parent().get_browse_path()
+                                            else:
+                                                eventNode = self.get_node(observerId)
+                                                extraInfoNode = eventNode.get_child("eventData")
+                                                if extraInfoNode:
+                                                    extraInfo = extraInfoNode.get_value()
+                                                    if type(extraInfo) is not dict:
+                                                        extraInfo={"info":extraInfo}
+                                                    event["data"].update(extraInfo)
+
+                                        except Exception as ex:
+                                            self.logger.error(f"error getting extra info for event {ex}, {sys.exc_info()[0]}")
+                                        #for all other events, take the event data if there is one (as json)
+
+                                        self.logger.debug(f"send event {event}")
                                         for observerObject in self.observers:
                                             observerObject.update(event)
                                     triggeredObservers.append(observerId)# next time, we don't trigger
@@ -2797,6 +2926,347 @@ class Model():
                     #same len
                     pass
                 return newLen
+
+    def update(self):
+        """
+            update all known widgets to the latest template including complex backward compatibility changes
+            :return:
+        """
+        self.logger.info("update() running...")
+        self.disable_observers()
+        try:
+            # the ts widgets:
+            # now go throught the widget and update all according the template
+            # now find all type widget
+            newNodes = {}
+            helperModel = Model()
+            helperModel.disable_observers()
+            helperModel.create_template_from_path("root.widget", self.get_templates()['templates.timeseriesWidget'])
+
+            widgets = []
+            for id, props in self.model.items():
+                if props["type"] == "widget":
+                    widgetObject = self.get_node(id)
+                    if widgetObject.get_child("widgetType").get_value() == "timeSeriesWidget":
+                        widgets.append(id)
+                        self.logger.debug(f"update():found widget {widgetObject.get_browse_path()}")
+
+            for id in widgets:
+                path = self.get_browse_path(id)
+                mirrorBefore = self.get_branch_pretty(path)
+                self.create_template_from_path(path,self.get_templates()['templates.timeseriesWidget']) # this will create all nodes which are not there yet
+
+                # now make specific updates e.g. linking of referencers, update of list to dicts etc.
+                # if colors is a list: make a dict out of it
+                colors = self.get_value(f"{id}.hasAnnotation.colors")
+                tags = self.get_value(f"{id}.hasAnnotation.tags")
+                if type(colors) is list:
+                    colors = {v:{"color":colors[idx],"pattern":None} for idx,v in enumerate(tags)}
+                    self.logger.debug(f"update(): set value{id}.hasAnnotation.colors := {colors} ")
+                    self.set_value(f"{id}.hasAnnotation.colors",colors)
+
+                if not "visibleTags" in mirrorBefore["hasAnnotation"] or (self.get_value(f"{id}.hasAnnotation.visibleTags") != mirrorBefore["hasAnnotation"]["visibleTags"][".properties"]["value"]):
+                    #it is different or new, so we created it now
+                    visibleTags = {tag:True for tag in tags}
+                    #make sure that from the colors, we take them as well
+                    updateVisibleTags = {tag:True for tag in colors}
+                    visibleTags.update(updateVisibleTags)
+
+                    self.set_value(f"{id}.hasAnnotation.visibleTags",visibleTags)
+                    self.logger.debug(f"update(): set value{id}.visibleTagss := {visibleTags} ")
+
+                #make sure the hasAnnotation.annotations referencer points to newannotations as well
+                self.add_forward_refs(f"{id}.hasAnnotation.annotations",[f"{id}.hasAnnotation.newAnnotations"],allowDuplicates=False)
+
+                #now make sure the observers have at least the required properties enabled
+                widget = self.get_node(id)
+                helperRoot = helperModel.get_node("root.widget")
+                template = self.get_templates()['templates.timeseriesWidget']
+
+                children = helperRoot.get_children(3)
+                print(f"2 level children {[node.get_browse_path() for node in children]}")
+                for child in helperRoot.get_children():
+                    if child.get_properties()["type"] == "observer":
+                        widgetNode = widget.get_child(child.get_name()).get_child("properties")
+                        helperNode = child.get_child("properties")
+
+                        for prop in helperNode.get_value():
+                            current = widgetNode.get_value()
+                            if prop not in current:
+                                current.append(prop)
+                                widgetNode.set_value(current)
+
+                for child in helperRoot.get_children(3):
+                    if child.get_properties()["type"] == "referencer":
+                        self.logger.debug(f"found referencer {child.get_name()}")
+                        # now adjust the references of new nodes and of the ones that were there
+                        targets = child.get_properties()["forwardRefs"]
+                        if targets:
+                            targets = [helperModel.get_browse_path(ref) for ref in targets]
+                            requiredTargets = [widget.get_browse_path()+"."+".".join(ref.split(".")[2:]) for ref in targets]
+                            self.logger.debug(f"required targets {requiredTargets}")
+                            #now check in the model
+                            widgetNodePath = widget.get_browse_path()+ child.get_browse_path()[len(helperRoot.get_browse_path()):]
+                            widgetNode = self.get_node(widgetNodePath)
+                            #now check if we have them
+                            targetPaths = [tNode.get_browse_path() for tNode in widgetNode.get_targets()]
+                            for target in requiredTargets:
+                                if target not in targetPaths:
+                                    self.logger.debug(f"adding ref {widgetNode.get_browse_path()} => {target}")
+                                    self.add_forward_refs(widgetNode.get_id(),[target])
+
+
+
+            #now the system progress observer
+            if not self.get_node("root.system.progress"):
+                self.create_template_from_path("root.system.progress",self.get_templates()['system.observer'])
+                self.set_value("root.system.progress.hasEvent",True)
+                self.set_value("root.system.progress.eventString","system.progress")
+                self.set_value("root.system.progress.properties",["value"])
+                self.set_value("root.system.progress.enabled",True)
+
+
+        except Exception as ex:
+            self.logger.error(f" {ex} , {sys.exc_info()[0]}")
+            helperModel.delete()
+
+        helperModel.delete()
+        self.enable_observers()
+
+    # ########################################
+    # time series api
+
+    def time_series_create(self,desc):
+        id = self.get_id(desc)
+        return self.ts.create(id)
+
+    def time_series_delete(self,desc):
+        id = self.get_id(desc)
+        return self.ts.delete(id)
+
+    def time_series_insert_data(self, desc, values=None, times=None):
+        id = self.get_id(desc)
+        if not id in self.model:
+            return None
+        result =  self.ts.insert(id,values, times)
+        self.__notify_observers(id, "value")
+        return result
+
+    def time_series_set(self,desc,values=None,times=None):
+        id = self.get_id(desc)
+        if not id in self.model:
+            return None
+        result =  self.ts.set(id,values=values,times=times)
+        self.__notify_observers(id, "value")
+        return result
+
+    def time_series_get_table(self,
+                              variables,
+                              tableDescriptor = None,
+                              start=None,
+                              end=None,
+                              noBins=None,
+                              includeIntervalLimits=False,
+                              resampleTimes=None,
+                              format="default",
+                              toList = False,
+                              resampleMethod = None):
+        """
+            get a time series table from variables (nodes of type "timeseries").
+
+
+            Args:
+                variables [list of ode descriptors]: nodes to be part the data table requested (ordered!)
+
+                tableDescriptor : a desc for the table where the variables reside
+                    possible addressing of te request nodes:
+                    1) ids or browsepaths of nodes (no tableDescriptor needed)
+                    2) names of nodes and tableDescriptor of the table (names must be unique in the columns of the table)
+
+                startime, endTime [float]:
+                                the start and endtime of the table given as seconds since epoch
+                                we also allow the special case of endTime = 0 and startTime = -interval
+                                we also allow the special case of startTime given and end time= 0
+
+                noBins(int): the number of samples to be returned inside the table between start end endtime,
+                             if None is given, we return all samples (rows) we have in the table and to not aggregate
+
+                includeIntervalLimits [bool]: if set to true, we will include one more data point each left and right of the requested time
+
+                format:  [enum] "default", "flat", see return description
+
+
+                resampleMethod [enum]:
+                    how to resample if we need to; options are:
+                    None (if not specified): sample and hold
+                    "linear": linear interpolation
+                    "linearfill": linear interpolation and also interpolate "nan" or "inf" values in the original data
+
+                toList: (bool) True: return data as python list, False: return numpy arrays
+
+                examples:
+                - get all data of the variables
+                    data = m.get_time_series_table(["root.mytable.variables.a","root.mytable.variables.b"]) # get all data
+                - request max 300 values of data (this is what the UI does)
+                    data = m.get_time_series_table(["a","b"],"root.mytable",start=1581483065.323,end=1581483080.323,noBins=300,includeIntervalLimits=True)
+                - request data and resample to equiditant 25 sec spacing, also fill possible nan values with interpolation
+                    times = list(range(1581483065,1581483065+100,25))
+                    data = m.get_time_series_table(["a","b"],"root.mytable",resampleTimes = times,resampleMethod = "linearfill")
+
+
+            Returns(dict)
+                formatting depends on the "format" option
+                 "defaut": return the result as {"var_a":{"values":[],"__time":[]}, "var_b":{"values":[],"__time":[]..}
+                    "flat" return the result as {"var_a":[], "var_a__time":[],"var_b":[],"var_b__time":[]....}
+                the variable descriptor are the ones given in the request
+                    "__time" : list of timestamps for the returned table in epoch seconds as float64
+                    "values": the list of float values of one of the requested variables
+        """
+        if tableDescriptor:
+            tableId = self.get_id(tableDescriptor)
+            tableVars = self.get_leaves(tableId+".columns")
+        else:
+            tableId = None
+
+        with self.lock:
+            #first check if all requested timeseries exist and have type time series
+            #vars = [] #self.get_id(variables)
+
+            if not type(variables) is list:
+                variables= [variables]
+
+            varIds = {} # NodeId: request descriptor
+            for var in variables:
+                varId = self.get_id(var)
+                if not varId:
+                    #try to find per columns and table desc
+                    found = False
+                    if tableId:
+                        for tableVar in tableVars:
+                            if tableVar["name"] == var:
+                                varId = tableVar["id"]
+                                found = True
+                                break
+
+                    if not found:
+                        self.logger.error(f"requested variable {var} does not exist")
+                        return False
+                if self.model[varId]["type"]!="timeseries":
+                    self.logger.error(f"requested variable {var} not timeseries, instead {self.model[varId]['type']}")
+                    return False
+
+                varIds[varId]=var #remeber it for later
+
+            table = self.ts.get_table(list(varIds.keys()), start=start, end=end, copy=copy, resampleTimes=resampleTimes, noBins = noBins, includeIntervalLimits=includeIntervalLimits,resampleMethod=resampleMethod)
+
+        #now wrap back the descriptor to the query, if is was a browsepath, we return and browsepath, if is was an id, we return id
+        # make some formatting
+        def convert(input,toList=toList):
+            if toList:
+                return list(input)
+            else:
+                return input
+
+        result = {}
+        for k,v in table.items():
+            if format=="flat":
+                result[varIds[k]]=convert(v["values"])
+                result[varIds[k]+"__time"]=convert(v["__time"])
+            else:
+                result[varIds[k]] = {"values":convert(v["values"]),"__time":convert(v["__time"])}
+
+        #if len(variables) == 1:
+        #    #we only have one variable, so we return without descriptor
+        #    result = result[list(result.keys())[0]]
+
+        return result
+
+    def time_series_get_info(self,name=None):
+        return self.ts.get_info(name)
+
+
+    def time_series_insert_blobs(self, tableDesc, blobs=[]):
+        """ blob is a dict or list of dicts of key and values containing one time base like
+        the descriptors of teh variables can be ids, browsepaths or just names (without dots)
+        if the descriptors are names, we try to find them in the model, they must exist there uniquely, otherwise
+        they cant be processed
+        we also autocreate the table or missing variables
+
+        the data will be put in a table:
+         - we try to find the table based on one of the variables, if not found, we create the table
+
+        {
+            "a": [1.5,1.6,1.7]m
+            "b": [2,3,4]
+            "__time" :[100001,100002,100003]
+        }
+        """
+        if not type(blobs) is list:
+            blobs=[blobs]
+
+        #first, find the table
+        with self.lock:
+            tableId = self.get_id(tableDesc)
+            if not tableId:
+                #try to find the table from the first node
+
+                #table not found, create it
+                tableId = self.create_node_from_path(tableDesc,properties={"type":"table"})
+                if tableId:
+                    columnsId = self.create_node(parent=tableId, name="columns", properties={"type": "referencer"})
+                    variablesId = self.create_node(parent=tableId, name="variables", properties={"type": "folder"})
+                else:
+                    self.logger.error(f"cant create table {tableDesc}")
+                    return False
+            else:
+                columnsId = self.get_child(tableId,"columns")
+                variablesId = self.get_child(tableId, "variables")
+
+            #now we know the tableId, columnsId, variablesId
+
+        # iterate over all blobs and find the ids of the names in the blobs, if not found, create it
+        # exchange the descriptors to ids
+
+        desc2Id = {} # key: the descriptor from the input blob v: the id in the model
+
+        tableVars = self.get_leaves(columnsId)
+        desc2Id = {dic["name"]:dic["id"] for dic in tableVars}  # key: the descriptor from the input blob v: the id in the model, preload with the names
+
+        #convert all to ids
+        newBlobs=[]
+        for blob in blobs:
+            newBlob={}
+            for k,v in blob.items():
+
+                if k=="__time":
+                    newBlob[k]=v
+                else:
+                    #does this id already exist?
+                    if k in desc2Id:
+                        id = desc2Id[k]
+                    else:
+                        id = None
+                        #try to find
+                        for var in tableVars:
+                            if var["name"] == k:
+                                id = v["id"]
+                                break
+                        if not id:
+                            #still not found, we need to create it
+                            id = self.create_node(parent=variablesId,name=k,properties={"type": "timeseries"})
+                        if not id:
+                            self.logger.error(f"cant find  or create {name}")
+                            continue
+                        else:
+                            self.add_forward_refs(columnsId,[id])
+                            desc2Id[k]=id #remember to speed up next time
+
+                    newBlob[id] = v
+            newBlobs.append(newBlob)
+        self.logger.debug(f"inserting blobs {len(newBlobs)}")
+        self.__notify_observers([v for k,v in desc2Id.items()], "value")
+        return self.ts.insert_blobs(newBlobs)
+
 
     def create_test(self,testNo=1):
         """
@@ -3134,35 +3604,6 @@ if __name__ == '__main__':
 
         return m
 
-    def ts_test1():
-        m=Model()
-        m.create_node("root", name="folder1")
-        m.create_node("root.folder1", name="folder2")
-        m.create_node("2", name="second")
-        m.create_node("root", name="myreferencer", type="referencer")
-        m.create_node("root.folder1", name="myvar", type="variable")
-        m.create_node("root",name="data",type ="folder")
-        for node in ["varA","varB","varC","time"]:
-            m.create_node("root.data",name=node,type="timeseries")
-        #m.show()
-        #now write some data
-        start=datetime.datetime.now()
-        timeNow = datetime.datetime.now()
-        for i in range(5):
-            dataDict ={"root.data.varA":i,"root.data.varB":float(i)/10,"root.data.time":timeNow+datetime.timedelta(i)}
-            #dataDict = {"8": i, "9": float(i) / 10,
-            #            "11": timeNow + datetime.timedelta(i)}
-            #dataDict=m.get_id(dataDict)
-            m.add_timeseries(dataDict)
-        print("done inserting",(datetime.datetime.now()-start))
-        start = datetime.datetime.now()
-        table = m.get_timeseries_table(dataDict)
-        print("readBack",len(table))
-        if len(table)<10:
-            print(table)
-        print("time for readback",(datetime.datetime.now()-start))
-
-        m.show()
 
     def test_template():
         m=Model()
@@ -3247,35 +3688,7 @@ if __name__ == '__main__':
         print("value",myvar.get_value())
 
 
-    def table_query_test():
-        m = Model()
-        m.create_node("root", name="a",type="timeseries")
-        m.create_node("root", name="b", type="timeseries")
-        m.create_node("root", name="c", type="timeseries")
-        m.create_node("root", name="d", type="timeseries")
-        m.create_node("root", name="e", type="timeseries")
-        m.create_node("root", name="time", type="timeseries")
-        m.show()
-        # now write some data
-        start = datetime.datetime.now()
-        timeNow = datetime.datetime.now()
-        for i in range(5000):
-            timeNow = start+ datetime.timedelta(i)
-            dataDict = {"root.a": i,
-                        "root.b": 1+i/10,
-                        "root.c":1+i/100,
-                        "root.d":1+i/1000,
-                        "root.time": timeNow
-                        }
-            m.add_timeseries(dataDict)
-        print("done inserting", (datetime.datetime.now() - start))
 
-        #now make a timed query
-        queryStart = start +datetime.timedelta(100)
-        queryEnd = start +datetime.timedelta(1100)
-        vars=["root.a","root.c","root.d","root.time"]
-        table = m.get_timeseries_table(vars,queryStart,queryEnd,10)
-        print (table)
 
 
     def testfunctions_test():

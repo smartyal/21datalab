@@ -32,6 +32,7 @@ The framework is prepared to run on edge, desktop or cloud and is a microservice
     * moment-timezone-with-data.min.js https://momentjs.com/timezone/
   * web/modules/jQuery-File-Upload (MIT License): (https://github.com/blueimp/jQuery-File-Upload)
   * web/modules/jquery-ui (CC0-1.0 License): https://jqueryui.com/download/
+  * web/modules/supercontextmenu-master (licence pending) (https://github.com/pwnedgod/supercontextmenu)
 
 ## demo
 * under windows: start the model rest services with "occupancydemo.bat" 
@@ -39,6 +40,5 @@ The framework is prepared to run on edge, desktop or cloud and is a microservice
   * you'll find the model tree under the tab model  
   * you'll find the time UI under tab pipelines, then select the "occupancy" and open, it takes 10 seconds to load the UI
   * demo how to here: https://docs.google.com/document/d/1q7Ph-TBbDy314IkCoWfwP1www-dX2-i9EQaSTRKHtlc/edit?usp=sharing
-  * this is how it looks: [![21datalabscreenshot.png](https://i.postimg.cc/4yWRVKXY/21datalabscreenshot.png)](https://postimg.cc/YLLPwCG7)  
-
+  * this is how it looks: ![image](https://drive.google.com/uc?export=view&id=1MAAJoTDCBQcB9XNpxE2KGuGvmJolsYfA)
 

@@ -87,12 +87,15 @@ palette['alarm']
 ]
 
 
+darkTickColor = palette["bw70%"]
+whiteTickColor = palette["bw10%"]
+
 darkTheme = {
     'attrs' : {
         'Figure' : {
                 'background_fill_color': palette['bw10%'],
                 'border_fill_color': palette['bw10%'],
-                'outline_line_color': palette['bw80%'],
+                'outline_line_color': palette['bw80%']
             },
         'Grid': {
             'grid_line_color':palette['bw30%']

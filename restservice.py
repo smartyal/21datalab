@@ -1,3 +1,4 @@
+import argparse
 import flask
 import json
 import logging
@@ -21,6 +22,9 @@ import numpy #for _Getvalue
 from flask import Flask, flash, request, redirect, url_for
 from werkzeug.utils import secure_filename
 import os
+import argparse
+
+
 
 UPLOAD_FOLDER = './upload'
 
@@ -75,11 +79,14 @@ WEBCODES ---------------------
 
 WEBAPI -----------------------
 path                    REQUEST BOY               RESPONSE BODY
-POST /_create       [<createnode.json>]         [<node.json>]           ## give a list of new nodes, result contains all the created nodes  
+POST /_create       [<createnode.json>]         [<node.json>]           ## give a list of new nodes, result contains all the created nodes, if exists, we modify instead  
 POST /_delete       [<nodedescriptor>]          [<nodedescriptor>]      ## give list of deleted nodes back
 POST /_getall       -                           [<node.json>]           ## give the whole address space, fof colums and files we get "len 34"
 POST /_getallhashed   -                         [<node.json>]           ## give the whole address space, for columns and files we get a hash
-POST /_getbranch    <nodedeccripttor>           {node.json}             ## get a part of the model 
+POST /_getbranch    <nodedeccripttor>           {node.json}             ## get a part of the model
+POST _getbranchpretty <nodedesciptor>           {prettybranch.json}     ## get a branch but easy internal access 
+POST /_getbranchpretty <branchquery.json>       {prettybranch.json}     ## get a branch but easy internal access also giving more options
+POST /_getnodes         <getnodes.json>         <getNodesresponse.json> ## various ways to query nodes
 POST /setProperties   [<node.json>]               [<node.json>]         ## the node.json only contains properties to change
 POST /_get          [<nodescriptor>]            [<node.json>]           ## get node including children as json
 POST /_getvalue     [<nodedescriptor>]          [<values>]              ## get a list of values, not available are returned as none
@@ -88,8 +95,9 @@ GET  /pipelines      -                          [<pipeline.json>]       ## get t
 POST /_load         fileName (str)              -
 POST /_save         fileName (str)              -
 POST /_getdata      <dataquery.json>]
-POST /_appendRow     [<data.json>]
-POST /_references <referencequery.json>
+POST /_appendRow     [<data.json>] #deprecated
+POST /_insert       <datablob.json>
+POST /_references <referencequery.json>                                  ## adjust references, details see json
 POST /_execute      <nodedescriptor>            //nothing                ## execute a function
 GET  /templates      -                           [templatename]          ## get all available templates to be created
 POST /_createTemplate  <createtemplate.json>     -                       #create a template at a path given
@@ -156,12 +164,18 @@ dataquery.json
     "bins" : 300
 }
 
-data.json
+datablob.json
 {
-    "root.folder1.var1": 1.3456,
-    "root.folder1.var2": 15,
-    "root.folder1.var3": -0.4,
-    "root.folder1.time": 1546437120.22644
+    table:"root.table",
+    blobs:
+        [{
+            "var1": [1.3456,2,3]
+            "var2": [15,16,17]
+            "var3": [-0.4,0,0]
+            "__time": [1546437120.2,1546437121.2,1546437122.2]
+        },
+        {...},..
+        ]
 }
 
 
@@ -181,10 +195,10 @@ pipelines.json
  
 referencequery.json
 {
-    "node": <nodedescriptor> # must be a referencer
-    "add": [<nodedescriptors>]
+    "parent": <nodedescriptor> # must be a referencer
+    "add": [<nodedescriptors>] # always a list!!
     "deleteExisting" : one of True/False # if set, all existings references are deleted
-    "remove" :[<nodedescriptors>]
+    "remove" :[<nodedescriptors>] # always a list!!, we also delete duplicate references if they exist
 }
 
 movequery.json
@@ -221,6 +235,42 @@ fileinfo.json
 {
     "name": filename,
     "time": string: time in the file system
+}
+
+prettybranch.json
+//formatting a branch in a easy accessible way like
+branch["visualization"]["workbench"]["hasAnnotation"][".properties]["value"]
+{
+    ".properties":
+    {
+        "value":1234,
+        "type":"const
+        "child2":
+        { 
+        ...
+        }
+    }
+    "child1":
+    "child2":
+
+}
+branchquery.json
+{
+    node:<desc>
+    depth:x     //give a depth of the branch resolving
+    ignore : ["observer"] ignore all nodes (and their children) containins "observer"
+}
+
+
+getnodes.json
+{
+    nodes : [<desc>] a list of nodes
+    resultKey: one of "id", "browsePath"
+    includeLongValues: True/False 
+}
+getNodesresponse.json
+{
+    node:nodedict
 }
 
 '''
@@ -289,6 +339,33 @@ def all(path):
             mymodel = m.get_branch(data)
             response = json.dumps(mymodel, indent=4)  # some pretty printing for debug
             responseCode = 200
+
+        elif (str(path) == "_getnodes") and str(flask.request.method) in ["POST","GET"]:
+            logger.debug(f"getnodes")
+            includeLong = data["includeLongValues"]
+            key = data["resultKey"]
+            response = {}
+            for node in data["nodes"]:
+                dic=m.get_node_info(node,excludeValue=True)
+                if key == "browsePath":
+                    response[m.get_browse_path(node)]=dic
+            response = json.dumps(response, indent=4)  # some pretty printing for debug
+            responseCode = 200
+
+
+
+        elif (str(path) == "_getbranchpretty") and str(flask.request.method) in ["POST","GET"]:
+            logger.debug(f"get branch pretty {data}")
+            if type(data) is str:
+                mymodel = m.get_branch_pretty(data)
+            elif type(data) is dict:
+                ignore = []
+                if "ignore" in data:
+                    ignore = data["ignore"]
+                mymodel= m.get_branch_pretty(data["node"],data["depth"],ignore)
+            response = json.dumps(mymodel, indent=4)  # some pretty printing for debug
+            responseCode = 200
+
 
         elif (str(path) == "pipelines") and str(flask.request.method) in ["GET"]:
             logger.debug("execute get pipelines")
@@ -395,15 +472,16 @@ def all(path):
                 responseCode = 404
 
 
-        elif (str(path)=="_appendRow"):
-            logger.debug("writeRow")
-            for blob in data:
-                result = m.append_table(blob)
-                if not result:
-                    responseCode = 400
-                    break
-            responseCode = 200
-            #m.show()
+        elif (str(path)=="_insert"):
+            logger.debug("insert Blobs")
+            table = data["table"]
+            blobs = data["blobs"]
+            result =  m.time_series_insert_blobs(table,blobs)
+            if not result:
+                responseCode = 400
+            else:
+                responseCode = 200
+                #m.show()
 
 
         elif (str(path)=="_getdata"):
@@ -442,8 +520,14 @@ def all(path):
                     includeBackGround = data["includeBackGround"]
                 else:
                     includeBackGround = None
+                if "includeIntervalLimits":#we include one more data point left and right of the actal start and end time
+                    includeIntervalLimits = True
+                else:
+                    includeIntervalLimits = False
+
                 try:
-                    result = m.get_timeseries_table(data["nodes"],startTime=startTime,endTime=endTime,noBins=int(data["bins"]),includeTimeStamps=includeTimeStamps,format="dict",includeBackGround=includeBackGround)
+                    #result = m.get_timeseries_table(data["nodes"],startTime=startTime,endTime=endTime,noBins=int(data["bins"]),includeTimeStamps=includeTimeStamps,format="dict",includeBackGround=includeBackGround)
+                    result = m.time_series_get_table(data["nodes"], start=startTime, end=endTime, noBins=int(data["bins"]), format="flat",toList=True,includeIntervalLimits=includeIntervalLimits)
                     if type(result) != type(None):
                         if includeTimeStamps:
                             pass #XXX todo: include the timestamps converted to a certain format
@@ -463,17 +547,24 @@ def all(path):
             result = []
             responseCode = 201
             for blob in data:
-                targets = []
-                if "targets" in blob:
-                    targets = blob["targets"]
-                    del blob["targets"]
-                newNodeId = m.create_node_from_path(blob["browsePath"],blob)
-                if targets:
-                    m.add_forward_refs(newNodeId,targets)
-                logger.debug('creating'+blob["browsePath"]+', result:'+str(newNodeId))
-                result.append(newNodeId)
-                if not newNodeId:
-                    responseCode = 400
+                #check if new or modification
+                id = m.get_id(blob["browsePath"])
+                if id:
+                    #this is a modification
+                    adjust = m.set_properties(blob)
+                    result.append(id)
+                else:
+                    targets = []
+                    if "targets" in blob:
+                        targets = blob["targets"]
+                        del blob["targets"]
+                    newNodeId = m.create_node_from_path(blob["browsePath"],blob)
+                    if targets:
+                        m.add_forward_refs(newNodeId,targets)
+                    logger.debug('creating'+blob["browsePath"]+', result:'+str(newNodeId))
+                    result.append(newNodeId)
+                    if not newNodeId:
+                        responseCode = 400
             response = json.dumps(result)
             responseCode = 201
 
@@ -506,12 +597,17 @@ def all(path):
         elif (str(path) == "_references"):
             logger.debug("set new references")
             result = []
+            m.lock_model()
+            m.disable_observers() #avoid intermediate events
             if "deleteExisting" in data and data["deleteExisting"] == True:
                 m.remove_forward_refs(data["parent"])
             if "add" in data:
                 result = m.add_forward_refs(data["parent"],data["add"])
             if "remove" in data:
-                result = m.remove_forward_refs(data["parent"], data["remove"])
+                result = m.remove_forward_refs(data["parent"], data["remove"],deleteDuplicates=True)
+            m.enable_observers()
+            m.release_model()
+            m.notify_observers([m.get_id(data["parent"])],"forwardRefs")
             responseCode = 201
 
         elif (str(path) == "_execute"):
@@ -601,7 +697,7 @@ def all(path):
                         data["nodes"]=[data["nodes"]]
                     newNodesIds = []
                     for nodeid in data["nodes"]:
-                        if m.get_node_info(nodeid)["type"] != "column":
+                        if m.get_node_info(nodeid)["type"] not in ["column","timeseries"]:
                             logger.warning("we ignore this node, is not a colum"+str(nodeid))
                         else:
                             newNodesIds.append(m.get_id(nodeid))
@@ -742,22 +838,36 @@ def all(path):
         return flask.Response("",mimetype="text/html"),501
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--port', help='Port on which the restservice is listening', default=6001, type=int)
+    parser.add_argument('--plugin_directory',
+                        help='Adds a directory to the list of directories from which plugins are loaded',
+                        action='append',
+                        default=[])
+    parser.add_argument('model', help='Full path to model or name of a model in the models subdirectory', nargs='?', default=None)
+
+    args = parser.parse_args()
+    model_path = args.model
+    port = args.port
+    plugin_directories = args.plugin_directory
+
     m = model.Model()
-    if len(sys.argv) > 1:
-        if sys.argv[1] == "occupancy":
+    for plugin_directory in plugin_directories:
+        print('Importing plugins from directory \"{:}\"'.format(plugin_directory))
+        m.import_plugins_from_directory(plugin_directory)
+    if model_path is not None:
+        if model_path == "occupancy":
             print("starting occupany demo")
             m.create_test(2)
-        elif sys.argv[1] == "dynamictest":
+        elif model_path == "dynamictest":
             print("starting the dynamic test")
             m.create_test(3)
         else:
-            print("load model from disk: "+sys.argv[1])
-            m.load(sys.argv[1])
-    else:
-        print("no model - create standard test model")
-        m.create_test(1)
+            print("load model from disk: " + model_path)
+            m.load(model_path)
 
-    web.run(host='0.0.0.0', port=6001, debug=False)#, threaded = False)
+    web.run(host='0.0.0.0', port=port, debug=False)#, threaded = False)
 
     #enable this to use wsgi web server instead
     #http_server = WSGIServer(('0.0.0.0', 6001), web)

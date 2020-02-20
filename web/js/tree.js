@@ -28,7 +28,7 @@ class TreeWidget
             root : "far fa-folder tree-icon-class",
             folder : "far fa-folder tree-icon-class",
             variable:"fas fa-random tree-icon-class",
-            timeseries : "fas fa-chart-line fa-xs tree-icon-class",
+            timeseries : "fas fa-stream fa-xs tree-icon-class",
             table :"fas fa-table tree-icon-class",
             annotation: "fas fa-pencil-alt tree-icon-class",
             widget : "fas fa-chart-line fa-xs tree-icon-class",
@@ -99,7 +99,7 @@ class TreeWidget
     {
         this.periodicTreeUpdate = false;
 
-        this.eventSource.close()
+        this.eventSource.close();
     }
 
     trigger_tree_update()
@@ -316,7 +316,8 @@ class TreeWidget
 
         $('#'+this.treeContainerId+'-editNodeModalButtonSave').click( () => {
             var id = $('#'+this.treeContainerId+'-editNodeModalId').val();
-            var value = JSON.parse($('#'+this.treeContainerId+'-editNodeModalValue').val());
+            var rawValue = $('#'+this.treeContainerId+'-editNodeModalValue').val();
+            var value = JSON.parse(rawValue);
             var query=[{"id":id,"value":value}];
             http_post("/setProperties",JSON.stringify(query),null,null,null);
         });
@@ -345,14 +346,14 @@ class TreeWidget
                 let paramKey = $(el).attr("data-property-id");
                 // In case it doesn't have one it means it was a new set of property key value pair
                 if (paramKey != undefined) {
-                    let paramValue = $('input', el).val();
-                    params[paramKey] = paramValue;
+                    let paramValue =  $('input', el).val();
+                    params[paramKey] = JSON.parse(paramValue);
                 }
                 else {
                     // Get the propery id from the
                     paramKey = $('.property-id', el).val();
                     let paramValue = $('.property-value', el).val();
-                    params[paramKey] = paramValue;
+                    params[paramKey] = JSON.parse(paramValue);
                 }
             });
 
@@ -730,18 +731,20 @@ class TreeWidget
 
         // Go over the properties of the node and create a form with all the properties that can be edited
         // let keysToIgnore = ["id", "browsePath", "children", "parent", "forwardRefs", "backRefs", "value"];
-        let keysToIgnore = ["value"];
+        let keysToIgnore = [];//["value"];
 
         for (let key in modelNode) {
             if (keysToIgnore.indexOf(key) == -1) {
-                console.log("Create entry for: " + key);
+                console.log("Create entry for: " + key+":"+JSON.stringify(modelNode[key]));
+                var stri = JSON.stringify(modelNode[key]);
+                var value = stri.replace(/"/g, "'");
 
                 $('#'+this.treeContainerId+'-advancedEditModalBody').append(
                     `<div class="form-group row" data-property-id="` + key + `">
                         <label class="col-5"> ` + key + `</label>
 
                         <div class="col-5">
-                            <input type="text" class="form-control" value="` + modelNode[key] + `">
+                            <input type="text" class="form-control" value='`+stri+`'>
                         </div>
                         <div class="col-2">
                             <div class="card-header-actions">
