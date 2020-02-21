@@ -170,3 +170,44 @@ def detect_peaks(y: np.ndarray, min_level: float = 0.8, max_level: float = 1.01,
     peaks, _ = find_peaks(y, height=min_level, distance=min_dist)
     #print("detect peaks",_)
     return peaks
+    
+def find_zeros(data):
+    result = np.full(len(data),False)
+    for index in range(len(data)-1):
+        y1 = data[index]
+        y2 = data[index+1]
+        if y1==0 and y2!=0:
+            result[index+1] = True
+        elif y1>0 and y2<0:
+            result[index+1] = True
+        elif y2>0 and y1<0:
+            result[index+1] = True
+    return result
+
+def dif(vector):
+    #return the derivate (diff) of the vector with same length like the input (appending the end)
+    d= np.diff(vector)
+    print(f"{vector[0:10]}, diff {d[0:10]}")
+    #return np.append(d[0],d)
+    return np.append( d,d[-1])
+
+def prominent_points(y,times=None):
+    """
+        generate an ordered list of dict with prominent points entries
+        each entry carries several infos
+        {
+            type:min,max, ...
+            index: the index
+            x: the x[index]
+        }
+    """
+
+    d1=dif(y)
+    d2=dif(d1)
+    minMax = find_zeros(d1)
+
+    mini = minMax & (d2>0)
+    maxi = minMax & (d2<0)
+    rising = d1>0
+    return mini,maxi,rising
+
