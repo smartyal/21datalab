@@ -33,7 +33,7 @@ def get_mask_from_interval(times,start,end):
     left = numpy.searchsorted(times,start) #this is the first value > start
     right = numpy.searchsorted(times,end)  #this is the first value > end
     mask = numpy.full(len(times),False)
-    mask[left:right+1]=True
+    mask[left:right]=True
     return mask
 
 def get_indices_from_interval(times,start,end):
