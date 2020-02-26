@@ -84,9 +84,9 @@ thresholdScorer3= {
 # scorer annotations, annotationsFilter needs at least one area to work on: create a region covering all times,set the end into the far future and you are save!
 #
 thresholdScorer4={
-    "name":"thresholdScorer3",
+    "name":"thresholdScorer4",
     "type":"function",
-    "functionPointer":"threshold.threshold_scorer_3",           #filename.functionname
+    "functionPointer":"threshold.threshold_scorer_4",           #filename.functionname
     "autoReload":True,                                          #set this to true to reload the module on each execution
     "children":[
         {"name":"input","type":"referencer"},                   # the inputs, must be columns of one table

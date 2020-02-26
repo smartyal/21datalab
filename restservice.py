@@ -314,12 +314,16 @@ def all(path):
             logger.debug(" serve html "+ str(path))
             if "styles.css" in path:
                 print("hier")
-            for sourceFolder in ["web","bokeh_web","bokeh_web/templates"]:
+            sourceFolders = ["web","bokeh_web","bokeh_web/templates"]
+            sourceFolders.extend(plugin_directories)
+            for sourceFolder in sourceFolders:
                 try:
                     obj = flask.send_from_directory(sourceFolder,path)
                     return obj
                 except Exception as exc:
-                    logger.error("file "+ str(path)+" not found on folder"+sourceFolder)
+                    pass
+                    #logger.error("file "+ str(path)+" not found on folder"+sourceFolder)
+            logger.error(f"file  {path}  not found on folders {sourceFolders}")
             code = 404
 
         elif (str(path) == "_getall") and str(flask.request.method) in ["POST","GET"]:
@@ -865,7 +869,7 @@ if __name__ == '__main__':
             m.create_test(3)
         else:
             print("load model from disk: " + model_path)
-            m.load(model_path)
+            m.load(model_path,includeData=False)
 
     web.run(host='0.0.0.0', port=port, debug=False)#, threaded = False)
 
