@@ -869,7 +869,7 @@ if __name__ == '__main__':
             m.create_test(3)
         else:
             print("load model from disk: " + model_path)
-            m.load(model_path,includeData=False)
+            m.load(model_path)#,includeData=False)
 
     web.run(host='0.0.0.0', port=port, debug=False)#, threaded = False)
 
