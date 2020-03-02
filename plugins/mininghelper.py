@@ -178,18 +178,25 @@ def find_zeros(data):
         y2 = data[index+1]
         if y1==0 and y2!=0:
             result[index+1] = True
+            #print(f"y1==0 and y2!=0 @ {index}")
         elif y1>0 and y2<0:
             result[index+1] = True
+            #print(f"y1>0 and y2<0 @ {index}")
         elif y2>0 and y1<0:
             result[index+1] = True
+            #print(f"y2>0 and y1<0: @ {index}")
     return result
 
-def dif(vector):
+def dif(vector,appendEnd=True):
     #return the derivate (diff) of the vector with same length like the input (appending the end)
     d= np.diff(vector)
-    print(f"{vector[0:10]}, diff {d[0:10]}")
+    #print(f"diff of {vector} => {d}")
     #return np.append(d[0],d)
-    return np.append( d,d[-1])
+    if appendEnd:
+        return np.append( d,d[-1])
+    else: 
+        return np.append(d[0],d)
+       
 
 def prominent_points(y,times=None):
     """
@@ -203,11 +210,36 @@ def prominent_points(y,times=None):
     """
 
     d1=dif(y)
-    d2=dif(d1)
+    d2=dif(d1,appendEnd=False)
+    d3=dif(d2,appendEnd=False)
+    
     minMax = find_zeros(d1)
 
     mini = minMax & (d2>0)
     maxi = minMax & (d2<0)
+    
+    turn   = find_zeros(d2)
+    turnL  = turn & (d3>0)
+    turnR  = turn & (d3<0)
+    
+    
     rising = d1>0
-    return mini,maxi,rising
 
+    result=[]
+    
+    
+    for index in np.where(minMax)[0]:
+        if d2[index]>0:
+            entry={"type":"min","index":index,"time":times[index],"d2":d2[index]}
+            result.append(entry)
+        elif d2[index]<0:
+            entry = {"type": "max", "index": index, "time": times[index],"d2":d2[index]}
+            result.append(entry)
+        else:
+            print("undecides for min/max")
+
+    totalResult = {"pps":result,"max":maxi,"min":mini,"rising":rising,"turnL":turnL,"turnR":turnR}
+
+    return totalResult
+
+ 
