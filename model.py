@@ -42,7 +42,7 @@ next Todo
 """
 
 sys.path.append("./plugins") #for the importlib loader, doesn't understand relative paths
-sys.path.append("./private") #for the importlib loader, doesn't understand relative paths
+#sys.path.append("./private") #for the importlib loader, doesn't understand relative paths
 
 myGlobalDir = os.path.dirname(os.path.realpath(__file__)) # holds the directory of this script
 
