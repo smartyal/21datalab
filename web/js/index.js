@@ -407,13 +407,27 @@ function initialize_context_menu()
                                 <input type="text" id="annotationeditendval" class="form-control edit-modal-input" value="start">
                             </div>
                         </div>
-                       <div class="form-group row" id="annotationedittags" hidden>
+                        <div class="form-group row" id="annotationedittags" hidden>
                             <label class="col-3">tags</label>
                             <div class="col-9">
                                 <input type="text" id="annotationedittagsval" class="form-control edit-modal-input" value="start">
+
                             </div>
                         </div>
-                       <div class="form-group row" id="annotationeditvariables" hidden>
+
+                        <div class="form-group row" id="annotationedittagsselect" hidden>
+                            <label class="col-3">select tags</label>
+                            <div class="col-9">
+                                <select class="selectpicker" id="annotationeditselect" multiple>
+                                </select>
+                                <br><br>
+                            </div>
+                        </div>
+
+
+
+
+                        <div class="form-group row" id="annotationeditvariables" hidden>
                             <label class="col-3">variables</label>
                             <div class="col-9">
                                 <input type="text" id="annotationeditvariablesval" class="form-control edit-modal-input" value="start">
@@ -804,11 +818,12 @@ function context_menu_edit(option,contextMenuIndex,optionIndex)
                     $('#annotationeditstart').attr("hidden",false);
                     $('#annotationeditend').attr("hidden",false);
                     $('#annotationedittags').attr("hidden",false);
+                    $('#annotationedittagsselect').attr("hidden",false);
+
 
                     $('#annotationeditstartval').val(JSON.stringify(data.startTime[".properties"].value));
                     $('#annotationeditendval').val(JSON.stringify(data.endTime[".properties"].value));
                     $('#annotationedittagsval').val(JSON.stringify(data.tags[".properties"].value));
-
                 }
                 else if (data.type['.properties'].value == "threshold")
                 {
@@ -820,6 +835,7 @@ function context_menu_edit(option,contextMenuIndex,optionIndex)
                     $('#annotationeditstart').attr("hidden",true);
                     $('#annotationeditend').attr("hidden",true);
                     $('#annotationedittags').attr("hidden",false);
+                    $('#annotationedittagsselect').attr("hidden",false);
 
                     $('#annotationeditminval').val(JSON.stringify(data.min[".properties"].value));
                     $('#annotationeditmaxval').val(JSON.stringify(data.max[".properties"].value));
@@ -830,6 +846,37 @@ function context_menu_edit(option,contextMenuIndex,optionIndex)
                     console.log("unsupported tag type");
                     return;
                 }
+
+
+                //currently all support the tags
+
+                var currentTags = data.tags[".properties"].value;
+                $('#annotationeditselect').empty();
+                $('#annotationeditselect').on('change', function(e){
+                    var all = [];
+                    for(var opt of this.options)
+                    {
+                        if (opt.selected) all.push(opt.label);
+                    }
+                    console.log("together",all);
+                    $('#annotationedittagsval').val(JSON.stringify(all));
+                });
+
+                console.log("currenttags",currentTags)
+                for (let tag of option.tags)
+                {
+                    if (currentTags.includes(tag))
+                    {
+                        $('#annotationeditselect').append('<option value="'+tag+'" selected>'+tag+'</option>');
+                    }
+                    else
+                    {
+                        $('#annotationeditselect').append('<option>'+tag+'</option>');
+                    }
+
+                }
+                $('#annotationeditselect').selectpicker('refresh');
+
 
                 modal.modal('show');
 
@@ -877,6 +924,7 @@ function prepare_context_menu(dataString,modelPath)
         icon: 'fa fa-edit',   //Icon for the option
         label: 'edit',   //Label to be displayed for the option
         data: data.hasAnnotation.selectedAnnotations[".properties"].leaves,
+        tags:data.hasAnnotation.tags[".properties"].value,
         action : function(option, contextMenuIndex, optionIndex){context_menu_edit(option,contextMenuIndex,optionIndex);},
         disabled: disableDirectModification
     },
@@ -1288,6 +1336,7 @@ function launch_cockpit(url,path)
         $("#cockpit").remove();
         $("#cockpitplaceholder").html(data);
     }
+    
 
 
     var cockpit = $('#cockpit');

@@ -11,6 +11,9 @@ from mininghelper import *
 from pytz import timezone
 from model import date2secs
 import copy
+from model import date2secs,secs2date
+import mininghelper as mnh
+
 
 # use a list to avoid loading of this in the model
 mycontrol = [copy.deepcopy(__functioncontrolfolder)]
@@ -495,5 +498,126 @@ def pps_miner(functionNode):
     logger = functionNode.get_logger()
     logger.info("==>>>> in pps_miner " + functionNode.get_browse_path())
 
-    #get the motif
+    myWidget = functionNode.get_child("widget").get_target()
+    myModel = functionNode.get_model()
+    motifs = myWidget.get_child("hasAnnotation").get_child("selectedAnnotations").get_leaves()
+    annotations = functionNode.get_child("annotations")
 
+
+
+
+    """
+        preparation:
+            - find the current widget, take the current selected selection for my motif
+            - if not available
+            - connect the result to the table
+    """
+
+
+    motif = None
+    if motifs:
+        motif = motifs[0]
+        functionNode.get_child("motif").add_references(motif,deleteAll=True) # take this annotation
+    else:
+        #there is currently no selection, we take the motif from last time if we have one
+        motifs = functionNode.get_child("motif").get_targets()
+        if motifs:
+            motif = motifs[0]
+    if not motif:
+        logger.error("have no motif")
+        return False
+
+    # prepare the result: delete previous annotations
+    functionNode.get_child("peaks").set_value([])
+    try:
+        myModel.disable_observers()
+        annos = annotations.get_children()
+        if annos:
+            for anno in annos:
+                anno.delete()
+    except:
+        myModel.enable_observers()
+        return False
+
+    myModel.enable_observers()
+    myModel.notify_observers(annotations.get_id(), "children")  # trigger the widgets to delete the annotations
+
+
+
+
+
+
+    ####################################
+    ## get the settings
+    ####################################
+    preFilter = functionNode.get_child("preFilter").get_value()
+    postFilter = functionNode.get_child("postFilter").get_value()
+    subtractPolynomOrder = functionNode.get_child("subtractPolynomOrder").get_value()
+    differentiate = functionNode.get_child("differentiate").get_value()
+    timeRanges = functionNode.get_child("timeRanges").get_value()
+    timeRanges = {int(k):v for k,v in timeRanges.items()}
+    valueRanges = functionNode.get_child("valueRanges").get_value()
+    valueRanges = {int(k): v for k, v in valueRanges.items()}
+    typeFilter = functionNode.get_child("typeFilter").get_value()
+
+
+
+    ####################################
+    #get the motif
+    ####################################
+    motifStartTime = date2secs(motif.get_child("startTime").get_value())
+    motifEndTime = date2secs(motif.get_child("endTime").get_value())
+    motifVariable = motif.get_child("variable").get_targets()[0]
+
+    #motifStartTime = motifStartTime+0.2*(motifEndTime-motifStartTime)
+    #print(f"{vars[varName].get_name()},{motifStartTime}")
+    motif = motifVariable.get_time_series(start=motifStartTime,end=motifEndTime)
+    #print(motif)
+    motifX = motif["__time"]
+    motifY0 = motif["values"]
+    motifY1 = mnh.pps_prep(motifY0,filter=preFilter,poly=subtractPolynomOrder, diff=differentiate, postFilter = postFilter)
+    motifPPS = mnh.prominent_points(motifY1,motifX)
+
+    ####################################
+    #get the time series
+    ####################################
+    # make the time series data and pps
+    series = motifVariable.get_time_series()# the full time
+    x=series["__time"]
+    t0 = series["__time"][0]
+    x=x-t0 # start time from 0
+    y0=series["values"]
+    y1=mnh.pps_prep(y0,filter=preFilter,poly=subtractPolynomOrder, diff=differentiate, postFilter = postFilter)
+    pps = mnh.prominent_points(y1,x)
+
+    ####################################
+    # MINING
+    ####################################
+    matches = mnh.pps_mining(motifPPS['pps'], pps['pps'], timeRanges = timeRanges, valueRanges = valueRanges, typeFilter=typeFilter, motifStartIndex=0, debug=False)
+    print(f"{len(matches)} matches: {[secs2date(t0+m['time']).isoformat() for m in matches]}")
+
+
+    ####################################
+    # create result Annotations
+    ####################################
+
+    annoTimeLen = motifEndTime -motifStartTime
+    newAnnotations=[]
+    for m in matches:
+        anno={"type":"time","startTime":"","endTime":"","tags":["pattern_match"]}
+        anno["startTime"]= epochToIsoString(m["time"]+t0-annoTimeLen, zone=timezone('Europe/Berlin'))
+        anno["endTime"] = epochToIsoString(m["time"]+t0, zone=timezone('Europe/Berlin'))
+        newAnnotations.append(anno)
+
+    myModel.disable_observers()
+    for anno in newAnnotations:
+        # create the annotation in the model
+        newAnno = annotations.create_child(type="annotation")
+        for k, v in anno.items():
+            newAnno.create_child(properties={"name": k, "value": v, "type": "const"})
+    myModel.enable_observers()
+    myModel.notify_observers(annotations.get_id(), "children")
+
+    #also write the peaks
+    peaks = [epochToIsoString(m["time"]+t0, zone=timezone('Europe/Berlin')) for m in matches]
+    functionNode.get_child("peaks").set_value(peaks)
