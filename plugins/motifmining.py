@@ -485,3 +485,15 @@ def motif_jumper(functionNode):
         widgetNode.get_child("endTime").set_value(epochToIsoString(windowEnd, zone=timezone('Europe/Berlin')))
 
     return True
+
+
+
+
+
+def pps_miner(functionNode):
+
+    logger = functionNode.get_logger()
+    logger.info("==>>>> in pps_miner " + functionNode.get_browse_path())
+
+    #get the motif
+

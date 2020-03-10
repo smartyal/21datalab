@@ -4,6 +4,8 @@ import numpy as np
 from sklearn.metrics import mean_squared_error
 from scipy.signal import find_peaks
 from scipy.spatial.distance import euclidean
+from scipy.ndimage import gaussian_filter
+import time
 #import fastdtw
 #from dtaidistance import dtw
 
@@ -230,10 +232,10 @@ def prominent_points(y,times=None):
     
     for index in np.where(minMax)[0]:
         if d2[index]>0:
-            entry={"type":"min","index":index,"time":times[index],"d2":d2[index]}
+            entry={"type":"min","index":index,"time":times[index],"d2":d2[index],"value":y[index]}
             result.append(entry)
         elif d2[index]<0:
-            entry = {"type": "max", "index": index, "time": times[index],"d2":d2[index]}
+            entry = {"type": "max", "index": index, "time": times[index],"d2":d2[index],"value":y[index]}
             result.append(entry)
         else:
             print("undecides for min/max")
@@ -242,4 +244,118 @@ def prominent_points(y,times=None):
 
     return totalResult
 
- 
+def pps_prep(y,filter=None,poly=None, diff = False,postFilter = None):
+    if filter!=None:
+        y=gaussian_filter(y, sigma=filter)
+    if poly != None:
+        y=subtract_polynomial_model(y,poly)
+    if diff:
+        y=dif(y)
+    if postFilter!= None:
+        y=gaussian_filter(y,sigma=postFilter)
+    return y
+
+
+def pps_mining(motif, series, timeRanges={1: 0.7, 7: 0.5}, valueRanges={1: 0.8}, typeFilter=[], motifStartIndex=None,
+               motifEndIndex=None, debug=None):
+    """
+        Prominent PointS mining
+        Args
+            motif: a list of prominent points to mine for, typically the result of prominent_points()["pps"]
+            series: a list of proment points to mine in
+            timeRanges: a dictionary giving the degree of freedom of consecutive time points, the key gives the distance between points
+                        as index, the freedom gives the range to be fulfilled, example:
+                        {1:0.5}: all following time points of a motif in the series must have the distance of the original motif +-50%
+                        lets say the motif has the time points 13,15,17
+                        then the series is allowed to have 10, 12 +- 1 (original: (15-13)*0.5 = 1 )
+            valueRanges: same freedom calculation as the timeRanges for values
+                        example: {1:0.2}, original values: 40,50
+                        values in the series: 35, 45 +- 2, also 35,43 would be ok
+                        typeFilter []: list of types select only some types out of the pps, like ["min", "max"]
+
+    """
+    startTime = time.time()
+    found = []
+    # print([pp for pp in motif])
+    motif = [pp for pp in motif if pp["type"] in typeFilter]
+    if not motifStartIndex:
+        motifStartIndex = 0
+    if not motifEndIndex:
+        motifEndIndex = len(motif)
+    motif = motif[motifStartIndex:motifEndIndex]
+    series = [pp for pp in series if pp["type"] in typeFilter]
+    print(f"motif prominent points {len(motif)}")
+
+    index = -1
+    motifIndex = 0  # the next motif index to match to
+    last = len(series) - 1
+    while index < last:
+        index = index + 1
+        if debug:
+            print(f":@{index}/{last}:", end="")
+
+        if series[index]["type"] == motif[motifIndex]["type"]:
+            if motifIndex == 0:
+                if debug:
+                    print("<", end="")
+            if motifIndex > 0:
+
+                # check the timings
+                for k, v in timeRanges.items():
+                    if motifIndex >= k:
+                        # check this
+                        motifDiff = motif[motifIndex]["time"] - motif[motifIndex - k]["time"]
+                        seriesDiff = series[index]["time"] - series[index - k]["time"]
+                        motifDiffMin = max(0, motifDiff - v * motifDiff)
+                        motifDiffMax = motifDiff + v * motifDiff
+
+                        ok = seriesDiff > motifDiffMin and seriesDiff < motifDiffMax
+                        if debug:
+                            print(
+                                f"check diff ({k}: {motifDiffMin} < {seriesDiff}< {motifDiffMax}) motif:{motifDiff}: {ok}")
+                        if not ok:
+                            # go back
+                            if debug:
+                                print(f"go back, time bad, motifIndex {motifIndex}")
+                            index = index - motifIndex + 1
+                            motifIndex = 0
+                            break
+            if motifIndex > 0:
+                for k, v in valueRanges.items():
+                    if motifIndex > k:
+                        # check this
+                        motifDiff = abs(motif[motifIndex]["value"] - motif[motifIndex - k]["value"])
+                        seriesDiff = abs(series[index]["value"] - series[index - k]["value"])
+                        motifDiffMin = max(0, motifDiff - v * motifDiff)
+                        motifDiffMax = motifDiff + v * motifDiff
+                        ok = seriesDiff > motifDiffMin and seriesDiff < motifDiffMax
+                        if debug:
+                            print(
+                                f"check value diff ({k}: {motifDiffMin} < {seriesDiff}< {motifDiffMax}) motif:{motifDiff}: {ok}")
+                        if not ok:
+                            if debug:
+                                print(f"go back, value bad motifIndex {motifIndex}")
+                            index = index - motifIndex + 1
+                            motifIndex = 0
+                            break
+            if motifIndex == len(motif) - 1:
+                if debug:
+                    print("*>\n")
+                found.append({"index": index, "time": series[index]["time"]})
+                motifIndex = 0
+
+            motifIndex = motifIndex + 1
+
+            if debug:
+                print(motifIndex, end="")
+        else:
+            if debug:
+                if motifIndex > 0:
+                    print(">")
+                else:
+                    print("~", end="")
+            motifIndex = 0
+
+    if debug:
+        print(f"pps mining took {time.time()-startTime} sec")
+    return found
