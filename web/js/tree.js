@@ -1292,6 +1292,10 @@ class TreeWidget
             newTreeNode.data.value = JSON.stringify(modelNode.value);//modelNode.value;
             newTreeNode["a_attr"]={"title":JSON.stringify(modelNode.value),"class":"show_tooltip"};
         }
+        else if (newTreeNode.nodeType == "referencee")
+        {
+            newTreeNode["a_attr"]={"title":JSON.stringify(modelNode.name),"class":"show_tooltip"};
+        }
         return newTreeNode;
     }
 
