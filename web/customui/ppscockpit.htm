@@ -18,11 +18,7 @@
                         </a>
                     </li>
 
-                    <li class="nav-item">
-                          <a class="nav-link" id="tab-cockpit-motif-search" data-toggle="tab" href="#cockpit-motif-search" role="tab">
-                            Search Area
-                          </a>
-                    </li>
+
 
                     <li class="nav-item">
                           <a class="nav-link" id="tab-cockpit-motif-run" data-toggle="tab" href="#cockpit-motif-run" role="tab">
@@ -88,34 +84,15 @@
                         Motif Mining Process &nbsp &nbsp
                         <button type="button" class="btn btn-primary"   onclick="cockpit_motif_run()">  run </button>
                         &nbsp
-                        <button type="button" class="btn btn-primary"   onclick="cockpit_motif_stop()"> stop </button>
+
                         <br>
                         <br>
-                        Jump to Results..
-                        <div class="form-group row">
-                            <div class="col-3">
-                               <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump_prev()">   <i class="fas fa-step-backward"></i>previous</button>
-                            </div>
-                            <!--
-                            <div class="col-3 id="doublechecktext12">
-                                <select class="form-control" id="sel1">
-                                    <option>loc 1</option>
-                                    <option>219-08-15T14:44:15.445+02:005</option>
-                                    <option>3</option>
-                                    <option>4</option>
-                                </select>
-                            </div>
-                            <div class="col-6">
-                                <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump_here()">  <i class="fas fa-search-location"></i> here </button>
-                             -->
-                            <div class="col-6">
-                                <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump_next()">  <i class="fas fa-step-forward"></i>next</button>
-                            </div>
-                        </div>
-
-
-
-
+                        Jump to Results.
+                        <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump_prev()">   <i class="fas fa-step-backward"></i>back</button>
+                         &nbsp
+                        <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump_next()">  <i class="fas fa-step-forward"></i>next</button>
+                        <br>
+                        <br>
 
                         <div class="progress">
                             <div id="cockpit-motif-progress" class="progress-bar" role="progressbar" style="width:50%"></div>

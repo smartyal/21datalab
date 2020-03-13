@@ -1330,13 +1330,15 @@ function prepare_context_menu(dataString,modelPath)
 
 function launch_cockpit(url,path)
 {
+
+
     if (url!="")
     {
         var data=http_get(url);
         $("#cockpit").remove();
         $("#cockpitplaceholder").html(data);
     }
-    
+
 
 
     var cockpit = $('#cockpit');

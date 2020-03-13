@@ -54,39 +54,6 @@ prepare the widget:
 
 
 
-"""
-motifMinerTemplate = {
-    "name": "motifMiner",
-    "type": "function",
-    "functionPointer": "motifmining.motif_miner",  # filename.functionname
-    "autoReload": True,  # set this to true to reload the module on each execution
-    "children": [
-        {"name": "motif", "type": "referencer"},        # the one motif we are using
-        {"name": "score", "type": "column"},
-        {"name": "algorithm", "type": "const"},         # the alorithm used, one of ...
-        {"name": "widget","type":"referencer"} ,        # the widget to which this miner belongs which is used (to find the selected motif
-        {"name": "table","type":"referencer"},          # for the variables and times
-        {"name": "peakThreshold","type":"const"},
-        mycontrol[0]
-    ]
-}
-
-motifJumperTemplate = {
-    "name": "motifJumper",
-    "type": "function",
-    "functionPointer": "motifmining.motif_jumper",  # filename.functionname
-    "autoReload": True,  # set this to true to reload the module on each execution
-    "children": [
-        {"name": "miner", "type": "referencer"},  # the one motif we are using
-        {"name": "jumpPos", "type": "variable", "value":0},
-        {"name": "jumpInc", "type": "const", "value":1},  # 1,-1 for forward backwards
-        {"name": "table", "type": "referencer"},  # for the variables and times
-        __functioncontrolfolder
-    ]
-}
-
-"""
-
 motifMinerTemplate = {
     "name": "MotifMiner1",
     "type": "folder",
@@ -146,6 +113,69 @@ motifMinerTemplate = {
             ]
         },
         {"name": "cockpit", "type": "const", "value": "/customui/motifminer1cockpit.htm"}  #the cockpit for the motif miner
+    ]
+}
+
+
+
+ppsMinerPipeline = {
+    "name": "PPSMinerPipeline",
+    "type": "folder",
+    "children":[
+        {
+            "name": "PPSMiner",
+            "type": "function",
+            "functionPointer": "motifmining.pps_miner",  # filename.functionname
+            "autoReload": True,  # set this to true to reload the module on each execution
+            "children": [
+                {"name": "motif", "type": "referencer"},                                    # the one motif we are using
+                {"name": "widget","type":"referencer"} ,                                    # the widget to which this miner belongs which is used (to find the selected motif
+                {"name": "peaks","type":"variable"},                                        # a list of time points as the result of the mining, these are the matches
+                {"name": "preFilter","type":"const","value":2.8},                           # gaussian smoothing filter applied to the raw data, this parameter is the "sigma" of the gaussian filter
+                {"name": "postFilter","type":"const","value":1},                            # same as prefilter, but applied after processing of the data (diff, polyfit etc)
+                {"name": "differentiate","type":"const","value":True},                      # differentiate the signal for processing (to get rid of drifts)
+                {"name": "timeRanges","type":"const","value":{"1":0.7,"7":0.5}},            # see mininghelper.pps_mining for explanation
+                {"name": "valueRanges","type":"const","value":{"1":0.8}},
+                {"name": "typeFilter","type":"const","value":["max","min"]},                # use only these types of prominent points
+                {"name": "subtractPolynomOrder", "type": "const", "value": None,"validation":{"values":[None,1,2,3]}},
+                {"name": "annotations","type":"folder"},                                    # the results, the matches
+                mycontrol[0]
+            ]
+        },
+        {
+            "name": "peakSearch",
+            "type": "function",
+            "functionPointer": "motifmining.motif_jumper",  # filename.functionname
+            "autoReload": True,  # set this to true to reload the module on each execution
+            "children": [
+                {"name": "miner", "type": "referencer","references":["PPSMinerPipeline.PPSMiner"]},  # the one motif we are using
+                {"name": "jumpPos", "type": "variable", "value":0},
+                {"name": "jumpInc", "type": "const", "value":1},  # 1,-1 for forward backwards
+                {"name": "threshold", "type": "const","value":0.5},  # the detection threshold
+                __functioncontrolfolder
+            ]
+        },
+        {
+            "name": "progress",
+            "type": "observer",
+            "children": [
+                {"name": "enabled", "type": "const", "value": True},  # turn on/off the observer
+                {"name": "triggerCounter", "type": "variable", "value": 0},  # increased on each trigger
+                {"name": "lastTriggerTime", "type": "variable", "value": ""},  # last datetime when it was triggered
+                {"name": "targets", "type": "referencer","references":["PPSMinerPipeline.PPSMiner.control.progress"]},  # pointing to the nodes observed
+                {"name": "properties", "type": "const", "value": ["value"]},
+                # properties to observe [“children”,“value”, “forwardRefs”]
+                {"name": "onTriggerFunction", "type": "referencer"},  # the function(s) to be called when triggering
+                {"name": "triggerSourceId", "type": "variable"},
+                # the sourceId of the node which caused the observer to trigger
+                {"name": "hasEvent", "type": "const", "value": True},
+                # set to event string iftrue if we want an event as well
+                {"name": "eventString", "type": "const", "value": "motifminer.progress"},  # the string of the event
+                {"name": "eventData", "type": "const", "value": {"text": "observer status update"}}
+                # the value-dict will be part of the SSE event["data"] , the key "text": , this will appear on the page,
+            ]
+        },
+        {"name": "cockpit", "type": "const", "value": "/customui/ppscockpit.htm"}  #the cockpit for the motif miner
     ]
 }
 
@@ -621,3 +651,5 @@ def pps_miner(functionNode):
     #also write the peaks
     peaks = [epochToIsoString(m["time"]+t0, zone=timezone('Europe/Berlin')) for m in matches]
     functionNode.get_child("peaks").set_value(peaks)
+
+    return True
