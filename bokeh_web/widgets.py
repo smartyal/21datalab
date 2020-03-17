@@ -2492,6 +2492,8 @@ class TimeSeriesWidget():
                 self.lines[variableName] = self.plot.circle(x="x", y="y", line_color="red", fill_color=None,
                                                             source=self.columnData[variableName], name=variableName,size=7)  # x:"time", y:variableName #the legend must havee different name than the source bug
 
+
+
             else:
                 if ".score" in variableName:
                     # this is a score 0..1 line
@@ -2500,17 +2502,32 @@ class TimeSeriesWidget():
                                                               y_range_name="y2")  # x:
                 else:
 
+                    if variableName.endswith("_expected"):
+                        # this is a special case of a line which we display dotted in the same color as the original one
+                        # try to find the corresponding variable
+                        thisLineColor = None
+                        originalVarName = variableName.split('.')[-1][:-len("_expected")]
+                        for lineName in self.lines:
+                            if lineName.split('.')[-1] == originalVarName:
+                                thisLineColor = self.lines[lineName].glyph.line_color
+                                break
+                        if not thisLineColor:
+                            thisLineColor = color
+                        self.lines[variableName] = self.plot.line(x="x", y="y", color=thisLineColor,
+                                                                  source=self.columnData[variableName], name=variableName,
+                                                                  line_width=2, line_dash="dashed")
+                    else:
 
-                    #this is a real line
-                    #self.debugStore =copy.deepcopy(getData)
-                    #self.lines[variableName] = self.plot.line(x=variableName+"__time", y=variableName, color=color,
-                    #                              source=self.data, name=variableName,line_width=2)  # x:"time", y:variableName #the legend must havee different name than the source bug
-                    self.lines[variableName] = self.plot.line(x="x", y="y", color=color,source=self.columnData[variableName], name=variableName,line_width=2)
+                        #this is a real line
+                        #self.debugStore =copy.deepcopy(getData)
+                        #self.lines[variableName] = self.plot.line(x=variableName+"__time", y=variableName, color=color,
+                        #                              source=self.data, name=variableName,line_width=2)  # x:"time", y:variableName #the legend must havee different name than the source bug
+                        self.lines[variableName] = self.plot.line(x="x", y="y", color=color,source=self.columnData[variableName], name=variableName,line_width=2)
 
-                    if showMarker:
-                        markerName = variableName+".marker"
-                        marker = self.plot.circle(x="x",y="y", line_color=color, fill_color=color,
-                                                  source=self.columnData[variableName], name=markerName,size=3)  # x:"time", y:variableName #the legend must havee different name than the source bug
+                        if showMarker:
+                            markerName = variableName+".marker"
+                            marker = self.plot.circle(x="x",y="y", line_color=color, fill_color=color,
+                                                      source=self.columnData[variableName], name=markerName,size=3)  # x:"time", y:variableName #the legend must havee different name than the source bug
                 #legend only for lines
                 self.legendItems[variableName] = LegendItem(label=variableName,
                                                             renderers=[self.lines[variableName]])
