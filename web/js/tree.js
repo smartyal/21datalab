@@ -216,6 +216,7 @@ class TreeWidget
         modalCode = modalCode.replace('advancedEditModalBody',this.treeContainerId+'-advancedEditModalBody');
         modalCode = modalCode.replace('advancedEditModalButtonSave',this.treeContainerId+'-advancedEditModalButtonSave');
         modalCode = modalCode.replace('advancedEditModalButtonAddPropery',this.treeContainerId+'-advancedEditModalButtonAddPropery');
+        modalCode = modalCode.replace('advancedEditModalValue',this.treeContainerId+'-advancedEditModalValue');
 
         modal.innerHTML = modalCode;
         return modal;
