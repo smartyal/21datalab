@@ -3128,6 +3128,11 @@ class Model:
         else:
             tableId = None
 
+        if type(start) is str:
+            start = date2secs(start)
+        if type(end) is str:
+            end = date2secs(end)
+
         with self.lock:
             #first check if all requested timeseries exist and have type time series
             #vars = [] #self.get_id(variables)

@@ -983,12 +983,7 @@ class TimeSeriesWidget():
         for var in newData:
             if not var.endswith("__time"):
                 dic = {"y":newData[var],
-                       "x":newData[var+"__time"],
-                       var:[88]*len(newData[var]),
-                       var+"__time":[77]*len(newData[var]),
-                       "{"+var+"}":[99]*len(newData[var]),
-                       "z":list(range(300))
-                       }
+                       "x":newData[var+"__time"]}
                 if var in self.columnData:
                     self.columnData[var].data = dic #update
                 else:
