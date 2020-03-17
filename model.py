@@ -172,9 +172,17 @@ class Node():
         return self.model.set_value(self.id,value)
 
     def set_time_series(self,values=None,times=None):
+        """
+            replaces the time series with value and times, it deletes the existing
+
+        """
         return self.model.time_series_set(self.id,values=values,times=times)
 
-
+    def insert_time_series(self,values=None,times=None):
+        """
+            insert data, if the time stamp exists already, we replace it
+        """
+        return self.model.time_series_insert(self.id,values=values, times=times)
 
     def get_parent(self):
         """ Returns:
@@ -3044,7 +3052,7 @@ class Model:
         id = self.get_id(desc)
         return self.ts.delete(id)
 
-    def time_series_insert_data(self, desc, values=None, times=None):
+    def time_series_insert(self, desc, values=None, times=None):
         id = self.get_id(desc)
         if not id in self.model:
             return None
