@@ -271,8 +271,8 @@ class TimeSeriesTable:
     def clear(self):
         self.store={}
 
-    #def insert(self,name,values=None,times=None):
-    #    return self.store[name].write(values,times)
+    def insert(self,name,values=None,times=None):
+        return self.store[name].insert(values,times)
 
     def set(self,name,values = None,times = None):
         return self.store[name].set(values,times)
