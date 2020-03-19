@@ -1,0 +1,1 @@
+node-sass --output-style compressed src/context-menu.scss > dist/context-menu.min.css

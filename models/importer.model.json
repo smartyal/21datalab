@@ -11,7 +11,8 @@
             "490",
             "15325922506801289201",
             "15449664376381869170",
-            "401335041852249076"
+            "401335041852249076",
+            "600134431294461625"
         ],
         "parent": "0",
         "id": "1",
@@ -750,9 +751,7 @@
         "type": "variable",
         "parent": "223",
         "children": [],
-        "backRefs": [
-            "16724694746718170912"
-        ],
+        "backRefs": [],
         "forwardRefs": [],
         "value": 1,
         "browsePath": "root.logisticRegression.control.progress"
@@ -787,7 +786,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 145,
+        "value": 146,
         "browsePath": "root.logisticRegression.control.executionCounter"
     },
     "229": {
@@ -798,7 +797,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.059943,
+        "value": 0.097544,
         "browsePath": "root.logisticRegression.control.lastExecutionDuration"
     },
     "230": {
@@ -809,7 +808,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T18:27:15.721272",
+        "value": "2020-03-19T09:44:12.098961",
         "browsePath": "root.logisticRegression.control.lastStartTime"
     },
     "231": {
@@ -5930,7 +5929,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 183,
+        "value": 184,
         "browsePath": "root.visualization.workbench.observerBack.triggerCounter"
     },
     "654": {
@@ -5941,7 +5940,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T18:27:15.763225",
+        "value": "2020-03-19T09:44:12.192111",
         "browsePath": "root.visualization.workbench.observerBack.lastTriggerTime"
     },
     "655": {
@@ -6268,7 +6267,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 199,
+        "value": 200,
         "browsePath": "root.visualization.selfservice0.observerBack.triggerCounter"
     },
     "681": {
@@ -6279,7 +6278,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T18:27:15.759229",
+        "value": "2020-03-19T09:44:12.188411",
         "browsePath": "root.visualization.selfservice0.observerBack.lastTriggerTime"
     },
     "682": {
@@ -12203,7 +12202,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 412,
+        "value": 424,
         "browsePath": "root.system.progress.triggerCounter"
     },
     "10857910486653991896": {
@@ -12214,7 +12213,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T18:27:15.792208",
+        "value": "2020-03-19T10:42:54.978073",
         "browsePath": "root.system.progress.lastTriggerTime"
     },
     "16724694746718170912": {
@@ -12225,7 +12224,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [
-            "225"
+            "4985157741464515546"
         ],
         "value": null,
         "browsePath": "root.system.progress.targets"
@@ -12392,7 +12391,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 51,
+        "value": 52,
         "browsePath": "root.system.relevantChanges.triggerCounter"
     },
     "12027250451543955530": {
@@ -12403,7 +12402,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T18:27:15.761250",
+        "value": "2020-03-19T09:44:12.190374",
         "browsePath": "root.system.relevantChanges.lastTriggerTime"
     },
     "13880253212629121141": {
@@ -13628,7 +13627,8 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [
-            "401335041852249076"
+            "401335041852249076",
+            "600134431294461625"
         ],
         "value": null,
         "browsePath": "root.visualization.workbench.contextMenuPipelines"
@@ -13857,5 +13857,181 @@
         ],
         "value": null,
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.7031040a.variable"
+    },
+    "600134431294461625": {
+        "id": "600134431294461625",
+        "name": "importer",
+        "type": "folder",
+        "parent": "1",
+        "children": [
+            "13303004183139838650",
+            "592388204455866261",
+            "34577306739286421"
+        ],
+        "backRefs": [
+            "15499764811511790654"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.importer"
+    },
+    "13303004183139838650": {
+        "id": "13303004183139838650",
+        "name": "cockpit",
+        "type": "const",
+        "parent": "600134431294461625",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "customui/importer.htm",
+        "browsePath": "root.importer.cockpit"
+    },
+    "592388204455866261": {
+        "id": "592388204455866261",
+        "name": "fileName",
+        "type": "variable",
+        "parent": "600134431294461625",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "hello",
+        "browsePath": "root.importer.fileName"
+    },
+    "34577306739286421": {
+        "id": "34577306739286421",
+        "name": "import_preview",
+        "type": "function",
+        "parent": "600134431294461625",
+        "children": [
+            "10862155288644131590",
+            "10711310616066368915"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "functionPointer": "importer.import_preview",
+        "autoReload": true,
+        "browsePath": "root.importer.import_preview"
+    },
+    "10862155288644131590": {
+        "id": "10862155288644131590",
+        "name": "default",
+        "type": "variable",
+        "parent": "34577306739286421",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.importer.import_preview.default"
+    },
+    "10711310616066368915": {
+        "id": "10711310616066368915",
+        "name": "control",
+        "type": "folder",
+        "parent": "34577306739286421",
+        "children": [
+            "14058539624724642295",
+            "4985157741464515546",
+            "3819098016355860357",
+            "13080883976273474339",
+            "351104223650928649",
+            "11415052170816904150",
+            "9789011534106794761",
+            "17003395223414030424"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.importer.import_preview.control"
+    },
+    "14058539624724642295": {
+        "id": "14058539624724642295",
+        "name": "status",
+        "type": "variable",
+        "parent": "10711310616066368915",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "finished",
+        "browsePath": "root.importer.import_preview.control.status"
+    },
+    "4985157741464515546": {
+        "id": "4985157741464515546",
+        "name": "progress",
+        "type": "variable",
+        "parent": "10711310616066368915",
+        "children": [],
+        "backRefs": [
+            "16724694746718170912"
+        ],
+        "forwardRefs": [],
+        "value": 1,
+        "browsePath": "root.importer.import_preview.control.progress"
+    },
+    "3819098016355860357": {
+        "id": "3819098016355860357",
+        "name": "result",
+        "type": "variable",
+        "parent": "10711310616066368915",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "ok",
+        "browsePath": "root.importer.import_preview.control.result"
+    },
+    "13080883976273474339": {
+        "id": "13080883976273474339",
+        "name": "signal",
+        "type": "variable",
+        "parent": "10711310616066368915",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "nosignal",
+        "browsePath": "root.importer.import_preview.control.signal"
+    },
+    "351104223650928649": {
+        "id": "351104223650928649",
+        "name": "executionCounter",
+        "type": "variable",
+        "parent": "10711310616066368915",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 3,
+        "browsePath": "root.importer.import_preview.control.executionCounter"
+    },
+    "11415052170816904150": {
+        "id": "11415052170816904150",
+        "name": "lastExecutionDuration",
+        "type": "variable",
+        "parent": "10711310616066368915",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0.002284,
+        "browsePath": "root.importer.import_preview.control.lastExecutionDuration"
+    },
+    "9789011534106794761": {
+        "id": "9789011534106794761",
+        "name": "lastStartTime",
+        "type": "variable",
+        "parent": "10711310616066368915",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2020-03-19T10:42:54.874157",
+        "browsePath": "root.importer.import_preview.control.lastStartTime"
+    },
+    "17003395223414030424": {
+        "id": "17003395223414030424",
+        "name": "executionType",
+        "type": "const",
+        "parent": "10711310616066368915",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "async",
+        "browsePath": "root.importer.import_preview.control.executionType"
     }
 }

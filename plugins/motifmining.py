@@ -50,43 +50,6 @@ prepare the widget:
 
 """
 
-
-
-
-
-"""
-motifMinerTemplate = {
-    "name": "motifMiner",
-    "type": "function",
-    "functionPointer": "motifmining.motif_miner",  # filename.functionname
-    "autoReload": True,  # set this to true to reload the module on each execution
-    "children": [
-        {"name": "motif", "type": "referencer"},        # the one motif we are using
-        {"name": "score", "type": "column"},
-        {"name": "algorithm", "type": "const"},         # the alorithm used, one of ...
-        {"name": "widget","type":"referencer"} ,        # the widget to which this miner belongs which is used (to find the selected motif
-        {"name": "table","type":"referencer"},          # for the variables and times
-        {"name": "peakThreshold","type":"const"},
-        mycontrol[0]
-    ]
-}
-
-motifJumperTemplate = {
-    "name": "motifJumper",
-    "type": "function",
-    "functionPointer": "motifmining.motif_jumper",  # filename.functionname
-    "autoReload": True,  # set this to true to reload the module on each execution
-    "children": [
-        {"name": "miner", "type": "referencer"},  # the one motif we are using
-        {"name": "jumpPos", "type": "variable", "value":0},
-        {"name": "jumpInc", "type": "const", "value":1},  # 1,-1 for forward backwards
-        {"name": "table", "type": "referencer"},  # for the variables and times
-        __functioncontrolfolder
-    ]
-}
-
-"""
-
 motifMinerTemplate = {
     "name": "MotifMiner1",
     "type": "folder",
