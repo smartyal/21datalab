@@ -2500,17 +2500,6 @@ class TimeSeriesWidget():
                     self.lines[variableName] = self.plot.line(x="x", y="y", color="gray", line_dash="dotted",
                                                               source=self.columnData[variableName], name=variableName, line_width=2,
                                                               y_range_name="y2")  # x:
-                if variableName.endswith("_expected"):
-                    #this is a special case of a line which we display dotted in the same color as the original one
-                    #try to find the corresponding variable
-                    originalVarName = variableName.split('.')[-1][:-len("_expected")+1]
-                    for lineNames in self.lines:
-                        if lineNames.split('.')[-1] == originalVarName:
-                            thisLineColor = self.lines[originalVarName].glyph.line_color
-                            break
-                    else:
-                        thisLineColor = color
-                    self.lines[variableName] = self.plot.line(x="x", y="y", color=thisLineColor,source=self.columnData[variableName], name=variableName,line_width=2,line_dash="dashed")
 
                 else:
 
