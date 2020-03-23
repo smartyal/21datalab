@@ -1,0 +1,265 @@
+
+
+
+
+
+<div id="cockpit" class="modal fade" role="dialog" path="" style="max-width:100%;width:auto;height:auto;min-width:900">
+
+    <div class="modal-dialog modal-lg" role="dialog" id="cockpitmodal">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="doublechecktitl2e"><i class="fas fa-gamepad"></i> &nbsp &nbsp Threshold Editor</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs bg-secondary" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="tab-cockpit-1" data-toggle="tab" href="#cockpit-tab-1" role="tab">
+                            Thresholds
+                        </a>
+                    </li>
+
+                </ul>
+
+                <div class="tab-content" id="myTabContent">
+
+                    <div class="tab-pane fade show active" id="cockpit-tab-1" role="tabpanel">
+                        <br>
+                        <div class="form-group row">
+
+                            <div class="col-2">name</div>
+
+
+                            <div class="col-2">min</div>
+
+                            <div class="col-2">max</div>
+
+                            <div class="col-2">tags</div>
+
+                            <div class="col-3">variable</div>
+
+                            <div class="col-1"><button type="button" class="btn btn-primary" onclick="btn_trash_all()" title="delete all"> <i class="fas fa-trash-alt"></i></button></div>
+
+                        </div>
+
+
+
+                        <div id="thresholds">
+                        </div>
+
+                    </div>
+               </div>
+            </div>
+            <div class="modal-footer">
+
+                <button type="button" class="btn btn-primary"  data-dismiss="modal" id ="doublecheckButtonSave2">Close</button>
+            </div>
+        </div>
+    <script>
+
+
+
+
+
+
+
+var cockpiteventSource = 0;
+var cockpitPath = "";
+var cockpitWidgetPath = "";
+var thresholds = [];
+
+
+function cockpit_init(path)
+{
+    cockpitPath = path;
+    // now load the cockpit data
+    load_thresholds();
+    cockpit_init_event();
+}
+function load_thresholds()
+{
+    http_post("_getleaves",cockpitPath+".thresholds", null,null, function(obj,status,data,params)
+    {
+        if (status==200)
+        {
+            var annotations = JSON.parse(data);
+            //now grab all thresholds from it
+            thresholds = []; //empty list
+            for (var annotation of annotations)
+            {
+                var threshold = {id:annotation.id, browsePath:annotation.browsePath,name:annotation.name}; //start with empty object
+                var takeThis = false;
+                for (var child of annotation.children)
+                {
+                    if (child.name == "variable")
+                    {
+                        threshold[child.name]=child.forwardPaths;
+                    }
+                    else
+                    {
+                        threshold[child.name]=child.value;
+                    }
+
+                    if ((child.name == "type") && (child.value == "threshold")) takeThis = true;
+                }
+                if (takeThis)
+                {
+                    thresholds.push(threshold);
+                }
+            }
+
+            console.log(thresholds);
+            cockpit_display_thresholds(thresholds);
+        }
+    });
+
+
+}
+
+function cockpit_display_thresholds(thresholds)
+{
+    var template = `<div class="form-group row" id="_my_id_-row">
+
+                        <div class="col-2">
+                            <p>_my_name_</p>
+                        </div>
+
+
+                        <div class="col-2">
+                            <input class="form-control" tid="_my_id_" type="text" id="_my_id_-min" value="_my_min_" onfocusout="lose_focus(this.id)" readonly>
+                        </div>
+
+                        <div class="col-2">
+                            <input class="form-control" tid="_my_id_" type="text" id="_my_id_-max" value="_my_max_" onfocusout="lose_focus(this.id)" readonly>
+                        </div>
+
+                        <div class="col-2">
+                            <input class="form-control" tid="_my_id_" type="text" id="_my_id_-tags" value="_my_tags_" onfocusout="lose_focus(this.id)" readonly>
+                        </div>
+
+                        <div class="col-3">
+                            <input class="form-control"  tid="_my_id_"type="text" id="_my_id_-variable" value="_my_variable_" onfocusout="lose_focus(this.id)" dir="rtl" readonly>
+                        </div>
+
+                        <div class="col-1">
+                             <button type="button" tid="_my_id_" id="_my_id_-trash" tbrowse="_my_browse_path_" class="btn btn-secondary" onclick="btn_trash(this.id)"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+
+
+
+                    </div>`;
+
+
+
+    $('#thresholds').empty();
+    for(var threshold of thresholds)
+    {
+        var entry = template;
+        entry = entry.replace(/_my_id_/g,threshold.id.toString());
+        entry = entry.replace("_my_min_",threshold.min);
+        entry = entry.replace("_my_max_",threshold.max);
+        entry = entry.replace("_my_tags_",threshold.tags);
+        entry = entry.replace("_my_variable_",threshold.variable);
+        entry = entry.replace("_my_name_",threshold.name);
+        entry = entry.replace("_my_browse_path_",threshold.browsePath);
+        $('#thresholds').append(entry);
+
+    }
+
+}
+
+function lose_focus(id)
+{
+    var value = $("#"+id).val();
+    console.log("lose focus "+id+" value: "+value.toString());
+}
+
+
+
+function cockpit_init_event()
+{
+    cockpiteventSource = new EventSource('/event/stream');
+    cockpiteventSource.addEventListener('thresholdseditor.changed', (e) => {
+        load_thresholds();
+    });
+
+
+}
+
+
+
+
+
+function btn_trash(id)
+{
+    $("#confirm-modal-div").empty();
+    $("#confirm-modal-div").append("<p>irreversible deletion of threshold</p><p>"+ $("#"+id).attr("tbrowse")+"</p>");
+    $("#confirm-modal-ok").unbind();
+    $("#confirm-modal-ok").click( function() {btn_trash_confirmed(id);});
+    $("#confirm-delete").modal('show');
+}
+
+function confirmed(id)
+{
+    console.log("deleting", id);
+}
+
+function btn_trash_confirmed(id)
+{
+
+    console.log(id);
+    var annoId = $("#"+id).attr("tid");
+    console.log(annoId);
+    var query=[annoId];
+    http_post("_delete",JSON.stringify(query), null,null, function(obj,status,data,params)
+    {
+        if (status==200)
+        {
+            load_thresholds();
+        }
+
+    });
+
+}
+
+function btn_trash_all()
+{
+    $("#confirm-modal-div").empty();
+    $("#confirm-modal-div").append("<p>irreversible deletion of all thresholds</p>");
+    $("#confirm-modal-ok").unbind();
+    $("#confirm-modal-ok").click( function() {btn_trash_all_confirmed();});
+    $("#confirm-delete").modal('show');
+}
+
+function btn_trash_all_confirmed()
+{
+
+    console.log("delete all thresholds");
+    var query=[];
+    for(var threshold of thresholds)
+    {
+        query.push(threshold.id);
+    }
+
+    http_post("_delete",JSON.stringify(query), null,null, function(obj,status,data,params)
+    {
+        if (status==200)
+        {
+            load_thresholds();
+        }
+
+    });
+
+}
+
+function cockpit_close()
+{
+    cockpiteventSource.close();
+}
+
+
+
+    </script>
+    </div>
+</div>
