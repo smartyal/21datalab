@@ -97,6 +97,7 @@ thresholdScorer4={
         {"name":"annotations","type":"referencer"},             # the user annotations
         {"name":"annotationsFilter","type":"const","value":[]}, # a list of strings to filter tags, if an annotation holds one of the filter tags, then we take it in
         {"name":"thresholds","type":"referencer"},              # pointing to the thresholds
+        {"name":"widgets","type":"referencer"},                  # pointing to the widget on which we work, can be multiple widgets
         __functioncontrolfolder                                 # signal "reset" is used to initialize the function, create and hook the outputs, reset all values
     ]
 }
@@ -162,6 +163,31 @@ thresholdDrillDownPipeLine = {
     ]
 }
 
+
+
+thresholdsEditor = {
+    "name": "thresholdsEditor",
+    "type": "folder",
+    "children":[
+
+        {"name":"cockpit","type":"const","value":"customui/thresholdseditor.htm"},
+        {"name":"thresholds","type":"referencer"},                          #pointing to the thresholds
+        { "name":"observer","type":"observer",  "children":[
+            {"name": "enabled", "type": "const", "value": True},            # turn on/off the observer
+            {"name": "triggerCounter","type":"variable","value":0},         #  increased on each trigger
+            {"name": "lastTriggerTime","type":"variable","value":""},       #  last datetime when it was triggered
+            {"name": "targets","type":"referencer","references":["thresholdsEditor.thresholds"]},                        #  pointing to the nodes observed
+            {"name": "properties","type":"const","value":["forwardRefs"]},        #  properties to observe [“children”,“value”, “forwardRefs”]
+            {"name": "onTriggerFunction","type":"referencer"},              #  the function(s) to be called when triggering
+            {"name": "triggerSourceId","type":"variable"},                  #  the sourceId of the node which caused the observer to trigger
+            {"name": "hasEvent","type":"const","value":True},               # set to event string iftrue if we want an event as well
+            {"name": "eventString","type":"const","value":"thresholdseditor.changed"},              # the string of the event
+            {"name": "eventData","type":"const","value":{"text":"observer status update"}}# the value-dict will be part of the SSE event["data"] , the key "text": , this will appear on the page,
+            ]
+        },
+
+    ]
+}
 
 
 
@@ -988,7 +1014,9 @@ def threshold_scorer_4(functionNode):
 
 
 
-
+    #show them all
+    for widget in functionNode.get_child("widgets").get_targets():
+        visibleElements = widget.get_child("")
 
 
 
