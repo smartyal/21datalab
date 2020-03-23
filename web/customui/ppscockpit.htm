@@ -1,6 +1,4 @@
 
-
-
 <div id="cockpit" class="modal fade" role="dialog" path="" style="width:600;height:700">
 
     <div class="modal-dialog modal-lg" role="dialog" id="cockpitmodal">
@@ -126,17 +124,58 @@
 var cockpiteventSource = 0;
 var cockpitPath = "";
 var cockpitWidgetPath = "";
+var widget = "";
+
 function cockpit_init(path)
 {
     cockpitPath = path;
     $("#cockpit").attr("path",path);
+    widget = $("#cockpit").attr("widget");
 
+    cockpit_show_result_elements();
     cockpit_load_settings();
     console.log("in cockpit init");
     cockpit_motif_init_progress_bar();
+    cockpit_show_result_elements();
 }
 
 
+function cockpit_show_result_elements()
+{
+    //enable scores
+    var query = [widget+".visibleElements",widget+".hasAnnotation.visibleTags"];
+    http_post('/_getvalue',JSON.stringify(query), null, this, (self,status,data,params) => {
+        if (status==200)
+        {
+
+            var visibleElements = JSON.parse(data)[0];
+            var visibleAnnotations = JSON.parse(data)[1];
+
+            visibleElements.annotations = true;
+            visibleElements.motifs = true;
+            visibleAnnotations["pattern_match"] = true;
+
+            var query = [
+                {
+                    browsePath:widget+".visibleElements",
+                    value:visibleElements
+                },
+                {
+                    browsePath:widget+".hasAnnotation.visibleTags",
+                    value:visibleAnnotations
+                }
+            ];
+            http_post("/setProperties",JSON.stringify(query),null,null,(self,status,data,params)=>
+            {
+                if (status==201)
+                {
+                    console.log("successfully set visible for annos pattern_match");
+                }
+            });
+        }
+
+    });
+}
 
 
 
@@ -204,8 +243,7 @@ function cockpit_find_motif()
 
 }
 
-/* move this to cockpit widget later
-*/
+
 function cockpit_motif_jump_next()
 {
     cockpit_motif_jump(1);
@@ -283,9 +321,7 @@ function cockpit_load_settings()
                         $("#cockpit-select-motif-variable").val(variable);
                         $("#cockpit-select-motif-start").val(start);
                         $("#cockpit-select-motif-end").val(end);
-
-
-                   }
+                  }
                 });
             }
 
@@ -301,46 +337,8 @@ function cockpit_load_settings()
                     $("#cockpit-select-motif-current").val(selectedAnnotation);
                 }
             });
-
-            //now the settings
-            $("#cockpit-parameters-algorithm").empty(); //delete the selections
-            var selected = minerData.algorithm[".properties"].value;
-            for (let opt of minerData.algorithm[".properties"].validation.values)
-            {
-                if (opt == selected)
-                {
-                    $("#cockpit-parameters-algorithm").append("<option selected>"+JSON.stringify(opt)+"</option>");
-                }
-                else
-                {
-                    $("#cockpit-parameters-algorithm").append("<option>"+JSON.stringify(opt)+"</option>");
-                }
-            }
-
-            $("#cockpit-parameters-noise").val(JSON.stringify(minerData.addNoise[".properties"].value));
-            $("#cockpit-parameters-subsampling").val(JSON.stringify(minerData.subSamplingFactor[".properties"].value));
-            $("#cockpit-parameters-threshold").val(JSON.stringify(pipeLineData.peakSearch.threshold[".properties"].value));
-
-            $("#cockpit-parameters-polynom").empty();
-            selected = minerData.subtractPolynomOrder[".properties"].value;
-            for (let opt of  minerData.subtractPolynomOrder[".properties"].validation.values)
-            {
-                if (opt == selected)
-                {
-                    $("#cockpit-parameters-polynom").append("<option selected>"+JSON.stringify(opt)+"</option>");
-                }
-                else
-                {
-                    $("#cockpit-parameters-polynom").append("<option>"+JSON.stringify(opt)+"</option>");
-                }
-            }
-
-
         }
     });
-
-
-
 
 }
 
@@ -350,7 +348,4 @@ function cockpit_load_settings()
     </script>
     </div>
 </div>
-
-
-
 
