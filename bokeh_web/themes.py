@@ -68,12 +68,18 @@ palette['alarm']
 ]
 
 darkLineColors = [
-palette["color-primary-0"],
-'#eba4fc',
-'#92d6ce',
-'#ffe1bd',
-'#93fa93',
-palette['alarm']
+    palette["color-primary-0"],  # yellow standard
+    '#eba4fc',  # light violet
+    '#92d6ce',  # helltürkis
+    '#ffe1bd',  # hellorange
+    '#93fa93',  # hellgrün
+    '#66b3ff',  # hellblau
+    '#b3ff99',  # hellgrün
+    '#cc7a00',  # braun
+    '#990099',  # violet
+    '#1a53ff',  # blau
+    '#990033',  # dunkelrosa
+    '#6b6b47'  # schwachgrün
 
 ]
 
