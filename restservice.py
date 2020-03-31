@@ -12,6 +12,7 @@ from gevent.pywsgi import WSGIServer
 import uuid
 from bs4 import BeautifulSoup
 import re
+import traceback
 
 from flask import  render_template, render_template_string
 from bokeh.client import pull_session
@@ -838,7 +839,8 @@ def all(path):
         logger.info("response on " + str(path) + ": " + str(responseCode) + ", len:" + str( len(response)) + " duration:"+str(timeElapsed))
         return flask.Response(response, mimetype="text/html"), responseCode
     except Exception as ex:
-        logger.error("general error " +str(sys.exc_info()[0])+".."+str(ex))
+        logger.error("general error " +str(sys.exc_info()[0])+".."+str(ex) + str(traceback.format_exc()))
+
         return flask.Response("",mimetype="text/html"),501
 
 if __name__ == '__main__':

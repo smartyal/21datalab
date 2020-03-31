@@ -12202,7 +12202,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 424,
+        "value": 432,
         "browsePath": "root.system.progress.triggerCounter"
     },
     "10857910486653991896": {
@@ -12213,7 +12213,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-03-19T10:42:54.978073",
+        "value": "2020-03-19T11:27:07.693892",
         "browsePath": "root.system.progress.lastTriggerTime"
     },
     "16724694746718170912": {
@@ -13866,7 +13866,8 @@
         "children": [
             "13303004183139838650",
             "592388204455866261",
-            "34577306739286421"
+            "34577306739286421",
+            "6899507005701698492"
         ],
         "backRefs": [
             "15499764811511790654"
@@ -13899,19 +13900,20 @@
     },
     "34577306739286421": {
         "id": "34577306739286421",
-        "name": "import_preview",
+        "name": "importer_preview",
         "type": "function",
         "parent": "600134431294461625",
         "children": [
             "10862155288644131590",
-            "10711310616066368915"
+            "10711310616066368915",
+            "8730694407266665249"
         ],
         "backRefs": [],
         "forwardRefs": [],
         "value": null,
         "functionPointer": "importer.import_preview",
         "autoReload": true,
-        "browsePath": "root.importer.import_preview"
+        "browsePath": "root.importer.importer_preview"
     },
     "10862155288644131590": {
         "id": "10862155288644131590",
@@ -13922,7 +13924,7 @@
         "backRefs": [],
         "forwardRefs": [],
         "value": null,
-        "browsePath": "root.importer.import_preview.default"
+        "browsePath": "root.importer.importer_preview.default"
     },
     "10711310616066368915": {
         "id": "10711310616066368915",
@@ -13942,7 +13944,7 @@
         "backRefs": [],
         "forwardRefs": [],
         "value": null,
-        "browsePath": "root.importer.import_preview.control"
+        "browsePath": "root.importer.importer_preview.control"
     },
     "14058539624724642295": {
         "id": "14058539624724642295",
@@ -13953,7 +13955,7 @@
         "backRefs": [],
         "forwardRefs": [],
         "value": "finished",
-        "browsePath": "root.importer.import_preview.control.status"
+        "browsePath": "root.importer.importer_preview.control.status"
     },
     "4985157741464515546": {
         "id": "4985157741464515546",
@@ -13966,7 +13968,7 @@
         ],
         "forwardRefs": [],
         "value": 1,
-        "browsePath": "root.importer.import_preview.control.progress"
+        "browsePath": "root.importer.importer_preview.control.progress"
     },
     "3819098016355860357": {
         "id": "3819098016355860357",
@@ -13977,7 +13979,7 @@
         "backRefs": [],
         "forwardRefs": [],
         "value": "ok",
-        "browsePath": "root.importer.import_preview.control.result"
+        "browsePath": "root.importer.importer_preview.control.result"
     },
     "13080883976273474339": {
         "id": "13080883976273474339",
@@ -13988,7 +13990,7 @@
         "backRefs": [],
         "forwardRefs": [],
         "value": "nosignal",
-        "browsePath": "root.importer.import_preview.control.signal"
+        "browsePath": "root.importer.importer_preview.control.signal"
     },
     "351104223650928649": {
         "id": "351104223650928649",
@@ -13996,10 +13998,12 @@
         "type": "variable",
         "parent": "10711310616066368915",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "15729178998903584294"
+        ],
         "forwardRefs": [],
-        "value": 3,
-        "browsePath": "root.importer.import_preview.control.executionCounter"
+        "value": 7,
+        "browsePath": "root.importer.importer_preview.control.executionCounter"
     },
     "11415052170816904150": {
         "id": "11415052170816904150",
@@ -14009,8 +14013,8 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.002284,
-        "browsePath": "root.importer.import_preview.control.lastExecutionDuration"
+        "value": 0.091939,
+        "browsePath": "root.importer.importer_preview.control.lastExecutionDuration"
     },
     "9789011534106794761": {
         "id": "9789011534106794761",
@@ -14020,8 +14024,8 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-03-19T10:42:54.874157",
-        "browsePath": "root.importer.import_preview.control.lastStartTime"
+        "value": "2020-03-19T11:27:07.596840",
+        "browsePath": "root.importer.importer_preview.control.lastStartTime"
     },
     "17003395223414030424": {
         "id": "17003395223414030424",
@@ -14032,6 +14036,168 @@
         "backRefs": [],
         "forwardRefs": [],
         "value": "async",
-        "browsePath": "root.importer.import_preview.control.executionType"
+        "browsePath": "root.importer.importer_preview.control.executionType"
+    },
+    "8730694407266665249": {
+        "id": "8730694407266665249",
+        "name": "data_preview",
+        "type": "variable",
+        "parent": "34577306739286421",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "time": [
+                "2020-01-03T08:00:00.000+02:00",
+                "2020-01-03T08:00:00.000+02:00"
+            ],
+            "val1": [
+                11.1,
+                12.4
+            ],
+            "val2": [
+                1,
+                2
+            ]
+        },
+        "browsePath": "root.importer.importer_preview.data_preview"
+    },
+    "6899507005701698492": {
+        "id": "6899507005701698492",
+        "name": "observer",
+        "type": "observer",
+        "parent": "600134431294461625",
+        "children": [
+            "10160964597526434920",
+            "15210562638042265066",
+            "5054980845379168330",
+            "15729178998903584294",
+            "13397423798644463098",
+            "2804914177430049296",
+            "11623929077701929028",
+            "4232534091170041535",
+            "10998595152088667989",
+            "700914018908699699"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.importer.observer"
+    },
+    "10160964597526434920": {
+        "id": "10160964597526434920",
+        "name": "enabled",
+        "type": "const",
+        "parent": "6899507005701698492",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.importer.observer.enabled"
+    },
+    "15210562638042265066": {
+        "id": "15210562638042265066",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "6899507005701698492",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 1,
+        "browsePath": "root.importer.observer.triggerCounter"
+    },
+    "5054980845379168330": {
+        "id": "5054980845379168330",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "6899507005701698492",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2020-03-19T11:27:07.691008",
+        "browsePath": "root.importer.observer.lastTriggerTime"
+    },
+    "15729178998903584294": {
+        "id": "15729178998903584294",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "6899507005701698492",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "351104223650928649"
+        ],
+        "value": null,
+        "browsePath": "root.importer.observer.targets"
+    },
+    "13397423798644463098": {
+        "id": "13397423798644463098",
+        "name": "properties",
+        "type": "const",
+        "parent": "6899507005701698492",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.importer.observer.properties"
+    },
+    "2804914177430049296": {
+        "id": "2804914177430049296",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "6899507005701698492",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.importer.observer.onTriggerFunction"
+    },
+    "11623929077701929028": {
+        "id": "11623929077701929028",
+        "name": "triggerSourceId",
+        "type": "variable",
+        "parent": "6899507005701698492",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "351104223650928649",
+        "browsePath": "root.importer.observer.triggerSourceId"
+    },
+    "4232534091170041535": {
+        "id": "4232534091170041535",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "6899507005701698492",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.importer.observer.hasEvent"
+    },
+    "10998595152088667989": {
+        "id": "10998595152088667989",
+        "name": "eventString",
+        "type": "const",
+        "parent": "6899507005701698492",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "importer.data_imported",
+        "browsePath": "root.importer.observer.eventString"
+    },
+    "700914018908699699": {
+        "id": "700914018908699699",
+        "name": "eventData",
+        "type": "const",
+        "parent": "6899507005701698492",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "text": "observer status update"
+        },
+        "browsePath": "root.importer.observer.eventData"
     }
 }

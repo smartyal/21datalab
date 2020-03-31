@@ -443,6 +443,7 @@
                   cockpitPath = path;
                   $("#cockpit").attr("path",path);
 
+                  cockpit_importer_add_event_listener()
                   cockpit_load_settings();
                   console.log("in cockpit init");
                   cockpit_motif_init_progress_bar();
@@ -450,6 +451,7 @@
 
 
 
+              
 
 
               function cockpit_motif_init_progress_bar()
@@ -550,9 +552,17 @@
 
               }
 
+              function cockpit_importer_add_event_listener() {
+
+                  cockpiteventSource = new EventSource('/event/stream');
+                  cockpiteventSource.addEventListener('importer.data_imported', (e) => {
+                    console.log("importer.data_imported", e)
+                  });
+              }
+
               function cockpit_importer_preview()
               {
-                http_post("/_execute",JSON.stringify(cockpitPath+".importer_preview"), null, null, (self, status, data, params) => {
+                http_post("/_execute", cockpitPath+".importer_preview", null, null, (self, status, data, params) => {
                   console.log("log",status);
                 });
               }
