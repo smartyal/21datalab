@@ -3089,11 +3089,10 @@ class TimeSeriesWidget():
             area = VArea(x="x", y1="y1", y2="y2",
                          fill_color="black",
                          name=anno["id"],
-                         fill_alpha=globalAnnotationsAlpha,
+                         fill_alpha=0.2,
                          hatch_color=color,
                          hatch_pattern="v",
-                         hatch_alpha=0.5,
-                         level = globalThresholdsLevel)
+                         hatch_alpha=0.5)
 
 
             #    bokeh hack to avoid adding the renderers directly: we create a renderer from the glyph and store it for later bulk assing to the plot
