@@ -33,7 +33,8 @@
             "322",
             "364",
             "406",
-            "448"
+            "448",
+            "7485775317706349763"
         ],
         "backRefs": [],
         "forwardRefs": [],
@@ -179,8 +180,7 @@
             "477",
             "8037118344379379709",
             "57832287729083089",
-            "10691456585566057755",
-            "129"
+            "10691456585566057755"
         ],
         "forwardRefs": [],
         "value": "len 5",
@@ -194,8 +194,7 @@
         "children": [],
         "backRefs": [
             "116",
-            "6467217534375322357",
-            "129"
+            "6467217534375322357"
         ],
         "forwardRefs": [],
         "value": "len 5",
@@ -382,8 +381,8 @@
             "664"
         ],
         "forwardRefs": [
-            "120",
-            "121"
+            "18121122645591030446",
+            "5976707389234237066"
         ],
         "value": null,
         "browsePath": "root.visualization.workbench.selectedVariables"
@@ -398,7 +397,7 @@
             "13071347114919871021"
         ],
         "forwardRefs": [],
-        "value": "2015-02-11T12:12:18.679924+01:00",
+        "value": "2020-01-03T04:26:19.127975+01:00",
         "browsePath": "root.visualization.workbench.startTime"
     },
     "131": {
@@ -411,7 +410,7 @@
             "13071347114919871021"
         ],
         "forwardRefs": [],
-        "value": "2015-02-18T19:32:06.645684+01:00",
+        "value": "2020-01-03T10:10:03.892678+01:00",
         "browsePath": "root.visualization.workbench.endTime"
     },
     "132": {
@@ -5817,7 +5816,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 127,
+        "value": 133,
         "browsePath": "root.visualization.workbench.observerVariables.triggerCounter"
     },
     "645": {
@@ -5828,7 +5827,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T18:04:05.260991",
+        "value": "2020-04-11T04:56:24.030243",
         "browsePath": "root.visualization.workbench.observerVariables.lastTriggerTime"
     },
     "646": {
@@ -8330,7 +8329,7 @@
         "forwardRefs": [],
         "value": {
             "thresholds": false,
-            "annotations": true,
+            "annotations": false,
             "scores": false,
             "background": false,
             "variables": true,
@@ -8516,7 +8515,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 994,
+        "value": 1039,
         "browsePath": "root.visualization.workbench.observerVisibleElements.triggerCounter"
     },
     "15683200324838571042": {
@@ -8527,7 +8526,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T18:27:28.059975",
+        "value": "2020-04-11T04:56:19.408023",
         "browsePath": "root.visualization.workbench.observerVisibleElements.lastTriggerTime"
     },
     "13071347114919871021": {
@@ -9358,6 +9357,9 @@
             },
             "root.thresholdScorer.output._total_score": {
                 "lineColor": "red"
+            },
+            "root.importer.importer_import.table.variables.val1": {
+                "lineColor": "#D9B100"
             }
         },
         "browsePath": "root.visualization.workbench.currentColors"
@@ -12202,7 +12204,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 432,
+        "value": 486,
         "browsePath": "root.system.progress.triggerCounter"
     },
     "10857910486653991896": {
@@ -12213,7 +12215,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-03-19T11:27:07.693892",
+        "value": "2020-04-11T04:55:21.497484",
         "browsePath": "root.system.progress.lastTriggerTime"
     },
     "16724694746718170912": {
@@ -12224,7 +12226,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [
-            "4985157741464515546"
+            "476160793280814585"
         ],
         "value": null,
         "browsePath": "root.system.progress.targets"
@@ -13865,9 +13867,9 @@
         "parent": "1",
         "children": [
             "13303004183139838650",
-            "592388204455866261",
             "34577306739286421",
-            "6899507005701698492"
+            "6899507005701698492",
+            "6636804428678562831"
         ],
         "backRefs": [
             "15499764811511790654"
@@ -13887,17 +13889,6 @@
         "value": "customui/importer.htm",
         "browsePath": "root.importer.cockpit"
     },
-    "592388204455866261": {
-        "id": "592388204455866261",
-        "name": "fileName",
-        "type": "variable",
-        "parent": "600134431294461625",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "hello",
-        "browsePath": "root.importer.fileName"
-    },
     "34577306739286421": {
         "id": "34577306739286421",
         "name": "importer_preview",
@@ -13906,12 +13897,13 @@
         "children": [
             "10862155288644131590",
             "10711310616066368915",
-            "8730694407266665249"
+            "8730694407266665249",
+            "3489700608206824173"
         ],
         "backRefs": [],
         "forwardRefs": [],
         "value": null,
-        "functionPointer": "importer.import_preview",
+        "functionPointer": "importer.importer_preview",
         "autoReload": true,
         "browsePath": "root.importer.importer_preview"
     },
@@ -13963,11 +13955,9 @@
         "type": "variable",
         "parent": "10711310616066368915",
         "children": [],
-        "backRefs": [
-            "16724694746718170912"
-        ],
+        "backRefs": [],
         "forwardRefs": [],
-        "value": 1,
+        "value": 0,
         "browsePath": "root.importer.importer_preview.control.progress"
     },
     "3819098016355860357": {
@@ -13978,7 +13968,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "ok",
+        "value": "pending",
         "browsePath": "root.importer.importer_preview.control.result"
     },
     "13080883976273474339": {
@@ -14002,7 +13992,7 @@
             "15729178998903584294"
         ],
         "forwardRefs": [],
-        "value": 7,
+        "value": 50,
         "browsePath": "root.importer.importer_preview.control.executionCounter"
     },
     "11415052170816904150": {
@@ -14013,7 +14003,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.091939,
+        "value": 0.076328,
         "browsePath": "root.importer.importer_preview.control.lastExecutionDuration"
     },
     "9789011534106794761": {
@@ -14024,7 +14014,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-03-19T11:27:07.596840",
+        "value": "2020-04-11T04:52:30.694351",
         "browsePath": "root.importer.importer_preview.control.lastStartTime"
     },
     "17003395223414030424": {
@@ -14046,20 +14036,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": {
-            "time": [
-                "2020-01-03T08:00:00.000+02:00",
-                "2020-01-03T08:00:00.000+02:00"
-            ],
-            "val1": [
-                11.1,
-                12.4
-            ],
-            "val2": [
-                1,
-                2
-            ]
-        },
+        "value": "{\"schema\":{\"fields\":[{\"name\":\"index\",\"type\":\"integer\"},{\"name\":\"id\",\"type\":\"integer\"},{\"name\":\"date\",\"type\":\"string\"},{\"name\":\"Temperature\",\"type\":\"number\"},{\"name\":\"Humidity\",\"type\":\"number\"},{\"name\":\"Light\",\"type\":\"number\"},{\"name\":\"CO2\",\"type\":\"number\"},{\"name\":\"HumidityRatio\",\"type\":\"number\"},{\"name\":\"Occupancy\",\"type\":\"integer\"}],\"primaryKey\":[\"index\"],\"pandas_version\":\"0.20.0\"},\"data\":[{\"index\":0,\"id\":140,\"date\":\"2015-02-02 14:19:00\",\"Temperature\":23.7,\"Humidity\":26.272,\"Light\":585.2,\"CO2\":749.2,\"HumidityRatio\":0.004764163,\"Occupancy\":1},{\"index\":1,\"id\":141,\"date\":\"2015-02-02 14:19:59\",\"Temperature\":23.718,\"Humidity\":26.29,\"Light\":578.4,\"CO2\":760.4,\"HumidityRatio\":0.004772661,\"Occupancy\":1},{\"index\":2,\"id\":142,\"date\":\"2015-02-02 14:21:00\",\"Temperature\":23.73,\"Humidity\":26.23,\"Light\":572.6666666667,\"CO2\":769.6666666667,\"HumidityRatio\":0.0047651526,\"Occupancy\":1}]}",
         "browsePath": "root.importer.importer_preview.data_preview"
     },
     "6899507005701698492": {
@@ -14070,7 +14047,6 @@
         "children": [
             "10160964597526434920",
             "15210562638042265066",
-            "5054980845379168330",
             "15729178998903584294",
             "13397423798644463098",
             "2804914177430049296",
@@ -14103,19 +14079,19 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 1,
+        "value": 44,
         "browsePath": "root.importer.observer.triggerCounter"
     },
     "5054980845379168330": {
         "id": "5054980845379168330",
         "name": "lastTriggerTime",
         "type": "variable",
-        "parent": "6899507005701698492",
+        "parent": "13397423798644463098",
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
         "value": "2020-03-19T11:27:07.691008",
-        "browsePath": "root.importer.observer.lastTriggerTime"
+        "browsePath": "root.importer.observer.properties.lastTriggerTime"
     },
     "15729178998903584294": {
         "id": "15729178998903584294",
@@ -14135,7 +14111,9 @@
         "name": "properties",
         "type": "const",
         "parent": "6899507005701698492",
-        "children": [],
+        "children": [
+            "5054980845379168330"
+        ],
         "backRefs": [],
         "forwardRefs": [],
         "value": [
@@ -14199,5 +14177,223 @@
             "text": "observer status update"
         },
         "browsePath": "root.importer.observer.eventData"
+    },
+    "3489700608206824173": {
+        "id": "3489700608206824173",
+        "name": "fileName",
+        "type": "variable",
+        "parent": "34577306739286421",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "test-with-header-3-rows.txt",
+        "browsePath": "root.importer.importer_preview.fileName"
+    },
+    "7485775317706349763": {
+        "id": "7485775317706349763",
+        "name": "new_folder_df58",
+        "type": "folder",
+        "parent": "13",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.new_folder_df58"
+    },
+    "6636804428678562831": {
+        "id": "6636804428678562831",
+        "name": "importer_import",
+        "type": "function",
+        "parent": "600134431294461625",
+        "children": [
+            "2983659483290137805",
+            "8997030012463420739"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "functionPointer": "importer.importer_import",
+        "autoReload": true,
+        "browsePath": "root.importer.importer_import"
+    },
+    "2983659483290137805": {
+        "id": "2983659483290137805",
+        "name": "table",
+        "type": "table",
+        "parent": "6636804428678562831",
+        "children": [
+            "16365623341113576244",
+            "14315136051498416931"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.importer.importer_import.table"
+    },
+    "8997030012463420739": {
+        "id": "8997030012463420739",
+        "name": "control",
+        "type": "folder",
+        "parent": "6636804428678562831",
+        "children": [
+            "1163406402708150276",
+            "476160793280814585",
+            "14753515598527683001",
+            "6951499224031509065",
+            "18301203886975351561",
+            "15095161392115402281",
+            "11831237733371818659",
+            "4658324870008208400"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.importer.importer_import.control"
+    },
+    "1163406402708150276": {
+        "id": "1163406402708150276",
+        "name": "status",
+        "type": "variable",
+        "parent": "8997030012463420739",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "finished",
+        "browsePath": "root.importer.importer_import.control.status"
+    },
+    "476160793280814585": {
+        "id": "476160793280814585",
+        "name": "progress",
+        "type": "variable",
+        "parent": "8997030012463420739",
+        "children": [],
+        "backRefs": [
+            "16724694746718170912"
+        ],
+        "forwardRefs": [],
+        "value": 1,
+        "browsePath": "root.importer.importer_import.control.progress"
+    },
+    "14753515598527683001": {
+        "id": "14753515598527683001",
+        "name": "result",
+        "type": "variable",
+        "parent": "8997030012463420739",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "ok",
+        "browsePath": "root.importer.importer_import.control.result"
+    },
+    "6951499224031509065": {
+        "id": "6951499224031509065",
+        "name": "signal",
+        "type": "variable",
+        "parent": "8997030012463420739",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "nosignal",
+        "browsePath": "root.importer.importer_import.control.signal"
+    },
+    "18301203886975351561": {
+        "id": "18301203886975351561",
+        "name": "executionCounter",
+        "type": "variable",
+        "parent": "8997030012463420739",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 2,
+        "browsePath": "root.importer.importer_import.control.executionCounter"
+    },
+    "15095161392115402281": {
+        "id": "15095161392115402281",
+        "name": "lastExecutionDuration",
+        "type": "variable",
+        "parent": "8997030012463420739",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0.219216,
+        "browsePath": "root.importer.importer_import.control.lastExecutionDuration"
+    },
+    "11831237733371818659": {
+        "id": "11831237733371818659",
+        "name": "lastStartTime",
+        "type": "variable",
+        "parent": "8997030012463420739",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2020-04-11T04:55:21.273567",
+        "browsePath": "root.importer.importer_import.control.lastStartTime"
+    },
+    "4658324870008208400": {
+        "id": "4658324870008208400",
+        "name": "executionType",
+        "type": "const",
+        "parent": "8997030012463420739",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "async",
+        "browsePath": "root.importer.importer_import.control.executionType"
+    },
+    "16365623341113576244": {
+        "id": "16365623341113576244",
+        "name": "variables",
+        "type": "folder",
+        "parent": "2983659483290137805",
+        "children": [
+            "18121122645591030446",
+            "5976707389234237066"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.importer.importer_import.table.variables"
+    },
+    "14315136051498416931": {
+        "id": "14315136051498416931",
+        "name": "columns",
+        "type": "referencer",
+        "parent": "2983659483290137805",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "18121122645591030446",
+            "5976707389234237066"
+        ],
+        "value": null,
+        "browsePath": "root.importer.importer_import.table.columns"
+    },
+    "18121122645591030446": {
+        "id": "18121122645591030446",
+        "name": "val1",
+        "type": "timeseries",
+        "parent": "16365623341113576244",
+        "children": [],
+        "backRefs": [
+            "14315136051498416931",
+            "129"
+        ],
+        "forwardRefs": [],
+        "value": "None",
+        "browsePath": "root.importer.importer_import.table.variables.val1"
+    },
+    "5976707389234237066": {
+        "id": "5976707389234237066",
+        "name": "val2",
+        "type": "timeseries",
+        "parent": "16365623341113576244",
+        "children": [],
+        "backRefs": [
+            "14315136051498416931",
+            "129"
+        ],
+        "forwardRefs": [],
+        "value": "None",
+        "browsePath": "root.importer.importer_import.table.variables.val2"
     }
 }

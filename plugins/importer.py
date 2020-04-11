@@ -1,11 +1,13 @@
 from system import __functioncontrolfolder
 from model import date2secs
+import pandas as pd 
+import os
 
-importPreviewTemplate = {
-    "name":"importPreview",
+importerPreviewTemplate = {
+    "name":"importerPreview",
     "type":"function",
-    "functionPointer":"importer.import_preview",   #filename.functionname
-    "autoReload":True,                             #set this to true to reload the module on each execution
+    "functionPointer":"importer.importer_preview",   # filename.functionname
+    "autoReload":True,                             # set this to true to reload the module on each execution
     "children":[
         {"name":"default","type":"variable"},      # the outputs
         {"name":"data_preview","type":"variable"},
@@ -13,46 +15,66 @@ importPreviewTemplate = {
     ]
 }
 
-importWriteTemplate = {
-    "name":"importWrite",
+importerImportTemplate = {
+    "name":"importImport",
     "type":"function",
-    "functionPointer":"importer.import_write",   #filename.functionname
-    "autoReload":True,                             #set this to true to reload the module on each execution
+    "functionPointer":"importer.importer_import",     # filename.functionname
+    "autoReload":True,                             # set this to true to reload the module on each execution
     "children":[
-        {"name":"default","type":"variable"},      # the outputs
-        {"name":"table","type":"referencer"},      # the outputs
+        {"name":"table","type":"table"},      # the outputs
         __functioncontrolfolder
     ]
 }
 
-def import_preview(functionNode):
-    logger = functionNode.get_logger()
-    logger.info("==> import_preview hello world")
+def importer_preview(functionNode):
 
+    # --- initialize logger
+    logger = functionNode.get_logger()
+    logger.info("==> importer_preview hello world")
+
+    # --- set some example data
     data = {
         "time": [ "2020-01-03T08:00:00.000+02:00", "2020-01-03T08:00:00.000+02:00" ],
         "val1": [ 11.1, 12.4 ],
         "val2": [ 1, 2 ],
     }
 
+    # --- get filename
+    fileName = 'upload/' + functionNode.get_child("fileName").get_value()
+    logger.info(f"==> fileName {fileName}")
+
+    # --- read file
+    pathBase = os.getcwd()
+    logger.info(f"==> pathBase {pathBase}")
+
+    dataFile = pd.read_csv(fileName)
+    previewData = dataFile.head()
+    logger.info(f"==> previewData {previewData}")
+    previewDataType = type(previewData)
+    logger.info(f"==> previewDataType {previewDataType}")
+    previewDataString = previewData.to_json(orient='table')
+
+
+    # --- update node with preview data
     node = functionNode.get_child("data_preview")
-
     logger.info(f"==> node {node}")
+    node.set_value(previewDataString)
 
-    node.set_value(data)
-
+    # --- return
     return True
 
-def import_write(functionNode):
+def importer_import(functionNode):
     logger = functionNode.get_logger()
-    logger.info("==> import_write")
+    logger.info("=========================================================> importer_import")
+
+    logger.info(f"=========================================================> functionNode {functionNode}")
 
     # Node apis
-    tableNode = functionNode.get_child("table")
-    logger.info(f"==> tableNode {tableNode}")
+    table = functionNode.get_child("table")
+    logger.info(f"========================================================> tableNode {table}")
 
-    table = tableNode.get_target()
-    logger.info(f"==> table {table}")
+    #  table = tableNode.get_target()
+    logger.info(f"========================================================> table {table}")
 
     vars = table.get_child("variables")
     cols = table.get_child("columns")
@@ -79,5 +101,7 @@ def import_write(functionNode):
     # set values
     val1.set_time_series(values=data["val1"],times=epochs)
     val2.set_time_series(values=data["val2"],times=epochs)
+
+    logger.info(f"========================================================> IMPORTER DONE")
 
     return True

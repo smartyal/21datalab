@@ -1,5 +1,5 @@
 <html>
-<head>
+  <head>
     <title>21datalab workbench 0.1</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,44 +12,41 @@
 
     <!-- Execute this script here, in order to set the bootstrap and jstree theme as soon as possible, thus avoiding the flickering page issue -->
     <script>
-        // Retrieve the theme from the local storage
-        var datalabGlobalTheme = localStorage.getItem("21datalabTheme");
+      // Retrieve the theme from the local storage
+      var datalabGlobalTheme = localStorage.getItem("21datalabTheme");
 
-        // Set the default path to the light theme
-        let pageThemePath = "/modules/bootswatch/dist/darkly/bootstrap.min.css"
-        let treeThemePath = "/modules/jstree/dist/themes/default-dark/style.min.css";
+      // Set the default path to the light theme
+      let pageThemePath = "/modules/bootswatch/dist/darkly/bootstrap.min.css"
+      let treeThemePath = "/modules/jstree/dist/themes/default-dark/style.min.css";
 
-        // set the theme to dark in case it was not defined
-        datalabGlobalTheme = datalabGlobalTheme || "dark";
+      // set the theme to dark in case it was not defined
+      datalabGlobalTheme = datalabGlobalTheme || "dark";
 
-        // In case the theme is set to dark, set the proper paths
-        if (datalabGlobalTheme == "dark") {
-            pageThemePath = "/modules/bootswatch/dist/darkly/bootstrap.min.css"
-            treeThemePath = "/modules/jstree/dist/themes/default-dark/style.min.css";
-        }
-        if (datalabGlobalTheme == "light") {
-            pageThemePath = "/modules/bootswatch/dist/flatly/bootstrap.min.css";
-            treeThemePath = "/modules/jstree/dist/themes/default/style.min.css";
-        }
+      // In case the theme is set to dark, set the proper paths
+      if (datalabGlobalTheme == "dark") {
+        pageThemePath = "/modules/bootswatch/dist/darkly/bootstrap.min.css"
+        treeThemePath = "/modules/jstree/dist/themes/default-dark/style.min.css";
+      }
+      if (datalabGlobalTheme == "light") {
+        pageThemePath = "/modules/bootswatch/dist/flatly/bootstrap.min.css";
+        treeThemePath = "/modules/jstree/dist/themes/default/style.min.css";
+      }
 
-        // Apply the themes
-        $('#bootstrap_theme').attr('href', pageThemePath);
-        $('#jstree_theme').attr('href', treeThemePath);
+      // Apply the themes
+      $('#bootstrap_theme').attr('href', pageThemePath);
+      $('#jstree_theme').attr('href', treeThemePath);
     </script>
+
+    <link rel="icon" type="image/x-icon" href="favicon.ico"/>
 
     <link rel="stylesheet" href="modules/bootstrap-select/dist/css/bootstrap-select.min.css"/>
     <link rel="stylesheet" href="modules/font-awesome/css/all.css"/>
     <link rel="stylesheet" href="modules/bootstrap-navbar-sidebar/dist/navbar-fixed-left.css"/>
     <link rel="stylesheet" href="modules/supercontextmenu-master/dist/context-menu.min.css"/>
-
-
-
     <link rel="stylesheet" href="css/style.css"/>
 
-    <link rel="icon" type="image/x-icon" href="favicon.ico"/>
-
     <script src="modules/other/popper.min.js"></script>
-	<script src="modules/jstree/dist/jstree.js"></script>
+    <script src="modules/jstree/dist/jstree.js"></script>
     <script src="modules/jstree-grid/jstreegrid.js"></script>
     <script src="modules/bootstrap/js/bootstrap.js"></script>
     <script src="modules/font-awesome/js/all.js"></script>
@@ -58,676 +55,315 @@
     <script src="modules/jquery-ui/jquery-ui.min.js"></script>
     <script src="modules/jQuery-File-Upload/js/jquery.fileupload.js"></script>
     <script src="modules/supercontextmenu-master/dist/context-menu.min.js"></script>
-
     <script src="js/utils.js"></script>
-	<script src="js/tree.js"></script>
+    <script src="js/tree.js"></script>
     <script src="modules/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
     <script src="js/index.js"></script>
-</head>
 
-<body >
+  </head>
+
+  <body >
     <nav class="navbar navbar-expand-lg fixed-left navbar-dark bg-primary text-center pl-0 pr-0">
-        <div class="text-center nav-brand-image mt-2">
-            <a href="http://www.21data.io">
-                <img src="img/logo.png" height="30" alt="21data.io" class="rounded">
+      <div class="text-center nav-brand-image mt-2">
+        <a href="http://www.21data.io">
+          <img src="img/logo.png" height="30" alt="21data.io" class="rounded">
+        </a>
+      </div>
+      <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="navbar-collapse collapse mt-4" id="navbarResponsive">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link nav-item-hover" href="#nav-data" data-toggle="tab">
+              <h3>
+                <i class="fas fa-database"></i>
+              </h3>
+              <div class="nav-item-text">
+                Data
+              </div>
             </a>
-        </div>
-        <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="navbar-collapse collapse mt-4" id="navbarResponsive">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link nav-item-hover" href="#nav-data" data-toggle="tab">
-                        <h3>
-                            <i class="fas fa-database"></i>
-                        </h3>
-                        <div class="nav-item-text">
-                            Data
-                        </div>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link nav-item-hover active" href="#nav-modelling" data-toggle="tab">
-                        <h3>
-                            <i class="fas fa-network-wired"></i>
-                        </h3>
-                        <div class="nav-item-text">
-                            Modelling
-                        </div>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link nav-item-hover" href="#nav-self-service" data-toggle="tab">
-                        <h3>
-                            <i class="fas fa-chalkboard-teacher"></i>
-                        </h3>
-                        <div class="nav-item-text">
-                            Self-service
-                        </div>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link nav-item-hover" href="#nav-deployment" data-toggle="tab">
-                        <h3>
-                            <i class="fas fa-cubes"></i>
-                        </h3>
-                        <div class="nav-item-text">
-                            Deployment
-                        </div>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link nav-item-hover" href="#nav-settings" data-toggle="tab">
-                        <h3>
-                            <i class="fas fa-cog"></i>
-                        </h3>
-                        <div class="nav-item-text">
-                            Settings
-                        </div>
-                    </a>
-                </li>
-            </ul>
-        </div>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link nav-item-hover active" href="#nav-modelling" data-toggle="tab">
+              <h3>
+                <i class="fas fa-network-wired"></i>
+              </h3>
+              <div class="nav-item-text">
+                Modelling
+              </div>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link nav-item-hover" href="#nav-self-service" data-toggle="tab">
+              <h3>
+                <i class="fas fa-chalkboard-teacher"></i>
+              </h3>
+              <div class="nav-item-text">
+                Self-service
+              </div>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link nav-item-hover" href="#nav-deployment" data-toggle="tab">
+              <h3>
+                <i class="fas fa-cubes"></i>
+              </h3>
+              <div class="nav-item-text">
+                Deployment
+              </div>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link nav-item-hover" href="#nav-settings" data-toggle="tab">
+              <h3>
+                <i class="fas fa-cog"></i>
+              </h3>
+              <div class="nav-item-text">
+                Settings
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
     </nav>
     <div class="container-fluid">
-        <div class="tab-content">
-            <div id="nav-data" class="tab-pane fade">
-                <div class="container mt-4">
-                    <div class="row mb-4">
-                        <div class="col">
-                            <div class="card">
-                                <div class="card-header">
-                                    Files
-                                </div>
-                                <div class="card-body">
-                                    <div class="row" id="fileuploadRow">
-                                        <div class="col" id="fileuploadCol">
-                                            <input id="fileupload" type="file" name="file" data-url="/_upload" multiple="multiple" text="generic test">
-                                        </div>
-                                    </div>
-                                    <div class="row hidden pt-2" id="uploadStatusRow">
-                                        <div class="col">
-                                            <p id="uploadStatusProgress"></p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+      <div class="tab-content">
+        <div id="nav-data" class="tab-pane fade">
+          <div class="container mt-4">
+            <div class="row mb-4">
+              <div class="col">
+                <div class="card">
+                  <div class="card-header">
+                    Files
+                  </div>
+                  <div class="card-body">
+                    <div class="row" id="fileuploadRow">
+                      <div class="col" id="fileuploadCol">
+                        <input id="fileupload" type="file" name="file" data-url="/_upload" multiple="multiple" text="generic test">
+                      </div>
                     </div>
-                </div>
-            </div>
-            <div id="nav-modelling" class="tab-pane fade active show">
-                <div class="col" id ="ui-layout-workbench"  uiinfo='{"path":"root.deployment.ui.layout.workbench"}'> </div>
-            </div>
-            <div id="nav-self-service" class="tab-pane fade">
-                <div class="col" id ="ui-layout-self-service"  uiinfo='{"path":"root.deployment.ui.layout.selfservice"}'> </div>
-            </div>
-            <div id="nav-deployment" class="tab-pane fade">
-                <div class="container mt-4">
-                    <div class="row mb-4">
-                        <div class="col">
-                            <div class="row mb-2">
-                                <div class="col">
-                                    <h5>Services</h5>
-                                </div>
-                            </div>
-                            <div class="row mb-1">
-                                <div class="offset-1 col-5">
-                                    UI self-service production 2
-                                </div>
-                                <div class="col-md-6">
-                                    <button type="button" class="btn btn-secondary"><i class="fas fa-play"></i></button>
-                                    <button type="button" class="btn btn-secondary"><i class="fas fa-power-off"></i></button>
-                                    <button type="button" class="btn btn-secondary"><i class="fas fa-redo-alt"></i></button>
-                                    <button type="button" class="btn btn-secondary"><i class="fas fa-eye"></i></button>
-                                </div>
-                            </div>
-                            <div class="row mb-1">
-                                <div class="offset-1 col-5">
-                                    OPC UA Client - AB01
-                                </div>
-                                <div class="col">
-                                    <button type="button" class="btn btn-secondary"><i class="fas fa-play"></i></button>
-                                    <button type="button" class="btn btn-secondary"><i class="fas fa-power-off"></i></button>
-                                    <button type="button" class="btn btn-secondary"><i class="fas fa-redo-alt"></i></button>
-                                    <button type="button" class="btn btn-secondary"><i class="fas fa-eye"></i></button>
-                                </div>
-                            </div>
-                            <div class="row mb-1">
-                                <div class="offset-1 col-5">
-                                    OPC UA Server - EE23
-                                </div>
-                                <div class="col">
-                                    <button type="button" class="btn btn-secondary"><i class="fas fa-play"></i></button>
-                                    <button type="button" class="btn btn-secondary"><i class="fas fa-power-off"></i></button>
-                                    <button type="button" class="btn btn-secondary"><i class="fas fa-redo-alt"></i></button>
-                                    <button type="button" class="btn btn-secondary"><i class="fas fa-eye"></i></button>
-                                </div>
-                            </div>
-                            <div class="row mb-1">
-                                <div class="offset-1 col-5">
-                                    Regression model - 23E
-                                </div>
-                                <div class="col">
-                                    <button type="button" class="btn btn-secondary"><i class="fas fa-play"></i></button>
-                                    <button type="button" class="btn btn-secondary"><i class="fas fa-power-off"></i></button>
-                                    <button type="button" class="btn btn-secondary"><i class="fas fa-redo-alt"></i></button>
-                                    <button type="button" class="btn btn-secondary"><i class="fas fa-eye"></i></button>
-                                </div>
-                            </div>
-                            <div class="form-group row mb-1">
-                                <div class="offset-1 col-5">
-                                    <select class="form-control">
-                                        <option value="" disabled selected></option>
-                                        <option>OPC UA Cient</option>
-                                        <option>OPC UA Server</option>
-                                        <option>Regression Model</option>
-                                    </select>
-                                </div>
-
-                            </div>
-                        </div>
+                    <div class="row hidden pt-2" id="uploadStatusRow">
+                      <div class="col">
+                        <p id="uploadStatusProgress"></p>
+                      </div>
                     </div>
+                  </div>
                 </div>
+              </div>
             </div>
-            <div id="nav-settings" class="tab-pane fade">
-                <div class="container mt-4">
-                    <div class="row mb-4">
-                        <div class="col">
-                            <div class="card">
-                                <div class="card-header">
-                                    Settings
-                                </div>
-                                <div class="card-body">
-                                    <div class="form-group row mb-0">
-                                        <label class="col">Theme</label>
-                                        <div class="col">
-                                            <select class="form-control" id="themeSelect">
-                                                <option>dark</option>
-                                                <option>light</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer">
-                                    <button class="btn btn-primary btn-sm" id="applySettings">Apply</button>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
+        <div id="nav-modelling" class="tab-pane fade active show">
+          <div class="col" id ="ui-layout-workbench"  uiinfo='{"path":"root.deployment.ui.layout.workbench"}'> </div>
+        </div>
+        <div id="nav-self-service" class="tab-pane fade">
+          <div class="col" id ="ui-layout-self-service"  uiinfo='{"path":"root.deployment.ui.layout.selfservice"}'> </div>
+        </div>
+        <div id="nav-deployment" class="tab-pane fade">
+          <div class="container mt-4">
+            <div class="row mb-4">
+              <div class="col">
+                <div class="row mb-2">
+                  <div class="col">
+                    <h5>Services</h5>
+                  </div>
+                </div>
+                <div class="row mb-1">
+                  <div class="offset-1 col-5">
+                    UI self-service production 2
+                  </div>
+                  <div class="col-md-6">
+                    <button type="button" class="btn btn-secondary"><i class="fas fa-play"></i></button>
+                    <button type="button" class="btn btn-secondary"><i class="fas fa-power-off"></i></button>
+                    <button type="button" class="btn btn-secondary"><i class="fas fa-redo-alt"></i></button>
+                    <button type="button" class="btn btn-secondary"><i class="fas fa-eye"></i></button>
+                  </div>
+                </div>
+                <div class="row mb-1">
+                  <div class="offset-1 col-5">
+                    OPC UA Client - AB01
+                  </div>
+                  <div class="col">
+                    <button type="button" class="btn btn-secondary"><i class="fas fa-play"></i></button>
+                    <button type="button" class="btn btn-secondary"><i class="fas fa-power-off"></i></button>
+                    <button type="button" class="btn btn-secondary"><i class="fas fa-redo-alt"></i></button>
+                    <button type="button" class="btn btn-secondary"><i class="fas fa-eye"></i></button>
+                  </div>
+                </div>
+                <div class="row mb-1">
+                  <div class="offset-1 col-5">
+                    OPC UA Server - EE23
+                  </div>
+                  <div class="col">
+                    <button type="button" class="btn btn-secondary"><i class="fas fa-play"></i></button>
+                    <button type="button" class="btn btn-secondary"><i class="fas fa-power-off"></i></button>
+                    <button type="button" class="btn btn-secondary"><i class="fas fa-redo-alt"></i></button>
+                    <button type="button" class="btn btn-secondary"><i class="fas fa-eye"></i></button>
+                  </div>
+                </div>
+                <div class="row mb-1">
+                  <div class="offset-1 col-5">
+                    Regression model - 23E
+                  </div>
+                  <div class="col">
+                    <button type="button" class="btn btn-secondary"><i class="fas fa-play"></i></button>
+                    <button type="button" class="btn btn-secondary"><i class="fas fa-power-off"></i></button>
+                    <button type="button" class="btn btn-secondary"><i class="fas fa-redo-alt"></i></button>
+                    <button type="button" class="btn btn-secondary"><i class="fas fa-eye"></i></button>
+                  </div>
+                </div>
+                <div class="form-group row mb-1">
+                  <div class="offset-1 col-5">
+                    <select class="form-control">
+                      <option value="" disabled selected></option>
+                      <option>OPC UA Cient</option>
+                      <option>OPC UA Server</option>
+                      <option>Regression Model</option>
+                    </select>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="nav-settings" class="tab-pane fade">
+          <div class="container mt-4">
+            <div class="row mb-4">
+              <div class="col">
+                <div class="card">
+                  <div class="card-header">
+                    Settings
+                  </div>
+                  <div class="card-body">
+                    <div class="form-group row mb-0">
+                      <label class="col">Theme</label>
+                      <div class="col">
+                        <select class="form-control" id="themeSelect">
+                          <option>dark</option>
+                          <option>light</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card-footer">
+                    <button class="btn btn-primary btn-sm" id="applySettings">Apply</button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div id="contextmenu">
 
     </div>
 
     <div id ="doublecheck" class="modal fade" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title" id="doublechecktitle">Are you sure?</h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group row">
-                        <div class="col-12" id="doublechecktext1">deleting something</div>
-                    </div>
-                    <div class="form-group row">
-                        <div class="col-12" id="doublechecktext2">deleting something</div>
-                    </div>
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Abort</button>
-                    <button type="button" class="btn btn-primary" data-dismiss="modal" id ="doublecheckButtonSave">Ok</button>
-                </div>
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title" id="doublechecktitle">Are you sure?</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group row">
+              <div class="col-12" id="doublechecktext1">deleting something</div>
             </div>
+            <div class="form-group row">
+              <div class="col-12" id="doublechecktext2">deleting something</div>
+            </div>
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Abort</button>
+            <button type="button" class="btn btn-primary" data-dismiss="modal" id ="doublecheckButtonSave">Ok</button>
+          </div>
         </div>
+      </div>
     </div>
+
+
+
     <div id="cockpitplaceholder">
+      <div id="cockpit" class="modal fade" role="dialog" path="" style="width: 800px; margin-top: 67;margin-left: 0">
+        <div class="modal-dialog modal-lg" role="dialog" id="cockpitmodal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title" id="doublechecktitl2e"><i class="fas fa-file-import"></i> &nbsp &nbsp Importer Cockpit</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+
+              <ul class="nav nav-tabs bg-secondary" id="myTab" role="tablist">
+                <li class="nav-item">
+                  <a class="nav-link active" id="tab-importer-choose-file" data-toggle="tab" href="#importer-choose-file" role="tab">
+                    (1) Choose File
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link disabled" id="tab-importer-approve-file" data-toggle="tab" href="#importer-approve-file" role="tab">
+                    (2) Approve File 
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link disabled" id="tab-importer-define-header" data-toggle="tab" href="#importer-define-header" role="tab">
+                    (3) Define Header 
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link disabled" id="tab-importer-import" data-toggle="tab" href="#importer-import" role="tab">
+                    (4) Import File 
+                  </a>
+                </li>
+              </ul>
+
+              <div class="tab-content" id="myTabContent">
+
+                <div class="tab-pane fade show active" id="importer-choose-file" role="tabpanel">
+                  <p id="cockpit-importer-choose-file-files">Waiting for file list to load!</p>
+                  <button type="button" class="btn btn-primary" onclick="cockpit_importer_test()">Test</button>
+                </div>
+
+                <div class="tab-pane fade" id="importer-approve-file" role="tabpanel">
+                  <p id="cockpit-importer-approve-file">Waiting for file to approve to load!</p>
+                </div>
+
+                <div class="tab-pane fade" id="importer-define-header" role="tabpanel">
+                  <p id="cockpit-importer-define-header">Waiting for header fields to load!</p>
+                </div>
+
+                <div class="tab-pane fade" id="importer-import" role="tabpanel">
+                  <p id="cockpit-importer-import">Waiting for file to be imported!</p>
+                </div>
 
-              <div id="cockpit" class="modal fade" role="dialog" path="" style="width:600;height:700">
-
-                  <div class="modal-dialog modal-lg" role="dialog" id="cockpitmodal">
-
-                      <div class="modal-content">
-                          <div class="modal-header">
-                              <h4 class="modal-title" id="doublechecktitl2e"><i class="fas fa-gamepad"></i> &nbsp &nbsp Prominent Points Mining Cockpit</h4>
-                              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                          </div>
-                          <div class="modal-body">
-                              <ul class="nav nav-tabs bg-secondary" id="myTab" role="tablist">
-                                  <li class="nav-item">
-                                      <a class="nav-link active" id="tab-cockpit-motif-select" data-toggle="tab" href="#cockpit-motif-select" role="tab">
-                                          Select Motif
-                                      </a>
-                                  </li>
-
-                                  <li class="nav-item">
-                                        <a class="nav-link" id="tab-cockpit-motif-search" data-toggle="tab" href="#cockpit-motif-search" role="tab">
-                                          Search Area
-                                        </a>
-                                  </li>
-
-                                  <li class="nav-item">
-                                        <a class="nav-link" id="tab-cockpit-motif-run" data-toggle="tab" href="#cockpit-motif-run" role="tab">
-                                          Run
-                                        </a>
-                                  </li>
-                              </ul>
-
-                              <div class="tab-content" id="myTabContent">
-
-                                  <div class="tab-pane fade show active" id="cockpit-motif-select" role="tabpanel">
-                                      <br>
-                                      <div class="form-group row">
-                                          <div class="col-3">Selected Motif Path</div>
-                                          <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-path" style="text-align:right;"  > </div>
-                                      </div>
-                                      <div class="form-group row">
-                                          <div class="col-3">Selected Motif Variable</div>
-                                          <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-variable" readonly> </div>
-                                      </div>
-
-                                      <div class="form-group row">
-                                          <div class="col-3">Selected Motif Start Time</div>
-                                          <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-start" readonly> </div>
-                                      </div>
-
-                                      <div class="form-group row">
-                                          <div class="col-3">Selected Motif End Time</div>
-                                          <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-end" readonly> </div>
-                                      </div>
-
-                                      <div class="form-group row">
-                                          <div class="col-3">Current Selection</div>
-                                          <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-current" readonly> </div>
-                                      </div>
-
-                                      <p align="right">
-                                          <button type="button" class="btn btn-primary"   onclick="cockpit_set_filename()">set filename</button>
-                                          <button type="button" class="btn btn-primary"   onclick="cockpit_importer_preview()">importer preview</button>
-                                      </p>
-                                  </div>
-
-                                  <div class="tab-pane fade" id="cockpit-motif-search" role="tabpanel">
-                                      <div class="col-9">
-                                      <br>
-                                      <select class = "custom-select"   multiple="multiple">
-                                          <option >currently not supported 1</option>
-                                      </select>
-                                      <br><br>
-                                      <p align="right">
-                                          <button type="button" class="btn btn-primary"   onclick="cockpit_find_motif()"> apply</button>
-                                      </p>
-                                      </div>
-                                  </div>
-
-
-
-
-
-
-                                  <div class="tab-pane fade" id="cockpit-motif-run" role="tabpanel">
-                                      <br>
-                                      Motif Mining Process &nbsp &nbsp
-                                      <button type="button" class="btn btn-primary"   onclick="cockpit_motif_run()">  run </button>
-                                      &nbsp
-                                      <button type="button" class="btn btn-primary"   onclick="cockpit_motif_stop()"> stop </button>
-                                      <br>
-                                      <br>
-                                      Jump to Results..
-                                      <div class="form-group row">
-                                          <div class="col-3">
-                                             <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump_prev()">   <i class="fas fa-step-backward"></i>previous</button>
-                                          </div>
-                                          <!--
-                                          <div class="col-3 id="doublechecktext12">
-                                              <select class="form-control" id="sel1">
-                                                  <option>loc 1</option>
-                                                  <option>219-08-15T14:44:15.445+02:005</option>
-                                                  <option>3</option>
-                                                  <option>4</option>
-                                              </select>
-                                          </div>
-                                          <div class="col-6">
-                                              <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump_here()">  <i class="fas fa-search-location"></i> here </button>
-                                           -->
-                                          <div class="col-6">
-                                              <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump_next()">  <i class="fas fa-step-forward"></i>next</button>
-                                          </div>
-                                      </div>
-
-
-
-
-
-                                      <div class="progress">
-                                          <div id="cockpit-motif-progress" class="progress-bar" role="progressbar" style="width:50%"></div>
-                                      </div>
-                                  </div>
-
-                              </div>
-
-
-
-
-
-
-
-
-
-                          </div>
-                          <div class="modal-footer">
-
-                              <button type="button" class="btn btn-primary"  data-dismiss="modal" id ="doublecheckButtonSave2">Close</button>
-                          </div>
-                      </div>
-                  <script>
-
-
-
-
-
-
-
-              var cockpiteventSource = 0;
-              var cockpitPath = "";
-              var cockpitWidgetPath = "";
-              function cockpit_init(path)
-              {
-                  cockpitPath = path;
-                  $("#cockpit").attr("path",path);
-
-                  cockpit_importer_add_event_listener()
-                  cockpit_load_settings();
-                  console.log("in cockpit init");
-                  cockpit_motif_init_progress_bar();
-              }
-
-
-
-              
-
-
-              function cockpit_motif_init_progress_bar()
-              {
-                  cockpiteventSource = new EventSource('/event/stream');
-                  cockpiteventSource.addEventListener('motifminer.progress', (e) => {
-                      // Do something - event data will be in e.data,
-                      // message will be of type 'eventType'
-
-                      let data = e.data;
-                      //replace potential single quotes
-                      data = data.replace(/\'/g, "\"");
-                      var valeur=JSON.parse(data).value;
-                      valeur = valeur*100;
-                      console.log("EVENT system.progress" + valeur );
-                      $('#cockpit-motif-progress').css('width', valeur+'%').attr('aria-valuenow', valeur);
-                      if (valeur != 100)
-                      {
-                          $('#cockpit-motif-progress').text(JSON.parse(data).function);
-                      }
-                      else
-                      {
-                          $('#cockpit-motif-progress').text("");
-                      }
-
-                      //update_peak_values();
-                  });
-
-              }
-              function cockpit_close()
-              {
-                  console.log("motif cockpit close");
-                  cockpiteventSource.close();
-              }
-
-
-              function cockpit_motif_run()
-              {
-                  //start the mining process
-                  let path =$("#cockpit").attr("path")+".PPSMiner";
-                  http_post("/_execute",JSON.stringify(path),null,null,null);
-              }
-
-              function cockpit_motif_stop()
-              {
-                  let path =$("#cockpit").attr("path")+".PPSMiner.control.signal";
-                  var query = [{"browsePath":path,"value":"stop"}];
-                  http_post("/setProperties",JSON.stringify(query))
-              }
-
-
-
-              function cockpit_find_motif()
-              {
-
-
-                  let start  =  $("#cockpit-select-motif-start").val();
-                  let end = $("#cockpit-select-motif-end").val();
-
-
-                  var query = [{browsePath:cockpitWidgetPath+".startTime",value:start},{browsePath:cockpitWidgetPath+".endTime",value:end}];
-                  http_post('/setProperties',JSON.stringify(query), null, null, null);
-
-
-              }
-
-              /* move this to cockpit widget later
-              */
-              function cockpit_motif_jump_next()
-              {
-                  cockpit_motif_jump(1);
-              }
-
-              function cockpit_motif_jump_prev()
-              {
-                  cockpit_motif_jump(-1);
-              }
-              function cockpit_motif_jump(inc)
-              {
-                  //start the mining process
-                  let pathInc =$("#cockpit").attr("path")+".peakSearch.jumpInc";
-
-                  var query = [{browsePath:pathInc,value:inc}];
-
-                  http_post('/setProperties',JSON.stringify(query), null, this, (self,status,data,params) => {
-                      if (status>201)
-                      {
-                          //backend responded bad, we must set the frontend back
-
-                          console.log("context_menu_set_visible_elements",status);
-                      }
-                      else
-                      {
-                          let path =$("#cockpit").attr("path")+".peakSearch";
-                          http_post("/_execute",JSON.stringify(path),null,null,null);
-                      }
-                  });
-
-              }
-
-              function cockpit_importer_add_event_listener() {
-
-                  cockpiteventSource = new EventSource('/event/stream');
-                  cockpiteventSource.addEventListener('importer.data_imported', (e) => {
-                    console.log("importer.data_imported", e)
-                  });
-              }
-
-              function cockpit_importer_preview()
-              {
-                http_post("/_execute", cockpitPath+".importer_preview", null, null, (self, status, data, params) => {
-                  console.log("log",status);
-                });
-              }
-
-              function cockpit_set_filename()
-              {
-                  var query = [{ 
-                      browsePath: cockpitPath+".fileName",
-                      value: $("#cockpit-select-motif-path").val(),
-                  }];
-
-                  http_post('/setProperties',JSON.stringify(query), null, this, (self,status,data,params) => {
-                    console.log("log",status);
-                  });
-
-              }
-
-
-              function cockpit_select_motif()
-              {
-
-                  var query=cockpitWidgetPath+".hasAnnotation.selectedAnnotations";
-                  http_post('/_getleaves',JSON.stringify(query), null, this, (self,status,data,params) => {
-                      if (status==200)
-                      {
-                          let motif = JSON.parse(data)[0]["browsePath"];
-                          $("#cockpit-select-motif-path").val(motif);
-                          let path =$("#cockpit").attr("path");
-                          var query = {"deleteExisting":true,"parent":path+".PPSMiner.motif","add":[motif]};
-                          http_post("/_references",JSON.stringify(query),null,null,null);
-                          cockpit_load_settings(); // refresh all values
-                      }
-                  });
-              }
-
-              function cockpit_load_settings()
-              {
-                  http_post("_getbranchpretty",cockpitPath, null,null, function(obj,status,data,params)
-                  {
-                      if (status==200)
-                      {
-                          var pipeLineData = JSON.parse(data);
-                          var minerData = pipeLineData.PPSMiner;
-
-                          //first the motif selection data
-                          var motifPath = minerData.motif[".properties"].leaves[0];
-                          if (motifPath)
-                          {
-                              $("#cockpit-select-motif-path").val(motifPath);
-
-                              http_post("_getbranchpretty",motifPath, null,null, function(obj,status,data,params)
-                              {
-                                  if (status == 200)
-                                  {
-
-                                      var data = JSON.parse(data);
-                                      let variable = data.variable[".properties"].leaves[0];
-                                      let start = data.startTime[".properties"].value;
-                                      let end = data.endTime[".properties"].value;
-                                      $("#cockpit-select-motif-variable").val(variable);
-                                      $("#cockpit-select-motif-start").val(start);
-                                      $("#cockpit-select-motif-end").val(end);
-
-
-                                 }
-                              });
-                          }
-
-                          let widgetPath = minerData.widget[".properties"].leaves[0];
-                          cockpitWidgetPath = widgetPath;
-                          http_post("_getbranchpretty",widgetPath, null,null, function(obj,status,data,params)
-                          {
-                              if (status == 200)
-                              {
-
-                                  var data = JSON.parse(data);
-                                  let selectedAnnotation = data.hasAnnotation.selectedAnnotations[".properties"].leaves[0];
-                                  $("#cockpit-select-motif-current").val(selectedAnnotation);
-                              }
-                          });
-
-                          //now the settings
-                          $("#cockpit-parameters-algorithm").empty(); //delete the selections
-                          var selected = minerData.algorithm[".properties"].value;
-                          for (let opt of minerData.algorithm[".properties"].validation.values)
-                          {
-                              if (opt == selected)
-                              {
-                                  $("#cockpit-parameters-algorithm").append("<option selected>"+JSON.stringify(opt)+"</option>");
-                              }
-                              else
-                              {
-                                  $("#cockpit-parameters-algorithm").append("<option>"+JSON.stringify(opt)+"</option>");
-                              }
-                          }
-
-                          $("#cockpit-parameters-noise").val(JSON.stringify(minerData.addNoise[".properties"].value));
-                          $("#cockpit-parameters-subsampling").val(JSON.stringify(minerData.subSamplingFactor[".properties"].value));
-                          $("#cockpit-parameters-threshold").val(JSON.stringify(pipeLineData.peakSearch.threshold[".properties"].value));
-
-                          $("#cockpit-parameters-polynom").empty();
-                          selected = minerData.subtractPolynomOrder[".properties"].value;
-                          for (let opt of  minerData.subtractPolynomOrder[".properties"].validation.values)
-                          {
-                              if (opt == selected)
-                              {
-                                  $("#cockpit-parameters-polynom").append("<option selected>"+JSON.stringify(opt)+"</option>");
-                              }
-                              else
-                              {
-                                  $("#cockpit-parameters-polynom").append("<option>"+JSON.stringify(opt)+"</option>");
-                              }
-                          }
-
-
-                      }
-                  });
-
-
-
-
-              }
-
-
-
-
-                  </script>
-                  </div>
               </div>
 
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal" id="doublecheckButtonSave2">Close</button>
+            </div>
+          </div>
 
-
-
-
-
-
-
-
-
-
-
+        </div>
+      </div>
 
 
 
 
     </div>
-</div>
+    </div>
 
-
-
-
-
-
-
-
-
-
-</body>
-
-<script>
+  <script src="plugins/importer/index.js"></script>
+  </body>
+  <script>
     // Adjust the navigation item classes when tab starts to load
     $('.nav-link').on('show.bs.tab', function (e) {
-        $('.nav-link.show').removeClass('show');
-        $('.nav-link.active').removeClass('active');
+      $('.nav-link.show').removeClass('show');
+      $('.nav-link.active').removeClass('active');
     });
-</script>
-
+  </script>
 </html>

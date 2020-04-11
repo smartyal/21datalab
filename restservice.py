@@ -34,33 +34,19 @@ TODO:
 have a key to add the time in the answer when query data
  - you can put the variable for time if you know it
  - you can say "addTimeValue=True" in the query to get the time as "time"=....., sometimes you don't know what is the time variable, you just have the variables
-
-
 '''
 
-
-
 #init the logger
-
 logger = logging.getLogger("restservice")
 handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-
 logfile = logging.FileHandler("./log/restservice.log")
 logfile.setFormatter(formatter)
 logger.addHandler(logfile)
-
-
-
 logger.setLevel(logging.DEBUG)
-
-
 bokehPath = "http://localhost:5006/"
-
-
-
 web = flask.Flask(__name__)
 
 # check if the upload folder exists, create it otherwise
@@ -69,7 +55,6 @@ if not os.path.isdir(UPLOAD_FOLDER):
 web.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 '''
-
 WEBCODES ---------------------
 200 ok
 201 ok, created
@@ -112,12 +97,8 @@ POST /_setlen        <setlenquery.json>           -                      # adjus
 POST /_push          [<nodedict.json>]                                   # push a list of nodes into the model, we accept the full dict, no checking whatsoever !! dangerous
 GET  /_upload        -                          [<fileinfo.json>]        # get the list of files in the /upload folder
 POST /_upload       <jquery file upload>                                 # upload files via jquery file upload module-style
+
 data:
-
-
-
-
-
 JSONS ------------------------
 nodedescriptor // a string with the nodeid (number) or the browsepath 
 
