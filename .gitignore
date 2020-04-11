@@ -15,7 +15,8 @@ bootstrap-navbar-sidebar
 bootswatch
 old
 /savetest.model.json
-/web/modules/moment
+web/modules/**
+!web/modules/README.md
 jquery-ui
 jQuery-File-Upload
 .tmp.drivedownload
