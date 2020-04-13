@@ -3,6 +3,7 @@
 import numpy
 import json
 from model import date2secs
+from scipy.ndimage import gaussian_filter
 
 def filter_annotations(annotations, tagsFilter=[]):
     """
@@ -196,6 +197,59 @@ def build_table(variables,indices,imputation=["zero"], rejects=[]):
     Table =  numpy.stack(table, axis=0).T
     print(f"build_table() returns with table size {Table.shape}, numer of vars:{len(newVars)}")
     return Table,newVars
+
+
+
+def build_table_2(variables,indices,imputation=["zero"], rejects=[], smoothFilter=None, diff=False,features =[]):
+    """
+        the imputation are the strategy for missing/non finite values:
+        zero: we put a zero at the place and take the variable, if not given, the variable will be dismissed
+        dismiss: we don't take the varialble at att
+        marker: if set, we put a [0,1,0,0,0,..] marker variable where the missings are
+        use this function for timeseries class-style
+        features is a list of callbacks to be called that creates a feature vector from the data
+
+    """
+    table = []
+    newVars = []
+    for var in variables:
+
+        if any (reject in var.get_browse_path() for reject in rejects):
+            print(f"skip {var.get_browse_path()}")
+            continue #skip this one, #these are the output, they are also part of the table, so they can appear here
+
+        if indices !=[]:
+            val = numpy.asarray(var.get_time_series()["values"], dtype=numpy.float64)[indices] # fancy indexing or mask
+        else:
+            val = numpy.asarray(var.get_time_series()["values"], dtype=numpy.float64)
+
+        # what to do with missing values?
+        if not numpy.isfinite(val).all():
+            if "zero" in imputation:
+                nonFiniteIndices = ~numpy.isfinite(val)
+                val[nonFiniteIndices] = 0 # zero out the inf/nans
+
+
+        if type(smoothFilter) is not type(None):
+            val = gaussian_filter(val, sigma=smoothFilter)
+        if diff:
+            d = numpy.diff(val)
+            val = numpy.append( d,d[-1])
+
+        if features !=[]:
+            for feature in features:
+                feat = feature(val)
+                #print("len of features",len(val),len(feat))
+                table.append(feat)
+        else:
+            table.append(val)
+            newVars.append(var)
+
+    Table =  numpy.stack(table, axis=0).T
+    print(f"build_table() returns with table size {Table.shape}, numer of vars:{len(newVars)}")
+    return Table,newVars
+
+
 
 
 def confusion_percentage(confusionMatrix):
