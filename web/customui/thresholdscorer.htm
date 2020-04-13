@@ -1,0 +1,76 @@
+<div id="cockpit" class="modal fade" role="dialog" path="" style="max-width:100%;width:600;height:auto">
+    <div class="modal-dialog modal-lg" role="dialog" id="cockpitmodal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="doublechecktitl2e"><i class="fas fa-gamepad"></i> &nbsp &nbsp Threshold Evaluation</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+              <br>
+                <div class="form-group row">
+                    <div class="col-6">Evaluate all thresholds for all variables</div>
+
+                </div>
+           </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="btn_eval_thresholds()">Evaluate</button>
+                <button type="button" class="btn btn-primary"  data-dismiss="modal" id ="doublecheckButtonSave2">Cancel</button>
+            </div>
+        </div>
+    <script>
+
+
+
+
+
+
+
+var cockpiteventSource = 0;
+var cockpitPath = "";
+var cockpitWidgetPath = "";
+var thresholds = [];
+var widget = "";
+
+
+function btn_eval_thresholds()
+{
+    //enable scores
+    var query = [widget+".visibleElements"];
+    http_post('/_getvalue',JSON.stringify(query), null, this, (self,status,data,params) => {
+        if (status==200)
+        {
+
+            var value = JSON.parse(data)[0];
+            value.scores = true;
+            value.thresholds = true;
+
+            var query = [{browsePath:widget+".visibleElements",value:value}];
+            http_post("/setProperties",JSON.stringify(query),null,null,(self,status,data,params)=>
+            {
+                if (status==201)
+                {
+                    let path = cockpitPath+".scorer";
+                    http_post("/_execute",JSON.stringify(path),null,null,null);
+                }
+            });
+        }
+
+    });
+
+
+    console.log("enable on widget"+ widget);
+}
+
+
+function cockpit_init(path)
+{
+    cockpitPath = path;
+    widget = $("#cockpit").attr("widget");
+
+}
+
+
+function cockpit_close()
+{
+
+}

@@ -181,16 +181,26 @@ function initialize_progress_bar()
         //replace potential single quotes
         data = data.replace(/\'/g, "\"");
         var valeur=JSON.parse(data).value;
-        valeur = valeur*100;
-        console.log("EVENT system.progress" + valeur );
-        $('.progress-bar').css('width', valeur+'%').attr('aria-valuenow', valeur);
-        if (valeur != 100)
+        if (valeur <= 0)
         {
-            $('.progress-bar').text(JSON.parse(data).function);
+
+            $('.progress-bar').text("");
+            $('.progress-bar').css('width', valeur+'%').attr('aria-valuenow', 0);
         }
+
         else
         {
-            $('.progress-bar').text("");
+            valeur = valeur*100;
+            console.log("EVENT system.progress" + valeur );
+            $('.progress-bar').css('width', valeur+'%').attr('aria-valuenow', valeur);
+            if (valeur != 100)
+            {
+                $('.progress-bar').text(JSON.parse(data).function);
+            }
+            else
+            {
+                $('.progress-bar').text("");
+            }
         }
     });
 
@@ -732,18 +742,19 @@ function context_menu_click_function(option)
 
 function context_menu_click_pipeline(option)
 {
-    console.log("context_menu_click_pipeline, launch   " + option.data);
+    console.log("context_menu_click_pipeline, launch   " + option.data+" from widget "+option.widget);
     //show the cockpit
     var query = [option.data+".cockpit"];
 
-    http_post("_getvalue",JSON.stringify(query), option.data,null, function(obj,status,data,params)
+    http_post("_getvalue",JSON.stringify(query), option,null, function(obj,status,data,params)
     {
         if (status == 200)
         {
-            let path = params;
+            var widget = option.widget;
+            let path = params.data;
             console.log("data");
             var cockpit = JSON.parse(data)[0];
-            launch_cockpit(cockpit,path);
+            launch_cockpit(cockpit,path,widget);
         }
     });
     superCm.destroyMenu(); // hide it
@@ -1251,6 +1262,7 @@ function prepare_context_menu(dataString,modelPath)
                 icon: 'fas fa-gamepad',
                 label: '<font size="3" color="#d9b100">'+splitted[splitted.length -1]+'</font>',
                 data: pipeline,
+                widget: data[".properties"].id,
                 action: function(option, contextMenuIndex, optionIndex){context_menu_click_pipeline(option); }
             };
             menuUserFunctions.push(entry);
@@ -1328,7 +1340,7 @@ function prepare_context_menu(dataString,modelPath)
 
 
 
-function launch_cockpit(url,path)
+function launch_cockpit(url,path,widget)
 {
 
 
@@ -1346,6 +1358,7 @@ function launch_cockpit(url,path)
     cockpit.modal({backdrop: 'static',keyboard: false, focus:false});               //don't close it on click outside
     cockpit.prepend('<style scoped> .modal-backdrop { display: none;}</style>');    //allow click outside
     cockpit.attr("path",path);
+    cockpit.attr("widget",widget); //set the widget for some
     cockpit_init(path);
 
     $('#cockpit').one('hidden.bs.modal', cockpit_close);

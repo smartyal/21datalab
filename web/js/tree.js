@@ -581,6 +581,8 @@ class TreeWidget
                                 }
                             }
                         }
+
+                        /* old style
                         // now make the templates entries
                         for (let template of treeWidgetObject.templates)
                         {
@@ -593,6 +595,28 @@ class TreeWidget
                             menuObject.create.submenu.template.submenu[template]=entry;
 
                         }
+                        */
+                        //first create the template folders
+                        for (let template of treeWidgetObject.templates)
+                        {
+                            var name = template.split('.');
+                            var folderName = name[0];
+                            var folderEntry = {"label":folderName,"submenu":{}};
+                            if (!(folderName in menuObject.create.submenu.template.submenu))
+                            {
+                                var folderEntry = {"label":folderName,"submenu":{}};
+                                menuObject.create.submenu.template.submenu[folderName]=folderEntry;
+                            }
+                            var entry = {
+                                "label":template,
+                                "__templateType":template, //to store it here, so we get it back on the call
+                                "action":function(obj){treeWidgetObject.context_menu_create_template(node,obj.item.__templateType);}
+                            };
+                            menuObject.create.submenu.template.submenu[folderName].submenu[template]=entry;
+
+                        }
+
+
                     }
 
                     //if treeWidgetObject node is a function, execution is also possible
