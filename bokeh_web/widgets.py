@@ -291,10 +291,10 @@ class TimeSeriesWidgetDataServer():
         request = self.path+".table"
         nodes = self.__web_call("post","_getleaves",request)
         #this should return only one node
-        timerefpath = nodes[0]["browsePath"]+".timeField"
+        #timerefpath = nodes[0]["browsePath"]+".timeField"
         #another call to get it right
-        nodes = self.__web_call("post", "_getleaves", timerefpath)
-        self.timeNode = nodes[0]["browsePath"]
+        #nodes = self.__web_call("post", "_getleaves", timerefpath)
+        #self.timeNode = nodes[0]["browsePath"]
   
 
         #now for the annotations
