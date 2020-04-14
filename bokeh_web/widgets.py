@@ -2543,7 +2543,7 @@ class TimeSeriesWidget():
                             marker = self.plot.circle(x="x",y="y", line_color=color, fill_color=color,
                                                       source=self.columnData[variableName], name=markerName,size=3)  # x:"time", y:variableName #the legend must havee different name than the source bug
                 #legend only for lines
-                self.legendItems[variableName] = LegendItem(label=variableName.split('.')[-1],
+                self.legendItems[variableName] = LegendItem(label='.'.join(variableName.split('.')[-2:]),
                                                             renderers=[self.lines[variableName]])
 
             #we set the lines and glypsh to no change their behaviour when selections are done, unfortunately, this doesn't work, instead we now explicitly unselect in the columndatasource
