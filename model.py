@@ -48,7 +48,7 @@ myGlobalDir = os.path.dirname(os.path.realpath(__file__)) # holds the directory 
 
 
 
-def date2secs(value):
+def date2secs(value,ignoreError = True):
     """ converts a date with timezone into float seconds since epoch
     Args:
         value: the date given as either a string or a datetime object
@@ -65,9 +65,16 @@ def date2secs(value):
             timeDelta = date - datetime.datetime(1970, 1, 1, 0, 0,tzinfo=pytz.UTC)
             return timeDelta.total_seconds()
         except:
-            return value
+            if ignoreError:
+                return value
+            else:
+                return None
     else:
-        return value
+        if ignoreError:
+            return value
+        else:
+            return None
+
 
 
 def date2msecs(value):
