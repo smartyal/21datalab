@@ -95,9 +95,11 @@
                         <br>
                         <br>
 
+                        <!--
                         <div class="progress">
                             <div id="cockpit-motif-progress" class="progress-bar" role="progressbar" style="width:50%"></div>
                         </div>
+                        -->
                     </div>
 
                 </div>
@@ -205,6 +207,7 @@ function cockpit_motif_init_progress_bar()
         // Do something - event data will be in e.data,
         // message will be of type 'eventType'
 
+        /* no more progress bar
         let data = e.data;
         //replace potential single quotes
         data = data.replace(/\'/g, "\"");
@@ -220,8 +223,8 @@ function cockpit_motif_init_progress_bar()
         {
             $('#cockpit-motif-progress').text("");
         }
+        */
 
-        //update_peak_values();
         update_number_of_matches();
     });
 

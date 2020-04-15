@@ -639,6 +639,10 @@ def pps_miner(functionNode):
         anno["endTime"] = epochToIsoString(m["time"]+t0, zone=timezone('Europe/Berlin'))
         newAnnotations.append(anno)
 
+    #remove trivial matches (inside a guard area around the motif)
+    guard=(motifEndTime-motifStartTime)/2
+    newAnnotations = [anno for anno in newAnnotations if date2secs(anno["startTime"])<(motifStartTime-guard) or date2secs(anno["startTime"])>motifEndTime+guard]
+
     myModel.disable_observers()
     for anno in newAnnotations:
         # create the annotation in the model
