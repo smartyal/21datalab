@@ -350,7 +350,7 @@ def all(path):
             key = data["resultKey"]
             response = {}
             for node in data["nodes"]:
-                dic=m.get_node_info(node,excludeValue=True)
+                dic=m.get_node_info(node,includeLongValues=includeLong)
                 if key == "browsePath":
                     response[m.get_browse_path(node)]=dic
             response = json.dumps(response, indent=4)  # some pretty printing for debug
