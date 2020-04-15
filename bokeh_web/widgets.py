@@ -471,8 +471,8 @@ class TimeSeriesWidgetDataServer():
                 times = numpy.asarray(r[entry])
                 debug = copy.deepcopy(times.tolist())
                 r[entry]=(times*1000).tolist()
-                print(f"times {debug}")
-                print(f"times {entry} {[epochToIsoString(t) for t in debug]}")
+                #print(f"times {debug}")
+                #print(f"times {entry} {[epochToIsoString(t) for t in debug]}")
         #make them all lists and make all inf/nan etc to nan
         for k,v in r.items():
             r[k]=[value if numpy.isfinite(value) else numpy.nan for value in v]
@@ -2189,7 +2189,7 @@ class TimeSeriesWidget():
             end = anno["endTime"]
             self.boxModifierData.data = {'x': [start, end], 'y': [boxYCenter, boxYCenter], 'width': [5, 5], 'height': [boxYHeight, boxYHeight]}
             self.boxModifierRectHorizontal.visible=True
-            self.boxModifierOldData = copy.deepcopy(self.boxModifierData.data)
+            self.boxModifierOldData = dict(copy.deepcopy(self.boxModifierData.data))
             self.boxModifierVisible = True
             #self.plot.renderers.append(self.boxModifierRectHorizontal)
             self.boxModifierTool.renderers = [self.boxModifierRectHorizontal]  # ,self.boxModifierRectVertical]
@@ -2197,7 +2197,7 @@ class TimeSeriesWidget():
         if anno["type"] == "threshold":
             self.boxModifierData.data = {'x': [boxXCenter, boxXCenter], 'y': [anno['min'], anno['max']], 'width': [boxXWidth,boxXWidth], 'height': [5, 5]}
             self.boxModifierRectVertical.visible=True
-            self.boxModifierOldData = copy.deepcopy(self.boxModifierData.data)
+            self.boxModifierOldData = dict(copy.deepcopy(self.boxModifierData.data))
             self.boxModifierVisible = True
             #self.plot.renderers.append(self.boxModifierRectVertical)
             self.boxModifierTool.renderers = [self.boxModifierRectVertical]
@@ -2235,13 +2235,13 @@ class TimeSeriesWidget():
             #adjust the limits to span the rectangles on full view area
             boxYCenter = float((self.plot.y_range.start + self.plot.y_range.end)/2)
             boxYHeight = (self.plot.y_range.end - self.plot.y_range.start)*4
-            data = copy.deepcopy(self.boxModifierData.data)
+            data = dict(copy.deepcopy(self.boxModifierData.data))
             data['y'] = [boxYCenter, boxYCenter]
             data['height'] = [boxYHeight, boxYHeight]
             self.boxModifierData.data = data
         if anno["type"] == "threshold":
             boxXCenter = float((self.plot.x_range.start + self.plot.x_range.end) / 2)
-            data = copy.deepcopy(self.boxModifierData.data)
+            data = dict(copy.deepcopy(self.boxModifierData.data))
             data['x'] = [boxXCenter, boxXCenter]
             self.boxModifierData.data = data
 
@@ -2342,10 +2342,10 @@ class TimeSeriesWidget():
                 if old!= new:
                     if not self.box_modifier_modify():
                         self.logger.warning("box modifier invalid,  restore")
-                        self.boxModifierData.data = copy.deepcopy(self.boxModifierOldData)
+                        self.boxModifierData.data = dict(copy.deepcopy(self.boxModifierOldData))
 
 
-                    self.boxModifierOldData = copy.deepcopy(self.boxModifierData.data)
+                    self.boxModifierOldData = dict(copy.deepcopy(self.boxModifierData.data))
 
             except Exception as ex:
                 self.logger.error(f"check_boxes {ex}")

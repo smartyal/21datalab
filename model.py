@@ -2434,8 +2434,9 @@ class Model:
                     #controlNode.get_child("signal").set_value("nosignal") #delete the signal
                     controlNode.get_child("status").set_value("finished")
                     controlNode.get_child("executionCounter").set_value(controlNode.get_child("executionCounter").get_value()+1)
-                    controlNode.get_child("progress").set_value(1)
-                    self.__dispatch(self.reset_progress_bar,1,controlNode)
+                    if controlNode.get_child("progress").get_value() != 0:
+                        #if the progress was used, we reset it
+                        self.__dispatch(self.reset_progress_bar,1,controlNode)
                     #controlNode.get_child("progress").set_value(0)
                     if result == True:
                         controlNode.get_child("result").set_value("ok")

@@ -532,6 +532,8 @@ def pps_miner(functionNode):
     myModel = functionNode.get_model()
     motifs = myWidget.get_child("hasAnnotation").get_child("selectedAnnotations").get_leaves()
     annotations = functionNode.get_child("annotations")
+    progressNode = functionNode.get_child("control").get_child("progress")
+    progressNode.set_value(0)
 
 
 
@@ -608,6 +610,8 @@ def pps_miner(functionNode):
     motifY1 = mnh.pps_prep(motifY0,filter=preFilter,poly=subtractPolynomOrder, diff=differentiate, postFilter = postFilter)
     motifPPS = mnh.prominent_points(motifY1,motifX)
 
+
+
     ####################################
     #get the time series
     ####################################
@@ -623,6 +627,7 @@ def pps_miner(functionNode):
     ####################################
     # MINING
     ####################################
+    progressNode.set_value(0.3)
     matches = mnh.pps_mining(motifPPS['pps'], pps['pps'], timeRanges = timeRanges, valueRanges = valueRanges, typeFilter=typeFilter, motifStartIndex=0, debug=False)
     print(f"{len(matches)} matches: {[secs2date(t0+m['time']).isoformat() for m in matches]}")
 
@@ -643,6 +648,7 @@ def pps_miner(functionNode):
     guard=(motifEndTime-motifStartTime)/2
     newAnnotations = [anno for anno in newAnnotations if date2secs(anno["startTime"])<(motifStartTime-guard) or date2secs(anno["startTime"])>motifEndTime+guard]
 
+    progressNode.set_value(0.6)
     myModel.disable_observers()
     for anno in newAnnotations:
         # create the annotation in the model
@@ -655,5 +661,6 @@ def pps_miner(functionNode):
     #also write the peaks
     peaks = [epochToIsoString(m["time"]+t0, zone=timezone('Europe/Berlin')) for m in matches]
     functionNode.get_child("peaks").set_value(peaks)
+    progressNode.set_value(1)
 
     return True
