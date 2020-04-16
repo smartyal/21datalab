@@ -289,8 +289,9 @@
 
 
     <div id="cockpitplaceholder">
-      <div id="cockpit" class="modal fade" role="dialog" path="" style="width: 800px; margin-top: 67;margin-left: 0">
-        <div class="modal-dialog modal-lg" role="dialog" id="cockpitmodal">
+
+      <div id="cockpit" class="modal fade" role="dialog" path="" style="margin-top: 67;margin-left: 0">
+        <div class="modal-dialog modal-xl" role="dialog" id="cockpitmodal">
           <div class="modal-content">
             <div class="modal-header">
               <h4 class="modal-title" id="doublechecktitl2e"><i class="fas fa-file-import"></i> &nbsp &nbsp Importer Cockpit</h4>
@@ -298,53 +299,54 @@
             </div>
             <div class="modal-body">
 
+                <button type="button" class="btn btn-primary" onclick="cockpit_importer_test()">Test</button>
+
               <ul class="nav nav-tabs bg-secondary" id="myTab" role="tablist">
                 <li class="nav-item">
-                  <a class="nav-link active" id="tab-importer-choose-file" data-toggle="tab" href="#importer-choose-file" role="tab">
-                    (1) Choose File
-                  </a>
+                  <a class="nav-link active" id="tab1" data-toggle="tab" href="#tabpane1" role="tab">(1) Choose File</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link disabled" id="tab-importer-approve-file" data-toggle="tab" href="#importer-approve-file" role="tab">
-                    (2) Approve File 
-                  </a>
+                  <a class="nav-link disabled" id="tab2" data-toggle="tab" href="#tabpane2" role="tab">(2) Approve File</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link disabled" id="tab-importer-define-header" data-toggle="tab" href="#importer-define-header" role="tab">
-                    (3) Define Header 
-                  </a>
+                  <a class="nav-link disabled" id="tab3" data-toggle="tab" href="#tabpane3" role="tab">(3) Define Header</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link disabled" id="tab-importer-import" data-toggle="tab" href="#importer-import" role="tab">
-                    (4) Import File 
-                  </a>
+                  <a class="nav-link disabled" id="tab4" data-toggle="tab" href="#tabpane4" role="tab">(4) Define Table</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link disabled" id="tab5" data-toggle="tab" href="#tabpane5" role="tab">(5) Finish</a>
                 </li>
               </ul>
 
               <div class="tab-content" id="myTabContent">
 
-                <div class="tab-pane fade show active" id="importer-choose-file" role="tabpanel">
-                  <p id="cockpit-importer-choose-file-files">Waiting for file list to load!</p>
-                  <button type="button" class="btn btn-primary" onclick="cockpit_importer_test()">Test</button>
+
+                <div class="tab-pane fade show active" id="tabpane1" role="tabpanel">
+                  <p id="importer-content-1">Loading!</p>
                 </div>
 
-                <div class="tab-pane fade" id="importer-approve-file" role="tabpanel">
-                  <p id="cockpit-importer-approve-file">Waiting for file to approve to load!</p>
+                <div class="tab-pane fade" id="tabpane2" role="tabpanel">
+                  <p id="importer-content-2">Loading!</p>
                 </div>
 
-                <div class="tab-pane fade" id="importer-define-header" role="tabpanel">
-                  <p id="cockpit-importer-define-header">Waiting for header fields to load!</p>
+                <div class="tab-pane fade" id="tabpane3" role="tabpanel">
+                  <p id="importer-content-3">Loading!</p>
                 </div>
 
-                <div class="tab-pane fade" id="importer-import" role="tabpanel">
-                  <p id="cockpit-importer-import">Waiting for file to be imported!</p>
+                <div class="tab-pane fade" id="tabpane4" role="tabpanel">
+                  <p id="importer-content-4">Loading!</p>
+                </div>
+
+                <div class="tab-pane fade" id="tabpane5" role="tabpanel">
+                  <p id="importer-content-5">Loading!</p>
                 </div>
 
               </div>
 
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-primary" data-dismiss="modal" id="doublecheckButtonSave2">Close</button>
+              <button type="button" class="btn btn-warning" data-dismiss="modal" id="doublecheckButtonSave2">Close</button>
             </div>
           </div>
 

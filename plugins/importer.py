@@ -1,7 +1,9 @@
 from system import __functioncontrolfolder
 from model import date2secs
+import logging
 import pandas as pd 
 import os
+import json
 
 importerPreviewTemplate = {
     "name":"importerPreview",
@@ -63,45 +65,61 @@ def importer_preview(functionNode):
     # --- return
     return True
 
-def importer_import(functionNode):
-    logger = functionNode.get_logger()
-    logger.info("=========================================================> importer_import")
+def importer_import(iN):
 
-    logger.info(f"=========================================================> functionNode {functionNode}")
+    # --- define vars
+    model = iN.get_model()
+    tablename = model.get_node("root").get_child('importer').get_child('tablename').get_value()
+    table = model.get_node("root").get_child('imports').get_child(tablename)
 
-    # Node apis
-    table = functionNode.get_child("table")
-    logger.info(f"========================================================> tableNode {table}")
-
-    #  table = tableNode.get_target()
-    logger.info(f"========================================================> table {table}")
-
+    # --- create needed nodes
+    model.delete_node(f'root.imports.{tablename}.variables')
+    model.delete_node(f'root.imports.{tablename}.columns')
+    table.create_child('variables', type="folder")
+    table.create_child('columns', type="referencer")
     vars = table.get_child("variables")
     cols = table.get_child("columns")
 
-    # delete var (later)
+    # --- read metadata and fields
+    metadataRaw = table.get_child('metadata').get_value()
+    metadata = json.loads(metadataRaw)
+    fields = metadata["fields"] 
 
-    # add var
-    val1 = vars.create_child("val1", type="timeseries")
-    val2 = vars.create_child("val2", type="timeseries")
+    # --- set vars
+    for field in fields:
+        fieldname = field["val"]
+        fieldvar = vars.create_child(fieldname, type="timeseries")
+        cols.add_references(fieldvar)
+        _helper_log(f"val: {fieldname}")
 
-    # add cols
-    cols.add_references([ val1, val2 ])
+    #  # delete var (later)
 
-    # create values
-    data = {
-        "time": [ "2020-01-03T08:00:00.000+02:00", "2020-01-03T09:00:00.000+02:00" ],
-        "val1": [ 11.1, 12.4 ],
-        "val2": [ 1, 2 ],
-    }
+    #  # add var
+    #  val1 = vars.create_child("val1", type="timeseries")
+    #  val2 = vars.create_child("val2", type="timeseries")
 
-    # list comprehension
-    epochs = [date2secs(time) for time in data["time"]]
+    #  # add cols
+    #  cols.add_references([ val1, val2 ])
 
-    # set values
-    val1.set_time_series(values=data["val1"],times=epochs)
-    val2.set_time_series(values=data["val2"],times=epochs)
+    #  # create values
+    #  data = {
+    #      "time": [ "2020-01-03T08:00:00.000+02:00", "2020-01-03T09:00:00.000+02:00" ],
+    #      "val1": [ 11.1, 12.4 ],
+    #      "val2": [ 1, 2 ],
+    #  }
 
-    logger.info(f"========================================================> IMPORTER DONE")
+    #  # list comprehension
+    #  epochs = [date2secs(time) for time in data["time"]]
+
+    #  # set values
+    #  val1.set_time_series(values=data["val1"],times=epochs)
+    #  val2.set_time_series(values=data["val2"],times=epochs)
+
+    #  logger.info(f"========================================================> IMPORTER DONE")
 
     return True
+
+def _helper_log(text):
+    logging.warning('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+    logging.warning(text)
+    logging.warning('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
