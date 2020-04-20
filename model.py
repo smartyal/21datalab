@@ -2594,6 +2594,29 @@ class Model:
                 self.logger.error(f"problem moving {nodeIds} to new parent {parentId} this is critical, the model can be messed up {ex}")
             return True
 
+    def clean_ts_entries(self):
+        """
+            remove timeseries data that has no node and remove nodes (timeseries that have no timeseries data
+
+
+        """
+        self.logger.debug("clean_ts_entries(): check consistency of model and timeseries table..")
+        deleteNodes = []
+        for id, node in self.model.items():
+            if node["type"] == "timeseries":
+                info = self.ts.get_info(id)
+                if "not found" in info:
+                    self.logger.info(f" {node['name']}: has no time series date entry in the ts table, remove node")
+                    deleteNodes.append(id)
+        for id in deleteNodes:
+            self.delete_node(id)
+
+        deleteTs=[]
+        for id in self.ts.get_items():
+            if id not in self.model:
+                self.logger.info(f" timeseries data {id} has no corresponding node in model .. delete the ts-data")
+                self.ts.delete(id)
+
 
     def load(self,fileName,includeData = True):
         """
@@ -2669,10 +2692,11 @@ class Model:
                                     if id == timeId:
                                         continue
                                     self.ts.set(id,times=times)
-
+                    self.clean_ts_entries()  # make sure the model and ts table is consistent
                 self.enable_observers()
                 self.publish_event(f"loading model {fileName} done.")
                 self.model["1"]["version"]=self.version #update the version
+
                 result = True
             except Exception as e:
                 self.logger.error("problem loading"+str(e))
@@ -2681,6 +2705,7 @@ class Model:
                 result = False
 
             self.update() # automatically adjust all widgets and other known templates to the latest style
+
 
         return result
 
