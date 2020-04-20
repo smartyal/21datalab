@@ -20,7 +20,7 @@ import sse
 import pytz
 
 
-from bokeh.models import DatetimeTickFormatter, ColumnDataSource, BoxSelectTool, BoxAnnotation, Label, LegendItem, Legend, HoverTool, BoxEditTool, TapTool
+from bokeh.models import DatetimeTickFormatter, ColumnDataSource, BoxSelectTool, BoxAnnotation, Label, LegendItem, Legend, HoverTool, BoxEditTool, TapTool, Circle
 from bokeh.models import Range1d,DataRange1d, Span,LinearAxis
 from bokeh import events
 from bokeh.models.widgets import RadioButtonGroup, Paragraph, Toggle, MultiSelect, Button, Select, CheckboxButtonGroup,Dropdown
@@ -764,6 +764,8 @@ class TimeSeriesWidget():
         self.renderersGarbage = [] # a list of renderers to be deleted when time allowes
 
         self.autoAdjustY = True # autoscaling of the y axis
+        self.annoHovers=[]      #holding the objects for hovering annotatios (extra glyph, eg. a circle)
+
 
 
         self.__init_figure() #create the graphical output
@@ -1763,6 +1765,10 @@ class TimeSeriesWidget():
             if not self.server.is_score_variable(k):
                 self.logger.debug(f"add line {k} t hover")
                 renderers.append(v)
+
+        for h in self.annoHovers:
+            #print(f"add hover {h}")
+            renderers.append(h)
 
         if not self.hoverTool:
             #we do this only once
@@ -3206,6 +3212,21 @@ class TimeSeriesWidget():
 
             # bokeh hack to avoid adding the renderers directly: we create a renderer from the glyph and store it for later bulk assing to the plot
             # which is a lot faster than one by one
+
+            if 0: #this was a trial for an extra object to hover the annotations
+                dic = {"y": [0],
+                       "x": [start+(end-start)/20],
+                       "w":[end-start],
+                       "h":[infinity],
+                       "l":[start],
+                       "r":[end-start],
+                       "t":[infinity],
+                       "b":[-infinity],
+                       "f":[0.9]}
+                col = ColumnDataSource(dic)
+                # the only glyph that worked for hovering was the circle, rect, quad did not work
+                #annoHover = self.plot.circle(x="x", y="f",size=15, fill_color="white",fill_alpha=0.5,source=col,name="annohover",y_range_name="y2",line_color="white",line_width=2) #works
+                 #self.annoHovers.append(annoHover)
 
             if visible:
                 self.add_renderers([myrenderer])
