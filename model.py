@@ -2473,16 +2473,20 @@ class Model:
                         if controlNode.get_child("result").get_value() == "pending":
                             #if the functions hasn't set anything else
                             controlNode.get_child("result").set_value("error")
+                        #also publish this result
+                        self.publish_event("error in " + str(functionName) + ": " + controlNode.get_child("result").get_value())
                 except:
                     self.logger.error("problem setting results from execution of #"+str(id))
                     pass
 
 
         except Exception as ex:
-            self.logger.error("error inside execution thread, id " +str(id)+" functionname"+str(functionName)+str(sys.exc_info()[1])+" "+str(ex)+" "+str(traceback.format_exc()))
+            errorString = str(sys.exc_info()[1])
+            self.logger.error("error inside execution thread, id " +str(id)+" functionname"+str(functionName)+errorString+" "+str(ex)+" "+str(traceback.format_exc()))
             controlNode.get_child("status").set_value("interrupted")
-            controlNode.get_child("result").set_value("error")
+            controlNode.get_child("result").set_value("error:"+errorString)
             controlNode.get_child("progress").set_value(0)
+            self.publish_event("error in "+str(functionName)+": "+errorString)
         return
 
     def get_error(self):

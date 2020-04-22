@@ -238,7 +238,7 @@ def prominent_points(y,times=None):
             entry = {"type": "max", "index": index, "time": times[index],"d2":d2[index],"value":y[index]}
             result.append(entry)
         else:
-            print("undecides for min/max")
+            print(f"undecides for min/max {d2[index]}")
 
     totalResult = {"pps":result,"max":maxi,"min":mini,"rising":rising,"turnL":turnL,"turnR":turnR}
 
