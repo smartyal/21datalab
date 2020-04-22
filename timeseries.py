@@ -260,6 +260,14 @@ class TimeSeriesTable:
         self.store = {}
         self.allocSize = allocSize
 
+    def get_items(self):
+        """
+            Returns:
+                a list of keys which are the ids of the timeseries stored here
+
+        """
+        return list(self.store.keys()) # this makes a copy
+
     def create(self,name):
         self.store[name]=TimeSeries(allocSize=self.allocSize)
         return True

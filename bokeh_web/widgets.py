@@ -32,7 +32,7 @@ from bokeh.themes import Theme
 from pytz import timezone
 from bokeh.models.glyphs import Rect
 from bokeh.models.glyphs import Quad
-from bokeh.models.glyphs import VArea
+from bokeh.models.glyphs import VArea,VBar
 
 from bokeh.models.renderers import GlyphRenderer
 
@@ -2195,7 +2195,7 @@ class TimeSeriesWidget():
             end = anno["endTime"]
             self.boxModifierData.data = {'x': [start, end], 'y': [boxYCenter, boxYCenter], 'width': [5, 5], 'height': [boxYHeight, boxYHeight]}
             self.boxModifierRectHorizontal.visible=True
-            self.boxModifierOldData = copy.deepcopy(self.boxModifierData.data)
+            self.boxModifierOldData = dict(copy.deepcopy(self.boxModifierData.data))
             self.boxModifierVisible = True
             #self.plot.renderers.append(self.boxModifierRectHorizontal)
             self.boxModifierTool.renderers = [self.boxModifierRectHorizontal]  # ,self.boxModifierRectVertical]
@@ -2203,7 +2203,7 @@ class TimeSeriesWidget():
         if anno["type"] == "threshold":
             self.boxModifierData.data = {'x': [boxXCenter, boxXCenter], 'y': [anno['min'], anno['max']], 'width': [boxXWidth,boxXWidth], 'height': [5, 5]}
             self.boxModifierRectVertical.visible=True
-            self.boxModifierOldData = copy.deepcopy(self.boxModifierData.data)
+            self.boxModifierOldData = dict(copy.deepcopy(self.boxModifierData.data))
             self.boxModifierVisible = True
             #self.plot.renderers.append(self.boxModifierRectVertical)
             self.boxModifierTool.renderers = [self.boxModifierRectVertical]
@@ -2241,13 +2241,13 @@ class TimeSeriesWidget():
             #adjust the limits to span the rectangles on full view area
             boxYCenter = float((self.plot.y_range.start + self.plot.y_range.end)/2)
             boxYHeight = (self.plot.y_range.end - self.plot.y_range.start)*4
-            data = copy.deepcopy(self.boxModifierData.data)
+            data = dict(copy.deepcopy(self.boxModifierData.data))
             data['y'] = [boxYCenter, boxYCenter]
             data['height'] = [boxYHeight, boxYHeight]
             self.boxModifierData.data = data
         if anno["type"] == "threshold":
             boxXCenter = float((self.plot.x_range.start + self.plot.x_range.end) / 2)
-            data = copy.deepcopy(self.boxModifierData.data)
+            data = dict(copy.deepcopy(self.boxModifierData.data))
             data['x'] = [boxXCenter, boxXCenter]
             self.boxModifierData.data = data
 
@@ -2255,8 +2255,13 @@ class TimeSeriesWidget():
         if anno["type"]=="time":
             if self.find_renderer(anno["id"]):
                 if anno["rendererType"] == "VArea":
-                    source=self.renderers[anno["id"]]["source"]
+                    source = self.renderers[anno["id"]]["source"]
                     source.patch({'x':[ (0,anno["startTime"]),(1,anno["endTime"]) ]})
+                elif anno["rendererType"] == "VBar":
+                    source = self.renderers[anno["id"]]["source"]
+                    start = anno["startTime"]
+                    end = anno["endTime"]
+                    source.patch({'x':[(0,start + (end - start) / 2)],'w':[(0,end-start)]})
                 else:
                     #boxannotation must be recreated
                     self.remove_renderers(anno["id"])
@@ -2343,10 +2348,10 @@ class TimeSeriesWidget():
                 if old!= new:
                     if not self.box_modifier_modify():
                         self.logger.warning("box modifier invalid,  restore")
-                        self.boxModifierData.data = copy.deepcopy(self.boxModifierOldData)
+                        self.boxModifierData.data = dict(copy.deepcopy(self.boxModifierOldData))
 
 
-                    self.boxModifierOldData = copy.deepcopy(self.boxModifierData.data)
+                    self.boxModifierOldData = dict(copy.deepcopy(self.boxModifierData.data))
 
             except Exception as ex:
                 self.logger.error(f"check_boxes {ex}")
@@ -3091,10 +3096,22 @@ class TimeSeriesWidget():
             infinity = 1000000
             # we must use varea, as this is the only one glyph that supports hatches and does not create a blue box when zooming out
             # self.logger.debug(f"have pattern with hatch {pattern}, tag {tag}, color{color} ")
-            source = ColumnDataSource(dict(x=[start, end], y1=[-infinity, -infinity], y2=[infinity, infinity]))
 
+            """
+            source = ColumnDataSource(dict(x=[start, end], y1=[-infinity, -infinity], y2=[infinity, infinity]))
             area = VArea(x="x", y1="y1", y2="y2",
                          fill_color="black",
+                         name=anno["id"],
+                         fill_alpha=0.2,
+                         hatch_color=color,
+                         hatch_pattern="v",
+                         hatch_alpha=0.5)
+            
+            """
+            # this overcomes the bokeh bug that on super zoom, the hatch pattern of varea disappears:
+            # Vbar behaves correctly
+            source = ColumnDataSource(dict(x=[start+(end-start)/2], t=[infinity], b=[-infinity],w=[end-start]))
+            area = VBar(x="x", top="t", bottom="b", width="w", fill_color="black",
                          name=anno["id"],
                          fill_alpha=0.2,
                          hatch_color=color,
@@ -3154,9 +3171,11 @@ class TimeSeriesWidget():
             infinity=1000000
             # we must use varea, as this is the only one glyph that supports hatches and does not create a blue box when zooming out
             #self.logger.debug(f"have pattern with hatch {pattern}, tag {tag}, color{color} ")
-            source = ColumnDataSource(dict(x=[start, end], y1=[-infinity, -infinity], y2=[infinity, infinity]))
+            
 
             if not pattern is None:
+                """
+                source = ColumnDataSource(dict(x=[start, end], y1=[-infinity, -infinity], y2=[infinity, infinity]))
                 area = VArea(x="x",y1="y1",y2="y2",
                                     fill_color=color,
                                     name=anno["id"],
@@ -3164,9 +3183,21 @@ class TimeSeriesWidget():
                                     hatch_color="black",
                                     hatch_pattern=pattern,
                                     hatch_alpha=1.0)
+                rendererType = "VArea"
+                """
+                source = ColumnDataSource(dict(x=[start + (end - start) / 2], t=[infinity], b=[-infinity], w=[end - start]))
+                area = VBar(x="x", top="t", bottom="b", width="w",
+                            fill_color=color,
+                            name=anno["id"],
+                            fill_alpha=globalAnnotationsAlpha,
+                            hatch_color="black",
+                            hatch_pattern=pattern,
+                            hatch_alpha=1.0)
+                
+                
                 myrenderer = GlyphRenderer(data_source=source, glyph=area, name=anno['id'])
                 myrenderer.level = globalThresholdsLevel
-                rendererType = "VArea"
+                rendererType = "VBar"
             else:
                 #we use a Boxannotation as this is a lot more efficient in bokeh
                 """ 
@@ -3175,8 +3206,8 @@ class TimeSeriesWidget():
                                     name=anno["id"],
                                     fill_alpha=globalAlpha)
                 """
-
-                myrenderer = BoxAnnotation(left=start ,right=end,fill_color=color,fill_alpha=globalAnnotationsAlpha,name=anno['id'],level=globalAnnotationLevel)
+                source = None
+                myrenderer = BoxAnnotation(left=start,right=end,fill_color=color,fill_alpha=globalAnnotationsAlpha,name=anno['id'],level=globalAnnotationLevel)
                 rendererType = "BoxAnnotation"
 
             # bokeh hack to avoid adding the renderers directly: we create a renderer from the glyph and store it for later bulk assing to the plot
@@ -3211,86 +3242,6 @@ class TimeSeriesWidget():
 
 
 
-    def draw_annotation_old(self, modelPath, add_layout = True):
-        """
-            draw one time annotation on the plot
-            Args:
-             modelPath(string): the path to the annotation, the modelPath-node must contain children startTime, endTime, colors, tags
-        """
-        try:
-            self.logger.debug(f"draw_annotation  {modelPath}, add layout {add_layout}")
-            annotations = self.server.get_annotations()
-
-            if annotations[modelPath]["type"]!= "time":
-                return # we only want the time annotations
-            settings = self.server.get_settings()
-            #now get the first tag, we only use the first
-            tag = annotations[modelPath]["tags"][0]
-            #if tag not in settings["tags"]:
-            #    self.logger.warning(f"ignored tag {modelPath}, as {tag} is not in list of annotations: {settings['tags']}")
-            #    return None
-
-            try: # to set color and pattern
-                if type(settings["colors"]) is list:
-                    tagIndex = settings["tags"].index(tag)
-                    pattern = None
-                    color = settings["colors"][tagIndex]
-                elif type(settings["colors"]) is dict:
-                    color = settings["colors"][tag]["color"]
-                    pattern = settings["colors"][tag]["pattern"]
-                    if not pattern is None:
-                        if pattern not in [" ",".","o","-","|","+",":","@","/","\\","x",",","`","v",">","*"]:
-                            pattern = 'x'
-            except:
-                color = None
-                pattern = None
-            if not color:
-                self.logger.error("did not find color for boxannotation")
-                color = "red"
-
-            start = annotations[modelPath]["startTime"]
-            end = annotations[modelPath]["endTime"]
-
-            infinity=1000000
-            # we must use varea, as this is the only one glyph that supports hatches and does not create a blue box when zooming out
-            #self.logger.debug(f"have pattern with hatch {pattern}, tag {tag}, color{color} ")
-            if not pattern is None:
-                newAnno = self.plot.varea(x=[start,end],
-                                          y1=[-infinity,-infinity],
-                                          y2=[infinity,infinity],
-                                          fill_color=color,
-                                          hatch_color="black",
-                                          hatch_pattern=pattern,
-                                          hatch_alpha=1,
-                                          name=modelPath,
-                                          fill_alpha=globalAlpha)
-            else:
-                #no pattern
-                newAnno = self.plot.varea(x=[start, end],
-                                          y1=[-infinity, -infinity],
-                                          y2=[infinity, infinity],
-                                          fill_color=color,
-                                          name=modelPath,
-                                          fill_alpha=globalAlpha)
-
-
-
-            if not add_layout:
-                self.remove_renderers(renderers=[newAnno])
-
-            self.annotations[modelPath]=newAnno # put it in the annotation store for later
-
-            if add_layout:
-                #already added
-                pass
-            else:
-                return newAnno
-        except Exception as ex:
-            self.logger.error("error draw annotation"+modelPath+" : "+str(ex))
-
-        #this is an example for labelling
-        #label = Label(x=((end-start)*0.25+start), y=50, y_units='screen', text=modelPath,text_font_size='0.8em', angle=3.1415/2)
-        #self.plot.add_layout(label)
 
 
     def find_thresholds_of_line(self,path):
