@@ -2065,14 +2065,15 @@ class TimeSeriesWidget():
 
     def box_modifier_init(self):
         self.logger.debug("box_modifier_init")
+        self.boxModifierWidth = 8
 
         b1 = date2secs(datetime.datetime(2015, 2, 13, 3, tzinfo=pytz.UTC)) * 1000
         b2 = date2secs(datetime.datetime(2015, 2, 13, 4, tzinfo=pytz.UTC)) * 1000
         wid = 20 * 60 * 1000  # 20 min
-        self.boxModifierData = ColumnDataSource( {'x': [b1, b2], 'y': [0, 0], 'width': [5, 5], 'height': [300, 300] })
+        self.boxModifierData = ColumnDataSource( {'x': [b1, b2], 'y': [0, 0], 'width': [self.boxModifierWidth, self.boxModifierWidth], 'height': [300, 300] })
 
-        self.boxModifierRectHorizontal = self.plot.rect('x', 'y', 'width', 'height', source=self.boxModifierData, width_units="screen",line_width=5,line_dash="dotted",line_color="white",fill_color="black" )  # , height_units="screen")#, height_units="screen")
-        self.boxModifierRectVertical = self.plot.rect('x', 'y', 'width', 'height', source=self.boxModifierData, height_units="screen",line_width=5,line_dash="dotted",line_color="white",fill_color="black")  # , height_units="screen")#, height_units="screen")
+        self.boxModifierRectHorizontal = self.plot.rect('x', 'y', 'width', 'height', source=self.boxModifierData, width_units="screen",line_width=1,line_dash="dotted",line_color="white",fill_color="white" )  # , height_units="screen")#, height_units="screen")
+        self.boxModifierRectVertical = self.plot.rect('x', 'y', 'width', 'height', source=self.boxModifierData, height_units="screen",line_width=1,line_dash="dotted",line_color="white",fill_color="white")  # , height_units="screen")#, height_units="screen")
 
         self.boxModifierRectHorizontal.data_source.on_change("selected", self.box_cb)
         self.boxModifierRectVertical.data_source.on_change("selected", self.box_cb)
@@ -2193,7 +2194,7 @@ class TimeSeriesWidget():
         if anno["type"] in ["time","motif"]:
             start = anno["startTime"]
             end = anno["endTime"]
-            self.boxModifierData.data = {'x': [start, end], 'y': [boxYCenter, boxYCenter], 'width': [5, 5], 'height': [boxYHeight, boxYHeight]}
+            self.boxModifierData.data = {'x': [start, end], 'y': [boxYCenter, boxYCenter], 'width': [self.boxModifierWidth, self.boxModifierWidth], 'height': [boxYHeight, boxYHeight]}
             self.boxModifierRectHorizontal.visible=True
             self.boxModifierOldData = dict(copy.deepcopy(self.boxModifierData.data))
             self.boxModifierVisible = True
@@ -2201,7 +2202,7 @@ class TimeSeriesWidget():
             self.boxModifierTool.renderers = [self.boxModifierRectHorizontal]  # ,self.boxModifierRectVertical]
 
         if anno["type"] == "threshold":
-            self.boxModifierData.data = {'x': [boxXCenter, boxXCenter], 'y': [anno['min'], anno['max']], 'width': [boxXWidth,boxXWidth], 'height': [5, 5]}
+            self.boxModifierData.data = {'x': [boxXCenter, boxXCenter], 'y': [anno['min'], anno['max']], 'width': [boxXWidth,boxXWidth], 'height': [self.boxModifierWidth, self.boxModifierWidth]}
             self.boxModifierRectVertical.visible=True
             self.boxModifierOldData = dict(copy.deepcopy(self.boxModifierData.data))
             self.boxModifierVisible = True
