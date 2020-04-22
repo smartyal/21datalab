@@ -265,7 +265,8 @@ class TimeSeriesTable:
         return True
 
     def delete(self,name):
-        del self.store[name]
+        if name in self.store:
+            del self.store[name]
         return True
 
     def clear(self):

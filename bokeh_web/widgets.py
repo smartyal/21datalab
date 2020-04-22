@@ -2792,7 +2792,7 @@ class TimeSeriesWidget():
             #tags = self.server.get_settings()["tags"]
             #mytag = self.annotationTags[option]
             for k,v in self.columnData.items():
-                #v.selected =Selection(indices=[]) not allowed in bokeh 2.01 f
+                v.selected =Selection(indices=[]) #not allowed in bokeh 2.01 f
                 pass
 
             mytag =self.currentAnnotationTag
