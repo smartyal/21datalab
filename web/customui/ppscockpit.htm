@@ -254,16 +254,7 @@ function cockpit_motif_stop()
 
 function cockpit_find_motif()
 {
-
-
-    let start  =  $("#cockpit-select-motif-start").val();
-    let end = $("#cockpit-select-motif-end").val();
-
-
-    var query = [{browsePath:cockpitWidgetPath+".startTime",value:start},{browsePath:cockpitWidgetPath+".endTime",value:end}];
-    http_post('/setProperties',JSON.stringify(query), null, null, null);
-
-
+    cockpit_motif_jump(0); //special call, use "0" to tell the function that we actually jump to the motif
 }
 
 
