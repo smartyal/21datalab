@@ -2469,12 +2469,14 @@ class Model:
                     #controlNode.get_child("progress").set_value(0)
                     if result == True:
                         controlNode.get_child("result").set_value("ok")
+                        self.publish_event("result of " + str(functionName) + ": " + controlNode.get_child("result").get_value())
                     else:
                         if controlNode.get_child("result").get_value() == "pending":
                             #if the functions hasn't set anything else
                             controlNode.get_child("result").set_value("error")
                         #also publish this result
                         self.publish_event("error in " + str(functionName) + ": " + controlNode.get_child("result").get_value())
+
                 except:
                     self.logger.error("problem setting results from execution of #"+str(id))
                     pass
@@ -2835,10 +2837,12 @@ class Model:
             Args
                 event [string or dict]
         """
-
+        self.logger.debug(f"publish_event ({event})")
         self.modelUpdateCounter += 1
 
         if type(event) is str:
+            #make sure the formatting is json compatible
+            event = event.replace("'",'"')#     ' => "
             event={"event":"system.status","data":{"text":event}}
         event["id"]=self.modelUpdateCounter
 
