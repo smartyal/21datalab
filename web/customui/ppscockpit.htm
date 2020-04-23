@@ -85,16 +85,21 @@
 
                         <br>
                         <br>
-                        Jump to Results.
+                        <div id="cockpit-motif-result-number">Number of matches:</div>
+                        <br>
+                        <br>
+                        Jump to Results
                         <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump_prev()">   <i class="fas fa-step-backward"></i>back</button>
                          &nbsp
                         <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump_next()">  <i class="fas fa-step-forward"></i>next</button>
                         <br>
                         <br>
 
+                        <!--
                         <div class="progress">
                             <div id="cockpit-motif-progress" class="progress-bar" role="progressbar" style="width:50%"></div>
                         </div>
+                        -->
                     </div>
 
                 </div>
@@ -177,6 +182,22 @@ function cockpit_show_result_elements()
     });
 }
 
+// get the number of results
+function update_number_of_matches()
+{
+    var query = {nodes:[cockpitPath+".PPSMiner.annotations"],"resultKey":"browsePath","includeLongValues":false};
+    http_post("/_getnodes",JSON.stringify(query),null,null,(self,status,data,params)=>
+            {
+                if (status==200)
+                {
+                    var response = JSON.parse(data);
+                    var number = response[cockpitPath+".PPSMiner.annotations"].children.length;
+                    $('#cockpit-motif-result-number').html("Number of matches: "+ String(number));
+                    console.log("has results",number);
+                }
+            });
+
+}
 
 
 function cockpit_motif_init_progress_bar()
@@ -186,6 +207,7 @@ function cockpit_motif_init_progress_bar()
         // Do something - event data will be in e.data,
         // message will be of type 'eventType'
 
+        /* no more progress bar
         let data = e.data;
         //replace potential single quotes
         data = data.replace(/\'/g, "\"");
@@ -201,8 +223,9 @@ function cockpit_motif_init_progress_bar()
         {
             $('#cockpit-motif-progress').text("");
         }
+        */
 
-        //update_peak_values();
+        update_number_of_matches();
     });
 
 }

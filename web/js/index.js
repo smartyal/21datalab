@@ -181,16 +181,26 @@ function initialize_progress_bar()
         //replace potential single quotes
         data = data.replace(/\'/g, "\"");
         var valeur=JSON.parse(data).value;
-        valeur = valeur*100;
-        console.log("EVENT system.progress" + valeur );
-        $('.progress-bar').css('width', valeur+'%').attr('aria-valuenow', valeur);
-        if (valeur != 100)
+        if (valeur <= 0)
         {
-            $('.progress-bar').text(JSON.parse(data).function);
+
+            $('.progress-bar').text("");
+            $('.progress-bar').css('width', valeur+'%').attr('aria-valuenow', 0);
         }
+
         else
         {
-            $('.progress-bar').text("");
+            valeur = valeur*100;
+            console.log("EVENT system.progress" + valeur );
+            $('.progress-bar').css('width', valeur+'%').attr('aria-valuenow', valeur);
+            if (valeur != 100)
+            {
+                $('.progress-bar').text(JSON.parse(data).function);
+            }
+            else
+            {
+                $('.progress-bar').text("");
+            }
         }
     });
 
