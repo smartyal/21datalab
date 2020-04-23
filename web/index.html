@@ -287,6 +287,25 @@
     </div>
 
 
+    <div class="modal fade" id="confirm-delete" tabindex="-2" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="z-index:1000000">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+
+                </div>
+
+
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12" id ="confirm-modal-div" style="word-break:break-all">
+
+                      </div>
+                    </div>
+
+
 
     <div id="cockpitplaceholder">
 
@@ -299,7 +318,15 @@
             </div>
             <div class="modal-body">
 
-                <button type="button" class="btn btn-primary" onclick="cockpit_importer_test()">Test</button>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <a class="btn btn-danger btn-ok" id="confirm-modal-ok" data-dismiss="modal" >Delete</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
               <ul class="nav nav-tabs bg-secondary" id="myTab" role="tablist">
                 <li class="nav-item">
@@ -326,17 +353,13 @@
                   <p id="importer-content-1">Loading!</p>
                 </div>
 
-                <div class="tab-pane fade" id="tabpane2" role="tabpanel">
-                  <p id="importer-content-2">Loading!</p>
-                </div>
 
                 <div class="tab-pane fade" id="tabpane3" role="tabpanel">
                   <p id="importer-content-3">Loading!</p>
                 </div>
 
-                <div class="tab-pane fade" id="tabpane4" role="tabpanel">
-                  <p id="importer-content-4">Loading!</p>
-                </div>
+    <div id="cockpitplaceholder">
+<!-- insert cockpit test code here -->
 
                 <div class="tab-pane fade" id="tabpane5" role="tabpanel">
                   <p id="importer-content-5">Loading!</p>
@@ -356,8 +379,22 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- end of cockpit test code -->
     </div>
-    </div>
+</body>
 
   <script src="plugins/importer/index.js"></script>
   </body>

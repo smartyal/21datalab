@@ -37,10 +37,20 @@ from bokeh.models.glyphs import VArea
 from bokeh.models.renderers import GlyphRenderer
 
 
-
+#"underlay", "image", "guide", "glyph", "annotation", "tool", etc. (cf. Chaco)
+#image, underlay, glyph, annotation or overlay
 haveLogger = False
-globalAlpha = 0.3
+globalAlpha = 1.0#0.3
+
+globalAnnotationLevel  = "image"
+globalBackgroundsLevel = "underlay"
+globalThresholdsLevel = "underlay"
+globalAnnotationsAlpha = 0.99
+globalThresholdsAlpha = 0.5
+globalBackgroundsAlpha = 0.2
+
 globalRESTTimeout = 60
+
 
 
 def setup_logging(loglevel=logging.DEBUG,tag = ""):
@@ -512,9 +522,10 @@ class TimeSeriesWidgetDataServer():
         return self.mirror["currentColors"][".properties"]["value"]
 
     def update_current_colors(self,colors):
-        currentColors = self.mirror["currentColors"][".properties"]["value"]
-        currentColors.update(colors) # this is in place update
+        #currentColors = self.mirror["currentColors"][".properties"]["value"]
+        #currentColors.update(colors) # this is in place update
         #colorsself.mirror["currentColors"]["_properties"]["value"]
+        currentColors = colors
         nodesToModify = [{"browsePath": self.path + ".currentColors", "value": currentColors}]
         self.mirror["currentColors"][".properties"]["value"] = currentColors
         self.__web_call('POST', 'setProperties', nodesToModify)
@@ -983,12 +994,7 @@ class TimeSeriesWidget():
         for var in newData:
             if not var.endswith("__time"):
                 dic = {"y":newData[var],
-                       "x":newData[var+"__time"],
-                       var:[88]*len(newData[var]),
-                       var+"__time":[77]*len(newData[var]),
-                       "{"+var+"}":[99]*len(newData[var]),
-                       "z":list(range(300))
-                       }
+                       "x":newData[var+"__time"]}
                 if var in self.columnData:
                     self.columnData[var].data = dic #update
                 else:
@@ -1560,10 +1566,11 @@ class TimeSeriesWidget():
                 area = VArea(x="x", y1="y1", y2="y2",
                              fill_color="gray",
                              name=name,
-                             fill_alpha=0.3,
+                             fill_alpha=globalAnnotationsAlpha,
                              hatch_color="black",
                              hatch_pattern="v",
-                             hatch_alpha=0.5)
+                             hatch_alpha=globalAnnotationsAlpha,
+                             level = globalAnnotationLevel)
                 myrenderer = GlyphRenderer(data_source=source, glyph=area, name=name)
 
             """
@@ -1850,7 +1857,8 @@ class TimeSeriesWidget():
             name = "__background"+str('%8x'%random.randrange(16**8))
             newBack = BoxAnnotation(left=back["start"], right=back["end"],
                                     fill_color=back["color"],
-                                    fill_alpha=globalAlpha,
+                                    fill_alpha=globalBackgroundsAlpha,
+                                    level = globalBackgroundsLevel,
                                     name=name)  # +"_annotaion
             boxes.append(newBack)
             back["rendererName"]=name
@@ -2497,27 +2505,45 @@ class TimeSeriesWidget():
                 self.lines[variableName] = self.plot.circle(x="x", y="y", line_color="red", fill_color=None,
                                                             source=self.columnData[variableName], name=variableName,size=7)  # x:"time", y:variableName #the legend must havee different name than the source bug
 
+
+
             else:
                 if ".score" in variableName:
                     # this is a score 0..1 line
                     self.lines[variableName] = self.plot.line(x="x", y="y", color="gray", line_dash="dotted",
                                                               source=self.columnData[variableName], name=variableName, line_width=2,
                                                               y_range_name="y2")  # x:
+
                 else:
 
+                    if variableName.endswith("_expected"):
+                        # this is a special case of a line which we display dotted in the same color as the original one
+                        # try to find the corresponding variable
+                        thisLineColor = None
+                        originalVarName = variableName.split('.')[-1][:-len("_expected")]
+                        for lineName in self.lines:
+                            if lineName.split('.')[-1] == originalVarName:
+                                thisLineColor = self.lines[lineName].glyph.line_color
+                                break
+                        if not thisLineColor:
+                            thisLineColor = color
+                        self.lines[variableName] = self.plot.line(x="x", y="y", color=thisLineColor,
+                                                                  source=self.columnData[variableName], name=variableName,
+                                                                  line_width=2, line_dash="dashed")
+                    else:
 
-                    #this is a real line
-                    #self.debugStore =copy.deepcopy(getData)
-                    #self.lines[variableName] = self.plot.line(x=variableName+"__time", y=variableName, color=color,
-                    #                              source=self.data, name=variableName,line_width=2)  # x:"time", y:variableName #the legend must havee different name than the source bug
-                    self.lines[variableName] = self.plot.line(x="x", y="y", color=color,source=self.columnData[variableName], name=variableName,line_width=2)
+                        #this is a real line
+                        #self.debugStore =copy.deepcopy(getData)
+                        #self.lines[variableName] = self.plot.line(x=variableName+"__time", y=variableName, color=color,
+                        #                              source=self.data, name=variableName,line_width=2)  # x:"time", y:variableName #the legend must havee different name than the source bug
+                        self.lines[variableName] = self.plot.line(x="x", y="y", color=color,source=self.columnData[variableName], name=variableName,line_width=2)
 
-                    if showMarker:
-                        markerName = variableName+".marker"
-                        marker = self.plot.circle(x="x",y="y", line_color=color, fill_color=color,
-                                                  source=self.columnData[variableName], name=markerName,size=3)  # x:"time", y:variableName #the legend must havee different name than the source bug
+                        if showMarker:
+                            markerName = variableName+".marker"
+                            marker = self.plot.circle(x="x",y="y", line_color=color, fill_color=color,
+                                                      source=self.columnData[variableName], name=markerName,size=3)  # x:"time", y:variableName #the legend must havee different name than the source bug
                 #legend only for lines
-                self.legendItems[variableName] = LegendItem(label=variableName,
+                self.legendItems[variableName] = LegendItem(label=variableName.split('.')[-1],
                                                             renderers=[self.lines[variableName]])
 
             #we set the lines and glypsh to no change their behaviour when selections are done, unfortunately, this doesn't work, instead we now explicitly unselect in the columndatasource
@@ -3063,10 +3089,11 @@ class TimeSeriesWidget():
             area = VArea(x="x", y1="y1", y2="y2",
                          fill_color="black",
                          name=anno["id"],
-                         fill_alpha=globalAlpha,
+                         fill_alpha=globalAnnotationsAlpha,
                          hatch_color=color,
                          hatch_pattern="v",
-                         hatch_alpha=0.5)
+                         hatch_alpha=0.5,
+                         level = globalThresholdsLevel)
 
 
             #    bokeh hack to avoid adding the renderers directly: we create a renderer from the glyph and store it for later bulk assing to the plot
@@ -3127,11 +3154,12 @@ class TimeSeriesWidget():
                 area = VArea(x="x",y1="y1",y2="y2",
                                     fill_color=color,
                                     name=anno["id"],
-                                    fill_alpha=globalAlpha,
+                                    fill_alpha=globalAnnotationsAlpha,
                                     hatch_color="black",
                                     hatch_pattern=pattern,
-                                    hatch_alpha=1)
+                                    hatch_alpha=1.0)
                 myrenderer = GlyphRenderer(data_source=source, glyph=area, name=anno['id'])
+                myrenderer.level = globalThresholdsLevel
                 rendererType = "VArea"
             else:
                 #we use a Boxannotation as this is a lot more efficient in bokeh
@@ -3141,7 +3169,7 @@ class TimeSeriesWidget():
                                     name=anno["id"],
                                     fill_alpha=globalAlpha)
                 """
-                myrenderer = BoxAnnotation(left=start,right=end,fill_color=color,fill_alpha=globalAlpha,name=anno['id'])
+                myrenderer = BoxAnnotation(left=start,right=end,fill_color=color,fill_alpha=globalAnnotationsAlpha,name=anno['id'],level=globalAnnotationLevel)
                 rendererType = "BoxAnnotation"
 
             # bokeh hack to avoid adding the renderers directly: we create a renderer from the glyph and store it for later bulk assing to the plot
@@ -3153,7 +3181,7 @@ class TimeSeriesWidget():
             self.renderers[anno["id"]] = {"renderer": myrenderer, "info": copy.deepcopy(anno),"source": source,"rendererType":rendererType}  # we keep this renderer to speed up later
 
         except Exception as ex:
-            self.logger.error("error draw annotation"+str(ex))
+            self.logger.error(f"error draw annotation {anno}"+str(ex))
             return None
 
 
@@ -3327,7 +3355,8 @@ class TimeSeriesWidget():
 
             newAnno = BoxAnnotation(top=max, bottom=min,
                                     fill_color=color,
-                                    fill_alpha=globalAlpha,
+                                    fill_alpha=globalThresholdsAlpha,
+                                    level = globalThresholdsLevel,
                                     name=annoDict["id"])  # +"_annotaion
 
             self.add_renderers([newAnno])
@@ -3469,7 +3498,8 @@ class TimeSeriesWidget():
                 name = "__background"+str('%8x'%random.randrange(16**8))
                 newBack = BoxAnnotation(left=back["start"], right=back["end"],
                                         fill_color=back["color"],
-                                        fill_alpha=globalAlpha,
+                                        fill_alpha=globalBackgroundsAlpha,
+                                        level = globalBackgroundsLevel,
                                         name=name)  # +"_annotaion
                 boxes.append(newBack)
                 back["rendererName"] = name

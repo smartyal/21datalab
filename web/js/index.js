@@ -732,18 +732,19 @@ function context_menu_click_function(option)
 
 function context_menu_click_pipeline(option)
 {
-    console.log("context_menu_click_pipeline, launch   " + option.data);
+    console.log("context_menu_click_pipeline, launch   " + option.data+" from widget "+option.widget);
     //show the cockpit
     var query = [option.data+".cockpit"];
 
-    http_post("_getvalue",JSON.stringify(query), option.data,null, function(obj,status,data,params)
+    http_post("_getvalue",JSON.stringify(query), option,null, function(obj,status,data,params)
     {
         if (status == 200)
         {
-            let path = params;
+            var widget = option.widget;
+            let path = params.data;
             console.log("data");
             var cockpit = JSON.parse(data)[0];
-            launch_cockpit(cockpit,path);
+            launch_cockpit(cockpit,path,widget);
         }
     });
     superCm.destroyMenu(); // hide it
@@ -1251,6 +1252,7 @@ function prepare_context_menu(dataString,modelPath)
                 icon: 'fas fa-gamepad',
                 label: '<font size="3" color="#d9b100">'+splitted[splitted.length -1]+'</font>',
                 data: pipeline,
+                widget: data[".properties"].id,
                 action: function(option, contextMenuIndex, optionIndex){context_menu_click_pipeline(option); }
             };
             menuUserFunctions.push(entry);
@@ -1328,15 +1330,17 @@ function prepare_context_menu(dataString,modelPath)
 
 
 
-function launch_cockpit(url,path)
+function launch_cockpit(url,path,widget)
 {
-    // if (url!="")
-    // {
-    //     var data=http_get(url);
-    //     $("#cockpit").remove();
-    //     $("#cockpitplaceholder").html(data);
-    // }
-    
+
+
+    if (url!="")
+    {
+        var data=http_get(url);
+        $("#cockpit").remove();
+        $("#cockpitplaceholder").html(data);
+    }
+
 
 
     var cockpit = $('#cockpit');
@@ -1344,6 +1348,7 @@ function launch_cockpit(url,path)
     cockpit.modal({backdrop: 'static',keyboard: false, focus:false});               //don't close it on click outside
     cockpit.prepend('<style scoped> .modal-backdrop { display: none;}</style>');    //allow click outside
     cockpit.attr("path",path);
+    cockpit.attr("widget",widget); //set the widget for some
     cockpit_init(path);
 
     $('#cockpit').one('hidden.bs.modal', cockpit_close);

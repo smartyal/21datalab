@@ -65,3 +65,14 @@
     background: transparent !important;
     border-left: none !important;
 }
+
+
+.context-menu {
+    background-color: #202020;
+}
+
+
+
+.context-menu-option, .context-menu-submenu, .context-menu-disabled {
+    color:#dddddd;
+}

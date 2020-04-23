@@ -203,9 +203,17 @@ class Node():
         return self.model.set_value(self.id,value)
 
     def set_time_series(self,values=None,times=None):
+        """
+            replaces the time series with value and times, it deletes the existing
+
+        """
         return self.model.time_series_set(self.id,values=values,times=times)
 
-
+    def insert_time_series(self,values=None,times=None):
+        """
+            insert data, if the time stamp exists already, we replace it
+        """
+        return self.model.time_series_insert(self.id,values=values, times=times)
 
     def get_parent(self):
         """ Returns:
@@ -2370,6 +2378,25 @@ class Model:
     def close(self):
         self.delete()
 
+    def __dispatch(self,function,timeout,param):
+        thread = threading.Thread(target=self.__dispatch_thread_function, args=[function,timeout,param])
+        thread.start()
+
+
+    def __dispatch_thread_function(self,function,timeout,param):
+        time.sleep(timeout)
+        function(param)
+        #exit thread
+
+    def reset_progress_bar(self,controlNode):
+        controlNode.get_child("progress").set_value(0)
+         
+
+
+
+
+
+
 
     def __execution_thread(self,id):
         """
@@ -2409,6 +2436,7 @@ class Model:
                     if targetId:
                         self.remove_forward_refs(targetId)
                         self.add_forward_refs(targetId,[controlNode.get_child("progress").get_id()])
+
                     controlNode.get_child("progress").set_value(0)
                     #controlNode.get_child("signal").set_value("nosignal")
                     startTime = datetime.datetime.now()
@@ -2431,6 +2459,8 @@ class Model:
                     controlNode.get_child("status").set_value("finished")
                     controlNode.get_child("executionCounter").set_value(controlNode.get_child("executionCounter").get_value()+1)
                     controlNode.get_child("progress").set_value(1)
+                    self.__dispatch(self.reset_progress_bar,1,controlNode)
+                    #controlNode.get_child("progress").set_value(0)
                     if result == True:
                         controlNode.get_child("result").set_value("ok")
                     else:
@@ -2446,6 +2476,7 @@ class Model:
             self.logger.error("error inside execution thread, id " +str(id)+" functionname"+str(functionName)+str(sys.exc_info()[1])+" "+str(ex)+" "+str(traceback.format_exc()))
             controlNode.get_child("status").set_value("interrupted")
             controlNode.get_child("result").set_value("error")
+            controlNode.get_child("progress").set_value(0)
         return
 
     def get_error(self):
@@ -3075,7 +3106,7 @@ class Model:
         id = self.get_id(desc)
         return self.ts.delete(id)
 
-    def time_series_insert_data(self, desc, values=None, times=None):
+    def time_series_insert(self, desc, values=None, times=None):
         id = self.get_id(desc)
         if not id in self.model:
             return None
@@ -3158,6 +3189,11 @@ class Model:
             tableVars = self.get_leaves(tableId+".columns")
         else:
             tableId = None
+
+        if type(start) is str:
+            start = date2secs(start)
+        if type(end) is str:
+            end = date2secs(end)
 
         with self.lock:
             #first check if all requested timeseries exist and have type time series
