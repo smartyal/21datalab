@@ -46,59 +46,28 @@ sys.path.append("./plugins") #for the importlib loader, doesn't understand relat
 
 myGlobalDir = os.path.dirname(os.path.realpath(__file__)) # holds the directory of this script
 
-def make_aware(date,zone='Europe/Berlin',force=False):
-    """
-        convert a date into a zone aware date
-        Args:
-            zone [string]: the string descriptor for the zone (https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568)
-            force [bool]: if force is set, we se the zone of the date to zone
-                            if force is false we don't set the zone of dates that have a zone already
-        Returns:
-            a date zone aware datetime objec
-    """
 
-    tz = pytz.timezone(zone)
 
-    if date.tzinfo is not None and date.tzinfo.utcoffset(date) is not None:
-        #is aware already,
-        if force:
-            date = date.astimezone(tz)
-    else:
-        tz.localize(date)
-        date = date.astimezone(tz)
-    return date
-
-def date2secs(value,ignoreError = True,zone = 'Europe/Berlin'):
+def date2secs(value):
     """ converts a date with timezone into float seconds since epoch
     Args:
         value: the date given as either a string or a datetime object
-        ignoreError: True: we return value if we can't convert
-                     Fale: we return None if we can't convert
-        zone: the zone used if the incoming has no zone
     Returns:
         the seconds since epoch or the original value of not convertibel
     """
     if type(value) == type(datetime.datetime(1970, 1, 1, 0, 0)):
-        value = make_aware(value,zone=zone)
         timeDelta = value - datetime.datetime(1970, 1, 1, 0, 0,tzinfo=pytz.UTC)
         return timeDelta.total_seconds()
     elif type(value) is str:
         #try a string parser
         try:
             date = dateutil.parser.parse(value)
-            date=make_aware(date,zone=zone)
             timeDelta = date - datetime.datetime(1970, 1, 1, 0, 0,tzinfo=pytz.UTC)
             return timeDelta.total_seconds()
         except:
-            if ignoreError:
-                return value
-            else:
-                return None
-    else:
-        if ignoreError:
             return value
-        else:
-            return None
+    else:
+        return value
 
 
 def date2msecs(value):
@@ -203,17 +172,9 @@ class Node():
         return self.model.set_value(self.id,value)
 
     def set_time_series(self,values=None,times=None):
-        """
-            replaces the time series with value and times, it deletes the existing
-
-        """
         return self.model.time_series_set(self.id,values=values,times=times)
 
-    def insert_time_series(self,values=None,times=None):
-        """
-            insert data, if the time stamp exists already, we replace it
-        """
-        return self.model.time_series_insert(self.id,values=values, times=times)
+
 
     def get_parent(self):
         """ Returns:
@@ -2378,25 +2339,6 @@ class Model:
     def close(self):
         self.delete()
 
-    def __dispatch(self,function,timeout,param):
-        thread = threading.Thread(target=self.__dispatch_thread_function, args=[function,timeout,param])
-        thread.start()
-
-
-    def __dispatch_thread_function(self,function,timeout,param):
-        time.sleep(timeout)
-        function(param)
-        #exit thread
-
-    def reset_progress_bar(self,controlNode):
-        controlNode.get_child("progress").set_value(0)
-         
-
-
-
-
-
-
 
     def __execution_thread(self,id):
         """
@@ -2436,7 +2378,6 @@ class Model:
                     if targetId:
                         self.remove_forward_refs(targetId)
                         self.add_forward_refs(targetId,[controlNode.get_child("progress").get_id()])
-
                     controlNode.get_child("progress").set_value(0)
                     #controlNode.get_child("signal").set_value("nosignal")
                     startTime = datetime.datetime.now()
@@ -2459,8 +2400,6 @@ class Model:
                     controlNode.get_child("status").set_value("finished")
                     controlNode.get_child("executionCounter").set_value(controlNode.get_child("executionCounter").get_value()+1)
                     controlNode.get_child("progress").set_value(1)
-                    self.__dispatch(self.reset_progress_bar,1,controlNode)
-                    #controlNode.get_child("progress").set_value(0)
                     if result == True:
                         controlNode.get_child("result").set_value("ok")
                     else:
@@ -2476,7 +2415,6 @@ class Model:
             self.logger.error("error inside execution thread, id " +str(id)+" functionname"+str(functionName)+str(sys.exc_info()[1])+" "+str(ex)+" "+str(traceback.format_exc()))
             controlNode.get_child("status").set_value("interrupted")
             controlNode.get_child("result").set_value("error")
-            controlNode.get_child("progress").set_value(0)
         return
 
     def get_error(self):
@@ -3106,7 +3044,7 @@ class Model:
         id = self.get_id(desc)
         return self.ts.delete(id)
 
-    def time_series_insert(self, desc, values=None, times=None):
+    def time_series_insert_data(self, desc, values=None, times=None):
         id = self.get_id(desc)
         if not id in self.model:
             return None
@@ -3189,11 +3127,6 @@ class Model:
             tableVars = self.get_leaves(tableId+".columns")
         else:
             tableId = None
-
-        if type(start) is str:
-            start = date2secs(start)
-        if type(end) is str:
-            end = date2secs(end)
 
         with self.lock:
             #first check if all requested timeseries exist and have type time series
@@ -3948,3 +3881,5 @@ if __name__ == '__main__':
             m.show()
             fileName = sys.argv[2]
             m.save(fileName)
+
+
