@@ -4,14 +4,8 @@
         "type": "folder",
         "children": [
             "13",
-            "114",
-            "218",
-            "264",
-            "265",
             "490",
-            "15325922506801289201",
             "15449664376381869170",
-            "401335041852249076",
             "600134431294461625"
         ],
         "parent": "0",
@@ -40,261 +34,6 @@
         "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization"
-    },
-    "114": {
-        "id": "114",
-        "name": "occupancyData",
-        "type": "table",
-        "parent": "1",
-        "children": [
-            "115",
-            "116",
-            "117",
-            "118",
-            "126",
-            "188"
-        ],
-        "backRefs": [
-            "138",
-            "249",
-            "293",
-            "335",
-            "377",
-            "419",
-            "461",
-            "17988038100535752004"
-        ],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.occupancyData"
-    },
-    "115": {
-        "id": "115",
-        "name": "description",
-        "type": "const",
-        "parent": "114",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "this is the occupancy data table",
-        "browsePath": "root.occupancyData.description"
-    },
-    "116": {
-        "id": "116",
-        "name": "columns",
-        "type": "referencer",
-        "parent": "114",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "119",
-            "120",
-            "121",
-            "122",
-            "123",
-            "124",
-            "125",
-            "126",
-            "865469451512511712",
-            "3266302438377665363",
-            "8103713051491286640",
-            "17470131557842947494"
-        ],
-        "value": null,
-        "browsePath": "root.occupancyData.columns"
-    },
-    "117": {
-        "id": "117",
-        "name": "timeField",
-        "type": "referencer",
-        "parent": "114",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "119"
-        ],
-        "value": null,
-        "browsePath": "root.occupancyData.timeField"
-    },
-    "118": {
-        "id": "118",
-        "name": "variables",
-        "type": "folder",
-        "parent": "114",
-        "children": [
-            "119",
-            "120",
-            "121",
-            "122",
-            "123",
-            "124",
-            "125"
-        ],
-        "backRefs": [
-            "128",
-            "238",
-            "282",
-            "324",
-            "366",
-            "408",
-            "450",
-            "7376493555639217537"
-        ],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.occupancyData.variables"
-    },
-    "119": {
-        "id": "119",
-        "name": "date",
-        "type": "column",
-        "parent": "118",
-        "children": [],
-        "backRefs": [
-            "116",
-            "117"
-        ],
-        "forwardRefs": [],
-        "value": "len 5",
-        "browsePath": "root.occupancyData.variables.date"
-    },
-    "120": {
-        "id": "120",
-        "name": "Temperature",
-        "type": "timeseries",
-        "parent": "118",
-        "children": [],
-        "backRefs": [
-            "116",
-            "219",
-            "267",
-            "283",
-            "309",
-            "325",
-            "351",
-            "367",
-            "393",
-            "409",
-            "435",
-            "451",
-            "477",
-            "8037118344379379709",
-            "57832287729083089",
-            "10691456585566057755"
-        ],
-        "forwardRefs": [],
-        "value": "len 5",
-        "browsePath": "root.occupancyData.variables.Temperature"
-    },
-    "121": {
-        "id": "121",
-        "name": "Humidity",
-        "type": "timeseries",
-        "parent": "118",
-        "children": [],
-        "backRefs": [
-            "116",
-            "6467217534375322357"
-        ],
-        "forwardRefs": [],
-        "value": "len 5",
-        "browsePath": "root.occupancyData.variables.Humidity"
-    },
-    "122": {
-        "id": "122",
-        "name": "Light",
-        "type": "timeseries",
-        "parent": "118",
-        "children": [],
-        "backRefs": [
-            "116",
-            "219",
-            "267",
-            "309",
-            "351",
-            "393",
-            "435",
-            "477",
-            "239"
-        ],
-        "forwardRefs": [],
-        "value": "len 5",
-        "browsePath": "root.occupancyData.variables.Light"
-    },
-    "123": {
-        "id": "123",
-        "name": "CO2",
-        "type": "timeseries",
-        "parent": "118",
-        "children": [],
-        "backRefs": [
-            "116",
-            "219",
-            "267",
-            "309",
-            "351",
-            "393",
-            "435",
-            "477",
-            "239"
-        ],
-        "forwardRefs": [],
-        "value": "len 5",
-        "browsePath": "root.occupancyData.variables.CO2"
-    },
-    "124": {
-        "id": "124",
-        "name": "HumidityRatio",
-        "type": "timeseries",
-        "parent": "118",
-        "children": [],
-        "backRefs": [
-            "116"
-        ],
-        "forwardRefs": [],
-        "value": "len 5",
-        "browsePath": "root.occupancyData.variables.HumidityRatio"
-    },
-    "125": {
-        "id": "125",
-        "name": "Occupancy",
-        "type": "timeseries",
-        "parent": "118",
-        "children": [],
-        "backRefs": [
-            "116"
-        ],
-        "forwardRefs": [],
-        "value": "len 5",
-        "browsePath": "root.occupancyData.variables.Occupancy"
-    },
-    "126": {
-        "id": "126",
-        "name": "classification",
-        "type": "timeseries",
-        "parent": "114",
-        "children": [],
-        "backRefs": [
-            "116",
-            "220",
-            "256",
-            "268",
-            "300",
-            "310",
-            "342",
-            "352",
-            "384",
-            "394",
-            "426",
-            "436",
-            "468",
-            "478",
-            "13880253212629121141",
-            "145"
-        ],
-        "forwardRefs": [],
-        "value": "len 5",
-        "browsePath": "root.occupancyData.classification"
     },
     "127": {
         "id": "127",
@@ -347,8 +86,7 @@
             "17600842871211210203"
         ],
         "backRefs": [
-            "526",
-            "8268473328863278363"
+            "526"
         ],
         "forwardRefs": [],
         "value": null,
@@ -363,9 +101,7 @@
         "backRefs": [
             "664"
         ],
-        "forwardRefs": [
-            "118"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.workbench.selectableVariables"
     },
@@ -451,8 +187,7 @@
         "forwardRefs": [
             "135",
             "135",
-            "135",
-            "5016083082530735616"
+            "135"
         ],
         "value": null,
         "browsePath": "root.visualization.workbench.hasAnnotation.annotations"
@@ -474,10 +209,7 @@
         ],
         "backRefs": [
             "134",
-            "221",
             "12416654533870087467",
-            "14025436904047117033",
-            "3489967599772974564",
             "134",
             "134"
         ],
@@ -535,9 +267,7 @@
         "parent": "127",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "114"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.workbench.table"
     },
@@ -589,9 +319,7 @@
         "backRefs": [
             "655"
         ],
-        "forwardRefs": [
-            "126"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.workbench.background"
     },
@@ -611,17 +339,6 @@
         },
         "browsePath": "root.visualization.workbench.backgroundMap"
     },
-    "188": {
-        "id": "188",
-        "name": "acknowledgement",
-        "type": "const",
-        "parent": "114",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "I herewith ackknowledge the original authors of the paper:  Accurate occupancy detection of an office room from light, temperature, humidity and CO2 measurements using statistical learning models.  Luis M. Candanedo, Veronique Feldheim. Energy and Buildings. Volume 112, 15 January 2016, Pages 28-39.  for putting the dataset to the public https://archive.ics.uci.edu/ml/datasets/Occupancy+Detection+ This dataset is used here for demo purposes  More datasets are available at UCI Machine Learning Repository [http://archive.ics.uci.edu/ml]. Irvine, CA: University of California, School of Information and Computer Science.",
-        "browsePath": "root.occupancyData.acknowledgement"
-    },
     "189": {
         "id": "189",
         "name": "hasReloadButton",
@@ -632,191 +349,6 @@
         "forwardRefs": [],
         "value": false,
         "browsePath": "root.visualization.workbench.hasReloadButton"
-    },
-    "218": {
-        "id": "218",
-        "name": "logisticRegression",
-        "type": "function",
-        "parent": "1",
-        "children": [
-            "219",
-            "220",
-            "221",
-            "222",
-            "223",
-            "11623797839142531818"
-        ],
-        "backRefs": [
-            "14814504338557830832"
-        ],
-        "forwardRefs": [],
-        "value": null,
-        "functionPointer": "logisticregression.logistic_regression",
-        "autoReload": true,
-        "browsePath": "root.logisticRegression"
-    },
-    "219": {
-        "id": "219",
-        "name": "input",
-        "type": "referencer",
-        "parent": "218",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "120",
-            "122",
-            "123"
-        ],
-        "value": null,
-        "browsePath": "root.logisticRegression.input"
-    },
-    "220": {
-        "id": "220",
-        "name": "output",
-        "type": "referencer",
-        "parent": "218",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "126"
-        ],
-        "value": null,
-        "browsePath": "root.logisticRegression.output"
-    },
-    "221": {
-        "id": "221",
-        "name": "annotations",
-        "type": "referencer",
-        "parent": "218",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "135"
-        ],
-        "value": null,
-        "browsePath": "root.logisticRegression.annotations"
-    },
-    "222": {
-        "id": "222",
-        "name": "categoryMap",
-        "type": "const",
-        "parent": "218",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": {
-            "busy": 1,
-            "free": 0
-        },
-        "browsePath": "root.logisticRegression.categoryMap"
-    },
-    "223": {
-        "id": "223",
-        "name": "control",
-        "type": "folder",
-        "parent": "218",
-        "children": [
-            "224",
-            "225",
-            "226",
-            "227",
-            "228",
-            "229",
-            "230",
-            "231"
-        ],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.logisticRegression.control"
-    },
-    "224": {
-        "id": "224",
-        "name": "status",
-        "type": "variable",
-        "parent": "223",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "finished",
-        "browsePath": "root.logisticRegression.control.status"
-    },
-    "225": {
-        "id": "225",
-        "name": "progress",
-        "type": "variable",
-        "parent": "223",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 1,
-        "browsePath": "root.logisticRegression.control.progress"
-    },
-    "226": {
-        "id": "226",
-        "name": "result",
-        "type": "variable",
-        "parent": "223",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "ok",
-        "browsePath": "root.logisticRegression.control.result"
-    },
-    "227": {
-        "id": "227",
-        "name": "signal",
-        "type": "variable",
-        "parent": "223",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "nosignal",
-        "browsePath": "root.logisticRegression.control.signal"
-    },
-    "228": {
-        "id": "228",
-        "name": "executionCounter",
-        "type": "variable",
-        "parent": "223",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 146,
-        "browsePath": "root.logisticRegression.control.executionCounter"
-    },
-    "229": {
-        "id": "229",
-        "name": "lastExecutionDuration",
-        "type": "variable",
-        "parent": "223",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 0.097544,
-        "browsePath": "root.logisticRegression.control.lastExecutionDuration"
-    },
-    "230": {
-        "id": "230",
-        "name": "lastStartTime",
-        "type": "variable",
-        "parent": "223",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "2020-03-19T09:44:12.098961",
-        "browsePath": "root.logisticRegression.control.lastStartTime"
-    },
-    "231": {
-        "id": "231",
-        "name": "executionType",
-        "type": "const",
-        "parent": "223",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "async",
-        "browsePath": "root.logisticRegression.control.executionType"
     },
     "232": {
         "id": "232",
@@ -929,9 +461,7 @@
         "backRefs": [
             "691"
         ],
-        "forwardRefs": [
-            "118"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice0.selectableVariables"
     },
@@ -944,10 +474,7 @@
         "backRefs": [
             "673"
         ],
-        "forwardRefs": [
-            "123",
-            "122"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice0.selectedVariables"
     },
@@ -1043,7 +570,6 @@
         ],
         "backRefs": [
             "245",
-            "269",
             "245",
             "245"
         ],
@@ -1092,9 +618,7 @@
         "parent": "236",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "114"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice0.table"
     },
@@ -1122,9 +646,7 @@
         "parent": "236",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "276"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice0.observerBackground"
     },
@@ -1186,9 +708,7 @@
         "backRefs": [
             "682"
         ],
-        "forwardRefs": [
-            "126"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice0.background"
     },
@@ -1274,226 +794,9 @@
         "parent": "260",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "266"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice0.buttons.button1.onClick"
-    },
-    "264": {
-        "id": "264",
-        "name": "annotations",
-        "type": "referencer",
-        "parent": "1",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.annotations"
-    },
-    "265": {
-        "id": "265",
-        "name": "ui_function",
-        "type": "folder",
-        "parent": "1",
-        "children": [
-            "266",
-            "308",
-            "350",
-            "392",
-            "434",
-            "476"
-        ],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.ui_function"
-    },
-    "266": {
-        "id": "266",
-        "name": "logisticRegression_0",
-        "type": "function",
-        "parent": "265",
-        "children": [
-            "267",
-            "268",
-            "269",
-            "270",
-            "271"
-        ],
-        "backRefs": [
-            "263"
-        ],
-        "forwardRefs": [],
-        "value": null,
-        "functionPointer": "logisticregression.logistic_regression",
-        "autoReload": true,
-        "browsePath": "root.ui_function.logisticRegression_0"
-    },
-    "267": {
-        "id": "267",
-        "name": "input",
-        "type": "referencer",
-        "parent": "266",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "120",
-            "122",
-            "123"
-        ],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_0.input"
-    },
-    "268": {
-        "id": "268",
-        "name": "output",
-        "type": "referencer",
-        "parent": "266",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "126"
-        ],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_0.output"
-    },
-    "269": {
-        "id": "269",
-        "name": "annotations",
-        "type": "referencer",
-        "parent": "266",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "246"
-        ],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_0.annotations"
-    },
-    "270": {
-        "id": "270",
-        "name": "categoryMap",
-        "type": "const",
-        "parent": "266",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": {
-            "busy": 1,
-            "free": 0
-        },
-        "browsePath": "root.ui_function.logisticRegression_0.categoryMap"
-    },
-    "271": {
-        "id": "271",
-        "name": "control",
-        "type": "folder",
-        "parent": "266",
-        "children": [
-            "272",
-            "273",
-            "274",
-            "275",
-            "276",
-            "277",
-            "278",
-            "279"
-        ],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_0.control"
-    },
-    "272": {
-        "id": "272",
-        "name": "status",
-        "type": "variable",
-        "parent": "271",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "finished",
-        "browsePath": "root.ui_function.logisticRegression_0.control.status"
-    },
-    "273": {
-        "id": "273",
-        "name": "progress",
-        "type": "variable",
-        "parent": "271",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 0,
-        "browsePath": "root.ui_function.logisticRegression_0.control.progress"
-    },
-    "274": {
-        "id": "274",
-        "name": "result",
-        "type": "variable",
-        "parent": "271",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "error",
-        "browsePath": "root.ui_function.logisticRegression_0.control.result"
-    },
-    "275": {
-        "id": "275",
-        "name": "signal",
-        "type": "variable",
-        "parent": "271",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "nosignal",
-        "browsePath": "root.ui_function.logisticRegression_0.control.signal"
-    },
-    "276": {
-        "id": "276",
-        "name": "executionCounter",
-        "type": "variable",
-        "parent": "271",
-        "children": [],
-        "backRefs": [
-            "251"
-        ],
-        "forwardRefs": [],
-        "value": 85,
-        "browsePath": "root.ui_function.logisticRegression_0.control.executionCounter"
-    },
-    "277": {
-        "id": "277",
-        "name": "lastExecutionDuration",
-        "type": "variable",
-        "parent": "271",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 0.035979,
-        "browsePath": "root.ui_function.logisticRegression_0.control.lastExecutionDuration"
-    },
-    "278": {
-        "id": "278",
-        "name": "lastStartTime",
-        "type": "variable",
-        "parent": "271",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "2019-07-30T14:04:25.116339",
-        "browsePath": "root.ui_function.logisticRegression_0.control.lastStartTime"
-    },
-    "279": {
-        "id": "279",
-        "name": "executionType",
-        "type": "const",
-        "parent": "271",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "async",
-        "browsePath": "root.ui_function.logisticRegression_0.control.executionType"
     },
     "280": {
         "id": "280",
@@ -1573,9 +876,7 @@
         "backRefs": [
             "718"
         ],
-        "forwardRefs": [
-            "118"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice1.selectableVariables"
     },
@@ -1588,9 +889,7 @@
         "backRefs": [
             "700"
         ],
-        "forwardRefs": [
-            "120"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice1.selectedVariables"
     },
@@ -1681,7 +980,6 @@
         "children": [],
         "backRefs": [
             "289",
-            "311",
             "289",
             "289"
         ],
@@ -1730,9 +1028,7 @@
         "parent": "280",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "114"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice1.table"
     },
@@ -1760,9 +1056,7 @@
         "parent": "280",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "318"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice1.observerBackground"
     },
@@ -1824,9 +1118,7 @@
         "backRefs": [
             "709"
         ],
-        "forwardRefs": [
-            "126"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice1.background"
     },
@@ -1912,197 +1204,9 @@
         "parent": "304",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "308"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice1.buttons.button1.onClick"
-    },
-    "308": {
-        "id": "308",
-        "name": "logisticRegression_1",
-        "type": "function",
-        "parent": "265",
-        "children": [
-            "309",
-            "310",
-            "311",
-            "312",
-            "313"
-        ],
-        "backRefs": [
-            "307"
-        ],
-        "forwardRefs": [],
-        "value": null,
-        "functionPointer": "logisticregression.logistic_regression",
-        "autoReload": true,
-        "browsePath": "root.ui_function.logisticRegression_1"
-    },
-    "309": {
-        "id": "309",
-        "name": "input",
-        "type": "referencer",
-        "parent": "308",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "120",
-            "122",
-            "123"
-        ],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_1.input"
-    },
-    "310": {
-        "id": "310",
-        "name": "output",
-        "type": "referencer",
-        "parent": "308",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "126"
-        ],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_1.output"
-    },
-    "311": {
-        "id": "311",
-        "name": "annotations",
-        "type": "referencer",
-        "parent": "308",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "290"
-        ],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_1.annotations"
-    },
-    "312": {
-        "id": "312",
-        "name": "categoryMap",
-        "type": "const",
-        "parent": "308",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": {
-            "busy": 1,
-            "free": 0
-        },
-        "browsePath": "root.ui_function.logisticRegression_1.categoryMap"
-    },
-    "313": {
-        "id": "313",
-        "name": "control",
-        "type": "folder",
-        "parent": "308",
-        "children": [
-            "314",
-            "315",
-            "316",
-            "317",
-            "318",
-            "319",
-            "320",
-            "321"
-        ],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_1.control"
-    },
-    "314": {
-        "id": "314",
-        "name": "status",
-        "type": "variable",
-        "parent": "313",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "idle",
-        "browsePath": "root.ui_function.logisticRegression_1.control.status"
-    },
-    "315": {
-        "id": "315",
-        "name": "progress",
-        "type": "variable",
-        "parent": "313",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 0,
-        "browsePath": "root.ui_function.logisticRegression_1.control.progress"
-    },
-    "316": {
-        "id": "316",
-        "name": "result",
-        "type": "variable",
-        "parent": "313",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "ok",
-        "browsePath": "root.ui_function.logisticRegression_1.control.result"
-    },
-    "317": {
-        "id": "317",
-        "name": "signal",
-        "type": "variable",
-        "parent": "313",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "nosignal",
-        "browsePath": "root.ui_function.logisticRegression_1.control.signal"
-    },
-    "318": {
-        "id": "318",
-        "name": "executionCounter",
-        "type": "variable",
-        "parent": "313",
-        "children": [],
-        "backRefs": [
-            "295"
-        ],
-        "forwardRefs": [],
-        "value": 0,
-        "browsePath": "root.ui_function.logisticRegression_1.control.executionCounter"
-    },
-    "319": {
-        "id": "319",
-        "name": "lastExecutionDuration",
-        "type": "variable",
-        "parent": "313",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 0,
-        "browsePath": "root.ui_function.logisticRegression_1.control.lastExecutionDuration"
-    },
-    "320": {
-        "id": "320",
-        "name": "lastStartTime",
-        "type": "variable",
-        "parent": "313",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "not yet",
-        "browsePath": "root.ui_function.logisticRegression_1.control.lastStartTime"
-    },
-    "321": {
-        "id": "321",
-        "name": "executionType",
-        "type": "const",
-        "parent": "313",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "async",
-        "browsePath": "root.ui_function.logisticRegression_1.control.executionType"
     },
     "322": {
         "id": "322",
@@ -2182,9 +1286,7 @@
         "backRefs": [
             "745"
         ],
-        "forwardRefs": [
-            "118"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice2.selectableVariables"
     },
@@ -2197,9 +1299,7 @@
         "backRefs": [
             "727"
         ],
-        "forwardRefs": [
-            "120"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice2.selectedVariables"
     },
@@ -2290,7 +1390,6 @@
         "children": [],
         "backRefs": [
             "331",
-            "353",
             "331",
             "331"
         ],
@@ -2339,9 +1438,7 @@
         "parent": "322",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "114"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice2.table"
     },
@@ -2369,9 +1466,7 @@
         "parent": "322",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "360"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice2.observerBackground"
     },
@@ -2433,9 +1528,7 @@
         "backRefs": [
             "736"
         ],
-        "forwardRefs": [
-            "126"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice2.background"
     },
@@ -2521,197 +1614,9 @@
         "parent": "346",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "350"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice2.buttons.button1.onClick"
-    },
-    "350": {
-        "id": "350",
-        "name": "logisticRegression_2",
-        "type": "function",
-        "parent": "265",
-        "children": [
-            "351",
-            "352",
-            "353",
-            "354",
-            "355"
-        ],
-        "backRefs": [
-            "349"
-        ],
-        "forwardRefs": [],
-        "value": null,
-        "functionPointer": "logisticregression.logistic_regression",
-        "autoReload": true,
-        "browsePath": "root.ui_function.logisticRegression_2"
-    },
-    "351": {
-        "id": "351",
-        "name": "input",
-        "type": "referencer",
-        "parent": "350",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "120",
-            "122",
-            "123"
-        ],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_2.input"
-    },
-    "352": {
-        "id": "352",
-        "name": "output",
-        "type": "referencer",
-        "parent": "350",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "126"
-        ],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_2.output"
-    },
-    "353": {
-        "id": "353",
-        "name": "annotations",
-        "type": "referencer",
-        "parent": "350",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "332"
-        ],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_2.annotations"
-    },
-    "354": {
-        "id": "354",
-        "name": "categoryMap",
-        "type": "const",
-        "parent": "350",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": {
-            "busy": 1,
-            "free": 0
-        },
-        "browsePath": "root.ui_function.logisticRegression_2.categoryMap"
-    },
-    "355": {
-        "id": "355",
-        "name": "control",
-        "type": "folder",
-        "parent": "350",
-        "children": [
-            "356",
-            "357",
-            "358",
-            "359",
-            "360",
-            "361",
-            "362",
-            "363"
-        ],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_2.control"
-    },
-    "356": {
-        "id": "356",
-        "name": "status",
-        "type": "variable",
-        "parent": "355",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "idle",
-        "browsePath": "root.ui_function.logisticRegression_2.control.status"
-    },
-    "357": {
-        "id": "357",
-        "name": "progress",
-        "type": "variable",
-        "parent": "355",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 0,
-        "browsePath": "root.ui_function.logisticRegression_2.control.progress"
-    },
-    "358": {
-        "id": "358",
-        "name": "result",
-        "type": "variable",
-        "parent": "355",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "ok",
-        "browsePath": "root.ui_function.logisticRegression_2.control.result"
-    },
-    "359": {
-        "id": "359",
-        "name": "signal",
-        "type": "variable",
-        "parent": "355",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "nosignal",
-        "browsePath": "root.ui_function.logisticRegression_2.control.signal"
-    },
-    "360": {
-        "id": "360",
-        "name": "executionCounter",
-        "type": "variable",
-        "parent": "355",
-        "children": [],
-        "backRefs": [
-            "337"
-        ],
-        "forwardRefs": [],
-        "value": 0,
-        "browsePath": "root.ui_function.logisticRegression_2.control.executionCounter"
-    },
-    "361": {
-        "id": "361",
-        "name": "lastExecutionDuration",
-        "type": "variable",
-        "parent": "355",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 0,
-        "browsePath": "root.ui_function.logisticRegression_2.control.lastExecutionDuration"
-    },
-    "362": {
-        "id": "362",
-        "name": "lastStartTime",
-        "type": "variable",
-        "parent": "355",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "not yet",
-        "browsePath": "root.ui_function.logisticRegression_2.control.lastStartTime"
-    },
-    "363": {
-        "id": "363",
-        "name": "executionType",
-        "type": "const",
-        "parent": "355",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "async",
-        "browsePath": "root.ui_function.logisticRegression_2.control.executionType"
     },
     "364": {
         "id": "364",
@@ -2791,9 +1696,7 @@
         "backRefs": [
             "772"
         ],
-        "forwardRefs": [
-            "118"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice3.selectableVariables"
     },
@@ -2806,9 +1709,7 @@
         "backRefs": [
             "754"
         ],
-        "forwardRefs": [
-            "120"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice3.selectedVariables"
     },
@@ -2899,7 +1800,6 @@
         "children": [],
         "backRefs": [
             "373",
-            "395",
             "373",
             "373"
         ],
@@ -2948,9 +1848,7 @@
         "parent": "364",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "114"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice3.table"
     },
@@ -2978,9 +1876,7 @@
         "parent": "364",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "402"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice3.observerBackground"
     },
@@ -3042,9 +1938,7 @@
         "backRefs": [
             "763"
         ],
-        "forwardRefs": [
-            "126"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice3.background"
     },
@@ -3130,197 +2024,9 @@
         "parent": "388",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "392"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice3.buttons.button1.onClick"
-    },
-    "392": {
-        "id": "392",
-        "name": "logisticRegression_3",
-        "type": "function",
-        "parent": "265",
-        "children": [
-            "393",
-            "394",
-            "395",
-            "396",
-            "397"
-        ],
-        "backRefs": [
-            "391"
-        ],
-        "forwardRefs": [],
-        "value": null,
-        "functionPointer": "logisticregression.logistic_regression",
-        "autoReload": true,
-        "browsePath": "root.ui_function.logisticRegression_3"
-    },
-    "393": {
-        "id": "393",
-        "name": "input",
-        "type": "referencer",
-        "parent": "392",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "120",
-            "122",
-            "123"
-        ],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_3.input"
-    },
-    "394": {
-        "id": "394",
-        "name": "output",
-        "type": "referencer",
-        "parent": "392",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "126"
-        ],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_3.output"
-    },
-    "395": {
-        "id": "395",
-        "name": "annotations",
-        "type": "referencer",
-        "parent": "392",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "374"
-        ],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_3.annotations"
-    },
-    "396": {
-        "id": "396",
-        "name": "categoryMap",
-        "type": "const",
-        "parent": "392",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": {
-            "busy": 1,
-            "free": 0
-        },
-        "browsePath": "root.ui_function.logisticRegression_3.categoryMap"
-    },
-    "397": {
-        "id": "397",
-        "name": "control",
-        "type": "folder",
-        "parent": "392",
-        "children": [
-            "398",
-            "399",
-            "400",
-            "401",
-            "402",
-            "403",
-            "404",
-            "405"
-        ],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_3.control"
-    },
-    "398": {
-        "id": "398",
-        "name": "status",
-        "type": "variable",
-        "parent": "397",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "idle",
-        "browsePath": "root.ui_function.logisticRegression_3.control.status"
-    },
-    "399": {
-        "id": "399",
-        "name": "progress",
-        "type": "variable",
-        "parent": "397",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 0,
-        "browsePath": "root.ui_function.logisticRegression_3.control.progress"
-    },
-    "400": {
-        "id": "400",
-        "name": "result",
-        "type": "variable",
-        "parent": "397",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "ok",
-        "browsePath": "root.ui_function.logisticRegression_3.control.result"
-    },
-    "401": {
-        "id": "401",
-        "name": "signal",
-        "type": "variable",
-        "parent": "397",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "nosignal",
-        "browsePath": "root.ui_function.logisticRegression_3.control.signal"
-    },
-    "402": {
-        "id": "402",
-        "name": "executionCounter",
-        "type": "variable",
-        "parent": "397",
-        "children": [],
-        "backRefs": [
-            "379"
-        ],
-        "forwardRefs": [],
-        "value": 0,
-        "browsePath": "root.ui_function.logisticRegression_3.control.executionCounter"
-    },
-    "403": {
-        "id": "403",
-        "name": "lastExecutionDuration",
-        "type": "variable",
-        "parent": "397",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 0,
-        "browsePath": "root.ui_function.logisticRegression_3.control.lastExecutionDuration"
-    },
-    "404": {
-        "id": "404",
-        "name": "lastStartTime",
-        "type": "variable",
-        "parent": "397",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "not yet",
-        "browsePath": "root.ui_function.logisticRegression_3.control.lastStartTime"
-    },
-    "405": {
-        "id": "405",
-        "name": "executionType",
-        "type": "const",
-        "parent": "397",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "async",
-        "browsePath": "root.ui_function.logisticRegression_3.control.executionType"
     },
     "406": {
         "id": "406",
@@ -3400,9 +2106,7 @@
         "backRefs": [
             "799"
         ],
-        "forwardRefs": [
-            "118"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice4.selectableVariables"
     },
@@ -3415,9 +2119,7 @@
         "backRefs": [
             "781"
         ],
-        "forwardRefs": [
-            "120"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice4.selectedVariables"
     },
@@ -3508,7 +2210,6 @@
         "children": [],
         "backRefs": [
             "415",
-            "437",
             "415",
             "415"
         ],
@@ -3557,9 +2258,7 @@
         "parent": "406",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "114"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice4.table"
     },
@@ -3587,9 +2286,7 @@
         "parent": "406",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "444"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice4.observerBackground"
     },
@@ -3651,9 +2348,7 @@
         "backRefs": [
             "790"
         ],
-        "forwardRefs": [
-            "126"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice4.background"
     },
@@ -3739,197 +2434,9 @@
         "parent": "430",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "434"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice4.buttons.button1.onClick"
-    },
-    "434": {
-        "id": "434",
-        "name": "logisticRegression_4",
-        "type": "function",
-        "parent": "265",
-        "children": [
-            "435",
-            "436",
-            "437",
-            "438",
-            "439"
-        ],
-        "backRefs": [
-            "433"
-        ],
-        "forwardRefs": [],
-        "value": null,
-        "functionPointer": "logisticregression.logistic_regression",
-        "autoReload": true,
-        "browsePath": "root.ui_function.logisticRegression_4"
-    },
-    "435": {
-        "id": "435",
-        "name": "input",
-        "type": "referencer",
-        "parent": "434",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "120",
-            "122",
-            "123"
-        ],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_4.input"
-    },
-    "436": {
-        "id": "436",
-        "name": "output",
-        "type": "referencer",
-        "parent": "434",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "126"
-        ],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_4.output"
-    },
-    "437": {
-        "id": "437",
-        "name": "annotations",
-        "type": "referencer",
-        "parent": "434",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "416"
-        ],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_4.annotations"
-    },
-    "438": {
-        "id": "438",
-        "name": "categoryMap",
-        "type": "const",
-        "parent": "434",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": {
-            "busy": 1,
-            "free": 0
-        },
-        "browsePath": "root.ui_function.logisticRegression_4.categoryMap"
-    },
-    "439": {
-        "id": "439",
-        "name": "control",
-        "type": "folder",
-        "parent": "434",
-        "children": [
-            "440",
-            "441",
-            "442",
-            "443",
-            "444",
-            "445",
-            "446",
-            "447"
-        ],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_4.control"
-    },
-    "440": {
-        "id": "440",
-        "name": "status",
-        "type": "variable",
-        "parent": "439",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "idle",
-        "browsePath": "root.ui_function.logisticRegression_4.control.status"
-    },
-    "441": {
-        "id": "441",
-        "name": "progress",
-        "type": "variable",
-        "parent": "439",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 0,
-        "browsePath": "root.ui_function.logisticRegression_4.control.progress"
-    },
-    "442": {
-        "id": "442",
-        "name": "result",
-        "type": "variable",
-        "parent": "439",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "ok",
-        "browsePath": "root.ui_function.logisticRegression_4.control.result"
-    },
-    "443": {
-        "id": "443",
-        "name": "signal",
-        "type": "variable",
-        "parent": "439",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "nosignal",
-        "browsePath": "root.ui_function.logisticRegression_4.control.signal"
-    },
-    "444": {
-        "id": "444",
-        "name": "executionCounter",
-        "type": "variable",
-        "parent": "439",
-        "children": [],
-        "backRefs": [
-            "421"
-        ],
-        "forwardRefs": [],
-        "value": 0,
-        "browsePath": "root.ui_function.logisticRegression_4.control.executionCounter"
-    },
-    "445": {
-        "id": "445",
-        "name": "lastExecutionDuration",
-        "type": "variable",
-        "parent": "439",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 0,
-        "browsePath": "root.ui_function.logisticRegression_4.control.lastExecutionDuration"
-    },
-    "446": {
-        "id": "446",
-        "name": "lastStartTime",
-        "type": "variable",
-        "parent": "439",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "not yet",
-        "browsePath": "root.ui_function.logisticRegression_4.control.lastStartTime"
-    },
-    "447": {
-        "id": "447",
-        "name": "executionType",
-        "type": "const",
-        "parent": "439",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "async",
-        "browsePath": "root.ui_function.logisticRegression_4.control.executionType"
     },
     "448": {
         "id": "448",
@@ -4009,9 +2516,7 @@
         "backRefs": [
             "826"
         ],
-        "forwardRefs": [
-            "118"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice5.selectableVariables"
     },
@@ -4024,9 +2529,7 @@
         "backRefs": [
             "808"
         ],
-        "forwardRefs": [
-            "120"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice5.selectedVariables"
     },
@@ -4117,7 +2620,6 @@
         "children": [],
         "backRefs": [
             "457",
-            "479",
             "457",
             "457"
         ],
@@ -4166,9 +2668,7 @@
         "parent": "448",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "114"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice5.table"
     },
@@ -4196,9 +2696,7 @@
         "parent": "448",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "486"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice5.observerBackground"
     },
@@ -4260,9 +2758,7 @@
         "backRefs": [
             "817"
         ],
-        "forwardRefs": [
-            "126"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice5.background"
     },
@@ -4348,197 +2844,9 @@
         "parent": "472",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "476"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.selfservice5.buttons.button1.onClick"
-    },
-    "476": {
-        "id": "476",
-        "name": "logisticRegression_5",
-        "type": "function",
-        "parent": "265",
-        "children": [
-            "477",
-            "478",
-            "479",
-            "480",
-            "481"
-        ],
-        "backRefs": [
-            "475"
-        ],
-        "forwardRefs": [],
-        "value": null,
-        "functionPointer": "logisticregression.logistic_regression",
-        "autoReload": true,
-        "browsePath": "root.ui_function.logisticRegression_5"
-    },
-    "477": {
-        "id": "477",
-        "name": "input",
-        "type": "referencer",
-        "parent": "476",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "120",
-            "122",
-            "123"
-        ],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_5.input"
-    },
-    "478": {
-        "id": "478",
-        "name": "output",
-        "type": "referencer",
-        "parent": "476",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "126"
-        ],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_5.output"
-    },
-    "479": {
-        "id": "479",
-        "name": "annotations",
-        "type": "referencer",
-        "parent": "476",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "458"
-        ],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_5.annotations"
-    },
-    "480": {
-        "id": "480",
-        "name": "categoryMap",
-        "type": "const",
-        "parent": "476",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": {
-            "busy": 1,
-            "free": 0
-        },
-        "browsePath": "root.ui_function.logisticRegression_5.categoryMap"
-    },
-    "481": {
-        "id": "481",
-        "name": "control",
-        "type": "folder",
-        "parent": "476",
-        "children": [
-            "482",
-            "483",
-            "484",
-            "485",
-            "486",
-            "487",
-            "488",
-            "489"
-        ],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.ui_function.logisticRegression_5.control"
-    },
-    "482": {
-        "id": "482",
-        "name": "status",
-        "type": "variable",
-        "parent": "481",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "idle",
-        "browsePath": "root.ui_function.logisticRegression_5.control.status"
-    },
-    "483": {
-        "id": "483",
-        "name": "progress",
-        "type": "variable",
-        "parent": "481",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 0,
-        "browsePath": "root.ui_function.logisticRegression_5.control.progress"
-    },
-    "484": {
-        "id": "484",
-        "name": "result",
-        "type": "variable",
-        "parent": "481",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "ok",
-        "browsePath": "root.ui_function.logisticRegression_5.control.result"
-    },
-    "485": {
-        "id": "485",
-        "name": "signal",
-        "type": "variable",
-        "parent": "481",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "nosignal",
-        "browsePath": "root.ui_function.logisticRegression_5.control.signal"
-    },
-    "486": {
-        "id": "486",
-        "name": "executionCounter",
-        "type": "variable",
-        "parent": "481",
-        "children": [],
-        "backRefs": [
-            "463"
-        ],
-        "forwardRefs": [],
-        "value": 0,
-        "browsePath": "root.ui_function.logisticRegression_5.control.executionCounter"
-    },
-    "487": {
-        "id": "487",
-        "name": "lastExecutionDuration",
-        "type": "variable",
-        "parent": "481",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 0,
-        "browsePath": "root.ui_function.logisticRegression_5.control.lastExecutionDuration"
-    },
-    "488": {
-        "id": "488",
-        "name": "lastStartTime",
-        "type": "variable",
-        "parent": "481",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "not yet",
-        "browsePath": "root.ui_function.logisticRegression_5.control.lastStartTime"
-    },
-    "489": {
-        "id": "489",
-        "name": "executionType",
-        "type": "const",
-        "parent": "481",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "async",
-        "browsePath": "root.ui_function.logisticRegression_5.control.executionType"
     },
     "490": {
         "id": "490",
@@ -5458,9 +3766,7 @@
             "10029816200158863035",
             "664"
         ],
-        "forwardRefs": [
-            "6006518614948519917"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.workbench.scoreVariables"
     },
@@ -6151,7 +4457,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 7,
+        "value": 9,
         "browsePath": "root.visualization.selfservice0.observerVariables.triggerCounter"
     },
     "672": {
@@ -6162,7 +4468,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2019-07-30T13:51:02.849954",
+        "value": "2020-04-23T08:44:50.758956",
         "browsePath": "root.visualization.selfservice0.observerVariables.lastTriggerTime"
     },
     "673": {
@@ -6487,7 +4793,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0,
+        "value": 1,
         "browsePath": "root.visualization.selfservice1.observerVariables.triggerCounter"
     },
     "699": {
@@ -6498,7 +4804,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "",
+        "value": "2020-04-23T08:44:50.713174",
         "browsePath": "root.visualization.selfservice1.observerVariables.lastTriggerTime"
     },
     "700": {
@@ -6823,7 +5129,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0,
+        "value": 1,
         "browsePath": "root.visualization.selfservice2.observerVariables.triggerCounter"
     },
     "726": {
@@ -6834,7 +5140,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "",
+        "value": "2020-04-23T08:44:50.717111",
         "browsePath": "root.visualization.selfservice2.observerVariables.lastTriggerTime"
     },
     "727": {
@@ -7159,7 +5465,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0,
+        "value": 1,
         "browsePath": "root.visualization.selfservice3.observerVariables.triggerCounter"
     },
     "753": {
@@ -7170,7 +5476,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "",
+        "value": "2020-04-23T08:44:50.726154",
         "browsePath": "root.visualization.selfservice3.observerVariables.lastTriggerTime"
     },
     "754": {
@@ -7495,7 +5801,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0,
+        "value": 1,
         "browsePath": "root.visualization.selfservice4.observerVariables.triggerCounter"
     },
     "780": {
@@ -7506,7 +5812,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "",
+        "value": "2020-04-23T08:44:50.728681",
         "browsePath": "root.visualization.selfservice4.observerVariables.lastTriggerTime"
     },
     "781": {
@@ -7831,7 +6137,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0,
+        "value": 1,
         "browsePath": "root.visualization.selfservice5.observerVariables.triggerCounter"
     },
     "807": {
@@ -7842,7 +6148,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "",
+        "value": "2020-04-23T08:44:50.730689",
         "browsePath": "root.visualization.selfservice5.observerVariables.lastTriggerTime"
     },
     "808": {
@@ -8341,10 +6647,7 @@
         "parent": "127",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "218",
-            "15325922506801289201"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.workbench.contextMenuFunctions"
     },
@@ -8588,214 +6891,6 @@
         "forwardRefs": [],
         "value": "timeSeriesWidget.visibleElements",
         "browsePath": "root.visualization.workbench.observerVisibleElements.eventString"
-    },
-    "15325922506801289201": {
-        "id": "15325922506801289201",
-        "name": "thresholdScorer",
-        "type": "function",
-        "parent": "1",
-        "children": [
-            "7376493555639217537",
-            "1348695191476031595",
-            "3489967599772974564",
-            "4839714970422701582",
-            "14025436904047117033",
-            "18049724976224920708",
-            "16439521956232905422"
-        ],
-        "backRefs": [
-            "14814504338557830832"
-        ],
-        "forwardRefs": [],
-        "value": null,
-        "functionPointer": "threshold.threshold_scorer_4",
-        "autoReload": true,
-        "browsePath": "root.thresholdScorer"
-    },
-    "7376493555639217537": {
-        "id": "7376493555639217537",
-        "name": "input",
-        "type": "referencer",
-        "parent": "15325922506801289201",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "118"
-        ],
-        "value": null,
-        "browsePath": "root.thresholdScorer.input"
-    },
-    "1348695191476031595": {
-        "id": "1348695191476031595",
-        "name": "output",
-        "type": "folder",
-        "parent": "15325922506801289201",
-        "children": [
-            "6006518614948519917",
-            "3266302438377665363"
-        ],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.thresholdScorer.output"
-    },
-    "3489967599772974564": {
-        "id": "3489967599772974564",
-        "name": "annotations",
-        "type": "referencer",
-        "parent": "15325922506801289201",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "135"
-        ],
-        "value": null,
-        "browsePath": "root.thresholdScorer.annotations"
-    },
-    "4839714970422701582": {
-        "id": "4839714970422701582",
-        "name": "annotationsFilter",
-        "type": "const",
-        "parent": "15325922506801289201",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": [
-            "region"
-        ],
-        "browsePath": "root.thresholdScorer.annotationsFilter"
-    },
-    "14025436904047117033": {
-        "id": "14025436904047117033",
-        "name": "thresholds",
-        "type": "referencer",
-        "parent": "15325922506801289201",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "135"
-        ],
-        "value": null,
-        "browsePath": "root.thresholdScorer.thresholds"
-    },
-    "18049724976224920708": {
-        "id": "18049724976224920708",
-        "name": "incremental",
-        "type": "const",
-        "parent": "15325922506801289201",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": false,
-        "browsePath": "root.thresholdScorer.incremental"
-    },
-    "16439521956232905422": {
-        "id": "16439521956232905422",
-        "name": "control",
-        "type": "folder",
-        "parent": "15325922506801289201",
-        "children": [
-            "7507700276318024503",
-            "6043403819910224130",
-            "9096717342180119554",
-            "16176379679654124950",
-            "7546964448923990847",
-            "5131199841340550266",
-            "8402630191021691744",
-            "16087097520903802600"
-        ],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.thresholdScorer.control"
-    },
-    "7507700276318024503": {
-        "id": "7507700276318024503",
-        "name": "status",
-        "type": "variable",
-        "parent": "16439521956232905422",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "finished",
-        "browsePath": "root.thresholdScorer.control.status"
-    },
-    "6043403819910224130": {
-        "id": "6043403819910224130",
-        "name": "progress",
-        "type": "variable",
-        "parent": "16439521956232905422",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 1,
-        "browsePath": "root.thresholdScorer.control.progress"
-    },
-    "9096717342180119554": {
-        "id": "9096717342180119554",
-        "name": "result",
-        "type": "variable",
-        "parent": "16439521956232905422",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "ok",
-        "browsePath": "root.thresholdScorer.control.result"
-    },
-    "16176379679654124950": {
-        "id": "16176379679654124950",
-        "name": "signal",
-        "type": "variable",
-        "parent": "16439521956232905422",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "",
-        "browsePath": "root.thresholdScorer.control.signal"
-    },
-    "7546964448923990847": {
-        "id": "7546964448923990847",
-        "name": "executionCounter",
-        "type": "variable",
-        "parent": "16439521956232905422",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 40,
-        "browsePath": "root.thresholdScorer.control.executionCounter"
-    },
-    "5131199841340550266": {
-        "id": "5131199841340550266",
-        "name": "lastExecutionDuration",
-        "type": "variable",
-        "parent": "16439521956232905422",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 0.04399,
-        "browsePath": "root.thresholdScorer.control.lastExecutionDuration"
-    },
-    "8402630191021691744": {
-        "id": "8402630191021691744",
-        "name": "lastStartTime",
-        "type": "variable",
-        "parent": "16439521956232905422",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "2020-02-17T03:14:35.491181",
-        "browsePath": "root.thresholdScorer.control.lastStartTime"
-    },
-    "16087097520903802600": {
-        "id": "16087097520903802600",
-        "name": "executionType",
-        "type": "const",
-        "parent": "16439521956232905422",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "async",
-        "browsePath": "root.thresholdScorer.control.executionType"
     },
     "6160506389736408574": {
         "id": "6160506389736408574",
@@ -9127,9 +7222,7 @@
         "parent": "16138084141055348268",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "120"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.e3fe7e81.variable"
     },
@@ -9327,53 +7420,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": {
-            "entry": {
-                "lineColor": "red"
-            },
-            "root.thresholdScorer.output.Humidity_score": {
-                "lineColor": "red"
-            },
-            "root.occupancyData.variables.Humidity": {
-                "lineColor": "#D9B100"
-            },
-            "root.occupancyData.variables.Temperature": {
-                "lineColor": "#eba4fc"
-            },
-            "root.thresholdScorer.output.Temperature_score": {
-                "lineColor": "red"
-            },
-            "root.new_motifMinerTemplate_4430.MotifMiner.score": {
-                "lineColor": "gray"
-            },
-            "root.thresholdScorer.output.scores.Temperature_score": {
-                "lineColor": "red"
-            },
-            "root.thresholdScorer.output.scores.Humidity_score": {
-                "lineColor": "red"
-            },
-            "root.thresholdScorer.output._total_score": {
-                "lineColor": "red"
-            },
-            "root.importer.importer_import.table.variables.val1": {
-                "lineColor": "#D9B100"
-            },
-            "root.imports.test-with-header-3-rows_txt.variables.Temperature": {
-                "lineColor": "#D9B100"
-            },
-            "root.imports.test-with-header-3-rows_txt.variables.Humidity": {
-                "lineColor": "#eba4fc"
-            },
-            "root.imports.test-with-header_txt.variables.Humidity": {
-                "lineColor": "#D9B100"
-            },
-            "root.imports.test-with-header_txt.variables.Occupancy": {
-                "lineColor": "#eba4fc"
-            },
-            "root.imports.test-with-header_txt.variables.Temperature": {
-                "lineColor": "#D9B100"
-            }
-        },
+        "value": {},
         "browsePath": "root.visualization.workbench.currentColors"
     },
     "8639743599502979877": {
@@ -12359,9 +10406,7 @@
         "parent": "12761865699925107392",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "121"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.2a08747b.variable"
     },
@@ -12426,9 +10471,7 @@
         "parent": "16946385616039162617",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "126"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.system.relevantChanges.targets"
     },
@@ -12951,9 +10994,7 @@
             "4303969473532840571",
             "57832287729083089"
         ],
-        "backRefs": [
-            "12226988837753147426"
-        ],
+        "backRefs": [],
         "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.0feeb379"
@@ -13011,627 +11052,9 @@
         "parent": "1660366744481031556",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "120"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.0feeb379.variable"
-    },
-    "401335041852249076": {
-        "id": "401335041852249076",
-        "name": "motifMiner",
-        "type": "folder",
-        "parent": "1",
-        "children": [
-            "10998118072370379813",
-            "2915518221520914070",
-            "2680764281827867399",
-            "16344679377884364987"
-        ],
-        "backRefs": [
-            "15499764811511790654"
-        ],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.motifMiner"
-    },
-    "10998118072370379813": {
-        "id": "10998118072370379813",
-        "name": "MotifMiner",
-        "type": "function",
-        "parent": "401335041852249076",
-        "children": [
-            "12226988837753147426",
-            "865469451512511712",
-            "10547512889149865709",
-            "8268473328863278363",
-            "17988038100535752004",
-            "280389949557983769",
-            "3490434795173453250",
-            "15946607831162735765",
-            "9754810057187342824",
-            "5016083082530735616",
-            "5642357875023677979"
-        ],
-        "backRefs": [
-            "4520372586088418027"
-        ],
-        "forwardRefs": [],
-        "value": null,
-        "functionPointer": "motifmining.motif_miner",
-        "autoReload": true,
-        "browsePath": "root.motifMiner.MotifMiner"
-    },
-    "12226988837753147426": {
-        "id": "12226988837753147426",
-        "name": "motif",
-        "type": "referencer",
-        "parent": "10998118072370379813",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "1660366744481031556"
-        ],
-        "value": null,
-        "browsePath": "root.motifMiner.MotifMiner.motif"
-    },
-    "865469451512511712": {
-        "id": "865469451512511712",
-        "name": "score",
-        "type": "timeseries",
-        "parent": "10998118072370379813",
-        "children": [],
-        "backRefs": [
-            "116"
-        ],
-        "forwardRefs": [],
-        "value": "len 5",
-        "browsePath": "root.motifMiner.MotifMiner.score"
-    },
-    "10547512889149865709": {
-        "id": "10547512889149865709",
-        "name": "algorithm",
-        "type": "const",
-        "parent": "10998118072370379813",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "pearson_center",
-        "validation": {
-            "values": [
-                "euclidean",
-                "pearson",
-                "pearson_center",
-                "convolution"
-            ]
-        },
-        "browsePath": "root.motifMiner.MotifMiner.algorithm"
-    },
-    "8268473328863278363": {
-        "id": "8268473328863278363",
-        "name": "widget",
-        "type": "referencer",
-        "parent": "10998118072370379813",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "127"
-        ],
-        "value": null,
-        "browsePath": "root.motifMiner.MotifMiner.widget"
-    },
-    "17988038100535752004": {
-        "id": "17988038100535752004",
-        "name": "table",
-        "type": "referencer",
-        "parent": "10998118072370379813",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "114"
-        ],
-        "value": null,
-        "browsePath": "root.motifMiner.MotifMiner.table"
-    },
-    "280389949557983769": {
-        "id": "280389949557983769",
-        "name": "peaks",
-        "type": "variable",
-        "parent": "10998118072370379813",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": [
-            "2015-02-12T07:40:00+01:00",
-            "2015-02-15T07:53:00+01:00"
-        ],
-        "browsePath": "root.motifMiner.MotifMiner.peaks"
-    },
-    "3490434795173453250": {
-        "id": "3490434795173453250",
-        "name": "addNoise",
-        "type": "const",
-        "parent": "10998118072370379813",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 0.001,
-        "browsePath": "root.motifMiner.MotifMiner.addNoise"
-    },
-    "15946607831162735765": {
-        "id": "15946607831162735765",
-        "name": "subSamplingFactor",
-        "type": "const",
-        "parent": "10998118072370379813",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 1,
-        "browsePath": "root.motifMiner.MotifMiner.subSamplingFactor"
-    },
-    "9754810057187342824": {
-        "id": "9754810057187342824",
-        "name": "subtractPolynomOrder",
-        "type": "const",
-        "parent": "10998118072370379813",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "none",
-        "validation": {
-            "values": [
-                "none",
-                1,
-                2,
-                3
-            ]
-        },
-        "browsePath": "root.motifMiner.MotifMiner.subtractPolynomOrder"
-    },
-    "5016083082530735616": {
-        "id": "5016083082530735616",
-        "name": "annotations",
-        "type": "folder",
-        "parent": "10998118072370379813",
-        "children": [],
-        "backRefs": [
-            "134"
-        ],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.motifMiner.MotifMiner.annotations"
-    },
-    "5642357875023677979": {
-        "id": "5642357875023677979",
-        "name": "control",
-        "type": "folder",
-        "parent": "10998118072370379813",
-        "children": [
-            "15253596536538640030",
-            "11462529451254355315",
-            "10954863567548694535",
-            "637426215851148006",
-            "12695124393040584113",
-            "2356084669063915686",
-            "17389826042746726166",
-            "14246104909690209583"
-        ],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.motifMiner.MotifMiner.control"
-    },
-    "15253596536538640030": {
-        "id": "15253596536538640030",
-        "name": "status",
-        "type": "variable",
-        "parent": "5642357875023677979",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "finished",
-        "browsePath": "root.motifMiner.MotifMiner.control.status"
-    },
-    "11462529451254355315": {
-        "id": "11462529451254355315",
-        "name": "progress",
-        "type": "variable",
-        "parent": "5642357875023677979",
-        "children": [],
-        "backRefs": [
-            "17283235606112782456"
-        ],
-        "forwardRefs": [],
-        "value": 1,
-        "browsePath": "root.motifMiner.MotifMiner.control.progress"
-    },
-    "10954863567548694535": {
-        "id": "10954863567548694535",
-        "name": "result",
-        "type": "variable",
-        "parent": "5642357875023677979",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "ok",
-        "browsePath": "root.motifMiner.MotifMiner.control.result"
-    },
-    "637426215851148006": {
-        "id": "637426215851148006",
-        "name": "signal",
-        "type": "variable",
-        "parent": "5642357875023677979",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "stop",
-        "browsePath": "root.motifMiner.MotifMiner.control.signal"
-    },
-    "12695124393040584113": {
-        "id": "12695124393040584113",
-        "name": "executionCounter",
-        "type": "variable",
-        "parent": "5642357875023677979",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 27,
-        "browsePath": "root.motifMiner.MotifMiner.control.executionCounter"
-    },
-    "2356084669063915686": {
-        "id": "2356084669063915686",
-        "name": "lastExecutionDuration",
-        "type": "variable",
-        "parent": "5642357875023677979",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 1.552774,
-        "browsePath": "root.motifMiner.MotifMiner.control.lastExecutionDuration"
-    },
-    "17389826042746726166": {
-        "id": "17389826042746726166",
-        "name": "lastStartTime",
-        "type": "variable",
-        "parent": "5642357875023677979",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "2019-12-19T10:22:03.672171",
-        "browsePath": "root.motifMiner.MotifMiner.control.lastStartTime"
-    },
-    "14246104909690209583": {
-        "id": "14246104909690209583",
-        "name": "executionType",
-        "type": "const",
-        "parent": "5642357875023677979",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "threaded",
-        "browsePath": "root.motifMiner.MotifMiner.control.executionType"
-    },
-    "2915518221520914070": {
-        "id": "2915518221520914070",
-        "name": "peakSearch",
-        "type": "function",
-        "parent": "401335041852249076",
-        "children": [
-            "4520372586088418027",
-            "15503604190603529556",
-            "12838071190582717935",
-            "9058897404016321308",
-            "5464777273696932993"
-        ],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": null,
-        "functionPointer": "motifmining.motif_jumper",
-        "autoReload": true,
-        "browsePath": "root.motifMiner.peakSearch"
-    },
-    "4520372586088418027": {
-        "id": "4520372586088418027",
-        "name": "miner",
-        "type": "referencer",
-        "parent": "2915518221520914070",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "10998118072370379813"
-        ],
-        "value": null,
-        "browsePath": "root.motifMiner.peakSearch.miner"
-    },
-    "15503604190603529556": {
-        "id": "15503604190603529556",
-        "name": "jumpPos",
-        "type": "variable",
-        "parent": "2915518221520914070",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 1,
-        "browsePath": "root.motifMiner.peakSearch.jumpPos"
-    },
-    "12838071190582717935": {
-        "id": "12838071190582717935",
-        "name": "jumpInc",
-        "type": "const",
-        "parent": "2915518221520914070",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 1,
-        "browsePath": "root.motifMiner.peakSearch.jumpInc"
-    },
-    "9058897404016321308": {
-        "id": "9058897404016321308",
-        "name": "threshold",
-        "type": "const",
-        "parent": "2915518221520914070",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 0.7,
-        "browsePath": "root.motifMiner.peakSearch.threshold"
-    },
-    "5464777273696932993": {
-        "id": "5464777273696932993",
-        "name": "control",
-        "type": "folder",
-        "parent": "2915518221520914070",
-        "children": [
-            "17494623717155789251",
-            "15167020716229809361",
-            "6385185628909230498",
-            "17827806060079803071",
-            "7623040957332667077",
-            "8725284362219980624",
-            "6991312699040976896",
-            "14265234627034276476"
-        ],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.motifMiner.peakSearch.control"
-    },
-    "17494623717155789251": {
-        "id": "17494623717155789251",
-        "name": "status",
-        "type": "variable",
-        "parent": "5464777273696932993",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "finished",
-        "browsePath": "root.motifMiner.peakSearch.control.status"
-    },
-    "15167020716229809361": {
-        "id": "15167020716229809361",
-        "name": "progress",
-        "type": "variable",
-        "parent": "5464777273696932993",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 1,
-        "browsePath": "root.motifMiner.peakSearch.control.progress"
-    },
-    "6385185628909230498": {
-        "id": "6385185628909230498",
-        "name": "result",
-        "type": "variable",
-        "parent": "5464777273696932993",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "ok",
-        "browsePath": "root.motifMiner.peakSearch.control.result"
-    },
-    "17827806060079803071": {
-        "id": "17827806060079803071",
-        "name": "signal",
-        "type": "variable",
-        "parent": "5464777273696932993",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "nosignal",
-        "browsePath": "root.motifMiner.peakSearch.control.signal"
-    },
-    "7623040957332667077": {
-        "id": "7623040957332667077",
-        "name": "executionCounter",
-        "type": "variable",
-        "parent": "5464777273696932993",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 7,
-        "browsePath": "root.motifMiner.peakSearch.control.executionCounter"
-    },
-    "8725284362219980624": {
-        "id": "8725284362219980624",
-        "name": "lastExecutionDuration",
-        "type": "variable",
-        "parent": "5464777273696932993",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 0.015997,
-        "browsePath": "root.motifMiner.peakSearch.control.lastExecutionDuration"
-    },
-    "6991312699040976896": {
-        "id": "6991312699040976896",
-        "name": "lastStartTime",
-        "type": "variable",
-        "parent": "5464777273696932993",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "2019-12-18T13:26:50.773511",
-        "browsePath": "root.motifMiner.peakSearch.control.lastStartTime"
-    },
-    "14265234627034276476": {
-        "id": "14265234627034276476",
-        "name": "executionType",
-        "type": "const",
-        "parent": "5464777273696932993",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "threaded",
-        "browsePath": "root.motifMiner.peakSearch.control.executionType"
-    },
-    "2680764281827867399": {
-        "id": "2680764281827867399",
-        "name": "progress",
-        "type": "observer",
-        "parent": "401335041852249076",
-        "children": [
-            "9894136659441874083",
-            "14978729848249813801",
-            "9110591990822317188",
-            "17283235606112782456",
-            "4866577992401405828",
-            "4019348684348165229",
-            "6235510311018510344",
-            "10593915740513220358",
-            "17715526377335957902",
-            "12186974042080251746"
-        ],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.motifMiner.progress"
-    },
-    "9894136659441874083": {
-        "id": "9894136659441874083",
-        "name": "enabled",
-        "type": "const",
-        "parent": "2680764281827867399",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": true,
-        "browsePath": "root.motifMiner.progress.enabled"
-    },
-    "14978729848249813801": {
-        "id": "14978729848249813801",
-        "name": "triggerCounter",
-        "type": "variable",
-        "parent": "2680764281827867399",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 108,
-        "browsePath": "root.motifMiner.progress.triggerCounter"
-    },
-    "9110591990822317188": {
-        "id": "9110591990822317188",
-        "name": "lastTriggerTime",
-        "type": "variable",
-        "parent": "2680764281827867399",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "2019-12-19T10:22:05.227873",
-        "browsePath": "root.motifMiner.progress.lastTriggerTime"
-    },
-    "17283235606112782456": {
-        "id": "17283235606112782456",
-        "name": "targets",
-        "type": "referencer",
-        "parent": "2680764281827867399",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "11462529451254355315"
-        ],
-        "value": null,
-        "browsePath": "root.motifMiner.progress.targets"
-    },
-    "4866577992401405828": {
-        "id": "4866577992401405828",
-        "name": "properties",
-        "type": "const",
-        "parent": "2680764281827867399",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": [
-            "value"
-        ],
-        "browsePath": "root.motifMiner.progress.properties"
-    },
-    "4019348684348165229": {
-        "id": "4019348684348165229",
-        "name": "onTriggerFunction",
-        "type": "referencer",
-        "parent": "2680764281827867399",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.motifMiner.progress.onTriggerFunction"
-    },
-    "6235510311018510344": {
-        "id": "6235510311018510344",
-        "name": "triggerSourceId",
-        "type": "variable",
-        "parent": "2680764281827867399",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "11462529451254355315",
-        "browsePath": "root.motifMiner.progress.triggerSourceId"
-    },
-    "10593915740513220358": {
-        "id": "10593915740513220358",
-        "name": "hasEvent",
-        "type": "const",
-        "parent": "2680764281827867399",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": true,
-        "browsePath": "root.motifMiner.progress.hasEvent"
-    },
-    "17715526377335957902": {
-        "id": "17715526377335957902",
-        "name": "eventString",
-        "type": "const",
-        "parent": "2680764281827867399",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "motifminer.progress",
-        "browsePath": "root.motifMiner.progress.eventString"
-    },
-    "12186974042080251746": {
-        "id": "12186974042080251746",
-        "name": "eventData",
-        "type": "const",
-        "parent": "2680764281827867399",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": {
-            "text": "observer status update"
-        },
-        "browsePath": "root.motifMiner.progress.eventData"
-    },
-    "16344679377884364987": {
-        "id": "16344679377884364987",
-        "name": "cockpit",
-        "type": "const",
-        "parent": "401335041852249076",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": "/customui/motifminer1cockpit.htm",
-        "browsePath": "root.motifMiner.cockpit"
     },
     "15499764811511790654": {
         "id": "15499764811511790654",
@@ -13641,7 +11064,6 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [
-            "401335041852249076",
             "600134431294461625"
         ],
         "value": null,
@@ -13724,78 +11146,6 @@
         "value": {},
         "browsePath": "root.visualization.workbench.backgroundHighlight"
     },
-    "11623797839142531818": {
-        "id": "11623797839142531818",
-        "name": "resamplePeriod",
-        "type": "const",
-        "parent": "218",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [],
-        "value": 600,
-        "browsePath": "root.logisticRegression.resamplePeriod"
-    },
-    "6006518614948519917": {
-        "id": "6006518614948519917",
-        "name": "scores",
-        "type": "folder",
-        "parent": "1348695191476031595",
-        "children": [
-            "8103713051491286640",
-            "17470131557842947494"
-        ],
-        "backRefs": [
-            "576"
-        ],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.thresholdScorer.output.scores"
-    },
-    "3266302438377665363": {
-        "id": "3266302438377665363",
-        "name": "_total_score",
-        "type": "timeseries",
-        "parent": "1348695191476031595",
-        "children": [],
-        "backRefs": [
-            "116"
-        ],
-        "forwardRefs": [],
-        "value": "len 5",
-        "creator": "15325922506801289201",
-        "subType": "score",
-        "browsePath": "root.thresholdScorer.output._total_score"
-    },
-    "8103713051491286640": {
-        "id": "8103713051491286640",
-        "name": "Temperature_score",
-        "type": "timeseries",
-        "parent": "6006518614948519917",
-        "children": [],
-        "backRefs": [
-            "116"
-        ],
-        "forwardRefs": [],
-        "value": "len 5",
-        "subType": "score",
-        "creator": "15325922506801289201",
-        "browsePath": "root.thresholdScorer.output.scores.Temperature_score"
-    },
-    "17470131557842947494": {
-        "id": "17470131557842947494",
-        "name": "Humidity_score",
-        "type": "timeseries",
-        "parent": "6006518614948519917",
-        "children": [],
-        "backRefs": [
-            "116"
-        ],
-        "forwardRefs": [],
-        "value": "len 5",
-        "subType": "score",
-        "creator": "15325922506801289201",
-        "browsePath": "root.thresholdScorer.output.scores.Humidity_score"
-    },
     "14200580607556292096": {
         "id": "14200580607556292096",
         "name": "7031040a",
@@ -13866,9 +11216,7 @@
         "parent": "14200580607556292096",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "120"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.7031040a.variable"
     },
@@ -13880,9 +11228,9 @@
         "children": [
             "13303004183139838650",
             "34577306739286421",
-            "6899507005701698492",
             "6636804428678562831",
-            "15583169320598155063"
+            "15583169320598155063",
+            "6899507005701698492"
         ],
         "backRefs": [
             "15499764811511790654"
