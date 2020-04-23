@@ -4,6 +4,8 @@ import logging
 import pandas as pd 
 import os
 import json
+import datetime as dt
+import time
 
 importerPreviewTemplate = {
     "name":"importerPreview",
@@ -30,42 +32,26 @@ importerImportTemplate = {
 
 def importer_preview(functionNode):
 
-    # --- initialize logger
-    logger = functionNode.get_logger()
-    logger.info("==> importer_preview hello world")
-
-    # --- set some example data
-    data = {
-        "time": [ "2020-01-03T08:00:00.000+02:00", "2020-01-03T08:00:00.000+02:00" ],
-        "val1": [ 11.1, 12.4 ],
-        "val2": [ 1, 2 ],
-    }
-
-    # --- get filename
+    # --- set vars
     fileName = 'upload/' + functionNode.get_child("fileName").get_value()
-    logger.info(f"==> fileName {fileName}")
-
-    # --- read file
     pathBase = os.getcwd()
-    logger.info(f"==> pathBase {pathBase}")
 
+    # --- load csv data
     dataFile = pd.read_csv(fileName)
     previewData = dataFile.head()
-    logger.info(f"==> previewData {previewData}")
-    previewDataType = type(previewData)
-    logger.info(f"==> previewDataType {previewDataType}")
     previewDataString = previewData.to_json(orient='table')
-
 
     # --- update node with preview data
     node = functionNode.get_child("data_preview")
-    logger.info(f"==> node {node}")
     node.set_value(previewDataString)
 
     # --- return
     return True
 
 def importer_import(iN):
+
+    _helper_log(f"IMPORT STARTED")
+    timeStartImport = dt.datetime.now()
 
     # --- define vars
     model = iN.get_model()
@@ -84,22 +70,45 @@ def importer_import(iN):
     metadataRaw = table.get_child('metadata').get_value()
     metadata = json.loads(metadataRaw)
     fields = metadata["fields"] 
+    timefield = int(metadata["timefield"]) - 1
+    filename = metadata["filename"]
+    headerexists = metadata["headerexists"]
+    filepath = 'upload/' + filename 
 
-    # --- set vars
+    # --- load csv data
+    # * https://www.shanelynn.ie/python-pandas-read_csv-load-data-from-csv-files/
+    # * [ ] optimize speed? https://stackoverflow.com/questions/16476924/how-to-iterate-over-rows-in-a-dataframe-in-pandas
+    # * [ ] vectorize a loop https://stackoverflow.com/questions/27575854/vectorizing-a-function-in-pandas
+    df = pd.read_csv(filepath)
+
+    # --- define time list
+    # * select rows and columns from dataframe https://thispointer.com/select-rows-columns-by-name-or-index-in-dataframe-using-loc-iloc-python-pandas/
+    timeList = df.iloc[:,timefield].to_list()
+    epochs = [date2secs(time) for time in timeList]
+
+    # --- import data, set vars and columns
+    data = {}
     for field in fields:
+        fieldno = int(field["no"]) - 1
         fieldname = field["val"]
         fieldvar = vars.create_child(fieldname, type="timeseries")
+        if timefield != fieldno:
+            data[fieldname] = df.iloc[ :, fieldno].to_list()
+            fieldvar.set_time_series(values=data[fieldname],times=epochs)
         cols.add_references(fieldvar)
         _helper_log(f"val: {fieldname}")
 
-    #  # delete var (later)
+    # --- log
+    _helper_log(f"filename: {filename}")
+    _helper_log(f"timefield: {timefield}")
+    _helper_log(f"fields: {fields}")
+    _helper_log(f"data: {data}")
+    #  _helper_log(f"filepath: {filepath}")
+    #  _helper_log(f"dataFrame: {df}")
+    #  _helper_log(f"timeList: {timeList}")
 
-    #  # add var
-    #  val1 = vars.create_child("val1", type="timeseries")
-    #  val2 = vars.create_child("val2", type="timeseries")
-
-    #  # add cols
-    #  cols.add_references([ val1, val2 ])
+    for attr, value in data.items():
+        print(attr, value)
 
     #  # create values
     #  data = {
@@ -115,11 +124,18 @@ def importer_import(iN):
     #  val1.set_time_series(values=data["val1"],times=epochs)
     #  val2.set_time_series(values=data["val2"],times=epochs)
 
-    #  logger.info(f"========================================================> IMPORTER DONE")
-
+    time.sleep(1)
+    _helper_log(f"IMPORT DONE (seconds: {(dt.datetime.now()-timeStartImport).seconds})")
     return True
 
 def _helper_log(text):
     logging.warning('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
     logging.warning(text)
     logging.warning('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+
+#  val1 = vars.create_child("val1", type="timeseries")
+#  val2 = vars.create_child("val2", type="timeseries")
+#  cols.add_references([ val1, val2 ])
+#  for index, row in df.iterrows():
+    #  print(row[0])
+
