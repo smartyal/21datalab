@@ -70,7 +70,6 @@ function cockpit_importer_2_approve_file(fileName) {
     http_post( "/setProperties", JSON.stringify(query), null, null, function ( obj, status, data, params ) {
       // --- run import function
       http_post( "/_execute", cockpitPath + ".importer_preview", null, null, (self, status, data, params) => {
-        console.log("log",status);
         let importerApproveHtml = ``
         if ( status !== 200 ) {
           importerApproveHtml = `<p>Something went wrong while loading the file!</p>`
@@ -130,7 +129,6 @@ function cockpit_importer_3a_define_header_file_contains_header() {
   _helper_modal_activate_step_no(3)
   const selector = '#importer-content-3'
   $(selector).html('Waiting for header fields to load!')
-  console.log('importerFields', importerFields) 
   let html = ``
   for (var fieldNo = 1, fieldsLen = importerFields.length; fieldNo < fieldsLen; fieldNo++) {
     const field = importerFields[fieldNo]
@@ -304,7 +302,6 @@ function cockpit_importer_5_finish_import() {
     if ( isTime === true ) {
       timefield = no
     }
-    // console.log(fieldId, ':', fieldVal, fieldNo, 'import:', fieldImport) 
   })
   let tablename = $("#importer-tablename").val()
   let tablepath = $("#importer-tablepath").val()
@@ -318,7 +315,6 @@ function cockpit_importer_5_finish_import() {
     tablepath = 'root.' + $("#importer-tablepath").val().replace('/', '.') + tablename
   }
   const importerObj = { fields, filename, timefield, headerexists: importerHeaderExists }
-  console.log('importerObj', importerObj) 
   // --- update html
   msg = 'Waiting for import to be finished!'
   $(selector).html(_helper_html_wrap(msg, btnHtml))
@@ -397,7 +393,6 @@ function _helper_modal_activate_step_no( stepNo ) {
     const tabPaneId = 'tabpane' + stepNo
     const tabId = 'tab' + stepNo
     if ( newActivePane === childStepNo ) {
-      console.log('childStepNo active', childStepNo) 
       // --- activate actual pane
       $('#' + tabId).removeClass('disabled')
       $('#' + tabId).click()
@@ -425,13 +420,11 @@ function _helper_html_wrap(msg, wrap) {
 // - when checkbox time is set, all other time checkboxes will be removed 
 // - the corresponding import checkbox is activated
 function _helper_checkbox_time(fieldId) {
-  console.log('fieldId', fieldId) 
   const clickedElId = 'importer-field-time-' + fieldId
   $("#importer-field-import-" + fieldId).attr('checked', 'checked')
   $("input[id^=importer-field-time-]").each(function(index, el) {
     const elId = $(el).attr('id')
     if ( elId !== clickedElId ) {
-      console.log('elId', elId) 
       $(el).removeAttr('checked')
       $(el).prop('checked', false)
       $(el).attr('checked', false)
