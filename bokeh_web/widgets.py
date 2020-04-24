@@ -361,21 +361,25 @@ class TimeSeriesWidgetDataServer():
                 self.settings["observerIds"].append(node["id"])
 
         # now grab the info for the backgrounds
-        background={}
-        for node in info[0]["children"]:
-            if node["name"] == "hasBackground":
-                background["hasBackground"] = node["value"]
-            if node["name"] == "background" and background["hasBackground"]==True:
-                # we take only the first entry (there should be only one) of the referencer:
-                # this is the nodeId of the background values
-                background["background"]=node["forwardRefs"][0]
-            if node["name"] == "backgroundMap":
-                background["backgroundMap"] = copy.deepcopy(node["value"])      #the json map for background values and color mapping
-        if all(key in background for key in ["hasBackground","background","backgroundMap"]):
-            self.settings["background"]=copy.deepcopy(background)
-        else:
-            self.settings["background"]={"hasBackground":False}
-                #we dont have a valid background definition
+        try:
+            background={}
+            for node in info[0]["children"]:
+                if node["name"] == "hasBackground":
+                    background["hasBackground"] = node["value"]
+                if node["name"] == "background" and background["hasBackground"]==True:
+                    # we take only the first entry (there should be only one) of the referencer:
+                    # this is the nodeId of the background values
+                    background["background"]=node["forwardRefs"][0]
+                if node["name"] == "backgroundMap":
+                    background["backgroundMap"] = copy.deepcopy(node["value"])      #the json map for background values and color mapping
+            if all(key in background for key in ["hasBackground","background","backgroundMap"]):
+                self.settings["background"]=copy.deepcopy(background)
+            else:
+                self.settings["background"]={"hasBackground":False}
+                    #we dont have a valid background definition
+        except Exception as ex:
+            self.logger.error(f"problem loading background {ex}, {str(sys.exc_info()[1])}, disabling background")
+            self.settings["background"] = {"hasBackground": False}
 
 
         self.logger.debug("SERVER.SETTINGS-------------------------")
@@ -394,21 +398,25 @@ class TimeSeriesWidgetDataServer():
         annotations = {}
         for node in nodes:
             if node["type"] == "annotation":
-                annotation = get_const_nodes_as_dict(node["children"])
-                annotation["browsePath"]=node["browsePath"]
-                annotation["id"]=node["id"]
-                annotation["name"] = node["name"]
-                #convert some stuff
-                if "startTime" in annotation:
-                    annotation["startTime"] = date2secs(
-                        annotation["startTime"]) * 1000
-                if "endTime" in annotation:
-                    annotation["endTime"] = date2secs(
-                        annotation["endTime"]) * 1000
-                if annotation["type"] in ["threshold","motif"]:
-                    # we also pick the target, only the first
-                    annotation["variable"] =  annotation["variable"][0]
-                annotations[node["id"]]=annotation
+                try:
+                    annotation = get_const_nodes_as_dict(node["children"])
+                    annotation["browsePath"]=node["browsePath"]
+                    annotation["id"]=node["id"]
+                    annotation["name"] = node["name"]
+                    #convert some stuff
+                    if "startTime" in annotation:
+                        annotation["startTime"] = date2secs(
+                            annotation["startTime"]) * 1000
+                    if "endTime" in annotation:
+                        annotation["endTime"] = date2secs(
+                            annotation["endTime"]) * 1000
+                    if annotation["type"] in ["threshold","motif"]:
+                        # we also pick the target, only the first
+                        annotation["variable"] =  annotation["variable"][0]
+                    annotations[node["id"]]=annotation
+                except Exception as ex:
+                    self.logger.error(f"problem loading annotations {ex}, {str(sys.exc_info()[1])}")
+                    continue
         #self.logger.debug("server annotations" + json.dumps(self.annotations, indent=4))
         self.annotations = copy.deepcopy(annotations)
         return annotations
