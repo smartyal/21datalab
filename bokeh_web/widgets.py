@@ -2692,7 +2692,7 @@ class TimeSeriesWidget():
             self.remove_renderers(self.find_motifs_of_line(lin),deleteFromLocal=True)
             marker = self.find_renderer(lin+".marker")
             if marker:
-                self.remove_renderers([marker])
+                self.remove_renderers(renderers=[marker])
 
             #del self.columnData[lin] #delete the ColumnDataSource
 
