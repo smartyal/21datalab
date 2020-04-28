@@ -26,6 +26,7 @@ import argparse
 
 
 
+
 UPLOAD_FOLDER = './upload'
 
 '''
@@ -111,6 +112,7 @@ POST /_setlen        <setlenquery.json>           -                      # adjus
 POST /_push          [<nodedict.json>]                                   # push a list of nodes into the model, we accept the full dict, no checking whatsoever !! dangerous
 GET  /_upload        -                          [<fileinfo.json>]        # get the list of files in the /upload folder
 POST /_upload       <jquery file upload>                                 # upload files via jquery file upload module-style
+POST /_clone        <clone.json>                -                        # clone a node and its subnodes
 data:
 
 
@@ -271,6 +273,11 @@ getnodes.json
 getNodesresponse.json
 {
     node:nodedict
+}
+
+clone.json
+{
+    node:<desc>
 }
 
 '''
@@ -614,6 +621,20 @@ def all(path):
             m.notify_observers([m.get_id(data["parent"])],"forwardRefs")
             responseCode = 201
 
+        elif (str(path) == "_clone"):
+            logger.debug(f"clone")
+            m.disable_observers()
+            result = False
+            try:
+                result = m.clone(data["node"])
+            finally:
+                m.enable_observers()
+                m.notify_observers(["1"], "children") #notify the root just to trigger the tree updates
+            if result:
+                responseCode = 201
+            else:
+                responseCode = 400
+
         elif (str(path) == "_execute"):
             logger.debug(f"execute function {data} (start the function thread)")
             result =[]
@@ -839,6 +860,7 @@ def all(path):
         return flask.Response(response, mimetype="text/html"), responseCode
     except Exception as ex:
         logger.error("general error " +str(sys.exc_info()[0])+".."+str(ex))
+        logger.error(m.get_error())
         return flask.Response("",mimetype="text/html"),501
 
 if __name__ == '__main__':

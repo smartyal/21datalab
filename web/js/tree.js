@@ -42,6 +42,7 @@ class TreeWidget
             add : "fas fa-plus tree-icon-class",
             delete : "far fa-trash-alt tree-icon-class",
             rename : "fas fa-pencil-alt tree-icon-class",
+            clone : "far fa-clone tree-icon-class",
             changevalue : "fas fa-edit tree-icon-class",
             execute : "fa fa-play tree-icon-class",
             abort : "fa fa-stop tree-icon-class",
@@ -705,6 +706,12 @@ class TreeWidget
                             }
                         }
                     }
+
+                    menuObject["clone"] = {
+                        "label":"clone",
+                        "icon":treeWidgetObject.treeIcons["clone"],
+                        "action":function(obj){treeWidgetObject.context_menu_clone(node);}
+                    }
                     return menuObject;
                 }
             },
@@ -923,6 +930,13 @@ class TreeWidget
         $('#'+this.treeContainerId+'-editColumnModalValue').val(0);
         $('#'+this.treeContainerId+'-editColumnModal').modal('show');
 
+    }
+
+    context_menu_clone(node)
+    {
+        console.log("clone node",node);
+        var query={"node":node.id};
+        http_post("/_clone",JSON.stringify(query),null,null);
     }
 
     edit_node_done(node, status, cancel)
