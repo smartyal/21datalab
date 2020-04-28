@@ -2405,7 +2405,7 @@ class Model:
 
         sourcePath = self.get_browse_path(source)
         destPath = self.get_browse_path(dest)
-        
+
         for childName,childInfo in self.get_children_dict(source).items():
             childId = childInfo["id"]
             if childInfo["type"] in ["timeseries","file","column"]:

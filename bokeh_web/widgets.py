@@ -18,6 +18,8 @@ import time
 import threading
 import sse
 import pytz
+import traceback
+
 
 
 from bokeh.models import DatetimeTickFormatter, ColumnDataSource, BoxSelectTool, BoxAnnotation, Label, LegendItem, Legend, HoverTool, BoxEditTool, TapTool, Circle
@@ -2407,7 +2409,7 @@ class TimeSeriesWidget():
                     fkt()
 
         except Exception as ex:
-            self.logger.error(f"Error in periodic callback {ex}")
+            self.logger.error(f"Error in periodic callback {ex} , {str(traceback.format_exc())}")
 
         if legendChange or executelist != []:
             self.logger.debug(f"periodic_cb was {time.time()-start}")
@@ -2677,11 +2679,13 @@ class TimeSeriesWidget():
         """
 
         if deleteLines:
+            removeLegendKeys = []
+            removeSelfLines = []
+            self.plot.legend.items=[] # avoid errors later, we might remove the glyph but the legend needs it
             for key in deleteLines:
                 self.lines[key].visible = False
-                del self.lines[key]
-                if key in self.legendItems:
-                    del self.legendItems[key]
+                removeSelfLines.append(key)
+                removeLegendKeys.append(key)
 
             #remove the lines
             self.remove_renderers(deleteLines)
@@ -2696,16 +2700,19 @@ class TimeSeriesWidget():
             extraDeleteRenderers = self.find_extra_renderers_of_lines(deleteLines)
             for r in extraDeleteRenderers:
                 if r.name in self.legendItems:
-                    del self.legendItems[r.name]
+                    #del self.legendItems[r.name]
+                    removeLegendKeys.append(r.name)
 
             self.remove_renderers(renderers=extraDeleteRenderers,deleteFromLocal=True)# remove scores, expected, markers
 
                 #del self.columnData[lin] #delete the ColumnDataSource
 
 
-            #rebuild the legend
-            legendItems = [v for k, v in self.legendItems.items()]
-            self.plot.legend.items = legendItems
+            #rebuild the legend is done at the end of the plot_lines
+            for key in removeLegendKeys:
+                del self.legendItems[key]
+            for key in removeSelfLines: # remove them after the legend remove
+                del self.lines[key]
 
             #also delete the links from the model in the backend
             #put together all deletes
