@@ -29,3 +29,18 @@ function http_post(url, data, params, obj,cb)
     // send the collected data as JSON
     xhr.send(data);
 }
+
+
+function http_post_sync( url, jsonStringify, data ) {
+  let xhr = new XMLHttpRequest()
+  let inputData
+  if ( jsonStringify === true ) {
+    inputData = JSON.stringify(data)
+  } else {
+    inputData = data
+  }
+  xhr.open("POST", url, false)
+  xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
+  xhr.send(inputData)
+  return xhr
+}

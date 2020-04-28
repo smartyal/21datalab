@@ -975,7 +975,7 @@ class TimeSeriesWidget():
                 self.show_scores()
 
     def hide_marker(self):
-        self.remove_renderers([lin+".marker" for lin in self.lines])
+        self.remove_renderers([lin+"_marker" for lin in self.lines])
     def show_marker(self):
         self.logger.debug("show marker")
 
@@ -1183,8 +1183,9 @@ class TimeSeriesWidget():
             if deleteList != []:
                 # now make a second run and check the _score variables of the deletlist
                 deleteScoreNames = [deletePath.split('.')[-1]+"_score" for deletePath in deleteList]
+                deleteExpectedNames = [deletePath.split('.')[-1]+"_expected" for deletePath in deleteList]
                 for r in self.plot.renderers:
-                    if r.name and r.name.split('.')[-1] in deleteScoreNames:
+                    if r.name and (r.name.split('.')[-1] in deleteScoreNames or r.name.split('.')[-1] in deleteExpectedNames):
                         deleteList.append(r.name) #take the according score as well
 
 
@@ -1194,8 +1195,8 @@ class TimeSeriesWidget():
                 self.server.set_variables_selected(newVariablesSelected)
                 # self.__dispatch_function(self.refresh_plot)
 
-                #now delete potential markers
-                self.remove_renderers([lin+".marker" for lin in deleteList])
+                #now delete potential markers and expected
+                self.remove_renderers([lin+"_marker" for lin in deleteList])
 
         except Exception as ex:
             self.logger.error("problem during __legend_check" + str(ex))
@@ -2559,7 +2560,7 @@ class TimeSeriesWidget():
                         self.lines[variableName] = self.plot.line(x="x", y="y", color=color,source=self.columnData[variableName], name=variableName,line_width=2)
 
                         if showMarker:
-                            markerName = variableName+".marker"
+                            markerName = variableName+"_marker"
                             marker = self.plot.circle(x="x",y="y", line_color=color, fill_color=color,
                                                       source=self.columnData[variableName], name=markerName,size=3)  # x:"time", y:variableName #the legend must havee different name than the source bug
                 #legend only for lines
@@ -2675,28 +2676,43 @@ class TimeSeriesWidget():
         deleteLines=list(set(deleteLines)) # avoid duplicates
         """
 
-        for key in deleteLines:
-            self.lines[key].visible = False
-            del self.lines[key]
-            if key in self.legendItems:
-                del self.legendItems[key]
+        if deleteLines:
+            for key in deleteLines:
+                self.lines[key].visible = False
+                del self.lines[key]
+                if key in self.legendItems:
+                    del self.legendItems[key]
 
-        #remove the legend
-        legendItems = [v for k, v in self.legendItems.items()]
-        self.plot.legend.items = legendItems
-        #remove the lines
-        self.remove_renderers(deleteLines)
-        #remove the according thresholds if any
-        for lin in deleteLines:
-            self.remove_renderers(self.find_thresholds_of_line(lin),deleteFromLocal=True)
-            self.remove_renderers(self.find_motifs_of_line(lin),deleteFromLocal=True)
-            marker = self.find_renderer(lin+".marker")
-            if marker:
-                self.remove_renderers(renderers=[marker])
+            #remove the lines
+            self.remove_renderers(deleteLines)
+            #remove the according thresholds if any
+            for lin in deleteLines:
+                self.remove_renderers(self.find_thresholds_of_line(lin),deleteFromLocal=True)
+                self.remove_renderers(self.find_motifs_of_line(lin),deleteFromLocal=True)
+                #marker = self.find_renderer(lin+"_marker")
+                #if marker:
+                #    self.remove_renderers(renderers=[marker])
 
-            #del self.columnData[lin] #delete the ColumnDataSource
+            extraDeleteRenderers = self.find_extra_renderers_of_lines(deleteLines)
+            for r in extraDeleteRenderers:
+                if r.name in self.legendItems:
+                    del self.legendItems[r.name]
+
+            self.remove_renderers(renderers=extraDeleteRenderers,deleteFromLocal=True)# remove scores, expected, markers
+
+                #del self.columnData[lin] #delete the ColumnDataSource
 
 
+            #rebuild the legend
+            legendItems = [v for k, v in self.legendItems.items()]
+            self.plot.legend.items = legendItems
+
+            #also delete the links from the model in the backend
+            #put together all deletes
+            serverDeletes = deleteLines.copy()
+            serverDeletes.extend([r.name for r in extraDeleteRenderers])
+            newServerSelection=[lin for lin in backendLines if lin not in serverDeletes]
+            self.server.set_variables_selected(newServerSelection)
 
 
 
@@ -2715,6 +2731,7 @@ class TimeSeriesWidget():
                         if scoreName not in currentLineEndings:
                             additionalLines.append(scoreVar)
             if additionalLines:
+                additionalLines=list(set(additionalLines))# remove duplicates
                 self.logger.debug(f"MUST add scores: {additionalLines}.. in the next event")
                 self.server.add_variables_selected(additionalLines)
                 #return # wait for next event
@@ -3281,6 +3298,28 @@ class TimeSeriesWidget():
                     result.append(k)
         self.logger.debug("@find_motifs_of_line of line returns "+path+" => "+str(result))
         return result
+
+    def find_extra_renderers_of_lines(self,lines,markers=True,scores=True,expected=True):
+        if type(lines) is not list:
+            lines = [lines]
+
+        extraRenderes = []
+        deleteNames = []
+        for line in lines:
+            name = line.split('.')[-1]
+            if scores:
+                deleteNames.append(name+"_score")
+            if expected:
+                deleteNames.append(name+"_expected")
+            if markers:
+                deleteNames.append(name + "_marker")
+        for r in self.plot.renderers:
+            if r.name and (r.name.split('.')[-1] in deleteNames):
+                extraRenderes.append(r)  # take the according score as well
+
+        for r in extraRenderes:
+            self.logger.debug(f"remove extra {r.name}")
+        return extraRenderes
 
     def show_motifs_of_line(self,path):
         self.logger.debug("@show_motifs_of_line " + path)

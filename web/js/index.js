@@ -526,7 +526,7 @@ function hook_context_menu(divId,modelPath)
 function show_context_menu(e,modelPath)
 {
    console.log("show_context_menu() ",modelPath);
-   var query = {"node":modelPath,"depth":100,"ignore":["observer","hasAnnotation.anno","hasAnnotation.new","selectable"]}
+   var query = {"node":modelPath,"depth":100,"ignore":["observer","hasAnnotation.anno","hasAnnotation.new"]}
     //get the current state from the backend
    http_post("_getbranchpretty",JSON.stringify(query), e,null, function(obj,status,data,params)
         {
@@ -537,11 +537,79 @@ function show_context_menu(e,modelPath)
 
                 var menu = prepare_context_menu(data,modelPath);
                 superCm.createMenu(menu,params);
+                superCm.maxHeight = 1000;
             }
         }
    );
 
 }
+
+//path: the pointer to the widget.selected
+function get_variables(data)//selectableVariablesRoot,selectedIds)
+{
+
+    var selectableVariablesRoot = data.selectableVariables[".properties"].forwardRefs[0];
+    var selectedIds = data.selectedVariables[".properties"].leavesIds;
+    var selectedVariablesId = data.selectedVariables[".properties"].id;
+
+    var path = selectableVariablesRoot;
+    var query = {"node":path,"depth":100,"ignore":[]};
+    data = http_post_sync( "_getbranchpretty", true, query );
+    var vars = JSON.parse(data.response);
+    var menu = recursive_search(vars,selectedIds,selectedVariablesId);
+    console.log("ready");
+    return menu;
+}
+
+function recursive_search(data,selectedIds,selectedVariablesId)
+{
+    var menu = [];
+    for(var key in data)
+    {
+        if (key == ".properties") continue;
+
+        var entry = data[key];
+
+        if (entry[".properties"].type == "folder")
+        {
+            console.log("look deeper in "+entry[".properties"].name);
+            var submenu;
+            submenu = recursive_search(entry,selectedIds,selectedVariablesId);
+            var menuentry = {
+                label:entry[".properties"].name,
+                submenu:submenu
+            };
+            menu.push(menuentry);
+
+        }
+        else if (entry[".properties"].type == "timeseries")
+        {
+            console.log("show"+entry[".properties"].name);
+
+            let icon = "far fa-square";
+            if (selectedIds.includes(entry[".properties"].id)) icon = "far fa-check-square";
+            var menuentry = {
+                label:entry[".properties"].name,
+                icon:icon,
+                nodeId:entry[".properties"].id,
+                selectedVariablesId: selectedVariablesId,
+                isVariable:true,
+                action: function(option, contextMenuIndex, optionIndex){
+                    var opt = option;
+                    var idx = contextMenuIndex;
+                    var optIdx = optionIndex;
+                    context_menu_variable_select_click(opt,idx,optIdx);
+                }
+
+
+            };
+            menu.push(menuentry);
+        }
+    }
+    return menu;
+}
+
+
 
 function context_menu_click_show(option,contextMenuIndex, optionIndex)
 {
@@ -568,6 +636,13 @@ function context_menu_click_show(option,contextMenuIndex, optionIndex)
     superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
 
 
+}
+
+function update_context_menu(index)
+{
+    superCm.settings.maxHeight = "100vh" //hack to avoid the resizing
+    //superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
+    superCm.updateMenuIndex(false,false,index);
 }
 
 
@@ -648,6 +723,62 @@ function context_menu_tag_select_click(option,contextMenuIndex, optionIndex)
 
 }
 
+function context_menu_variable_select_click(option,contextMenuIndex, optionIndex)
+{
+
+    console.log("context_menu_variable_select_click",option);
+    if (option.icon == "far fa-check-square")
+    {
+         option.icon = "far fa-square";
+         var query = {parent:option.selectedVariablesId,remove:[option.nodeId]}
+    }
+    else
+    {
+        option.icon = "far fa-check-square";
+        var query = {parent:option.selectedVariablesId,add:[option.nodeId]}
+        //todo also remove potential score, expected etc.
+    }
+    http_post("/_references",JSON.stringify(query),null,null,null);
+
+
+    superCm.setMenuOption(contextMenuIndex, optionIndex, option);
+    //var index = 3;
+    update_context_menu(contextMenuIndex); // we only update a single index here
+    //superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
+}
+
+
+function context_menu_variables_deselect_all(option,contextMenuIndex, optionIndex)
+{
+    console.log("context_menu_variables_deselect_all");
+    var query = {parent:option.selectedVariablesId,deleteExisting:true}
+    http_post("/_references",JSON.stringify(query),null,null,null);
+
+    var options = superCm.getMenuOptions(contextMenuIndex);
+    //iterate through all options and children, look for "selectedVariablesId" in the option, if it is there,
+    // then it is a variable entry, and we set the icon to unselected
+    var newOptions = deselect_variables(options);
+    console.log("done")
+    superCm.setMenuOptions(contextMenuIndex,newOptions)
+}
+
+function deselect_variables(OptionList)
+{
+    for (var option of OptionList)
+    {
+        if (option.hasOwnProperty("isVariable"))
+        {
+            option.icon =  "far fa-square"; // deselected
+        }
+        if (option.hasOwnProperty("submenu"))
+        {
+            option.submenu=deselect_variables(option.submenu)
+        }
+    }
+    return OptionList;
+}
+
+
 function context_menu_tag_select_click_all(option,contextMenuIndex, optionIndex)
 {
     console.log("context_menu_tag_select_click all",option);
@@ -695,7 +826,7 @@ function context_menu_tag_select_click_all(option,contextMenuIndex, optionIndex)
 
 
 
-
+/*
 function context_menu_variable_select_click(option,contextMenuIndex, optionIndex)
 {
     console.log("context_menu_variable_select_click",option);
@@ -731,7 +862,7 @@ function context_menu_variable_select_click(option,contextMenuIndex, optionIndex
     superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
 
 }
-
+*/
 
 function context_menu_click_function(option)
 {
@@ -1010,9 +1141,39 @@ function prepare_context_menu(dataString,modelPath)
         annotationsSubmenu.push(entry);
     }
 
+    annotationsSubmenu.push(entry);
+
+    //create variables submenu
+
+    try
+    {
+        var subMenuVariables = get_variables(data);//variablesRoot,data.selectedVariables[".properties"].leavesIds);//modelPath+".selectableVariables");
+    }
+    catch
+    {
+        console.log("error getting variables for context menu")
+        var subMenuVariables =[];
+    }
+
+    var entry = {
+        label:"(deselect all)",
+        entry:" all",
+        selectedVariablesId : data.selectedVariables[".properties"].id,
+        action: function(option, contextMenuIndex, optionIndex){
+                var opt = option;
+                var idx = contextMenuIndex; var
+                optIdx = optionIndex;
+                context_menu_variables_deselect_all(opt,idx,optIdx);
+            }
+    }
+    var variablesSubmenu = [entry];
+    variablesSubmenu=variablesSubmenu.concat(subMenuVariables);
+
+
+
 
     var showSubmenu = [];
-    let elements = ["annotations","background","thresholds","scores","motifs"];
+    let elements = ["variables","annotations","background","thresholds","scores","motifs"];
     var jsonValue = data.visibleElements[".properties"].value;
     for (let element of elements)
     {
@@ -1038,6 +1199,12 @@ function prepare_context_menu(dataString,modelPath)
         {
             entry.submenu = annotationsSubmenu;
         }
+        if (element == "variables")
+        {
+            entry.submenu = variablesSubmenu;
+            delete entry.icon;
+        }
+
         showSubmenu.push(entry);
     }
 
@@ -1337,6 +1504,8 @@ function prepare_context_menu(dataString,modelPath)
     menu = menu.concat(menuTail);
     return menu;
 }
+
+
 
 
 
