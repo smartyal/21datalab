@@ -2710,9 +2710,11 @@ class TimeSeriesWidget():
 
             #rebuild the legend is done at the end of the plot_lines
             for key in removeLegendKeys:
-                del self.legendItems[key]
+                if key in self.legendItems:
+                    del self.legendItems[key]
             for key in removeSelfLines: # remove them after the legend remove
-                del self.lines[key]
+                if key in self.lines:
+                    del self.lines[key]
 
             #also delete the links from the model in the backend
             #put together all deletes
