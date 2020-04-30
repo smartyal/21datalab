@@ -576,7 +576,7 @@ function recursive_search(data,selectedIds,selectedVariablesId)
             var submenu;
             submenu = recursive_search(entry,selectedIds,selectedVariablesId);
             var menuentry = {
-                label:entry[".properties"].name,
+                label:"<i>"+entry[".properties"].name+"</i>",
                 submenu:submenu
             };
             menu.push(menuentry);
@@ -589,7 +589,7 @@ function recursive_search(data,selectedIds,selectedVariablesId)
             let icon = "far fa-square";
             if (selectedIds.includes(entry[".properties"].id)) icon = "far fa-check-square";
             var menuentry = {
-                label:entry[".properties"].name,
+                label:"<i>"+entry[".properties"].name+"</i>",
                 icon:icon,
                 nodeId:entry[".properties"].id,
                 selectedVariablesId: selectedVariablesId,
@@ -1120,7 +1120,7 @@ function prepare_context_menu(dataString,modelPath)
         let mypattern = colors[tag].pattern;
         if (mypattern == null) mypattern = "&nbsp &nbsp &nbsp";
         else mypattern = "&nbsp "+mypattern + " &nbsp";
-        let mycolorString = `<span style='background-color:${mycolor};text-color:red;font-family:monospace'> <font color='white'> ${mypattern}</font> </span> &nbsp ${tag}`;
+        let mycolorString = `<span style='background-color:${mycolor};text-color:red;font-family:monospace;'> <font color='white'> ${mypattern}</font> </span> <i> &nbsp ${tag}</i>`;
         //let mycolorString = `${tag} &nbsp <span style='textcolor:red;background-color:${mycolor}'> ${mypattern}  </span>`;
 
         var entry = {
@@ -1141,7 +1141,7 @@ function prepare_context_menu(dataString,modelPath)
         annotationsSubmenu.push(entry);
     }
 
-    annotationsSubmenu.push(entry);
+
 
     //create variables submenu
 
