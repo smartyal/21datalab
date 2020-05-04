@@ -213,7 +213,7 @@ function initialize_progress_bar()
         data = data.replace(/\'/g, "\"");
         var parsed = JSON.parse(data);
         console.log("EVENT system-status" + parsed.text );
-        $('#system-status').text(parsed.text);
+        $('div[status-text="1"]').text(parsed.text);
     });
 
 }
