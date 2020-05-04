@@ -983,7 +983,7 @@ class TimeSeriesWidget():
 
         for variableName in self.lines:
 
-            markerName = variableName + ".marker"
+            markerName = variableName + "_marker"
             color = self.lines[variableName].glyph.line_color
             marker = self.plot.circle(x="x",y="y", line_color=color, fill_color=color,
                                       source=self.columnData[variableName], name=markerName,
