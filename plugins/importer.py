@@ -1,6 +1,6 @@
 from system import __functioncontrolfolder
 from model import date2secs
-from tqdm import tqdm
+#  from tqdm import tqdm
 import logging
 import pandas as pd 
 import os
@@ -38,7 +38,7 @@ def importer_preview(functionNode):
     pathBase = os.getcwd()
 
     # --- load csv data
-    dataFile = pd.read_csv(fileName)
+    dataFile = pd.read_csv(fileName, nrows=5)
     previewData = dataFile.head()
     previewDataString = previewData.to_json(orient='table')
 
@@ -64,21 +64,14 @@ def importer_import(iN):
     #  # --- create needed nodes
     importerNode.create_child('imports', type="folder")
     importsNode = importerNode.get_child("imports")
-    try:
-        importsNode.delete_node(tablename)
-        importsNode.delete_node(f'{tablename}.variables')
-        importsNode.delete_node(f'{tablename}.columns')
-    except:
-        print("[importer] error while trying to delete node table")
+    importsNode.get_child(tablename).delete()
     importsNode.create_child(tablename, type="table")
-    _helper_log("here") 
     table = importsNode.get_child(tablename)
     table.create_child('variables', type="folder")
     table.create_child('columns', type="referencer")
     table.create_child('metadata', type="const")
     vars = table.get_child("variables")
     cols = table.get_child("columns")
-    _helper_log("there") 
 
     # --- read metadata and fields
     metadataRaw = iN.get_child("metadata").get_value()
