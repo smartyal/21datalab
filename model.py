@@ -2931,7 +2931,7 @@ class Model:
         self.logger.info(f"notify observser, {nodeIds}, {properties}")
         return self.__notify_observers(nodeIds,properties)
 
-    def __notify_observers(self, nodeIds, properties ):
+    def __notify_observers_old(self, nodeIds, properties ):
         """
             this function is called internally when nodes or properties have changed. Then, we look if any
             observer has to be triggered
@@ -2951,13 +2951,12 @@ class Model:
             # this is for the tree updates, any change is taken
             self.modelUpdateCounter = self.modelUpdateCounter + 1 #this is used by the diff update function and model copies
             # Notify all observers about the tree update
+            collectedEvents=[]
             event = {
                 "id": self.modelUpdateCounter,
                 "event": "tree.update",
                 "data": ""}
-            for observer in self.observers:
-                observer.update(event)
-                pass
+            collectedEvents.append(event) #send later
 
             if type(properties) is not list:
                 properties = [properties]
@@ -2966,10 +2965,9 @@ class Model:
 
             names =[self.model[id]["name"] for id in nodeIds]
             self.logger.debug(f"__notify_observers {names}: {properties}")
-            #if "value" in properties:
-            #    print("value")
 
             triggeredObservers=[] # we use this to suppress multiple triggers of the same observer, the list holds the observerIds to be triggered
+            #p=utils.Profiling("__notify.iterate_nodes")
             for nodeId in nodeIds:
                 #now check if the node is being observed, we do everything over ids to have max speed
                 #for id in self.model[nodeId]["backRefs"]:
@@ -2980,6 +2978,7 @@ class Model:
 
 
                 backrefs =  self.get_referencers(nodeId,deepLevel=3) # deepLevel non standard, three parents! we support ref->ref->node->child->child->child
+                #p.lap(f"get refs for {nodeId}")
                 for id in backrefs:
                     if self.model[id]["name"] == "targets" and self.model[self.model[id]["parent"]]["type"] == "observer":
                         # this node is being observed,
@@ -3030,11 +3029,183 @@ class Model:
                                             self.logger.error(f"error getting extra info for event {ex}, {sys.exc_info()[0]}")
                                         #for all other events, take the event data if there is one (as json)
 
-                                        self.logger.debug(f"send event {event}")
-                                        for observerObject in self.observers:
-                                            observerObject.update(event)
+                                        self.logger.debug(f"preprare send event {event}")
+                                        #for observerObject in self.observers:
+                                        #    observerObject.update(event)
+                                        collectedEvents.append(event)
                                     triggeredObservers.append(observerId)# next time, we don't trigger
                                     break # leave the properties, we only trigger once
+                #p.lap("complete backrefs {nodeId}, {backrefs}")
+        #self.logger.debug(p)
+        self.logger.debug("now send the events")
+        for event in collectedEvents:
+            for observerObject in self.observers:
+                observerObject.update(event)
+        #self.logger.debug("done sending events")
+
+
+
+    def get_referencers(self,descList,deepLevel = 0):
+        """
+            get the references to this node via backtraversing the leaves algorithm
+            we look for parents through deepLevel levels and from there on we look back for referencers
+            deepLevel is the the level of extra parent level: 1 means the one more level, two means two extra level
+            Returns:
+                a list of referencers ids that point to the given descList nodes
+        """
+        #convert all to nodes to ids
+
+        if type(descList) is not list:
+            descList = [descList]
+        startList = set([self.__get_id(node) for node in descList])
+        startList =set([node for node in startList if node]) #remove None and duplicates
+
+        referencers = set() #we collect the parents here and avoid duplicates
+
+        #in this first iteration we take the referencers pointing directly to the nodes or their parents
+        workList = startList.copy()
+        for level in range(deepLevel+1):
+            #from this level we take the backrefs
+            for id in workList:
+                referencers.update(self.model[id]["backRefs"])
+            #prepare parents for next round
+            parents=set()
+            for id in workList:
+                myParent=self.model[id]["parent"]
+                if myParent !="1": #root
+                    parents.update([myParent]) #!use list to avoid break into chars
+            #now take the parents as currentList
+            workList = parents.copy()
+            if workList ==[]:
+                break #avoid turning cycles for nothing
+
+        #second step:
+        # now we take all final referencers and all referencers to those referencers with no limit
+        # (go back the leaves algorithm)
+        collectedReferencers = referencers.copy() # we take all we have so far
+        while True:
+            workList=set()
+            for id in referencers:
+                workList.update(self.model[id]["backRefs"])
+            collectedReferencers.update(workList)
+            if not workList:
+                break
+            else:
+                #one more round
+                referencers = workList.copy()
+        return list(collectedReferencers)
+
+    def __notify_observers(self, nodeIds, properties ):
+        """
+            this function is called internally when nodes or properties have changed. Then, we look if any
+            observer has to be triggered
+            we also increase the counter and time on the root.observers.modelObserver
+            Args:
+                nodeId: the nodeIds where a change occurred
+                properties: the property or list of properties of the node that has changed
+
+        """
+
+        if self.disableObserverCounter>0:
+            return
+
+        with self.lock:
+            # this is for the tree updates, any change is taken
+            self.modelUpdateCounter = self.modelUpdateCounter + 1 #this is used by the diff update function and model copies
+            # Notify all observers about the tree update
+            collectedEvents=[]
+            event = {
+                "id": self.modelUpdateCounter,
+                "event": "tree.update",
+                "data": ""}
+            collectedEvents.append(event) #send later
+
+            if type(properties) is not list:
+                properties = [properties]
+            if type(nodeIds) is  not list:
+                nodeIds = [nodeIds]
+
+            names =[self.model[id]["name"] for id in nodeIds]
+            self.logger.debug(f"__notify_observers {names}: {properties}")
+
+            triggeredObservers=[] # we use this to suppress multiple triggers of the same observer, the list holds the observerIds to be triggered
+            #p=utils.Profiling("__notify.iterate_nodes")
+
+            referencers = self.get_referencers(nodeIds,deepLevel=5)#deeplevel 5: nodes can be organized by the user in hierachy
+            nodeId = self.__get_id(nodeIds[0])#take the first for the event string,
+            #p.lap(f"get refs for {nodeId}")
+            self.logger.debug(f"__notify on referencers {[self.get_browse_path(id) for id in referencers]}")
+            for id in referencers:
+                if self.model[id]["name"] == "targets" and self.model[self.model[id]["parent"]]["type"] == "observer":
+                    # this referencers is an observer,
+                    observerId = self.model[id]["parent"]
+                    observer = self.get_children_dict(observerId)
+                    # check if trigger
+                    if observer["enabled"]["value"] == True:
+                        #self.logger.debug(f"{self.model[nodeId]['name']} is targeted by observer {self.get_browse_path(observerId)}")
+                        if observerId in triggeredObservers:
+                            self.logger.debug(f"we have triggered the observer {self.get_browse_path(observerId)} in this call already, pass")
+                            continue
+                        self.logger.debug(f"check properties to triggered the observer {self.get_browse_path(observerId)}")
+                        #check if any of the observed properties matches
+                        propertyMatch = False
+                        for property in properties:
+                            if property in observer["properties"]["value"]:
+                                propertyMatch=True
+                                break
+                        if not propertyMatch:
+                            self.logger.debug(f"observer trigger on {self.get_browse_path(observerId)} no property match ")
+                        else:
+                            self.logger.debug(f"observer trigger on {self.get_browse_path(observerId)} for change in property ")
+                            self.model[observer["triggerCounter"]["id"]]["value"] = self.model[observer["triggerCounter"]["id"]]["value"]+1
+                            self.model[observer["lastTriggerTime"]["id"]]["value"] = datetime.datetime.now().isoformat()
+                            for funcNodeId in self.get_leaves_ids(observer["onTriggerFunction"]["id"]):
+                                self.logger.debug(f"execute ontrigger function {funcNodeId}")
+                                self.execute_function(funcNodeId)
+                            if "triggerSourceId" in observer:
+                                self.model[observer["triggerSourceId"]["id"]]["value"] = nodeId
+                            if observer["hasEvent"]["value"] == True:
+                                #self.logger.debug(f"send event {observer['eventString']['value']}")
+                                #also send the real event
+                                #self.modelUpdateCounter = self.modelUpdateCounter+1
+                                event = {
+                                    "id": self.modelUpdateCounter,
+                                    "event": observer["eventString"]["value"],
+                                    "data": {"nodeId":observerId,"sourceId":nodeId,"sourcePath":self.get_browse_path(nodeId)}}
+                                if self.model[nodeId]["type"] not in ["column","file","timeseries"]:
+                                    event["data"]["value"]=self.model[nodeId]["value"]
+                                #some special handling
+                                try:
+                                    if event["event"] == "system.progress":
+                                        progressNode = self.get_node(self.get_leaves_ids("root.system.progress.targets")[0])
+                                        event["data"]["value"]=progressNode.get_value()
+                                        event["data"]["function"]=progressNode.get_parent().get_parent().get_browse_path()
+                                    else:
+                                        eventNode = self.get_node(observerId)
+                                        extraInfoNode = eventNode.get_child("eventData")
+                                        if extraInfoNode:
+                                            extraInfo = extraInfoNode.get_value()
+                                            if type(extraInfo) is not dict:
+                                                extraInfo={"info":extraInfo}
+                                            event["data"].update(extraInfo)
+
+                                except Exception as ex:
+                                    self.logger.error(f"error getting extra info for event {ex}, {sys.exc_info()[0]}")
+                                #for all other events, take the event data if there is one (as json)
+
+                                self.logger.debug(f"generate event {event}")
+                                collectedEvents.append(event)
+                            triggeredObservers.append(observerId)# next time, we don't trigger
+
+            #p.lap("complete backrefs {nodeId}, {backrefs}")
+        #self.logger.debug(p)
+        self.logger.debug("now send the events")
+        for event in collectedEvents:
+            for observerObject in self.observers:
+                observerObject.update(event)
+        self.logger.debug("done sending events")
+
+
 
     def create_observer(self):
         # Instantiate a new observer
@@ -3402,6 +3573,7 @@ class Model:
 
         #convert all to ids
         newBlobs=[]
+        idsInBlobs=[]
         for blob in blobs:
             newBlob={}
             for k,v in blob.items():
@@ -3430,10 +3602,12 @@ class Model:
                             desc2Id[k]=id #remember to speed up next time
 
                     newBlob[id] = v
+                    idsInBlobs.append(id)
             newBlobs.append(newBlob)
         self.logger.debug(f"inserting blobs {len(newBlobs)}")
-        self.__notify_observers([v for k,v in desc2Id.items()], "value")
-        return self.ts.insert_blobs(newBlobs)
+        self.__notify_observers(idsInBlobs, "value")
+        result = self.ts.insert_blobs(newBlobs)
+        return result
 
 
     def create_test(self,testNo=1):

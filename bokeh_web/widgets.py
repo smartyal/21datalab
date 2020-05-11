@@ -142,7 +142,9 @@ class TimeSeriesWidgetDataServer():
                 dataString = data["data"]
                 dataString = dataString.replace("'",'"') # json needs double quote for key/values entries
                 parseData = json.loads(dataString)
+                self.logger.debug(f"parsed event {parseData}")
                 if "nodeId" in parseData:
+                    self.logger.debug(f"nodeid in parsedata {parseData['nodeId']} in {self.settings['observerIds']}")
                     if parseData["nodeId"] in self.settings["observerIds"]: #only my own observers are currently taken
                         #self.logger.info("sse match")
                         if self.sseCb:

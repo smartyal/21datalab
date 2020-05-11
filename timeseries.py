@@ -20,41 +20,65 @@ class TimeSeries:
         self.allocSize = allocSize
         self.times = numpy.asarray(times,dtype=numpy.float64)
         self.values = numpy.asarray(values,dtype=numpy.float64)
+        self.lastValidIndex = self.times.size-1
 
     def __realloc(self,size=0):
         alloc = numpy.full(self.allocSize+size, numpy.nan, dtype=numpy.float64)
         self.values=numpy.append(self.values,alloc)
         self.times =numpy.append(self.times,alloc)
 
-    def insert(self, values=None, times=None, deleteDuplicates = True):
+    def insert(self, values=None, times=None, deleteDuplicates = True, profiling =None):
 
-        if len(values)!= len(times):
+        #convert to numpy
+        if type(times) is not numpy.ndarray:
+            times = numpy.asarray(times)
+        if type(values) is not numpy.ndarray:
+            values = numpy.asarray(values)
+
+        #incoming vector must make sense
+        if values.size != times.size:
             return False
 
-        remainingSpace = numpy.count_nonzero(numpy.isnan(self.times))
-        newLen = len(values)
+        lastOldValueIndex = self.lastValidIndex #remember for later
+
+        #sort the new values before inserting and remove duplicates of the times
+        times,indices = numpy.unique(times, return_index=True)
+        values = values[indices]
+
+        remainingSpace = (self.times.size-1)-self.lastValidIndex
+
+        newLen = values.size
         if remainingSpace < newLen:
             self.__realloc(newLen)
-        start=numpy.min(numpy.argwhere(~numpy.isfinite(self.times)))
-        self.values[start:start+newLen]=values
-        self.times[start:start + newLen] = times
+            if profiling: profiling.lap("alloc")
 
-        resortIndices = numpy.argsort(self.times)
-        self.values= self.values[resortIndices]
-        self.times = self.times[resortIndices]
 
-        if deleteDuplicates:
-            diff = numpy.diff(self.times)
-            if any(diff == 0):
-                #there are duplicates in the data
-                diff = numpy.append([1],diff)
-                self.values = self.values[diff != 0]
-                self.times = self.times[diff != 0]
-                #now make sure that on all dublicates, we take the new values
-                for newTime,newValue in zip(times,values):
-                    pos = numpy.where(self.times == newTime)[0]
-                    if len(pos)!=0:
-                        self.values[pos] = newValue
+        if times[0]>self.times[lastOldValueIndex]:
+            #simply append the data
+            start = self.lastValidIndex + 1
+            self.values[start:start + newLen] = values
+            self.times[start:start + newLen] = times
+            self.lastValidIndex += newLen
+            if profiling: profiling.lap(f"put in array")
+        else:
+            #must insert and avoid producing dublicates
+            insertIndicesLeft = numpy.searchsorted(self.times,times,side="right")
+            if profiling: profiling.lap(f"searchsorted")
+
+            for index,newTime,newValue in zip(insertIndicesLeft,times,values):
+                if self.times[index-1] == newTime:
+                    #this is just a replacement of existing data
+                    self.values[index-1] = newValue
+                else:
+                    #this is a real new one, we must insert at position index
+                    #make room
+                    self.times[index+1:]=self.times[index:-1]
+                    self.values[index + 1:] = self.values[index:-1]
+                    #put in
+                    self.times[index]=newTime
+                    self.values[index] = newValue
+                    self.lastValidIndex += 1
+            if profiling: profiling.lap(f"inserted in array with shift and duplicates")
 
 
         return True
@@ -69,8 +93,10 @@ class TimeSeries:
     def set(self,values=None,times=None):
         if type(values) != type(None):
             self.values = numpy.copy(numpy.asarray(values))
+            self.lastValidIndex = self.values.size -1
         if type(times) != type(None):
             self.times = numpy.copy(numpy.asarray(times))
+            self.lastValidIndex = self.times.size - 1
         return True
 
     def get_values(self):
@@ -111,9 +137,9 @@ class TimeSeries:
         """
         haveData = True
 
-        remainingSpace = numpy.count_nonzero(numpy.isnan(self.times)) #the times will not have any intermediate nan, only at the end
-        lastValidIndex = len(self.times)-remainingSpace-1
-
+        #remainingSpace = numpy.count_nonzero(numpy.isnan(self.times)) #the times will not have any intermediate nan, only at the end
+        #lastValidIndex = len(self.times)-remainingSpace-1
+        lastValidIndex = self.lastValidIndex
 
 
 

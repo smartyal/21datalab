@@ -44,5 +44,5 @@ class Profiling:
 
         for l in self.result:
             s=s+f" {l['label']}: {l['delta']}"
-
+        s=s+f"total: {l['total']}"
         return s
