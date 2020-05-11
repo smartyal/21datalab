@@ -1,5 +1,6 @@
 from system import __functioncontrolfolder
 from model import date2secs
+from tqdm import tqdm
 import logging
 import pandas as pd 
 import os
@@ -54,21 +55,35 @@ def importer_import(iN):
     timeStartImport = dt.datetime.now()
 
     # --- define vars
-    model = iN.get_model()
-    tablename = model.get_node("root").get_child('importer').get_child('tablename').get_value()
-    table = model.get_node("root").get_child('imports').get_child(tablename)
+    importerNode = iN.get_parent()
 
-    # --- create needed nodes
-    model.delete_node(f'root.imports.{tablename}.variables')
-    model.delete_node(f'root.imports.{tablename}.columns')
+    # --- [vars] define
+    tablename = iN.get_child("tablename").get_value()
+    _helper_log(f"tablename: {tablename}")
+
+    #  # --- create needed nodes
+    importerNode.create_child('imports', type="folder")
+    importsNode = importerNode.get_child("imports")
+    try:
+        importsNode.delete_node(tablename)
+        importsNode.delete_node(f'{tablename}.variables')
+        importsNode.delete_node(f'{tablename}.columns')
+    except:
+        print("[importer] error while trying to delete node table")
+    importsNode.create_child(tablename, type="table")
+    _helper_log("here") 
+    table = importsNode.get_child(tablename)
     table.create_child('variables', type="folder")
     table.create_child('columns', type="referencer")
+    table.create_child('metadata', type="const")
     vars = table.get_child("variables")
     cols = table.get_child("columns")
+    _helper_log("there") 
 
     # --- read metadata and fields
-    metadataRaw = table.get_child('metadata').get_value()
+    metadataRaw = iN.get_child("metadata").get_value()
     metadata = json.loads(metadataRaw)
+    table.get_child("metadata").set_value(metadata)
     fields = metadata["fields"] 
     timefield = int(metadata["timefield"]) - 1
     filename = metadata["filename"]
@@ -98,33 +113,6 @@ def importer_import(iN):
         cols.add_references(fieldvar)
         _helper_log(f"val: {fieldname}")
 
-    # --- log
-    _helper_log(f"filename: {filename}")
-    _helper_log(f"timefield: {timefield}")
-    _helper_log(f"fields: {fields}")
-    _helper_log(f"data: {data}")
-    #  _helper_log(f"filepath: {filepath}")
-    #  _helper_log(f"dataFrame: {df}")
-    #  _helper_log(f"timeList: {timeList}")
-
-    for attr, value in data.items():
-        print(attr, value)
-
-    #  # create values
-    #  data = {
-    #      "time": [ "2020-01-03T08:00:00.000+02:00", "2020-01-03T09:00:00.000+02:00" ],
-    #      "val1": [ 11.1, 12.4 ],
-    #      "val2": [ 1, 2 ],
-    #  }
-
-    #  # list comprehension
-    #  epochs = [date2secs(time) for time in data["time"]]
-
-    #  # set values
-    #  val1.set_time_series(values=data["val1"],times=epochs)
-    #  val2.set_time_series(values=data["val2"],times=epochs)
-
-    time.sleep(1)
     _helper_log(f"IMPORT DONE (seconds: {(dt.datetime.now()-timeStartImport).seconds})")
     return True
 
@@ -132,10 +120,3 @@ def _helper_log(text):
     logging.warning('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
     logging.warning(text)
     logging.warning('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-
-#  val1 = vars.create_child("val1", type="timeseries")
-#  val2 = vars.create_child("val2", type="timeseries")
-#  cols.add_references([ val1, val2 ])
-#  for index, row in df.iterrows():
-    #  print(row[0])
-

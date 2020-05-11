@@ -129,6 +129,9 @@ def epochToIsoString(epoch,zone=pytz.UTC):
     dat=dat.astimezone(zone) # we must do this later conversion due to a bug in tz lib
     return dat.isoformat()
 
+def getRandomId():
+    return '%08x' % random.randrange(16 ** 8)
+
 
 #used as an OOP wrapper for the flat and procedural style of the model class
 class Node():
@@ -2397,10 +2400,69 @@ class Model:
         controlNode.get_child("progress").set_value(0)
          
 
+    def __clone_children(self,source,dest):
+        """ see def clone() for more info """
+
+        sourcePath = self.get_browse_path(source)
+        destPath = self.get_browse_path(dest)
+
+        for childName,childInfo in self.get_children_dict(source).items():
+            childId = childInfo["id"]
+            if childInfo["type"] in ["timeseries","file","column"]:
+                self.logger.debug(f"clone skip node {childInfo['name']}")
+                continue
+            newProps = {k:v for k,v in childInfo.items() if k not in ["parent","children","backRefs","forwardRefs","browsePath","id","name"]}
+            cloneId = self.create_node_from_path(destPath+"."+childInfo["name"],properties=newProps)
+            grandChildren = self.get_children_dict(childId)
+            if grandChildren != {}:
+                self.__clone_children(childId,cloneId)
+
+    def __clone_referencer_targets(self,source,dest):
+        """ see def clone() for more info """
+        sourcePath = self.get_browse_path(source)
+        destPath = self.get_browse_path(dest)
+
+        childIds = self.get_node_info(sourcePath)["children"]
+        while childIds:
+            id = childIds.pop()
+            info = self.get_node_info(id)
+            if info["type"]=="referencer":
+                newreferencer = self.get_browse_path(id).replace(sourcePath, destPath)
+                #now check: if the referencers points to something inside, we do the same but in the target root, else we take it as it is
+                for targetId in info["forwardRefs"]:
+                    targetPath = self.get_browse_path(targetId)
+                    newTargetPath = targetPath.replace(sourcePath,destPath)# if not found, we get it unchanged
+                    self.add_forward_refs(newreferencer,[newTargetPath])
+            childIds.extend(info["children"])
 
 
 
 
+
+    def clone(self,desc):
+        """
+            clone a node and all its subnodes (a whole branch)
+            we will create all nodes which existed in the source branch, for the referencers we use this stategy:
+                references pointing to a node under the source branch will be translated to references in the target branch
+                poining to the corresponding new node in the target branch
+                references pointing to outside the source branch will also be created in the cloned branch pointing to
+                the same target
+
+            Args:
+                desc: the source node descriptor
+        """
+
+        sourcePath = self.get_browse_path(desc)
+        if not sourcePath:
+            return False
+        targetPath = sourcePath+"_"+getRandomId()
+        sourceInfo = self.get_node_info(desc)
+        transferRoot = self.create_node_from_path(targetPath,properties={"type":sourceInfo["type"]})
+
+        #now iterate over the nodes and children and create the same nodes
+        self.__clone_children(desc,transferRoot)
+        self.__clone_referencer_targets(sourcePath,transferRoot)
+        return True
 
 
     def __execution_thread(self,id):
@@ -2469,20 +2531,26 @@ class Model:
                     #controlNode.get_child("progress").set_value(0)
                     if result == True:
                         controlNode.get_child("result").set_value("ok")
+                        self.publish_event("result of " + str(functionName) + ": " + controlNode.get_child("result").get_value())
                     else:
                         if controlNode.get_child("result").get_value() == "pending":
                             #if the functions hasn't set anything else
                             controlNode.get_child("result").set_value("error")
+                        #also publish this result
+                        self.publish_event("error in " + str(functionName) + ": " + controlNode.get_child("result").get_value())
+
                 except:
                     self.logger.error("problem setting results from execution of #"+str(id))
                     pass
 
 
         except Exception as ex:
-            self.logger.error("error inside execution thread, id " +str(id)+" functionname"+str(functionName)+str(sys.exc_info()[1])+" "+str(ex)+" "+str(traceback.format_exc()))
+            errorString = str(sys.exc_info()[1])
+            self.logger.error("error inside execution thread, id " +str(id)+" functionname"+str(functionName)+errorString+" "+str(ex)+" "+str(traceback.format_exc()))
             controlNode.get_child("status").set_value("interrupted")
-            controlNode.get_child("result").set_value("error")
+            controlNode.get_child("result").set_value("error:"+errorString)
             controlNode.get_child("progress").set_value(0)
+            self.publish_event("error in "+str(functionName)+": "+errorString)
         return
 
     def get_error(self):
@@ -2831,10 +2899,12 @@ class Model:
             Args
                 event [string or dict]
         """
-
+        self.logger.debug(f"publish_event ({event})")
         self.modelUpdateCounter += 1
 
         if type(event) is str:
+            #make sure the formatting is json compatible
+            event = event.replace("'",'"')#     ' => "
             event={"event":"system.status","data":{"text":event}}
         event["id"]=self.modelUpdateCounter
 

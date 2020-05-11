@@ -320,30 +320,35 @@ function cockpit_importer_5_finish_import() {
   $(selector).html(_helper_html_wrap(msg, btnHtml))
   // --- create response var
   let res 
-  // --- [api] create table node
-  res = http_post_sync('/_create', true, [ { browsePath: tablepath, type: 'table' } ])
-  msg = `Failed creating table '${tablepath}'!`
-  if ( res.status > 201 ) $(selector).html(_helper_html_wrap(msg, btnHtml))
+
+  // // --- [api] create table node
+  // res = http_post_sync('/_create', true, [ { browsePath: tablepath, type: 'table' } ])
+  // msg = `Failed creating table '${tablepath}'!`
+  // if ( res.status > 201 ) $(selector).html(_helper_html_wrap(msg, btnHtml))
+
   // --- [api] set importer.tablename
-  if (res.status <= 201)
-    res = http_post_sync('/_create', true, [ { browsePath: "root.importer.tablename", type: 'const' } ])
+  res = http_post_sync('/_create', true, [ { browsePath: `${cockpitPath}.importer_import.tablename`, type: 'const' } ])
   msg = `Failed creating const 'root.importer.tablename'!`
   if ( res.status > 201 ) $(selector).html(_helper_html_wrap(msg, btnHtml))
+
   // --- [api] set const root.importer.filename
   if (res.status <= 201)
-    res = http_post_sync('/setProperties', true, [ { browsePath: "root.importer.tablename", value: tablename } ])
+    res = http_post_sync('/setProperties', true, [ { browsePath: `${cockpitPath}.importer_import.tablename`, value: tablename } ])
   msg = `Failed setting value for const 'root.importer.tablename'!`
   if ( res.status > 201 ) $(selector).html(_helper_html_wrap(msg, btnHtml))
+
   // --- [api] create referencer columns
   if (res.status <= 201)
-    res = http_post_sync('/_create', true, [ { browsePath: tablepath + ".metadata", type: 'const' } ])
+    res = http_post_sync('/_create', true, [ { browsePath: `${cockpitPath}.importer_import.metadata`, type: 'const' } ])
   msg = `Failed creating const '${tablepath + ".metadata"}'!`
   if ( res.status > 201 ) $(selector).html(_helper_html_wrap(msg, btnHtml))
+
   // --- [api] set fields
   if (res.status <= 201)
-    res = http_post_sync('/setProperties', true, [ { browsePath: tablepath + ".metadata", value: JSON.stringify(importerObj) } ])
+    res = http_post_sync('/setProperties', true, [ { browsePath: `${cockpitPath}.importer_import.metadata`, value: JSON.stringify(importerObj) } ])
   msg = `Failed setting value for const '${tablepath + ".metadata"}'!`
   if ( res.status > 201 ) $(selector).html(_helper_html_wrap(msg, btnHtml))
+
   // --- [api] run importer function
   if (res.status <= 201) {
       http_post( "/_execute", cockpitPath + ".importer_import", null, null, (self, status, data, params) => {

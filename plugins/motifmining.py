@@ -480,6 +480,11 @@ def motif_mining(template: np.ndarray, y: np.ndarray, sim_method: str = 'pearson
 
 
 def motif_jumper(functionNode):
+    """
+        jump from one result the the next/prev
+        if the increase/decrese is zero, we jump to the motif instead
+    """
+
 
     logger = functionNode.get_logger()
     logger.info("==>>>> in motif_jumper " + functionNode.get_browse_path())
@@ -493,29 +498,38 @@ def motif_jumper(functionNode):
     currentIndex = functionNode.get_child("jumpPos").get_value()
     inc = functionNode.get_child("jumpInc").get_value()
 
-    nextIndex = currentIndex+inc
-    if nextIndex>=len(dates):
-        nextIndex=0
-    functionNode.get_child("jumpPos").set_value(nextIndex)
 
-    logger.debug(f"jump to index {nextIndex}  : {dates[nextIndex]}")
+    if inc != 0:
+        nextIndex = currentIndex+inc
+        if nextIndex>=len(dates):
+            nextIndex=0
+        functionNode.get_child("jumpPos").set_value(nextIndex)
 
-    if len(dates):
-        motif = minerNode.get_child("motif").get_targets()[0]
-        motifStart = motif.get_child("startTime").get_value()
-        motifEnd = motif.get_child("endTime").get_value()
+        logger.debug(f"jump to index {nextIndex}  : {dates[nextIndex]}")
 
-        currentViewStart = widgetNode.get_child("startTime").get_value()
-        currentViewEnd = widgetNode.get_child("endTime").get_value()
-        currentViewWidth = date2secs(currentViewEnd)- date2secs(currentViewStart)
+    motif = minerNode.get_child("motif").get_targets()[0]
+    motifStart = motif.get_child("startTime").get_value()
+    motifEnd = motif.get_child("endTime").get_value()
+    motifWidth = date2secs(motifEnd)-date2secs(motifStart)
+    currentViewStart = widgetNode.get_child("startTime").get_value()
+    currentViewEnd = widgetNode.get_child("endTime").get_value()
+    currentViewWidth = date2secs(currentViewEnd)- date2secs(currentViewStart)
 
-        windowStart = date2secs(dates[nextIndex])-currentViewWidth/2
-        windowEnd = date2secs(dates[nextIndex])+currentViewWidth/2
-
-
-
+    if inc==0:
+        center = date2secs(motifStart)+0.5*(motifWidth)
+        windowStart = center-currentViewWidth/2
+        windowEnd = center+currentViewWidth/2
         widgetNode.get_child("startTime").set_value(epochToIsoString(windowStart,zone=timezone('Europe/Berlin')))
         widgetNode.get_child("endTime").set_value(epochToIsoString(windowEnd, zone=timezone('Europe/Berlin')))
+
+    else:
+        if len(dates):
+            center = date2secs(dates[nextIndex])-0.5*motifWidth
+            windowStart = center-currentViewWidth/2
+            windowEnd = center+currentViewWidth/2
+            widgetNode.get_child("startTime").set_value(epochToIsoString(windowStart,zone=timezone('Europe/Berlin')))
+            widgetNode.get_child("endTime").set_value(epochToIsoString(windowEnd, zone=timezone('Europe/Berlin')))
+
 
     return True
 

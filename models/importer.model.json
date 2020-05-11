@@ -10263,7 +10263,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 620,
+        "value": 622,
         "browsePath": "root.system.progress.triggerCounter"
     },
     "10857910486653991896": {
@@ -10274,7 +10274,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-04-17T11:01:35.739262",
+        "value": "2020-05-11T06:05:24.840517",
         "browsePath": "root.system.progress.lastTriggerTime"
     },
     "16724694746718170912": {
@@ -11230,7 +11230,8 @@
             "34577306739286421",
             "6636804428678562831",
             "15583169320598155063",
-            "6899507005701698492"
+            "6899507005701698492",
+            "14578804319044543202"
         ],
         "backRefs": [
             "15499764811511790654"
@@ -11353,7 +11354,7 @@
             "15729178998903584294"
         ],
         "forwardRefs": [],
-        "value": 163,
+        "value": 164,
         "browsePath": "root.importer.importer_preview.control.executionCounter"
     },
     "11415052170816904150": {
@@ -11364,7 +11365,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.042944,
+        "value": 0.060247,
         "browsePath": "root.importer.importer_preview.control.lastExecutionDuration"
     },
     "9789011534106794761": {
@@ -11375,7 +11376,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-04-17T11:01:22.369858",
+        "value": "2020-05-11T06:05:16.972936",
         "browsePath": "root.importer.importer_preview.control.lastStartTime"
     },
     "17003395223414030424": {
@@ -11397,7 +11398,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "{\"schema\":{\"fields\":[{\"name\":\"index\",\"type\":\"integer\"},{\"name\":\"id\",\"type\":\"integer\"},{\"name\":\"date\",\"type\":\"string\"},{\"name\":\"Temperature\",\"type\":\"number\"},{\"name\":\"Humidity\",\"type\":\"number\"},{\"name\":\"Light\",\"type\":\"number\"},{\"name\":\"CO2\",\"type\":\"number\"},{\"name\":\"HumidityRatio\",\"type\":\"number\"},{\"name\":\"Occupancy\",\"type\":\"integer\"}],\"primaryKey\":[\"index\"],\"pandas_version\":\"0.20.0\"},\"data\":[{\"index\":0,\"id\":140,\"date\":\"2015-02-02 14:19:00\",\"Temperature\":23.7,\"Humidity\":26.272,\"Light\":585.2,\"CO2\":749.2,\"HumidityRatio\":0.004764163,\"Occupancy\":1},{\"index\":1,\"id\":141,\"date\":\"2015-02-02 14:19:59\",\"Temperature\":23.718,\"Humidity\":26.29,\"Light\":578.4,\"CO2\":760.4,\"HumidityRatio\":0.004772661,\"Occupancy\":1},{\"index\":2,\"id\":142,\"date\":\"2015-02-02 14:21:00\",\"Temperature\":23.73,\"Humidity\":26.23,\"Light\":572.6666666667,\"CO2\":769.6666666667,\"HumidityRatio\":0.0047651526,\"Occupancy\":1},{\"index\":3,\"id\":143,\"date\":\"2015-02-02 14:22:00\",\"Temperature\":23.7225,\"Humidity\":26.125,\"Light\":493.75,\"CO2\":774.75,\"HumidityRatio\":0.0047437734,\"Occupancy\":1},{\"index\":4,\"id\":144,\"date\":\"2015-02-02 14:23:00\",\"Temperature\":23.754,\"Humidity\":26.2,\"Light\":488.6,\"CO2\":779.0,\"HumidityRatio\":0.004766594,\"Occupancy\":1}]}",
+        "value": "{\"schema\":{\"fields\":[{\"name\":\"index\",\"type\":\"integer\"},{\"name\":\"id\",\"type\":\"integer\"},{\"name\":\"date\",\"type\":\"string\"},{\"name\":\"Temperature\",\"type\":\"number\"},{\"name\":\"Humidity\",\"type\":\"number\"},{\"name\":\"Light\",\"type\":\"number\"},{\"name\":\"CO2\",\"type\":\"number\"},{\"name\":\"HumidityRatio\",\"type\":\"number\"},{\"name\":\"Occupancy\",\"type\":\"integer\"}],\"primaryKey\":[\"index\"],\"pandas_version\":\"0.20.0\"},\"data\":[{\"index\":0,\"id\":140,\"date\":\"2015-02-02 14:19:00\",\"Temperature\":23.7,\"Humidity\":26.272,\"Light\":585.2,\"CO2\":749.2,\"HumidityRatio\":0.004764163,\"Occupancy\":1},{\"index\":1,\"id\":141,\"date\":\"2015-02-02 14:19:59\",\"Temperature\":23.718,\"Humidity\":26.29,\"Light\":578.4,\"CO2\":760.4,\"HumidityRatio\":0.004772661,\"Occupancy\":1},{\"index\":2,\"id\":142,\"date\":\"2015-02-02 14:21:00\",\"Temperature\":23.73,\"Humidity\":26.23,\"Light\":572.6666666667,\"CO2\":769.6666666667,\"HumidityRatio\":0.0047651526,\"Occupancy\":1}]}",
         "browsePath": "root.importer.importer_preview.data_preview"
     },
     "6899507005701698492": {
@@ -11440,7 +11441,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 157,
+        "value": 158,
         "browsePath": "root.importer.observer.triggerCounter"
     },
     "5054980845379168330": {
@@ -11547,7 +11548,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "test-with-header.txt",
+        "value": "test-with-header-3-rows.txt",
         "browsePath": "root.importer.importer_preview.fileName"
     },
     "7485775317706349763": {
@@ -11567,7 +11568,9 @@
         "type": "function",
         "parent": "600134431294461625",
         "children": [
-            "8997030012463420739"
+            "8997030012463420739",
+            "13398199251262610562",
+            "6692896403717056572"
         ],
         "backRefs": [],
         "forwardRefs": [],
@@ -11617,7 +11620,7 @@
             "16724694746718170912"
         ],
         "forwardRefs": [],
-        "value": 1,
+        "value": 0,
         "browsePath": "root.importer.importer_import.control.progress"
     },
     "14753515598527683001": {
@@ -11650,7 +11653,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 12,
+        "value": 13,
         "browsePath": "root.importer.importer_import.control.executionCounter"
     },
     "15095161392115402281": {
@@ -11661,7 +11664,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 2.482854,
+        "value": 1.154053,
         "browsePath": "root.importer.importer_import.control.lastExecutionDuration"
     },
     "11831237733371818659": {
@@ -11672,7 +11675,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-04-17T11:01:33.242055",
+        "value": "2020-05-11T06:05:24.841359",
         "browsePath": "root.importer.importer_import.control.lastStartTime"
     },
     "4658324870008208400": {
@@ -11696,5 +11699,159 @@
         "forwardRefs": [],
         "value": "test-with-header_txt",
         "browsePath": "root.importer.tablename"
+    },
+    "13398199251262610562": {
+        "id": "13398199251262610562",
+        "name": "tablename",
+        "type": "const",
+        "parent": "6636804428678562831",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "test-with-header-3-rows_txt",
+        "browsePath": "root.importer.importer_import.tablename"
+    },
+    "6692896403717056572": {
+        "id": "6692896403717056572",
+        "name": "metadata",
+        "type": "const",
+        "parent": "6636804428678562831",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "{\"fields\":[{\"id\":\"importer-field-name-2 \",\"no\":\"2 \",\"val\":\"date\",\"use\":true},{\"id\":\"importer-field-name-3 \",\"no\":\"3 \",\"val\":\"Temperature\",\"use\":true},{\"id\":\"importer-field-name-4 \",\"no\":\"4 \",\"val\":\"Humidity\",\"use\":true}],\"filename\":\"test-with-header-3-rows.txt\",\"timefield\":\"2 \",\"headerexists\":true}",
+        "browsePath": "root.importer.importer_import.metadata"
+    },
+    "14578804319044543202": {
+        "id": "14578804319044543202",
+        "name": "imports",
+        "type": "folder",
+        "parent": "600134431294461625",
+        "children": [
+            "18413205960399664769"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.importer.imports"
+    },
+    "18413205960399664769": {
+        "id": "18413205960399664769",
+        "name": "test-with-header-3-rows_txt",
+        "type": "table",
+        "parent": "14578804319044543202",
+        "children": [
+            "7610280840824319905",
+            "162997567550298568",
+            "12433060401638295905"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.importer.imports.test-with-header-3-rows_txt"
+    },
+    "7610280840824319905": {
+        "id": "7610280840824319905",
+        "name": "variables",
+        "type": "folder",
+        "parent": "18413205960399664769",
+        "children": [
+            "1092036046159015105",
+            "8052037100308718087",
+            "1840493686541371849"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.importer.imports.test-with-header-3-rows_txt.variables"
+    },
+    "162997567550298568": {
+        "id": "162997567550298568",
+        "name": "columns",
+        "type": "referencer",
+        "parent": "18413205960399664769",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "1092036046159015105",
+            "8052037100308718087",
+            "1840493686541371849"
+        ],
+        "value": null,
+        "browsePath": "root.importer.imports.test-with-header-3-rows_txt.columns"
+    },
+    "12433060401638295905": {
+        "id": "12433060401638295905",
+        "name": "metadata",
+        "type": "const",
+        "parent": "18413205960399664769",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "fields": [
+                {
+                    "id": "importer-field-name-2 ",
+                    "no": "2 ",
+                    "val": "date",
+                    "use": true
+                },
+                {
+                    "id": "importer-field-name-3 ",
+                    "no": "3 ",
+                    "val": "Temperature",
+                    "use": true
+                },
+                {
+                    "id": "importer-field-name-4 ",
+                    "no": "4 ",
+                    "val": "Humidity",
+                    "use": true
+                }
+            ],
+            "filename": "test-with-header-3-rows.txt",
+            "timefield": "2 ",
+            "headerexists": true
+        },
+        "browsePath": "root.importer.imports.test-with-header-3-rows_txt.metadata"
+    },
+    "1092036046159015105": {
+        "id": "1092036046159015105",
+        "name": "date",
+        "type": "timeseries",
+        "parent": "7610280840824319905",
+        "children": [],
+        "backRefs": [
+            "162997567550298568"
+        ],
+        "forwardRefs": [],
+        "value": "None",
+        "browsePath": "root.importer.imports.test-with-header-3-rows_txt.variables.date"
+    },
+    "8052037100308718087": {
+        "id": "8052037100308718087",
+        "name": "Temperature",
+        "type": "timeseries",
+        "parent": "7610280840824319905",
+        "children": [],
+        "backRefs": [
+            "162997567550298568"
+        ],
+        "forwardRefs": [],
+        "value": "None",
+        "browsePath": "root.importer.imports.test-with-header-3-rows_txt.variables.Temperature"
+    },
+    "1840493686541371849": {
+        "id": "1840493686541371849",
+        "name": "Humidity",
+        "type": "timeseries",
+        "parent": "7610280840824319905",
+        "children": [],
+        "backRefs": [
+            "162997567550298568"
+        ],
+        "forwardRefs": [],
+        "value": "None",
+        "browsePath": "root.importer.imports.test-with-header-3-rows_txt.variables.Humidity"
     }
 }

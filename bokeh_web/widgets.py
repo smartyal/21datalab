@@ -18,6 +18,8 @@ import time
 import threading
 import sse
 import pytz
+import traceback
+
 
 
 from bokeh.models import DatetimeTickFormatter, ColumnDataSource, BoxSelectTool, BoxAnnotation, Label, LegendItem, Legend, HoverTool, BoxEditTool, TapTool, Circle
@@ -361,21 +363,25 @@ class TimeSeriesWidgetDataServer():
                 self.settings["observerIds"].append(node["id"])
 
         # now grab the info for the backgrounds
-        background={}
-        for node in info[0]["children"]:
-            if node["name"] == "hasBackground":
-                background["hasBackground"] = node["value"]
-            if node["name"] == "background" and background["hasBackground"]==True:
-                # we take only the first entry (there should be only one) of the referencer:
-                # this is the nodeId of the background values
-                background["background"]=node["forwardRefs"][0]
-            if node["name"] == "backgroundMap":
-                background["backgroundMap"] = copy.deepcopy(node["value"])      #the json map for background values and color mapping
-        if all(key in background for key in ["hasBackground","background","backgroundMap"]):
-            self.settings["background"]=copy.deepcopy(background)
-        else:
-            self.settings["background"]={"hasBackground":False}
-                #we dont have a valid background definition
+        try:
+            background={}
+            for node in info[0]["children"]:
+                if node["name"] == "hasBackground":
+                    background["hasBackground"] = node["value"]
+                if node["name"] == "background" and background["hasBackground"]==True:
+                    # we take only the first entry (there should be only one) of the referencer:
+                    # this is the nodeId of the background values
+                    background["background"]=node["forwardRefs"][0]
+                if node["name"] == "backgroundMap":
+                    background["backgroundMap"] = copy.deepcopy(node["value"])      #the json map for background values and color mapping
+            if all(key in background for key in ["hasBackground","background","backgroundMap"]):
+                self.settings["background"]=copy.deepcopy(background)
+            else:
+                self.settings["background"]={"hasBackground":False}
+                    #we dont have a valid background definition
+        except Exception as ex:
+            self.logger.error(f"problem loading background {ex}, {str(sys.exc_info()[1])}, disabling background")
+            self.settings["background"] = {"hasBackground": False}
 
 
         self.logger.debug("SERVER.SETTINGS-------------------------")
@@ -394,21 +400,25 @@ class TimeSeriesWidgetDataServer():
         annotations = {}
         for node in nodes:
             if node["type"] == "annotation":
-                annotation = get_const_nodes_as_dict(node["children"])
-                annotation["browsePath"]=node["browsePath"]
-                annotation["id"]=node["id"]
-                annotation["name"] = node["name"]
-                #convert some stuff
-                if "startTime" in annotation:
-                    annotation["startTime"] = date2secs(
-                        annotation["startTime"]) * 1000
-                if "endTime" in annotation:
-                    annotation["endTime"] = date2secs(
-                        annotation["endTime"]) * 1000
-                if annotation["type"] in ["threshold","motif"]:
-                    # we also pick the target, only the first
-                    annotation["variable"] =  annotation["variable"][0]
-                annotations[node["id"]]=annotation
+                try:
+                    annotation = get_const_nodes_as_dict(node["children"])
+                    annotation["browsePath"]=node["browsePath"]
+                    annotation["id"]=node["id"]
+                    annotation["name"] = node["name"]
+                    #convert some stuff
+                    if "startTime" in annotation:
+                        annotation["startTime"] = date2secs(
+                            annotation["startTime"]) * 1000
+                    if "endTime" in annotation:
+                        annotation["endTime"] = date2secs(
+                            annotation["endTime"]) * 1000
+                    if annotation["type"] in ["threshold","motif"]:
+                        # we also pick the target, only the first
+                        annotation["variable"] =  annotation["variable"][0]
+                    annotations[node["id"]]=annotation
+                except Exception as ex:
+                    self.logger.error(f"problem loading annotations {ex}, {str(sys.exc_info()[1])}")
+                    continue
         #self.logger.debug("server annotations" + json.dumps(self.annotations, indent=4))
         self.annotations = copy.deepcopy(annotations)
         return annotations
@@ -967,13 +977,13 @@ class TimeSeriesWidget():
                 self.show_scores()
 
     def hide_marker(self):
-        self.remove_renderers([lin+".marker" for lin in self.lines])
+        self.remove_renderers([lin+"_marker" for lin in self.lines])
     def show_marker(self):
         self.logger.debug("show marker")
 
         for variableName in self.lines:
 
-            markerName = variableName + ".marker"
+            markerName = variableName + "_marker"
             color = self.lines[variableName].glyph.line_color
             marker = self.plot.circle(x="x",y="y", line_color=color, fill_color=color,
                                       source=self.columnData[variableName], name=markerName,
@@ -1175,8 +1185,9 @@ class TimeSeriesWidget():
             if deleteList != []:
                 # now make a second run and check the _score variables of the deletlist
                 deleteScoreNames = [deletePath.split('.')[-1]+"_score" for deletePath in deleteList]
+                deleteExpectedNames = [deletePath.split('.')[-1]+"_expected" for deletePath in deleteList]
                 for r in self.plot.renderers:
-                    if r.name and r.name.split('.')[-1] in deleteScoreNames:
+                    if r.name and (r.name.split('.')[-1] in deleteScoreNames or r.name.split('.')[-1] in deleteExpectedNames):
                         deleteList.append(r.name) #take the according score as well
 
 
@@ -1186,8 +1197,8 @@ class TimeSeriesWidget():
                 self.server.set_variables_selected(newVariablesSelected)
                 # self.__dispatch_function(self.refresh_plot)
 
-                #now delete potential markers
-                self.remove_renderers([lin+".marker" for lin in deleteList])
+                #now delete potential markers and expected
+                self.remove_renderers([lin+"_marker" for lin in deleteList])
 
         except Exception as ex:
             self.logger.error("problem during __legend_check" + str(ex))
@@ -2065,14 +2076,15 @@ class TimeSeriesWidget():
 
     def box_modifier_init(self):
         self.logger.debug("box_modifier_init")
+        self.boxModifierWidth = 8
 
         b1 = date2secs(datetime.datetime(2015, 2, 13, 3, tzinfo=pytz.UTC)) * 1000
         b2 = date2secs(datetime.datetime(2015, 2, 13, 4, tzinfo=pytz.UTC)) * 1000
         wid = 20 * 60 * 1000  # 20 min
-        self.boxModifierData = ColumnDataSource( {'x': [b1, b2], 'y': [0, 0], 'width': [5, 5], 'height': [300, 300] })
+        self.boxModifierData = ColumnDataSource( {'x': [b1, b2], 'y': [0, 0], 'width': [self.boxModifierWidth, self.boxModifierWidth], 'height': [300, 300] })
 
-        self.boxModifierRectHorizontal = self.plot.rect('x', 'y', 'width', 'height', source=self.boxModifierData, width_units="screen",line_width=5,line_dash="dotted",line_color="white",fill_color="black" )  # , height_units="screen")#, height_units="screen")
-        self.boxModifierRectVertical = self.plot.rect('x', 'y', 'width', 'height', source=self.boxModifierData, height_units="screen",line_width=5,line_dash="dotted",line_color="white",fill_color="black")  # , height_units="screen")#, height_units="screen")
+        self.boxModifierRectHorizontal = self.plot.rect('x', 'y', 'width', 'height', source=self.boxModifierData, width_units="screen",line_width=1,line_dash="dotted",line_color="white",fill_color="white" )  # , height_units="screen")#, height_units="screen")
+        self.boxModifierRectVertical = self.plot.rect('x', 'y', 'width', 'height', source=self.boxModifierData, height_units="screen",line_width=1,line_dash="dotted",line_color="white",fill_color="white")  # , height_units="screen")#, height_units="screen")
 
         self.boxModifierRectHorizontal.data_source.on_change("selected", self.box_cb)
         self.boxModifierRectVertical.data_source.on_change("selected", self.box_cb)
@@ -2193,7 +2205,7 @@ class TimeSeriesWidget():
         if anno["type"] in ["time","motif"]:
             start = anno["startTime"]
             end = anno["endTime"]
-            self.boxModifierData.data = {'x': [start, end], 'y': [boxYCenter, boxYCenter], 'width': [5, 5], 'height': [boxYHeight, boxYHeight]}
+            self.boxModifierData.data = {'x': [start, end], 'y': [boxYCenter, boxYCenter], 'width': [self.boxModifierWidth, self.boxModifierWidth], 'height': [boxYHeight, boxYHeight]}
             self.boxModifierRectHorizontal.visible=True
             self.boxModifierOldData = dict(copy.deepcopy(self.boxModifierData.data))
             self.boxModifierVisible = True
@@ -2201,7 +2213,7 @@ class TimeSeriesWidget():
             self.boxModifierTool.renderers = [self.boxModifierRectHorizontal]  # ,self.boxModifierRectVertical]
 
         if anno["type"] == "threshold":
-            self.boxModifierData.data = {'x': [boxXCenter, boxXCenter], 'y': [anno['min'], anno['max']], 'width': [boxXWidth,boxXWidth], 'height': [5, 5]}
+            self.boxModifierData.data = {'x': [boxXCenter, boxXCenter], 'y': [anno['min'], anno['max']], 'width': [boxXWidth,boxXWidth], 'height': [self.boxModifierWidth, self.boxModifierWidth]}
             self.boxModifierRectVertical.visible=True
             self.boxModifierOldData = dict(copy.deepcopy(self.boxModifierData.data))
             self.boxModifierVisible = True
@@ -2397,7 +2409,7 @@ class TimeSeriesWidget():
                     fkt()
 
         except Exception as ex:
-            self.logger.error(f"Error in periodic callback {ex}")
+            self.logger.error(f"Error in periodic callback {ex} , {str(traceback.format_exc())}")
 
         if legendChange or executelist != []:
             self.logger.debug(f"periodic_cb was {time.time()-start}")
@@ -2550,7 +2562,7 @@ class TimeSeriesWidget():
                         self.lines[variableName] = self.plot.line(x="x", y="y", color=color,source=self.columnData[variableName], name=variableName,line_width=2)
 
                         if showMarker:
-                            markerName = variableName+".marker"
+                            markerName = variableName+"_marker"
                             marker = self.plot.circle(x="x",y="y", line_color=color, fill_color=color,
                                                       source=self.columnData[variableName], name=markerName,size=3)  # x:"time", y:variableName #the legend must havee different name than the source bug
                 #legend only for lines
@@ -2666,28 +2678,50 @@ class TimeSeriesWidget():
         deleteLines=list(set(deleteLines)) # avoid duplicates
         """
 
-        for key in deleteLines:
-            self.lines[key].visible = False
-            del self.lines[key]
-            if key in self.legendItems:
-                del self.legendItems[key]
+        if deleteLines:
+            removeLegendKeys = []
+            removeSelfLines = []
+            self.plot.legend.items=[] # avoid errors later, we might remove the glyph but the legend needs it
+            for key in deleteLines:
+                self.lines[key].visible = False
+                removeSelfLines.append(key)
+                removeLegendKeys.append(key)
 
-        #remove the legend
-        legendItems = [v for k, v in self.legendItems.items()]
-        self.plot.legend.items = legendItems
-        #remove the lines
-        self.remove_renderers(deleteLines)
-        #remove the according thresholds if any
-        for lin in deleteLines:
-            self.remove_renderers(self.find_thresholds_of_line(lin),deleteFromLocal=True)
-            self.remove_renderers(self.find_motifs_of_line(lin),deleteFromLocal=True)
-            marker = self.find_renderer(lin+".marker")
-            if marker:
-                self.remove_renderers([marker])
+            #remove the lines
+            self.remove_renderers(deleteLines)
+            #remove the according thresholds if any
+            for lin in deleteLines:
+                self.remove_renderers(self.find_thresholds_of_line(lin),deleteFromLocal=True)
+                self.remove_renderers(self.find_motifs_of_line(lin),deleteFromLocal=True)
+                #marker = self.find_renderer(lin+"_marker")
+                #if marker:
+                #    self.remove_renderers(renderers=[marker])
 
-            #del self.columnData[lin] #delete the ColumnDataSource
+            extraDeleteRenderers = self.find_extra_renderers_of_lines(deleteLines)
+            for r in extraDeleteRenderers:
+                if r.name in self.legendItems:
+                    #del self.legendItems[r.name]
+                    removeLegendKeys.append(r.name)
+
+            self.remove_renderers(renderers=extraDeleteRenderers,deleteFromLocal=True)# remove scores, expected, markers
+
+                #del self.columnData[lin] #delete the ColumnDataSource
 
 
+            #rebuild the legend is done at the end of the plot_lines
+            for key in removeLegendKeys:
+                if key in self.legendItems:
+                    del self.legendItems[key]
+            for key in removeSelfLines: # remove them after the legend remove
+                if key in self.lines:
+                    del self.lines[key]
+
+            #also delete the links from the model in the backend
+            #put together all deletes
+            serverDeletes = deleteLines.copy()
+            serverDeletes.extend([r.name for r in extraDeleteRenderers])
+            newServerSelection=[lin for lin in backendLines if lin not in serverDeletes]
+            self.server.set_variables_selected(newServerSelection)
 
 
 
@@ -2706,6 +2740,7 @@ class TimeSeriesWidget():
                         if scoreName not in currentLineEndings:
                             additionalLines.append(scoreVar)
             if additionalLines:
+                additionalLines=list(set(additionalLines))# remove duplicates
                 self.logger.debug(f"MUST add scores: {additionalLines}.. in the next event")
                 self.server.add_variables_selected(additionalLines)
                 #return # wait for next event
@@ -3272,6 +3307,28 @@ class TimeSeriesWidget():
                     result.append(k)
         self.logger.debug("@find_motifs_of_line of line returns "+path+" => "+str(result))
         return result
+
+    def find_extra_renderers_of_lines(self,lines,markers=True,scores=True,expected=True):
+        if type(lines) is not list:
+            lines = [lines]
+
+        extraRenderes = []
+        deleteNames = []
+        for line in lines:
+            name = line.split('.')[-1]
+            if scores:
+                deleteNames.append(name+"_score")
+            if expected:
+                deleteNames.append(name+"_expected")
+            if markers:
+                deleteNames.append(name + "_marker")
+        for r in self.plot.renderers:
+            if r.name and (r.name.split('.')[-1] in deleteNames):
+                extraRenderes.append(r)  # take the according score as well
+
+        for r in extraRenderes:
+            self.logger.debug(f"remove extra {r.name}")
+        return extraRenderes
 
     def show_motifs_of_line(self,path):
         self.logger.debug("@show_motifs_of_line " + path)
