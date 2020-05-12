@@ -135,16 +135,16 @@ class TimeSeriesWidgetDataServer():
         self.sse.start()
 
     def sse_cb(self,data):
-        self.logger.debug(f'sse {data}, {self.settings["observerIds"]}, my id {id(self)}')
+        #self.logger.debug(f'sse {data}, {self.settings["observerIds"]}, my id {id(self)}')
         #now we filter out the events which are for me
         if data["data"]!="":
             try:
                 dataString = data["data"]
                 dataString = dataString.replace("'",'"') # json needs double quote for key/values entries
                 parseData = json.loads(dataString)
-                self.logger.debug(f"parsed event {parseData}")
+                #self.logger.debug(f"parsed event {parseData}")
                 if "nodeId" in parseData:
-                    self.logger.debug(f"nodeid in parsedata {parseData['nodeId']} in {self.settings['observerIds']}")
+                    #self.logger.debug(f"nodeid in parsedata {parseData['nodeId']} in {self.settings['observerIds']}")
                     if parseData["nodeId"] in self.settings["observerIds"]: #only my own observers are currently taken
                         #self.logger.info("sse match")
                         if self.sseCb:
@@ -848,19 +848,6 @@ class TimeSeriesWidget():
                 #self.logger.debug(f"request stream data{self.streamingInterval}")
                 self.streamingUpdateDataInterval = self.streamingInterval #store this to check later if it has changed
                 self.streamingUpdateData = self.server.get_data(variablesRequest, -self.streamingInterval, None,
-                                                                self.server.get_settings()["bins"])  # for debug
-                self.__dispatch_function(self.stream_update)
-            elif not self.streamingMode and not self.streamingUpdateData:
-                #this is a standard update without streaming
-                self.logger.debug("get changed data")
-                variables = self.server.get_variables_selected()
-                variablesRequest = variables.copy()
-                #variablesRequest.append("__time")  # make sure we get the time included
-                # self.logger.debug(f"request stream data{self.streamingInterval}")
-                #we fake the streminginterval
-                self.streamingInterval = self.rangeEnd - self.rangeStart
-                self.streamingUpdateDataInterval = self.streamingInterval  # store this to check later if it has changed
-                self.streamingUpdateData = self.server.get_data(variablesRequest, self.rangeStart, self.rangeEnd,
                                                                 self.server.get_settings()["bins"])  # for debug
                 self.__dispatch_function(self.stream_update)
 
@@ -1919,33 +1906,19 @@ class TimeSeriesWidget():
                         #the interval has changed in the meantime due to user pan/zoom, we skip this data, get fresh one
                         self.streamingUpdateData = None
                         self.inStreamUpdate = False
-                        self.logger.debug("interval has changed")
+                        self.logger.warning("streaming interval has changed")
                         return
-                    #, we can now savely push them
-                    # debug prints
-                    #for k,v in self.streamingUpdateData.items():
-                    #    self.logger.debug(f" {k}:{v}")
 
                     self.logger.debug(f"apply data {self.streamingUpdateData.keys()},")
-                    if 0:#set(self.streamingUpdateData.keys()) != set(self.columnData.keys()):
-                        self.logger.error(f"keys not match {self.streamingUpdateData.keys()},{self.columnData.keys()}, skip this data")
-                        self.streamingUpdateData = None
-                    else:
-                        self.update_column_datas(self.streamingUpdateData)
-                        #self.data.data = self.streamingUpdateData# #update the plot
-                        mini,maxi = self.get_min_max_times(self.streamingUpdateData)
-                        self.logger.debug(f"streaming start {mini} end {maxi}, interv {self.streamingInterval}")
-                        #self.plot.x_range.start = self.data.data["__time"][0]
-                        #self.plot.x_range.end = self.data.data["__time"][-1]
-                        if self.streamingMode:
-                            #only in streaming Mode we set the axis new
-                            self.set_x_axis(mini,maxi)
-                        self.adjust_y_axis_limits()
-                        if self.showBackgrounds:
-                            #we also try to update the backgrounds here
-                            self.stream_update_backgrounds()
+                    self.update_column_datas(self.streamingUpdateData)
+                    mini,maxi = self.get_min_max_times(self.streamingUpdateData)
+                    self.logger.debug(f"streaming x_range: start {mini} end {maxi}, interv {self.streamingInterval}, {maxi-self.streamingInterval} ")
+                    self.set_x_axis(maxi-self.streamingInterval,maxi)
+                    self.adjust_y_axis_limits()
+                    if self.showBackgrounds:
+                        self.stream_update_backgrounds()
 
-                        self.streamingUpdateData = None #the thread can get new data
+                    self.streamingUpdateData = None #the thread can get new data
                 else:
                     self.logger.info("user zoom running, try later")
                     #user is panning, zooming, we should wait and try again later
@@ -2821,10 +2794,11 @@ class TimeSeriesWidget():
                 self.userZoomRunning = False # the user is finished with zooming, we can now push data to the UI again
                 # also update the zoom level during streaming
                 self.streamingInterval = self.plot.x_range.end - self.plot.x_range.start #.rangeEnd - self.rangeStart
+                self.logger.debug(f"new streaming interval: {self.streamingInterval}")
             #if self.server.get_settings()["autoScaleY"][".properties"]["value"] == True
             self.autoAdjustY = self.server.get_mirror()["autoScaleY"][".properties"]["value"]
             self.server.set_x_range(self.rangeStart,self.rangeEnd)
-            self.refresh_plot() #xxx
+            self.refresh_plot()
 
         if eventType == "Reset":
             self.reset_plot_cb()
