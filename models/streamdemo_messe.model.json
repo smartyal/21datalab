@@ -97,9 +97,7 @@
         "type": "referencer",
         "parent": "127",
         "children": [],
-        "backRefs": [
-            "622"
-        ],
+        "backRefs": [],
         "forwardRefs": [
             "8270570985552561038"
         ],
@@ -130,7 +128,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T17:46:57.086820+01:00",
+        "value": "2020-05-14T17:43:51.580247+02:00",
         "browsePath": "root.visualization.workbench.startTime"
     },
     "131": {
@@ -141,7 +139,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T17:47:59.041768+01:00",
+        "value": "2020-05-14T17:44:19.715822+02:00",
         "browsePath": "root.visualization.workbench.endTime"
     },
     "132": {
@@ -1163,9 +1161,7 @@
             "575",
             "576"
         ],
-        "backRefs": [
-            "622"
-        ],
+        "backRefs": [],
         "forwardRefs": [],
         "value": null,
         "browsePath": "root.folder"
@@ -1589,7 +1585,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 82748,
+        "value": 82992,
         "browsePath": "root.visualization.workbench.observerStream.triggerCounter"
     },
     "621": {
@@ -1600,7 +1596,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T17:48:07.534462",
+        "value": "2020-05-14T17:44:31.404680",
         "browsePath": "root.visualization.workbench.observerStream.lastTriggerTime"
     },
     "622": {
@@ -1611,8 +1607,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [
-            "572",
-            "128"
+            "11264802202983721401"
         ],
         "value": null,
         "browsePath": "root.visualization.workbench.observerStream.targets"
@@ -2280,9 +2275,7 @@
         "parent": "133",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "13771503040760799329"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.workbench.hasAnnotation.selectedAnnotations"
     },
@@ -2372,7 +2365,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 31,
+        "value": 35,
         "browsePath": "root.visualization.workbench.observerAnnotations.triggerCounter"
     },
     "1512825987021341680": {
@@ -2383,7 +2376,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T17:48:00.004674",
+        "value": "2020-05-14T17:44:20.890043",
         "browsePath": "root.visualization.workbench.observerAnnotations.lastTriggerTime"
     },
     "181254564156835464": {
@@ -2485,7 +2478,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 70,
+        "value": 72,
         "browsePath": "root.visualization.workbench.observerVisibleElements.triggerCounter"
     },
     "8776597143574159736": {
@@ -2496,7 +2489,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T17:46:30.379033",
+        "value": "2020-05-14T17:43:57.602250",
         "browsePath": "root.visualization.workbench.observerVisibleElements.lastTriggerTime"
     },
     "7833314493455544321": {
@@ -2699,32 +2692,11 @@
         "backRefs": [],
         "forwardRefs": [],
         "value": {
-            "entry": {
+            "root.new_thresholdScorer4_3708.output.scores.cos_score": {
                 "lineColor": "red"
-            },
-            "root.folder.sin": {
-                "lineColor": "#D9B100"
-            },
-            "root.folder_autotable.score_cos": {
-                "lineColor": "red"
-            },
-            "root.folder.cos": {
-                "lineColor": "#eba4fc"
-            },
-            "root.folder_autotable.cos_score": {
-                "lineColor": "red"
-            },
-            "root.folder_autotable.sin_score": {
-                "lineColor": "red"
-            },
-            "root.stream.variables.sin": {
-                "lineColor": "#D9B100"
             },
             "root.stream.variables.cos": {
                 "lineColor": "#eba4fc"
-            },
-            "root.new_thresholdScorer4_3708.output.scores.cos_score": {
-                "lineColor": "red"
             }
         },
         "browsePath": "root.visualization.workbench.currentColors"
@@ -3382,7 +3354,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 42942,
+        "value": 43913,
         "browsePath": "root.system.progress.triggerCounter"
     },
     "4425723408065578788": {
@@ -3393,7 +3365,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T17:48:07.529463",
+        "value": "2020-05-14T17:44:31.426665",
         "browsePath": "root.system.progress.lastTriggerTime"
     },
     "3939645154328067705": {
@@ -3567,7 +3539,9 @@
             "8455707287008521588",
             "1326387314607259615"
         ],
-        "backRefs": [],
+        "backRefs": [
+            "622"
+        ],
         "forwardRefs": [],
         "value": null,
         "browsePath": "root.stream.variables"
@@ -3742,7 +3716,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "running",
+        "value": "finished",
         "browsePath": "root.new_thresholdScorer4_3708.control.status"
     },
     "8412711813929134461": {
@@ -3766,7 +3740,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "pending",
+        "value": "ok",
         "browsePath": "root.new_thresholdScorer4_3708.control.result"
     },
     "8183061903879963333": {
@@ -3788,7 +3762,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 3709,
+        "value": 3953,
         "browsePath": "root.new_thresholdScorer4_3708.control.executionCounter"
     },
     "5290080539601212057": {
@@ -3799,7 +3773,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.015991,
+        "value": 0.013002,
         "browsePath": "root.new_thresholdScorer4_3708.control.lastExecutionDuration"
     },
     "10957971835073517190": {
@@ -3810,7 +3784,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T17:48:07.520468",
+        "value": "2020-05-14T17:44:31.416671",
         "browsePath": "root.new_thresholdScorer4_3708.control.lastStartTime"
     },
     "312098300128511023": {
@@ -3836,9 +3810,7 @@
             "18439421347134905675",
             "7800778336996077803"
         ],
-        "backRefs": [
-            "5069722210264690679"
-        ],
+        "backRefs": [],
         "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.8cc804ba"
@@ -3862,7 +3834,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": -0.24321542175245123,
+        "value": 0.027664819554494294,
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.8cc804ba.min"
     },
     "15810403999476894775": {
@@ -3873,7 +3845,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.7520485211606718,
+        "value": 0.4851817700707944,
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.8cc804ba.max"
     },
     "18439421347134905675": {
@@ -3912,7 +3884,7 @@
             "8270570985552561038"
         ],
         "forwardRefs": [],
-        "value": "None",
+        "value": "len 4",
         "creator": "3654169761293419214",
         "subType": "score",
         "browsePath": "root.new_thresholdScorer4_3708.output._total_score"
@@ -3929,7 +3901,7 @@
             "129"
         ],
         "forwardRefs": [],
-        "value": "None",
+        "value": "len 4",
         "subType": "score",
         "creator": "3654169761293419214",
         "browsePath": "root.new_thresholdScorer4_3708.output.scores.cos_score"

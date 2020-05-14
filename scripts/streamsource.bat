@@ -6,6 +6,5 @@ set "https_proxy="
 
 set mypath=%cd%
 cd %mypath%\..
-cd test
-start python streamsource.py 250
+start python streamsource.py 250 6002
 endlocal
