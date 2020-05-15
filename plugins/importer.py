@@ -37,7 +37,7 @@ pipeline = {
     "type": "folder",
     "children": [
         { "name": "imports", "type": "folder" },
-        { "name": "cockpit", "type": "const", "value": "customui/importer.htm" },
+        { "name": "cockpit", "type": "const", "value": "customui/importer/index.htm" },
         previewFileTemplate,
         { "name":"preview_observer",
           "type": "observer", "children": [           # observer for the selected variables (not the values)
