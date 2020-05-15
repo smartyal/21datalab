@@ -2539,8 +2539,11 @@ class Model:
                         #also publish this result
                         self.publish_event("error in " + str(functionName) + ": " + controlNode.get_child("result").get_value())
 
-                except:
-                    self.logger.error("problem setting results from execution of #"+str(id))
+                #  except:
+                    #  self.logger.error("problem setting results from execution of #"+str(id))
+                except Exception as ex:
+                    errorString = str(sys.exc_info()[1])
+                    self.logger.error("error inside execution thread, id" +str(id)+" functionname"+str(functionName)+errorString+" "+str(ex)+" "+str(traceback.format_exc()))
                     pass
 
 

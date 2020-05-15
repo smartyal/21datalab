@@ -31,6 +31,28 @@ importerImportTemplate = {
     ]
 }
 
+importerPipelineTemplate = {
+    "name": "importer",
+    "type": "folder",
+    "children": [
+        importerPreviewTemplate,
+        importerImportTemplate,
+        { "name": "cockpit", "type": "const", "value": "customui/importer.htm" },
+        { "name":"observerPreview",
+          "type": "observer", "children": [           # observer for the selected variables (not the values)
+            {"name": "enabled", "type": "const", "value": True},                # on by default to enable drag + drop
+            {"name": "triggerCounter", "type": "variable", "value": 0},         # increased on each trigger
+            {"name": "lastTriggerTime", "type": "variable", "value": ""},       # last datetime when it was triggered
+            {"name": "targets", "type": "referencer", "references":["importer.importerPreview.control.executionCounter"]},  # pointing to the nodes observed
+            {"name": "properties", "type": "const", "value": ["value"]},  # properties to observe [“children”,“value”, “forwardRefs”]
+            {"name": "onTriggerFunction", "type": "referencer"},                # the function(s) to be called when triggering
+            {"name": "hasEvent", "type": "const", "value": True},               # set to true if we want an event as well
+            {"name": "eventString", "type": "const", "value": "importer.data_imported"}  # the string of the event
+            ]
+        },
+    ]
+}
+
 def importer_preview(functionNode):
 
     # --- set vars
