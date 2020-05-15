@@ -11,7 +11,7 @@ cython
 attrs==19.3.0             # via jsonschema
 backcall==0.1.0           # via ipython
 beautifulsoup4==4.8.2     # via bs4
-bleach==3.1.1             # via nbconvert
+bleach==3.1.4             # via nbconvert
 bokeh==1.4.0              # via -r requirements.in (line 1)
 bs4==0.0.1                # via -r requirements.in (line 2)
 certifi==2019.11.28       # via requests
