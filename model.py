@@ -3075,7 +3075,7 @@ class Model:
             parents=set()
             for id in workList:
                 myParent=self.model[id]["parent"]
-                if myParent !="1": #root
+                if myParent not in ["0","1"]: #root
                     parents.update([myParent]) #!use list to avoid break into chars
             #now take the parents as currentList
             workList = parents.copy()
