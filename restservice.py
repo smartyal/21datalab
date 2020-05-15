@@ -12,6 +12,7 @@ from gevent.pywsgi import WSGIServer
 import uuid
 from bs4 import BeautifulSoup
 import re
+import traceback
 
 from flask import  render_template, render_template_string
 from bokeh.client import pull_session
@@ -34,33 +35,19 @@ TODO:
 have a key to add the time in the answer when query data
  - you can put the variable for time if you know it
  - you can say "addTimeValue=True" in the query to get the time as "time"=....., sometimes you don't know what is the time variable, you just have the variables
-
-
 '''
 
-
-
 #init the logger
-
 logger = logging.getLogger("restservice")
 handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-
 logfile = logging.FileHandler("./log/restservice.log")
 logfile.setFormatter(formatter)
 logger.addHandler(logfile)
-
-
-
 logger.setLevel(logging.DEBUG)
-
-
 bokehPath = "http://localhost:5006/"
-
-
-
 web = flask.Flask(__name__)
 
 # check if the upload folder exists, create it otherwise
@@ -69,7 +56,6 @@ if not os.path.isdir(UPLOAD_FOLDER):
 web.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 '''
-
 WEBCODES ---------------------
 200 ok
 201 ok, created
@@ -113,12 +99,8 @@ POST /_push          [<nodedict.json>]                                   # push 
 GET  /_upload        -                          [<fileinfo.json>]        # get the list of files in the /upload folder
 POST /_upload       <jquery file upload>                                 # upload files via jquery file upload module-style
 POST /_clone        <clone.json>                -                        # clone a node and its subnodes
+
 data:
-
-
-
-
-
 JSONS ------------------------
 nodedescriptor // a string with the nodeid (number) or the browsepath 
 

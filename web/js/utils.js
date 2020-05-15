@@ -1,13 +1,11 @@
-function http_get(myUrl) {
-    
+function http_get( myUrl ) {
 	var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", myUrl, false ); // syncronous request
-    xmlHttp.send( null );
-    return xmlHttp.responseText;
+  xmlHttp.open( "GET", myUrl, false ); // syncronous request
+  xmlHttp.send( null );
+  return xmlHttp.responseText;
 }
 
-
-function http_post(url, data, params, obj,cb)
+function http_post( url, data, params, obj, cb )
 {
     // construct an HTTP request
     var xhr = new XMLHttpRequest();
@@ -29,7 +27,6 @@ function http_post(url, data, params, obj,cb)
     // send the collected data as JSON
     xhr.send(data);
 }
-
 
 function http_post_sync( url, jsonStringify, data ) {
   let xhr = new XMLHttpRequest()

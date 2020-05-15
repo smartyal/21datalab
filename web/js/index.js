@@ -1511,16 +1511,12 @@ function prepare_context_menu(dataString,modelPath)
 
 function launch_cockpit(url,path,widget)
 {
-
-
     if (url!="")
     {
         var data=http_get(url);
         $("#cockpit").remove();
         $("#cockpitplaceholder").html(data);
     }
-
-
 
     var cockpit = $('#cockpit');
     cockpit.draggable({handle: ".modal-header"});                                   //make it movable

@@ -22,3 +22,6 @@ jQuery-File-Upload
 upload
 private
 models
+web/modules/**
+!web/modules/README.md
+web/plugins

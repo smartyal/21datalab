@@ -1392,7 +1392,7 @@ class TreeCard
 
         //now start automatic updates
         this.autoUpdate = false; // we start without
-        //this.update_on_click(); //start the auto update
+        // this.update_on_click(); //start the auto update
 
         //hook the ok buttons
 
