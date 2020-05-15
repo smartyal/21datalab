@@ -130,7 +130,7 @@
             "13071347114919871021"
         ],
         "forwardRefs": [],
-        "value": "2015-02-11T14:48:00+01:00",
+        "value": "2015-02-02T14:19:00+01:00",
         "browsePath": "root.visualization.workbench.startTime"
     },
     "131": {
@@ -143,7 +143,7 @@
             "13071347114919871021"
         ],
         "forwardRefs": [],
-        "value": "2015-02-18T09:08:00+01:00",
+        "value": "2015-02-02T14:21:00+01:00",
         "browsePath": "root.visualization.workbench.endTime"
     },
     "132": {
@@ -4119,7 +4119,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 155,
+        "value": 158,
         "browsePath": "root.visualization.workbench.observerVariables.triggerCounter"
     },
     "645": {
@@ -4130,7 +4130,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-04-17T11:06:19.979770",
+        "value": "2020-05-15T09:02:45.469837",
         "browsePath": "root.visualization.workbench.observerVariables.lastTriggerTime"
     },
     "646": {
@@ -6815,7 +6815,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 1095,
+        "value": 1109,
         "browsePath": "root.visualization.workbench.observerVisibleElements.triggerCounter"
     },
     "15683200324838571042": {
@@ -6826,7 +6826,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-04-17T11:06:20.377085",
+        "value": "2020-05-15T09:02:30.124968",
         "browsePath": "root.visualization.workbench.observerVisibleElements.lastTriggerTime"
     },
     "13071347114919871021": {
@@ -7420,7 +7420,11 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": {},
+        "value": {
+            "root.im2.imports.test-with-header-3-rows_txt.variables.4": {
+                "lineColor": "#D9B100"
+            }
+        },
         "browsePath": "root.visualization.workbench.currentColors"
     },
     "8639743599502979877": {
@@ -10263,7 +10267,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 622,
+        "value": 644,
         "browsePath": "root.system.progress.triggerCounter"
     },
     "10857910486653991896": {
@@ -10274,7 +10278,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-05-11T06:05:24.840517",
+        "value": "2020-05-15T08:59:12.560412",
         "browsePath": "root.system.progress.lastTriggerTime"
     },
     "16724694746718170912": {
@@ -10284,9 +10288,7 @@
         "parent": "2342633470238551311",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [
-            "476160793280814585"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.system.progress.targets"
     },
@@ -11616,9 +11618,7 @@
         "type": "variable",
         "parent": "8997030012463420739",
         "children": [],
-        "backRefs": [
-            "16724694746718170912"
-        ],
+        "backRefs": [],
         "forwardRefs": [],
         "value": 0,
         "browsePath": "root.importer.importer_import.control.progress"
@@ -11825,7 +11825,7 @@
             "162997567550298568"
         ],
         "forwardRefs": [],
-        "value": "None",
+        "value": "len 5",
         "browsePath": "root.importer.imports.test-with-header-3-rows_txt.variables.date"
     },
     "8052037100308718087": {
@@ -11838,7 +11838,7 @@
             "162997567550298568"
         ],
         "forwardRefs": [],
-        "value": "None",
+        "value": "len 5",
         "browsePath": "root.importer.imports.test-with-header-3-rows_txt.variables.Temperature"
     },
     "1840493686541371849": {
@@ -11851,7 +11851,7 @@
             "162997567550298568"
         ],
         "forwardRefs": [],
-        "value": "None",
+        "value": "len 5",
         "browsePath": "root.importer.imports.test-with-header-3-rows_txt.variables.Humidity"
     }
 }
