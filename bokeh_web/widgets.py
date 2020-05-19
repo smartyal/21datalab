@@ -88,8 +88,8 @@ def setup_logging(loglevel=logging.DEBUG,tag = ""):
 
 
 #import model
-from model import date2secs,secs2date, secs2dateString
-from model import epochToIsoString
+from dates import date2secs,secs2date, secs2dateString
+from dates import epochToIsoString
 import themes #for nice colorsing
 
 
