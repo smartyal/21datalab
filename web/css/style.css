@@ -9,6 +9,17 @@
     opacity: 1;
 }
 
+
+.navbar-dark .navbar-nav .nav-link.active {
+    color: #d9b100;
+}
+
+.navbar-nav .nav-item.active .nav-link,
+.navbar-nav .nav-item:hover .nav-link {
+    color: #d9b100;
+}
+
+
 @media (min-width: 768px) {
     body {
         margin-left: 110px;
