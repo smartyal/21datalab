@@ -473,7 +473,7 @@ def all(path):
             if not result:
                 responseCode = 400
             else:
-                responseCode = 200
+                responseCode = 201
                 #m.show()
 
 
