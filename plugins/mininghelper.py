@@ -200,7 +200,7 @@ def dif(vector,appendEnd=True):
         return np.append(d[0],d)
        
 
-def prominent_points(y,times=None):
+def prominent_points(y,times=None,includeTurningPoints = False, edges = None):
     """
         generate an ordered list of dict with prominent points entries
         each entry carries several infos
@@ -229,20 +229,75 @@ def prominent_points(y,times=None):
 
     result=[]
     
-    
-    for index in np.where(minMax)[0]:
-        if d2[index]>0:
-            entry={"type":"min","index":index,"time":times[index],"d2":d2[index],"value":y[index]}
-            result.append(entry)
-        elif d2[index]<0:
-            entry = {"type": "max", "index": index, "time": times[index],"d2":d2[index],"value":y[index]}
-            result.append(entry)
-        else:
-            print(f"undecides for min/max {d2[index]}")
 
-    totalResult = {"pps":result,"max":maxi,"min":mini,"rising":rising,"turnL":turnL,"turnR":turnR}
+    if includeTurningPoints:
+        all = minMax|turn
+    else:
+        all = minMax
+    for index in np.where(all)[0]:
+        if minMax[index]:
+            if d2[index]>0:
+                entry={"type":"min","index":index,"time":times[index],"d2":d2[index],"value":y[index]}
+                result.append(entry)
+            elif d2[index]<0:
+                entry = {"type": "max", "index": index, "time": times[index],"d2":d2[index],"value":y[index]}
+                result.append(entry)
+            else:
+                print(f"undecides for min/max {d2[index]}")
+        else:
+            if d3[index]>0:
+                entry = {"type": "turnL", "index": index, "time": times[index], "d3": d3[index], "value": y[index]}
+                result.append(entry)
+            elif d3[index]<0:
+                entry = {"type": "turnR", "index": index, "time": times[index], "d3": d3[index], "value": y[index]}
+                result.append(entry)
+            else:
+                print(f"undecide for turnl/r ")
+
+    totalResult = {"pps":result,"max":maxi,"min":mini,"rising":rising,"turnL":turnL,"turnR":turnR,"y":y}
+
+    if edges != None:
+        edgeL,edgeR = pps_edge(y,edges["slidingLen"],edges["sigma"])
+        totalResult["edgeL"]=edgeL
+        totalResult["edgeR"]=edgeR
 
     return totalResult
+
+
+def prominent_points_downsampling(y,times,factor=10):
+    totalLen = len(y)
+    points = []
+    samples = np.full(totalLen,False)
+    for index in range(0,totalLen,factor):
+        samples[index]=True
+        points.append({"type": "sample", "index": index, "time": times[index], "value": y[index]})
+    totalResult = {"pps":points,"samples":samples,"y":y}
+    return totalResult
+
+
+def pps_edge(y,slidingLen=20,sigmaLevel=4):
+
+    totalLen = len(y)
+    edgeL = np.full(totalLen,False)
+    edgeR = np.full(totalLen, False)
+    index = 0
+    while index<totalLen-slidingLen-1:
+        index += 1
+
+        window = y[index:index+slidingLen]
+        mu = np.mean(window)
+        sigma = np.std(window)
+        left = np.abs((y[index-1]-mu)/sigma)
+        right = np.abs((y[index+slidingLen]-mu)/sigma)
+        if left>sigmaLevel:
+            edgeL[index-1]=True
+            index+=slidingLen
+
+        if right>sigmaLevel:
+            edgeR[index+slidingLen]=True
+            index += slidingLen
+
+    return edgeL,edgeR
 
 def pps_prep(y,filter=None,poly=None, diff = False,postFilter = None):
     if filter!=None:
@@ -359,3 +414,195 @@ def pps_mining(motif, series, timeRanges={1: 0.7, 7: 0.5}, valueRanges={1: 0.8},
     if debug:
         print(f"pps mining took {time.time()-startTime} sec")
     return found
+
+
+class TrainMiner:
+    """
+    # train: a flexible length list of points which all are in the constaints of min, max and freedom,
+    # this area ends with error break of minTime/minPoints maxPoint/Times freedom are not fulfilled
+    # this area ends when a point is out of freedom to force start the next area or
+    # after minTime/minPoints the next area is started
+        {
+        "area": "train",
+        "details":{
+            "points": # these are to be fulfilled
+            {
+                "type":"any" # this is the last point in the area
+                "minPoints":0
+                "maxPoints":inf,
+                "minTime": 1000,
+                "maxTime":2000
+            }
+            "freedom":{
+                "min":0
+                "max: 0.2
+            }
+        }
+    }
+
+    returns of the feed:
+    """
+
+    def __init__(self, config,name=None):
+        self.minPoints = config["points"]["minPoints"]
+        self.maxPoints = config["points"]["maxPoints"]
+        self.minTime = config["points"]["minTime"]
+        self.maxTime = config["points"]["maxTime"]
+        self.pointType = config["points"]["type"]
+        self.valMin = config["freedom"]["min"]
+        self.valMax = config["freedom"]["max"]
+        self.name  = name
+
+        self.reset()
+
+    def reset(self):
+        self.noPoints = 0
+        self.status = "init"
+        self.points = []
+
+    def __check_type(self, point):
+        if self.pointType == "any" or point["type"] in self.pointType:
+            return True
+        else:
+            return False
+
+    def __check_freedom(self, point):
+        if point["value"] >= self.valMin and point["value"] <= self.valMax:
+            return True
+        else:
+            return False
+
+    def __accept(self, point):
+        self.points.append(point)
+
+    def __check_fulfilled(self):
+        # check if the current list of points fulfills the expectation
+        diffTime = self.points[-1]["time"] - self.points[0]["time"]
+        if self.minPoints <= len(self.points) <= self.maxPoints and \
+                self.minTime <= diffTime <= self.maxTime:
+            return True
+        else:
+            return False
+
+    def feed(self, point):
+        """
+            Returns false for not accepted, true for accepted
+        """
+
+        result = False
+
+        if not (self.__check_type(point) and self.__check_freedom(point)):
+            # point does not match general requirements, reset all
+            self.reset()
+        else:
+            #take this point
+            self.__accept(point)
+            if self.__check_fulfilled():
+                self.status = "fulfilled"
+                result = True
+            else:
+                # check if it was fulfilled before f
+                if self.status == "fulfilled":
+                    # if was fulfilled before, se we are beyond the limits
+                    self.reset()
+                else:
+                    #was not yet fulfilled, so we are still searching
+                    result = True
+
+        return result
+
+    def started(self):
+        return len(self.points)>0
+
+    def found(self):
+        return self.status == "fulfilled"
+
+
+
+class ComplexMiner:
+    def __init__(self,config):
+        self.miners = []
+        for entry in config:
+            if entry["area"] == "train":
+                self.miners.append(TrainMiner(entry["details"],entry["name"]))
+        self.activeIndex = 0
+        self.activeFound = False
+
+    def reset(self):
+        print("full reset")
+        for miner in self.miners:
+            miner.reset()
+        self.activeIndex = 0
+        self.activeFound = False
+        self.lastFound = False
+
+    def feed(self,point):
+
+        miner = self.miners[self.activeIndex]
+        if self.activeIndex < len(self.miners)-1:
+            nextMiner = self.miners[self.activeIndex+1]
+        else:
+            nextMiner = None
+        print(f"feeding x {point['time']} y {point['value']} to miner# {self.activeIndex}")
+        if miner.feed(point):
+            print("point accepted")
+            #the point was accepted, so it fits to the current motif
+            if miner.found():
+                print("miner.found")
+                #the motif was found, this is the TRANSITION PHASE
+                if not nextMiner: return True # we are complete!
+
+                result = nextMiner.feed(point)
+                if result:
+                    print("next result true")
+                    if nextMiner.found():
+                        #switch to the next if possible
+                        if self.activeIndex<len(self.miners):
+                            #switch over
+                            print("switch over")
+                            self.activeIndex+=1
+                        else:
+                            return True
+        else:
+            print("point reject")
+            #try to switch to the next miner by force
+            if nextMiner:
+                nextMiner.feed(point)
+                if nextMiner.started():
+                    print("switch over")
+                    self.activeIndex += 1
+            else:
+                self.reset()
+
+
+
+        return False
+
+
+def plot_pps(plot,x,y,pps):
+
+    plot.plot(x,y,"gray")
+    plot.plot(x,pps["y"],"blue")
+
+
+
+
+    yPlot = pps["y"]
+
+    if "min" in pps:
+        mini, maxi = pps["min"], pps["max"]
+        plot.plot(x[mini],yPlot[mini],marker="o",linestyle="",color="red")
+        plot.plot(x[maxi],yPlot[maxi],marker="o",linestyle="",color="green")
+    if "turnL" in pps:
+        turnL, turnR = pps["turnL"], pps["turnR"]
+        plot.plot(x[turnL],yPlot[turnL],marker="o",linestyle="",color="orange")
+        plot.plot(x[turnR],yPlot[turnR],marker="o",linestyle="",color="yellow")
+
+    if "edgeL" in pps:
+        edgeL,edgeR=pps["edgeL"],pps["edgeR"]
+        plot.plot(x[edgeL], yPlot[edgeL], marker="o", linestyle="", color="brown")
+        plot.plot(x[edgeR], yPlot[edgeR], marker="o", linestyle="", color="black")
+
+    if "samples" in pps:
+        samples = pps["samples"]
+        plot.plot(x[samples],yPlot[samples],marker="o",linestyle="",color="blue")
