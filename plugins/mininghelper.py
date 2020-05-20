@@ -200,7 +200,7 @@ def dif(vector,appendEnd=True):
         return np.append(d[0],d)
        
 
-def prominent_points(y,times=None,includeTurningPoints = False, edges = None):
+def prominent_points(y,times=None,includeTurningPoints = False, edges = None, d2Lim=0, d3Lim=0, d4Lim=0):
     """
         generate an ordered list of dict with prominent points entries
         each entry carries several infos
@@ -214,16 +214,20 @@ def prominent_points(y,times=None,includeTurningPoints = False, edges = None):
     d1=dif(y)
     d2=dif(d1,appendEnd=False)
     d3=dif(d2,appendEnd=False)
+    d4=dif(d3,appendEnd=False)
     
     minMax = find_zeros(d1)
 
-    mini = minMax & (d2>0)
-    maxi = minMax & (d2<0)
+    mini = minMax & (d2 > d2Lim)
+    maxi = minMax & (d2 < -d2Lim)
     
     turn   = find_zeros(d2)
-    turnL  = turn & (d3>0)
-    turnR  = turn & (d3<0)
-    
+    turnL  = turn & (d3 > d3Lim)
+    turnR  = turn & (d3 < -d3Lim)
+
+    edge = find_zeros(d3)
+    edgeL = edge & (d4 > d4Lim)
+    edgeR = edge & (d4 < -d4Lim)
     
     rising = d1>0
 
@@ -256,10 +260,108 @@ def prominent_points(y,times=None,includeTurningPoints = False, edges = None):
 
     totalResult = {"pps":result,"max":maxi,"min":mini,"rising":rising,"turnL":turnL,"turnR":turnR,"y":y}
 
-    if edges != None:
-        edgeL,edgeR = pps_edge(y,edges["slidingLen"],edges["sigma"])
+    if edges:
+        #edgeL,edgeR = pps_edge(y,edges["slidingLen"],edges["sigma"])
         totalResult["edgeL"]=edgeL
         totalResult["edgeR"]=edgeR
+
+    return totalResult
+
+
+def prominent_points_new(x,y, features=["min","max","turnL","turnR","edgeL","edgeR","samples"], d2Lim=0, d3Lim=0, d4Lim=0):
+    """
+        generate an ordered list of dict with prominent points entries
+        each entry carries several infos
+        {
+            type:min,max, ...
+            index: the index
+            x: the x[index]
+        }
+    """
+
+    d1 = dif(y)
+    d2 = dif(d1, appendEnd=False)
+    d3 = dif(d2, appendEnd=False)
+    d4 = dif(d3, appendEnd=False)
+
+    minMax = find_zeros(d1)
+
+    mini = minMax & (d2 > d2Lim)
+    maxi = minMax & (d2 < -d2Lim)
+
+    turn = find_zeros(d2)
+    turnL = turn & (d3 > d3Lim)
+    turnR = turn & (d3 < -d3Lim)
+
+    edge = find_zeros(d3)
+    edgeL = edge & (d4 > d4Lim)
+    edgeR = edge & (d4 < -d4Lim)
+
+    rising = d1 > 0
+
+    result = []
+
+    #now
+    all = np.full(len(x),False)
+
+    if "turnL" in features or "turnR" in features:
+        all = all | turn
+    if "min" in features or "max" in features:
+        all = all | minMax
+
+    if "edgeL" in features or "edgeR" in features:
+        all = all | edge
+
+    #now go over all zeros and find min, max etc
+    for index in np.where(all)[0]:
+        if minMax[index]:
+            if d2[index] > 0:
+                if "min" in features:
+                    entry = {"type": "min", "index": index, "time": x[index], "d2": d2[index], "value": y[index]}
+                    result.append(entry)
+            elif d2[index] < 0:
+                if "max" in features:
+                    entry = {"type": "max", "index": index, "time": x[index], "d2": d2[index], "value": y[index]}
+                    result.append(entry)
+            else:
+                print(f"undecides for min/max {d2[index]}")
+
+        if turn[index]:
+            if d3[index] > 0:
+                if "turnL" in features:
+                    entry = {"type": "turnL", "index": index, "time": x[index], "d3": d3[index], "value": y[index]}
+                    result.append(entry)
+            elif d3[index] < 0:
+                if "turnR" in features:
+                    entry = {"type": "turnR", "index": index, "time": x[index], "d3": d3[index], "value": y[index]}
+                    result.append(entry)
+            else:
+                print(f"undecide for turnl/r ")
+
+        if edge[index]:
+            if d4[index] > 0:
+                if "edgeL" in features:
+                    entry =  {"type": "edgeL", "index": index, "time": x[index], "d3": d3[index], "value": y[index]}
+                    result.append(entry)
+                if "edgeR" in features:
+                    entry = {"type": "edgeR", "index": index, "time": x[index], "d3": d3[index], "value": y[index]}
+                    result.append(entry)
+
+    #also include the arrays for easy printing
+    totalResult = {"pps": result,"y":y}
+    if "max" in features:
+        totalResult["max"] = maxi
+    if "min" in features:
+        totalResult["min"] =  mini
+    if "turnL" in features:
+        totalResult["turnL"] = turnL
+    if "turnR" in features:
+        totalResult["turnR"] = turnR
+    if "edgeL" in features:
+        totalResult["edgeL"] = edgeL
+    if "edgeR" in features:
+        totalResult["edgeR"] = edgeR
+
 
     return totalResult
 
@@ -579,8 +681,10 @@ class ComplexMiner:
         return False
 
 
-def plot_pps(plot,x,y,pps):
-
+def plot_pps(plot,x,y,pps,features=["min","max","turnL","turnR","edgeL","edgeR","samples"]):
+    """
+        plot pps data into a plot
+    """
     plot.plot(x,y,"gray")
     plot.plot(x,pps["y"],"blue")
 
@@ -589,20 +693,31 @@ def plot_pps(plot,x,y,pps):
 
     yPlot = pps["y"]
 
-    if "min" in pps:
-        mini, maxi = pps["min"], pps["max"]
-        plot.plot(x[mini],yPlot[mini],marker="o",linestyle="",color="red")
+    if "min" in pps and "min" in features:
+        mini = pps["min"]
+        plot.plot(x[mini], yPlot[mini], marker="o", linestyle="", color="red")
+
+    if "max" in pps and "max" in features:
+        maxi = pps["max"]
         plot.plot(x[maxi],yPlot[maxi],marker="o",linestyle="",color="green")
+
     if "turnL" in pps:
-        turnL, turnR = pps["turnL"], pps["turnR"]
+        turnL= pps["turnL"]
         plot.plot(x[turnL],yPlot[turnL],marker="o",linestyle="",color="orange")
-        plot.plot(x[turnR],yPlot[turnR],marker="o",linestyle="",color="yellow")
+
+    if "turnR" in pps:
+        turnR =  pps["turnR"]
+        plot.plot(x[turnR], yPlot[turnR], marker="o", linestyle="", color="yellow")
 
     if "edgeL" in pps:
-        edgeL,edgeR=pps["edgeL"],pps["edgeR"]
+        edgeL =pps["edgeL"]
         plot.plot(x[edgeL], yPlot[edgeL], marker="o", linestyle="", color="brown")
-        plot.plot(x[edgeR], yPlot[edgeR], marker="o", linestyle="", color="black")
+
+
+    if "edgeR" in pps:
+        edgeR = pps["edgeR"]
+        plot.plot(x[edgeR], yPlot[edgeR], marker="o", linestyle="", color="pink")
 
     if "samples" in pps:
         samples = pps["samples"]
-        plot.plot(x[samples],yPlot[samples],marker="o",linestyle="",color="blue")
+        plot.plot(x[samples],yPlot[samples],marker="x",linestyle="",color="gray")
