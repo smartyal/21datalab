@@ -18,6 +18,7 @@ import uuid
 import hashlib
 import random
 import traceback
+from dates import *
 
 # type hints
 from typing import List
@@ -2609,7 +2610,7 @@ class Model:
                 self.ts.delete(id)
 
 
-    def load(self,fileName,includeData = True):
+    def load(self,fileName,includeData = True, update = True):
         """
             replace the current model in memory with the model from disk
             please give only a name without extensions
@@ -2617,6 +2618,7 @@ class Model:
             Args:
                 fileName(string) the name of the file without extension, we also accept a dict here: a list of nodes
                 includeData bool: if set to false, the values for tables and files will NOT be loaded
+                update : if set to true, auto correct missing entries in known templates
         """
         result = False
         self.logger.info(f"load {fileName}, includeData {includeData}")
@@ -2695,7 +2697,8 @@ class Model:
                 self.enable_observers()
                 result = False
 
-            self.update() # automatically adjust all widgets and other known templates to the latest style
+            if update:
+                self.update() # automatically adjust all widgets and other known templates to the latest style
 
 
         return result
