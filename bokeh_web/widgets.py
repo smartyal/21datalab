@@ -3053,6 +3053,11 @@ class TimeSeriesWidget():
                 #this renderer is already there, check if we might need to hide it
                 if not any([True for tag in v["info"]["tags"] if tag in self.showAnnotationTags]):
                     removeList.append(v["renderer"])
+                    # is the box modifier on this currently active?
+                    # if the currently selected is being hidden, we hide the box modifier
+                    if self.boxModifierVisible:
+                        if self.boxModifierAnnotationName == k:
+                            self.box_modifier_hide()
 
         self.logger.debug(f"add {len(addList)} annotations to plot")
         self.plot.renderers.extend(addList)
