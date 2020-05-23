@@ -87,3 +87,8 @@
 .context-menu-option, .context-menu-submenu, .context-menu-disabled {
     color:#dddddd;
 }
+
+
+.bg-primary {
+    background-color:#444444!important;
+}
