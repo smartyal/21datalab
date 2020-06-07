@@ -850,6 +850,13 @@ class TimeSeriesWidget():
                 self.streamingUpdateData = self.server.get_data(variablesRequest, -self.streamingInterval, None,
                                                                 self.server.get_settings()["bins"])  # for debug
                 self.__dispatch_function(self.stream_update)
+            elif not self.streamingMode:
+                #do the same as for the "timeseriesWidget.variables" event
+                # refresh the lines
+                self.server.get_selected_variables_sync()  # get the new set of lines
+                self.logger.debug("dispatch the refresh lines")
+                self.__dispatch_function(self.update_scores)
+                self.__dispatch_function(self.refresh_plot)
 
         elif data["event"] == "timeSeriesWidget.annotations":
             self.logger.info(f"must reload annotations")
@@ -2487,7 +2494,7 @@ class TimeSeriesWidget():
         """
         self.update_column_datas(getData)
 
-        self.logger.debug(f"self.columnData {self.columnData}")
+        #self.logger.debug(f"self.columnData {self.columnData}")
         self.adjust_y_axis_limits()
         #timeNode = "__time"
         #now plot var
