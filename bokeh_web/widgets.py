@@ -957,7 +957,12 @@ class TimeSeriesWidget():
                     else:
                         self.__dispatch_function(self.hide_marker)
 
-
+            if "showLegend" in newMirror:
+                if oldMirror["showLegend"][".properties"]["value"] != newMirror["showLegend"][".properties"]["value"]:
+                    if newMirror["showLegend"][".properties"]["value"]:
+                        self.__dispatch_function(self.show_legend)
+                    else:
+                        self.__dispatch_function(self.hide_legend)
 
         elif data["event"] == "timeSeriesWidget.values":
             #the data has changed, typically the score values?
@@ -971,6 +976,12 @@ class TimeSeriesWidget():
         if self.server.fetch_score_variables():
            if self.showScores:
                 self.show_scores()
+
+    def show_legend(self):
+        self.plot.legend.visible = True
+
+    def hide_legend(self):
+        self.plot.legend.visible = False
 
     def hide_marker(self):
         self.remove_renderers([lin+"_marker" for lin in self.lines])
@@ -2577,6 +2588,11 @@ class TimeSeriesWidget():
             self.plot.legend.location = "top_right"
             self.plot.legend.click_policy = "hide"
             self.hasLegend = True
+            #check if we need to hide it on start
+            mirr = self.server.get_mirror()
+            if "showLegend" in mirr:
+                if mirr["showLegend"][".properties"]["value"] == False:
+                    self.plot.legend.visible=False
         else:
             self.plot.legend.items = legendItems #replace them
 
