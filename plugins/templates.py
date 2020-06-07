@@ -145,7 +145,8 @@ timeseriesWidget = {
         {"name": "showMarker","type":"const","value":False},
         {"name": "contextMenuSettings","type":"folder"},                         # configure here the "settings" submenu of the context menu: each child should be a referencer pointing to a bool variable
                                                                                 # the entry displayed in the context menu will be the name of the referencder
-        {"name": "contextMenuPipelines","type":"referencer"}
+        {"name": "contextMenuPipelines","type":"referencer"},
+        {"name":"showLegend","type":"const","value":True}
 
 
     ]
