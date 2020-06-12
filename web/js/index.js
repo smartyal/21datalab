@@ -90,7 +90,18 @@ function populate_ui()
         });
     }
 
+    //load the meter page
+    var meter = $("#nav-meter");
+    if (meter.length>0)
+    {
+        var data=http_get("customui/meter.htm");
 
+        meter.empty();
+        meter.html(data);
+        meter_init();
+        //var green = $("#traffic-lights-green");
+        //green.attr("fill","#7CFC00");
+    }
 
 }
 
