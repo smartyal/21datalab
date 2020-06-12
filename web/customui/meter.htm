@@ -1,0 +1,70 @@
+
+<div class="row">
+        <div class="col-4"></div>
+        <div class="col-4" id="traffic">
+            <br> <br> <br> <br> <br> <br>
+            <svg width="496.162" height="496.162" xmlns="http://www.w3.org/2000/svg">
+
+ <g>
+  <title>background</title>
+  <rect fill="none" id="canvas_background" height="402" width="582" y="-1" x="-1"/>
+ </g>
+ <g>
+  <title>Layer 1</title>
+  <path id="svg_1" fill="#337180" d="m248.077,0c-137.005,0 -248.075,111.062 -248.075,248.083c0,137.005 111.07,248.079 248.075,248.079c137.013,0 248.083,-111.074 248.083,-248.079c0,-137.021 -111.07,-248.083 -248.083,-248.083z"/>
+  <path id="svg_2" fill="#D3D3D3" d="m229.787,246.881l0,248.608c6.041,0.44 12.139,0.673 18.29,0.673c5.371,0 10.696,-0.19 15.983,-0.527l0,-248.754l-34.273,0z"/>
+  <path id="svg_3" fill="#EAEAEA" d="m229.787,246.881l0,248.608c6.041,0.44 12.139,0.673 18.29,0.673l0,-249.281l-18.29,0z"/>
+  <path id="svg_4" fill="#E5E5E5" d="m248.081,32.082c-52.079,0 -94.304,24.952 -94.304,55.732l0,253.533c0,30.78 42.225,55.732 94.304,55.732s94.304,-24.952 94.304,-55.732l0,-253.533c0,-30.78 -42.225,-55.732 -94.304,-55.732z"/>
+  <path id="svg_5" fill="#3B3B3B" d="m248.081,42.082c-45.05,0 -81.575,23.585 -81.575,52.679l0,239.64c0,29.094 36.525,52.679 81.575,52.679s81.575,-23.585 81.575,-52.679l0,-239.64c0,-29.094 -36.525,-52.679 -81.575,-52.679z"/>
+  <circle id="svg_6" fill="#EA4949" r="43" cy="116.581" cx="248.081"/>
+  <path id="svg_7" fill="#F25F5F" d="m274.486,90.175c-14.583,-14.583 -38.228,-14.583 -52.811,0c-14.584,14.583 -14.584,38.228 0,52.812c14.584,14.583 67.395,-38.228 52.811,-52.812z"/>
+  <circle id="svg_8" fill="#2BBF60" r="43" cy="317.081" cx="248.081"/>
+  <circle id="svg_9" fill="#EAB42D" r="43" cy="217.081" cx="248.081"/>
+  <path id="svg_10" fill="#EDCB3B" d="m274.486,191.175c-14.583,-14.583 -38.228,-14.583 -52.811,0c-14.584,14.583 -14.584,38.228 0,52.812c14.584,14.583 67.395,-38.228 52.811,-52.812z"/>
+  <path id="svg_11" fill="#3CCE6C" d="m274.486,291.175c-14.583,-14.583 -38.228,-14.583 -52.811,0c-14.584,14.583 -14.584,38.228 0,52.812c14.584,14.583 67.395,-38.228 52.811,-52.812z"/>
+  <g id="svg_12"/>
+  <ellipse opacity="0.9" ry="50" rx="54" id="traffic-lights-red" cy="117.53412" cx="246.58099" stroke-width="1.5" fill="#3B3B3B"/>
+  <ellipse opacity="0.9" ry="50" rx="54" id="traffic-lights-yellow" cy="215.53412" cx="244.58099" stroke-width="1.5" fill="#3B3B3B"/>
+  <ellipse opacity="0.9" ry="50" rx="54" id="traffic-lights-green" cy="318.53412" cx="246.58099" stroke-width="1.5" fill="#3B3B3B"/>
+ </g>
+</svg>
+    </div>
+    <div class="col-4"></div>
+   
+   <script>
+   
+   function meter_init()
+   {
+        var ev = new EventSource('/event/stream');
+        ev.addEventListener('meter.value', (e) => {
+        // Do something - event data will be in e.data,
+        // message will be of type 'eventType'
+
+        let data = e.data;
+        //replace potential single quotes
+        data = data.replace(/\'/g, "\"");
+        var parsed=JSON.parse(data);
+        var red = $("#traffic-lights-red");
+        var yellow = $("#traffic-lights-yellow");
+        var green = $("#traffic-lights-green");
+        red.attr("opacity",0.9);
+        yellow.attr("opacity",0.9);
+        green.attr("opacity",0.9);
+        if (parsed.value == 1)
+        {
+            red.attr("opacity",0);
+        }
+        if (parsed.value == 2)
+        {
+            green.attr("opacity",0);
+        }
+        console.log("EVENT system.progress" + parsed );
+        
+        });
+
+    }
+
+
+</script>
+   
+</div>
