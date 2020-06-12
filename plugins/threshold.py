@@ -217,6 +217,52 @@ thresholdScorerPipeLine = {
 }
 
 
+timeSeriesAssessor = {
+    "name" : "timeSeriesAssessor",
+    "type" : "folder",
+    "children":[
+
+        {"name": "observerAssessment", "type": "observer", "children": [
+            {"name": "enabled", "type": "const", "value": True},  # turn on/off the observer
+            {"name": "triggerCounter", "type": "variable", "value": 0},  # increased on each trigger
+            {"name": "lastTriggerTime", "type": "variable", "value": ""},  # last datetime when it was triggered
+            {"name": "targets", "type": "referencer", "references": ["timeSeriesAssessor.assessor.assessment"]},# pointing to the nodes observed
+            {"name": "properties", "type": "const", "value": ["value"]},# properties to observe [“children”,“value”, “forwardRefs”]
+            {"name": "onTriggerFunction", "type": "referencer"},  # the function(s) to be called when triggering
+            {"name": "triggerSourceId", "type": "variable"},# the sourceId of the node which caused the observer to trigger
+            {"name": "hasEvent", "type": "const", "value": True}, # set to event string iftrue if we want an event as well
+            {"name": "eventString", "type": "const", "value": "meter.value"},  # the string of the event
+            {"name": "eventData", "type": "const", "value": {"text": "observer status update"}}# the value-dict will be part of the SSE event["data"] , the key "text": , this will appear on the page,
+            ]
+        },
+        {"name": "observerVariable", "type": "observer", "children": [
+                    {"name": "enabled", "type": "const", "value": True},  # turn on/off the observer
+                    {"name": "triggerCounter", "type": "variable", "value": 0},  # increased on each trigger
+                    {"name": "lastTriggerTime", "type": "variable", "value": ""},  # last datetime when it was triggered
+                    {"name": "targets", "type": "referencer", "references": ["timeSeriesAssessor.assessor.variable"]},# pointing to the nodes observed
+                    {"name": "properties", "type": "const", "value": ["value"]},# properties to observe [“children”,“value”, “forwardRefs”]
+                    {"name": "onTriggerFunction", "type": "referencer","references": ["timeSeriesAssessor.assessor"]},  # the function(s) to be called when triggering
+                    {"name": "triggerSourceId", "type": "variable"},# the sourceId of the node which caused the observer to trigger
+                    {"name": "hasEvent", "type": "const", "value": False}, # set to event string iftrue if we want an event as well
+                    {"name": "eventString", "type": "const", "value": ""},  # the string of the event
+                    {"name": "eventData", "type": "const", "value": {"text": ""}}# the value-dict will be part of the SSE event["data"] , the key "text": , this will appear on the page,
+                    ]
+                },
+        {"name": "assessor",
+         "type": "function",
+         "functionPointer": "threshold.assessor",  # filename.functionname
+         "autoReload": True,  # set this to true to reload the module on each execution
+         "children": [
+             {"name": "variable", "type": "referencer"},
+             {"name": "assessment", "type": "variable"},
+             {"name":"lookbackSeconds","type":"variable","value":86400}, #one day in seconds
+             __functioncontrolfolder
+            ]
+         }
+    ]
+
+}
+
 
 def threshold_scorer_2_init(functionNode):
     """
@@ -1174,3 +1220,23 @@ def threshold_drill_down(functionNode):
 
 
     return True
+
+
+def assessor(functionNode):
+    logger = functionNode.get_logger()
+    logger.info(f">>>> in assessor {functionNode.get_browse_path()}")
+
+    var = functionNode.get_child("variable").get_target()
+    lookBack = functionNode.get_child("lookbackSeconds").get_value()
+    assessment = functionNode.get_child("assessment")
+    data = var.get_time_series(start=-lookBack)["values"]
+    print(f"{list(data)}")
+    #now check if the data is valid or invalid
+    if numpy.any(numpy.isfinite(data)):
+        assessment.set_value(True)
+    else:
+        assessment.set_value(False)
+    return True
+
+
+

@@ -11,7 +11,8 @@
             "490",
             "15325922506801289201",
             "15449664376381869170",
-            "401335041852249076"
+            "401335041852249076",
+            "15747968311928684241"
         ],
         "parent": "0",
         "id": "1",
@@ -193,8 +194,7 @@
         "children": [],
         "backRefs": [
             "116",
-            "6467217534375322357",
-            "129"
+            "6467217534375322357"
         ],
         "forwardRefs": [],
         "value": "len 5",
@@ -344,7 +344,8 @@
             "17333622775446030886",
             "7406513117600242278",
             "15499764811511790654",
-            "17600842871211210203"
+            "17600842871211210203",
+            "17023323556667488656"
         ],
         "backRefs": [
             "526",
@@ -382,7 +383,7 @@
         ],
         "forwardRefs": [
             "120",
-            "121"
+            "8103713051491286640"
         ],
         "value": null,
         "browsePath": "root.visualization.workbench.selectedVariables"
@@ -750,9 +751,7 @@
         "type": "variable",
         "parent": "223",
         "children": [],
-        "backRefs": [
-            "16724694746718170912"
-        ],
+        "backRefs": [],
         "forwardRefs": [],
         "value": 1,
         "browsePath": "root.logisticRegression.control.progress"
@@ -905,7 +904,8 @@
             "17278772546530602553",
             "3290018521614930827",
             "17458476392270869597",
-            "16877488974742249835"
+            "16877488974742249835",
+            "674174625372283031"
         ],
         "backRefs": [
             "502"
@@ -1549,7 +1549,8 @@
             "4061505148126840696",
             "14416109136585452177",
             "15854833061619641496",
-            "9529609379040281464"
+            "9529609379040281464",
+            "6120224199211137038"
         ],
         "backRefs": [
             "506"
@@ -2158,7 +2159,8 @@
             "2249089757963016189",
             "8816607637457517034",
             "9511147345800615806",
-            "14157890313946690696"
+            "14157890313946690696",
+            "12782130019653198103"
         ],
         "backRefs": [
             "510"
@@ -2767,7 +2769,8 @@
             "5015795202456801704",
             "3001498895958458636",
             "4424392630173794069",
-            "2829637590551602556"
+            "2829637590551602556",
+            "7953403363202825916"
         ],
         "backRefs": [
             "514"
@@ -3376,7 +3379,8 @@
             "3743075514298201744",
             "11469838046218193048",
             "7281795057327842401",
-            "961223804198789988"
+            "961223804198789988",
+            "4762892481340738384"
         ],
         "backRefs": [
             "518"
@@ -3985,7 +3989,8 @@
             "798609426837414278",
             "4266710680940548039",
             "13421890725389874289",
-            "9042709344084277240"
+            "9042709344084277240",
+            "14053366626981344321"
         ],
         "backRefs": [
             "522"
@@ -5818,7 +5823,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 127,
+        "value": 132,
         "browsePath": "root.visualization.workbench.observerVariables.triggerCounter"
     },
     "645": {
@@ -5829,7 +5834,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T18:04:05.260991",
+        "value": "2020-06-12T13:15:05.468429",
         "browsePath": "root.visualization.workbench.observerVariables.lastTriggerTime"
     },
     "646": {
@@ -6042,7 +6047,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 72,
+        "value": 76,
         "browsePath": "root.visualization.workbench.observerStream.triggerCounter"
     },
     "663": {
@@ -6053,7 +6058,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T03:14:35.531176",
+        "value": "2020-06-12T13:18:19.021298",
         "browsePath": "root.visualization.workbench.observerStream.lastTriggerTime"
     },
     "664": {
@@ -8330,9 +8335,9 @@
         ],
         "forwardRefs": [],
         "value": {
-            "thresholds": false,
+            "thresholds": true,
             "annotations": true,
-            "scores": false,
+            "scores": true,
             "background": false,
             "variables": true,
             "motifs": false
@@ -8403,7 +8408,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 958,
+        "value": 966,
         "browsePath": "root.visualization.workbench.observerAnnotations.triggerCounter"
     },
     "13646722735659859395": {
@@ -8414,7 +8419,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T18:27:13.254196",
+        "value": "2020-06-12T13:18:11.183012",
         "browsePath": "root.visualization.workbench.observerAnnotations.lastTriggerTime"
     },
     "12416654533870087467": {
@@ -8517,7 +8522,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 994,
+        "value": 1004,
         "browsePath": "root.visualization.workbench.observerVisibleElements.triggerCounter"
     },
     "15683200324838571042": {
@@ -8528,7 +8533,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T18:27:28.059975",
+        "value": "2020-06-12T13:18:10.819222",
         "browsePath": "root.visualization.workbench.observerVisibleElements.lastTriggerTime"
     },
     "13071347114919871021": {
@@ -8733,7 +8738,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 1,
+        "value": 0,
         "browsePath": "root.thresholdScorer.control.progress"
     },
     "9096717342180119554": {
@@ -8766,7 +8771,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 40,
+        "value": 44,
         "browsePath": "root.thresholdScorer.control.executionCounter"
     },
     "5131199841340550266": {
@@ -8777,7 +8782,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.04399,
+        "value": 0.111954,
         "browsePath": "root.thresholdScorer.control.lastExecutionDuration"
     },
     "8402630191021691744": {
@@ -8788,7 +8793,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T03:14:35.491181",
+        "value": "2020-06-12T13:18:18.926334",
         "browsePath": "root.thresholdScorer.control.lastStartTime"
     },
     "16087097520903802600": {
@@ -8841,7 +8846,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 24,
+        "value": 32,
         "browsePath": "root.visualization.workbench.observerValues.triggerCounter"
     },
     "5201468128014100031": {
@@ -8852,7 +8857,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T03:14:35.531176",
+        "value": "2020-06-12T13:18:19.018301",
         "browsePath": "root.visualization.workbench.observerValues.lastTriggerTime"
     },
     "10029816200158863035": {
@@ -9098,7 +9103,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 22.128921238140023,
+        "value": 21.777263650591387,
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.e3fe7e81.min"
     },
     "15896751894278977439": {
@@ -9333,31 +9338,10 @@
         "backRefs": [],
         "forwardRefs": [],
         "value": {
-            "entry": {
-                "lineColor": "red"
-            },
-            "root.thresholdScorer.output.Humidity_score": {
-                "lineColor": "red"
-            },
-            "root.occupancyData.variables.Humidity": {
-                "lineColor": "#D9B100"
-            },
             "root.occupancyData.variables.Temperature": {
                 "lineColor": "#eba4fc"
             },
-            "root.thresholdScorer.output.Temperature_score": {
-                "lineColor": "red"
-            },
-            "root.new_motifMinerTemplate_4430.MotifMiner.score": {
-                "lineColor": "gray"
-            },
             "root.thresholdScorer.output.scores.Temperature_score": {
-                "lineColor": "red"
-            },
-            "root.thresholdScorer.output.scores.Humidity_score": {
-                "lineColor": "red"
-            },
-            "root.thresholdScorer.output._total_score": {
                 "lineColor": "red"
             }
         },
@@ -12203,7 +12187,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 412,
+        "value": 435,
         "browsePath": "root.system.progress.triggerCounter"
     },
     "10857910486653991896": {
@@ -12214,7 +12198,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T18:27:15.792208",
+        "value": "2020-06-12T13:18:19.173191",
         "browsePath": "root.system.progress.lastTriggerTime"
     },
     "16724694746718170912": {
@@ -12225,7 +12209,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [
-            "225"
+            "15848814833202173107"
         ],
         "value": null,
         "browsePath": "root.system.progress.targets"
@@ -13759,7 +13743,9 @@
         "parent": "6006518614948519917",
         "children": [],
         "backRefs": [
-            "116"
+            "116",
+            "9782937390204399569",
+            "129"
         ],
         "forwardRefs": [],
         "value": "len 5",
@@ -13829,7 +13815,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 20.948431387808043,
+        "value": 21.26812010376135,
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.7031040a.max"
     },
     "4607530475235414296": {
@@ -13857,5 +13843,544 @@
         ],
         "value": null,
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.7031040a.variable"
+    },
+    "17023323556667488656": {
+        "id": "17023323556667488656",
+        "name": "showLegend",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.showLegend"
+    },
+    "674174625372283031": {
+        "id": "674174625372283031",
+        "name": "showLegend",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice0.showLegend"
+    },
+    "6120224199211137038": {
+        "id": "6120224199211137038",
+        "name": "showLegend",
+        "type": "const",
+        "parent": "280",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice1.showLegend"
+    },
+    "12782130019653198103": {
+        "id": "12782130019653198103",
+        "name": "showLegend",
+        "type": "const",
+        "parent": "322",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice2.showLegend"
+    },
+    "7953403363202825916": {
+        "id": "7953403363202825916",
+        "name": "showLegend",
+        "type": "const",
+        "parent": "364",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice3.showLegend"
+    },
+    "4762892481340738384": {
+        "id": "4762892481340738384",
+        "name": "showLegend",
+        "type": "const",
+        "parent": "406",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice4.showLegend"
+    },
+    "14053366626981344321": {
+        "id": "14053366626981344321",
+        "name": "showLegend",
+        "type": "const",
+        "parent": "448",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice5.showLegend"
+    },
+    "15747968311928684241": {
+        "id": "15747968311928684241",
+        "name": "new_timeSeriesAssessor_f894",
+        "type": "folder",
+        "parent": "1",
+        "children": [
+            "9366612198720917544",
+            "7625955433802621710",
+            "5820301167685490478"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.new_timeSeriesAssessor_f894"
+    },
+    "9366612198720917544": {
+        "id": "9366612198720917544",
+        "name": "observerAssessment",
+        "type": "observer",
+        "parent": "15747968311928684241",
+        "children": [
+            "3560014204880865779",
+            "17056537621184771113",
+            "10247007460397305658",
+            "14644974754486382278",
+            "1631923782548788319",
+            "11286907756108466574",
+            "17747029212519677648",
+            "2070278008068233382",
+            "13377886329445337620",
+            "9601079357193422026"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerAssessment"
+    },
+    "3560014204880865779": {
+        "id": "3560014204880865779",
+        "name": "enabled",
+        "type": "const",
+        "parent": "9366612198720917544",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerAssessment.enabled"
+    },
+    "17056537621184771113": {
+        "id": "17056537621184771113",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "9366612198720917544",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 7,
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerAssessment.triggerCounter"
+    },
+    "10247007460397305658": {
+        "id": "10247007460397305658",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "9366612198720917544",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2020-06-12T13:18:19.195178",
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerAssessment.lastTriggerTime"
+    },
+    "14644974754486382278": {
+        "id": "14644974754486382278",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "9366612198720917544",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "15557568398654624567"
+        ],
+        "value": null,
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerAssessment.targets"
+    },
+    "1631923782548788319": {
+        "id": "1631923782548788319",
+        "name": "properties",
+        "type": "const",
+        "parent": "9366612198720917544",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerAssessment.properties"
+    },
+    "11286907756108466574": {
+        "id": "11286907756108466574",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "9366612198720917544",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerAssessment.onTriggerFunction"
+    },
+    "17747029212519677648": {
+        "id": "17747029212519677648",
+        "name": "triggerSourceId",
+        "type": "variable",
+        "parent": "9366612198720917544",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "15557568398654624567",
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerAssessment.triggerSourceId"
+    },
+    "2070278008068233382": {
+        "id": "2070278008068233382",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "9366612198720917544",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerAssessment.hasEvent"
+    },
+    "13377886329445337620": {
+        "id": "13377886329445337620",
+        "name": "eventString",
+        "type": "const",
+        "parent": "9366612198720917544",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "meter.value",
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerAssessment.eventString"
+    },
+    "9601079357193422026": {
+        "id": "9601079357193422026",
+        "name": "eventData",
+        "type": "const",
+        "parent": "9366612198720917544",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "text": "observer status update"
+        },
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerAssessment.eventData"
+    },
+    "7625955433802621710": {
+        "id": "7625955433802621710",
+        "name": "observerVariable",
+        "type": "observer",
+        "parent": "15747968311928684241",
+        "children": [
+            "6046976335587513874",
+            "17157053165198648364",
+            "15874314998773512907",
+            "8576733986874244741",
+            "4758534399096391855",
+            "14307165970115138201",
+            "10074712885103337228",
+            "10824996113285090075",
+            "9749470358347962538",
+            "13075561491754086452"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerVariable"
+    },
+    "6046976335587513874": {
+        "id": "6046976335587513874",
+        "name": "enabled",
+        "type": "const",
+        "parent": "7625955433802621710",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerVariable.enabled"
+    },
+    "17157053165198648364": {
+        "id": "17157053165198648364",
+        "name": "triggerCounter",
+        "type": "variable",
+        "parent": "7625955433802621710",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 4,
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerVariable.triggerCounter"
+    },
+    "15874314998773512907": {
+        "id": "15874314998773512907",
+        "name": "lastTriggerTime",
+        "type": "variable",
+        "parent": "7625955433802621710",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2020-06-12T13:18:19.023298",
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerVariable.lastTriggerTime"
+    },
+    "8576733986874244741": {
+        "id": "8576733986874244741",
+        "name": "targets",
+        "type": "referencer",
+        "parent": "7625955433802621710",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "9782937390204399569"
+        ],
+        "value": null,
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerVariable.targets"
+    },
+    "4758534399096391855": {
+        "id": "4758534399096391855",
+        "name": "properties",
+        "type": "const",
+        "parent": "7625955433802621710",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "value"
+        ],
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerVariable.properties"
+    },
+    "14307165970115138201": {
+        "id": "14307165970115138201",
+        "name": "onTriggerFunction",
+        "type": "referencer",
+        "parent": "7625955433802621710",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "5820301167685490478"
+        ],
+        "value": null,
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerVariable.onTriggerFunction"
+    },
+    "10074712885103337228": {
+        "id": "10074712885103337228",
+        "name": "triggerSourceId",
+        "type": "variable",
+        "parent": "7625955433802621710",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "8103713051491286640",
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerVariable.triggerSourceId"
+    },
+    "10824996113285090075": {
+        "id": "10824996113285090075",
+        "name": "hasEvent",
+        "type": "const",
+        "parent": "7625955433802621710",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": false,
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerVariable.hasEvent"
+    },
+    "9749470358347962538": {
+        "id": "9749470358347962538",
+        "name": "eventString",
+        "type": "const",
+        "parent": "7625955433802621710",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "",
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerVariable.eventString"
+    },
+    "13075561491754086452": {
+        "id": "13075561491754086452",
+        "name": "eventData",
+        "type": "const",
+        "parent": "7625955433802621710",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "text": ""
+        },
+        "browsePath": "root.new_timeSeriesAssessor_f894.observerVariable.eventData"
+    },
+    "5820301167685490478": {
+        "id": "5820301167685490478",
+        "name": "assessor",
+        "type": "function",
+        "parent": "15747968311928684241",
+        "children": [
+            "9782937390204399569",
+            "15557568398654624567",
+            "17696481622799149407",
+            "12036848404071466397"
+        ],
+        "backRefs": [
+            "14307165970115138201"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "functionPointer": "threshold.assessor",
+        "autoReload": true,
+        "browsePath": "root.new_timeSeriesAssessor_f894.assessor"
+    },
+    "9782937390204399569": {
+        "id": "9782937390204399569",
+        "name": "variable",
+        "type": "referencer",
+        "parent": "5820301167685490478",
+        "children": [],
+        "backRefs": [
+            "8576733986874244741"
+        ],
+        "forwardRefs": [
+            "8103713051491286640"
+        ],
+        "value": null,
+        "browsePath": "root.new_timeSeriesAssessor_f894.assessor.variable"
+    },
+    "15557568398654624567": {
+        "id": "15557568398654624567",
+        "name": "assessment",
+        "type": "variable",
+        "parent": "5820301167685490478",
+        "children": [],
+        "backRefs": [
+            "14644974754486382278"
+        ],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.new_timeSeriesAssessor_f894.assessor.assessment"
+    },
+    "17696481622799149407": {
+        "id": "17696481622799149407",
+        "name": "lookbackSeconds",
+        "type": "variable",
+        "parent": "5820301167685490478",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 86400,
+        "browsePath": "root.new_timeSeriesAssessor_f894.assessor.lookbackSeconds"
+    },
+    "12036848404071466397": {
+        "id": "12036848404071466397",
+        "name": "control",
+        "type": "folder",
+        "parent": "5820301167685490478",
+        "children": [
+            "16676610017002612164",
+            "15848814833202173107",
+            "1546885345992972702",
+            "15673001556945829191",
+            "9607264382628796012",
+            "12469585344293785506",
+            "6871820691871204644",
+            "10216238499352314142"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.new_timeSeriesAssessor_f894.assessor.control"
+    },
+    "16676610017002612164": {
+        "id": "16676610017002612164",
+        "name": "status",
+        "type": "variable",
+        "parent": "12036848404071466397",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "finished",
+        "browsePath": "root.new_timeSeriesAssessor_f894.assessor.control.status"
+    },
+    "15848814833202173107": {
+        "id": "15848814833202173107",
+        "name": "progress",
+        "type": "variable",
+        "parent": "12036848404071466397",
+        "children": [],
+        "backRefs": [
+            "16724694746718170912"
+        ],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.new_timeSeriesAssessor_f894.assessor.control.progress"
+    },
+    "1546885345992972702": {
+        "id": "1546885345992972702",
+        "name": "result",
+        "type": "variable",
+        "parent": "12036848404071466397",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "ok",
+        "browsePath": "root.new_timeSeriesAssessor_f894.assessor.control.result"
+    },
+    "15673001556945829191": {
+        "id": "15673001556945829191",
+        "name": "signal",
+        "type": "variable",
+        "parent": "12036848404071466397",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "nosignal",
+        "browsePath": "root.new_timeSeriesAssessor_f894.assessor.control.signal"
+    },
+    "9607264382628796012": {
+        "id": "9607264382628796012",
+        "name": "executionCounter",
+        "type": "variable",
+        "parent": "12036848404071466397",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 7,
+        "browsePath": "root.new_timeSeriesAssessor_f894.assessor.control.executionCounter"
+    },
+    "12469585344293785506": {
+        "id": "12469585344293785506",
+        "name": "lastExecutionDuration",
+        "type": "variable",
+        "parent": "12036848404071466397",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0.027961,
+        "browsePath": "root.new_timeSeriesAssessor_f894.assessor.control.lastExecutionDuration"
+    },
+    "6871820691871204644": {
+        "id": "6871820691871204644",
+        "name": "lastStartTime",
+        "type": "variable",
+        "parent": "12036848404071466397",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2020-06-12T13:18:19.181210",
+        "browsePath": "root.new_timeSeriesAssessor_f894.assessor.control.lastStartTime"
+    },
+    "10216238499352314142": {
+        "id": "10216238499352314142",
+        "name": "executionType",
+        "type": "const",
+        "parent": "12036848404071466397",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "async",
+        "browsePath": "root.new_timeSeriesAssessor_f894.assessor.control.executionType"
     }
 }
