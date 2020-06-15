@@ -97,7 +97,8 @@ thresholdScorer4={
         {"name":"annotations","type":"referencer"},             # the user annotations
         {"name":"annotationsFilter","type":"const","value":[]}, # a list of strings to filter tags, if an annotation holds one of the filter tags, then we take it in
         {"name":"thresholds","type":"referencer"},              # pointing to the thresholds
-        {"name":"widgets","type":"referencer"},                  # pointing to the widget on which we work, can be multiple widgets
+        {"name":"incremental","type":"const","value":False},    # if set true, we only score in the selected region, not touching the "outside" and the old
+        {"name":"widgets","type":"referencer"},                 # pointing to the widget on which we work, can be multiple widgets
         __functioncontrolfolder                                 # signal "reset" is used to initialize the function, create and hook the outputs, reset all values
     ]
 }
@@ -881,6 +882,10 @@ def threshold_scorer_4(functionNode):
     tableNode = inputNodes[0].get_table_node()
     columnsNode = tableNode.get_child("columns")
     progressNode = functionNode.get_child("control").get_child("progress")
+    try:
+        onlyUpdate = functionNode.get_child("incremental").get_value() #if this is set, we don't touch old existing scores outside our region filters, this is useful for streaming
+    except:
+        onlyUpdate = False
 
     #timeNode = tableNode.get_table_time_node()
     #tableLen = len(timeNode.get_value())
@@ -909,9 +914,9 @@ def threshold_scorer_4(functionNode):
             logger.debug(f"processing anno {anno.get_name()}")
             if anno.get_child("type").get_value() != "time":
                 continue # only time annotations
-                tags = anno.get_child("tags").get_value()
-                if  any([tag in annos1Filter for tag in tags]):
-                    regionFilter.append({"start": anno.get_child("startTime").get_value(), "end": anno.get_child("endTime").get_value()})
+            tags = anno.get_child("tags").get_value()
+            if  any([tag in annos1Filter for tag in tags]):
+                regionFilter.append({"start": anno.get_child("startTime").get_value(), "end": anno.get_child("endTime").get_value()})
 
 
 
@@ -1053,11 +1058,31 @@ def threshold_scorer_4(functionNode):
             outOfLimitIndices = numpy.where(variableTotal==True)
             outPutNode = functionNode.get_child("output").get_child("scores").get_child(node.get_name()+"_score")
 
-            #now take the old values and set the new ones
-            score = numpy.full(len(values),numpy.nan,dtype=numpy.float64) # rest all
-            #score[mask]=numpy.nan
-            score[outOfLimitIndices] = values[outOfLimitIndices]
-            outPutNode.set_time_series(score,times)
+            #write out the score
+            if onlyUpdate:
+                # take the old values and merge in the new ones, only where the masks are true
+                # we need to maks the outOfLimitIndices once more by the mask
+                outOfLimitMask = numpy.full(len(values),False,dtype=numpy.bool)
+                outOfLimitMask[outOfLimitIndices] = True
+                outOfLimitMask = outOfLimitMask & mask #merge with the mask
+                # now we have a Mask on the values/times which are out of limits, now we need some more:
+                # the data array could have been changed (e.g. extended through streaming) in the meantime
+                # so we cannot simply set the array but need to actually merge the data in per time series class
+                # two steps: first, clean out the old values under the mask, then bring in the new scores
+
+                # need val,times with nan for deletion in the values
+                scores = values.copy()
+                scores[mask]=numpy.nan # delete all under the mask
+                scores[outOfLimitMask] = values[outOfLimitMask]
+                scoreTimes = times[outOfLimitMask]
+                outPutNode.insert_time_series(scores[mask],times[mask])
+                score = outPutNode.get_time_series()["values"]
+            else:
+                #overwrite the old values
+                score = numpy.full(len(values),numpy.nan,dtype=numpy.float64) # rest all
+                #score[mask]=numpy.nan
+                score[outOfLimitIndices] = values[outOfLimitIndices]
+                outPutNode.set_time_series(score,times)
 
 
             # build the total score:
@@ -1223,6 +1248,10 @@ def threshold_drill_down(functionNode):
 
 
 def assessor(functionNode):
+    """
+        this function checks if any of the values withing the interval given in "lookbackSeconds" is valid (e.g. not nan/inf)
+        then sets the result True or False
+    """
     logger = functionNode.get_logger()
     logger.info(f">>>> in assessor {functionNode.get_browse_path()}")
 

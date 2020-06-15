@@ -2442,6 +2442,7 @@ class Model:
                 # this is a bit dangerous, maybe the node is not there anymore?, so the
                 # inner functions calls of node.xx() will return nothing, so we try, catch
                 try:
+                    self.logger.debug(f"function {functionName} execution completed in {duration} ")
                     controlNode.get_child("lastExecutionDuration").set_value(duration)
                     #controlNode.get_child("signal").set_value("nosignal") #delete the signal
                     controlNode.get_child("status").set_value("finished")
