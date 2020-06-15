@@ -240,19 +240,19 @@ def prominent_points(y,times=None,includeTurningPoints = False, edges = None, d2
         all = minMax
     for index in np.where(all)[0]:
         if minMax[index]:
-            if d2[index]>0:
+            if d2[index]>d2Lim:
                 entry={"type":"min","index":index,"time":times[index],"d2":d2[index],"value":y[index]}
                 result.append(entry)
-            elif d2[index]<0:
+            elif d2[index]<-d2Lim:
                 entry = {"type": "max", "index": index, "time": times[index],"d2":d2[index],"value":y[index]}
                 result.append(entry)
             else:
                 print(f"undecides for min/max {d2[index]}")
         else:
-            if d3[index]>0:
+            if d3[index]>d3Lim:
                 entry = {"type": "turnL", "index": index, "time": times[index], "d3": d3[index], "value": y[index]}
                 result.append(entry)
-            elif d3[index]<0:
+            elif d3[index]<-d3Lim:
                 entry = {"type": "turnR", "index": index, "time": times[index], "d3": d3[index], "value": y[index]}
                 result.append(entry)
             else:
@@ -315,11 +315,11 @@ def prominent_points_new(x,y, features=["min","max","turnL","turnR","edgeL","edg
     #now go over all zeros and find min, max etc
     for index in np.where(all)[0]:
         if minMax[index]:
-            if d2[index] > 0:
+            if d2[index] > d2Lim:
                 if "min" in features:
                     entry = {"type": "min", "index": index, "time": x[index], "d2": d2[index], "value": y[index]}
                     result.append(entry)
-            elif d2[index] < 0:
+            elif d2[index] <-d2Lim:
                 if "max" in features:
                     entry = {"type": "max", "index": index, "time": x[index], "d2": d2[index], "value": y[index]}
                     result.append(entry)
@@ -327,11 +327,11 @@ def prominent_points_new(x,y, features=["min","max","turnL","turnR","edgeL","edg
                 print(f"undecides for min/max {d2[index]}")
 
         if turn[index]:
-            if d3[index] > 0:
+            if d3[index] > d3Lim:
                 if "turnL" in features:
                     entry = {"type": "turnL", "index": index, "time": x[index], "d3": d3[index], "value": y[index]}
                     result.append(entry)
-            elif d3[index] < 0:
+            elif d3[index] < -d3Lim:
                 if "turnR" in features:
                     entry = {"type": "turnR", "index": index, "time": x[index], "d3": d3[index], "value": y[index]}
                     result.append(entry)
@@ -339,10 +339,11 @@ def prominent_points_new(x,y, features=["min","max","turnL","turnR","edgeL","edg
                 print(f"undecide for turnl/r ")
 
         if edge[index]:
-            if d4[index] > 0:
+            if d4[index] > d4Lim:
                 if "edgeL" in features:
                     entry =  {"type": "edgeL", "index": index, "time": x[index], "d3": d3[index], "value": y[index]}
                     result.append(entry)
+            elif d4[index] < -d4Lim:
                 if "edgeR" in features:
                     entry = {"type": "edgeR", "index": index, "time": x[index], "d3": d3[index], "value": y[index]}
                     result.append(entry)
@@ -413,7 +414,7 @@ def pps_prep(y,filter=None,poly=None, diff = False,postFilter = None):
     return y
 
 
-def pps_mining(motif, series, timeRanges={1: 0.7, 7: 0.5}, valueRanges={1: 0.8}, typeFilter=[], motifStartIndex=None,
+def pps_mining(motif, series, timeRanges={1: [0.8,1.5]}, valueRanges={1: [0.5,2]}, typeFilter=[], motifStartIndex=None,
                motifEndIndex=None, debug=None):
     """
         Prominent PointS mining
@@ -446,25 +447,33 @@ def pps_mining(motif, series, timeRanges={1: 0.7, 7: 0.5}, valueRanges={1: 0.8},
     index = -1
     motifIndex = 0  # the next motif index to match to
     last = len(series) - 1
+
     while index < last:
+        reset = False
         index = index + 1
         if debug:
-            print(f":@{index}/{last}:", end="")
+            print(f":@{index}/{last} {series[index]['type']}:", end="")
 
         if series[index]["type"] == motif[motifIndex]["type"]:
             if motifIndex == 0:
+                lastStartIndex = index
                 if debug:
                     print("<", end="")
             if motifIndex > 0:
-
                 # check the timings
                 for k, v in timeRanges.items():
                     if motifIndex >= k:
                         # check this
+                        if type(v) is list:
+                            vMinus = v[0]
+                            vPlus = v[1]
+                        else:
+                            vMinus = v
+                            vPlus = v
                         motifDiff = motif[motifIndex]["time"] - motif[motifIndex - k]["time"]
                         seriesDiff = series[index]["time"] - series[index - k]["time"]
-                        motifDiffMin = max(0, motifDiff - v * motifDiff)
-                        motifDiffMax = motifDiff + v * motifDiff
+                        motifDiffMin = max(0, motifDiff - vMinus * motifDiff)
+                        motifDiffMax = motifDiff + vPlus * motifDiff
 
                         ok = seriesDiff > motifDiffMin and seriesDiff < motifDiffMax
                         if debug:
@@ -473,8 +482,10 @@ def pps_mining(motif, series, timeRanges={1: 0.7, 7: 0.5}, valueRanges={1: 0.8},
                         if not ok:
                             # go back
                             if debug:
-                                print(f"go back, time bad, motifIndex {motifIndex}")
+                                print(f"go back, time bad, motifIndex {index}, {motifIndex} ,{lastStartIndex}")
                             index = index - motifIndex + 1
+                            index = lastStartIndex
+                            reset = True
                             motifIndex = 0
                             break
             if motifIndex > 0:
@@ -493,8 +504,13 @@ def pps_mining(motif, series, timeRanges={1: 0.7, 7: 0.5}, valueRanges={1: 0.8},
                             if debug:
                                 print(f"go back, value bad motifIndex {motifIndex}")
                             index = index - motifIndex + 1
+                            index = lastStartIndex
+                            reset = True
                             motifIndex = 0
                             break
+
+            if reset:
+                continue
             if motifIndex == len(motif) - 1:
                 if debug:
                     print("*>\n")
@@ -510,7 +526,7 @@ def pps_mining(motif, series, timeRanges={1: 0.7, 7: 0.5}, valueRanges={1: 0.8},
                 if motifIndex > 0:
                     print(">")
                 else:
-                    print("~", end="")
+                    print(f"no match, expected {series[index]['type']}")
             motifIndex = 0
 
     if debug:
