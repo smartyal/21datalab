@@ -82,7 +82,8 @@
             "11667732642926331192",
             "12756498574441070081",
             "16382337157999104057",
-            "8323719243909058740"
+            "8323719243909058740",
+            "13555846965115601741"
         ],
         "backRefs": [
             "526"
@@ -128,7 +129,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-05-14T17:43:51.580247+02:00",
+        "value": "2020-06-15T12:01:10.163022+02:00",
         "browsePath": "root.visualization.workbench.startTime"
     },
     "131": {
@@ -139,7 +140,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-05-14T17:44:19.715822+02:00",
+        "value": "2020-06-15T12:01:59.151893+02:00",
         "browsePath": "root.visualization.workbench.endTime"
     },
     "132": {
@@ -198,7 +199,8 @@
         "backRefs": [
             "134",
             "593",
-            "6761929624184845538"
+            "6761929624184845538",
+            "12874099824596319649"
         ],
         "forwardRefs": [],
         "value": null,
@@ -453,7 +455,8 @@
             "12364956107807499925",
             "5425380638580080938",
             "5289060176605941997",
-            "10217768494919760732"
+            "10217768494919760732",
+            "10725007348039201844"
         ],
         "backRefs": [
             "502"
@@ -1585,7 +1588,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 82992,
+        "value": 84058,
         "browsePath": "root.visualization.workbench.observerStream.triggerCounter"
     },
     "621": {
@@ -1596,7 +1599,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-05-14T17:44:31.404680",
+        "value": "2020-06-15T12:03:52.668682",
         "browsePath": "root.visualization.workbench.observerStream.lastTriggerTime"
     },
     "622": {
@@ -2365,7 +2368,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 35,
+        "value": 55,
         "browsePath": "root.visualization.workbench.observerAnnotations.triggerCounter"
     },
     "1512825987021341680": {
@@ -2376,7 +2379,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-05-14T17:44:20.890043",
+        "value": "2020-06-15T12:03:05.445983",
         "browsePath": "root.visualization.workbench.observerAnnotations.lastTriggerTime"
     },
     "181254564156835464": {
@@ -2478,7 +2481,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 72,
+        "value": 73,
         "browsePath": "root.visualization.workbench.observerVisibleElements.triggerCounter"
     },
     "8776597143574159736": {
@@ -2489,7 +2492,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-05-14T17:43:57.602250",
+        "value": "2020-06-15T12:04:35.338991",
         "browsePath": "root.visualization.workbench.observerVisibleElements.lastTriggerTime"
     },
     "7833314493455544321": {
@@ -2566,8 +2569,8 @@
         ],
         "forwardRefs": [],
         "value": {
-            "type": "threshold",
-            "variable": "root.stream.variables.cos"
+            "type": "time",
+            "tag": "region"
         },
         "browsePath": "root.visualization.workbench.nextNewAnnotation"
     },
@@ -2610,7 +2613,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 2,
+        "value": 4,
         "browsePath": "root.visualization.workbench.observerNewAnnotation.triggerCounter"
     },
     "15184154778719359657": {
@@ -2621,7 +2624,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T17:39:55.596752",
+        "value": "2020-06-15T12:01:45.424073",
         "browsePath": "root.visualization.workbench.observerNewAnnotation.lastTriggerTime"
     },
     "9562098858983354424": {
@@ -2692,11 +2695,11 @@
         "backRefs": [],
         "forwardRefs": [],
         "value": {
-            "root.new_thresholdScorer4_3708.output.scores.cos_score": {
-                "lineColor": "red"
-            },
             "root.stream.variables.cos": {
                 "lineColor": "#eba4fc"
+            },
+            "root.new_thresholdScorer4_3708.output.scores.cos_score": {
+                "lineColor": "red"
             }
         },
         "browsePath": "root.visualization.workbench.currentColors"
@@ -2739,7 +2742,7 @@
             "7833314493455544321"
         ],
         "forwardRefs": [],
-        "value": true,
+        "value": false,
         "browsePath": "root.visualization.workbench.streamingMode"
     },
     "12756498574441070081": {
@@ -3354,7 +3357,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 43913,
+        "value": 48145,
         "browsePath": "root.system.progress.triggerCounter"
     },
     "4425723408065578788": {
@@ -3365,7 +3368,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-05-14T17:44:31.426665",
+        "value": "2020-06-15T12:03:53.828245",
         "browsePath": "root.system.progress.lastTriggerTime"
     },
     "3939645154328067705": {
@@ -3600,7 +3603,8 @@
             "12874099824596319649",
             "8912126612164743020",
             "6761929624184845538",
-            "219219090908956796"
+            "219219090908956796",
+            "10243357020817845009"
         ],
         "backRefs": [
             "624"
@@ -3660,7 +3664,9 @@
         "parent": "3654169761293419214",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [],
+        "forwardRefs": [
+            "135"
+        ],
         "value": null,
         "browsePath": "root.new_thresholdScorer4_3708.annotations"
     },
@@ -3672,7 +3678,9 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": [],
+        "value": [
+            "region"
+        ],
         "browsePath": "root.new_thresholdScorer4_3708.annotationsFilter"
     },
     "6761929624184845538": {
@@ -3729,7 +3737,7 @@
             "3939645154328067705"
         ],
         "forwardRefs": [],
-        "value": 1,
+        "value": 0,
         "browsePath": "root.new_thresholdScorer4_3708.control.progress"
     },
     "9882416059300118138": {
@@ -3762,7 +3770,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 3953,
+        "value": 5019,
         "browsePath": "root.new_thresholdScorer4_3708.control.executionCounter"
     },
     "5290080539601212057": {
@@ -3773,7 +3781,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.013002,
+        "value": 0.126214,
         "browsePath": "root.new_thresholdScorer4_3708.control.lastExecutionDuration"
     },
     "10957971835073517190": {
@@ -3784,7 +3792,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-05-14T17:44:31.416671",
+        "value": "2020-06-15T12:03:52.684233",
         "browsePath": "root.new_thresholdScorer4_3708.control.lastStartTime"
     },
     "312098300128511023": {
@@ -3834,7 +3842,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.027664819554494294,
+        "value": -0.36956561718700154,
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.8cc804ba.min"
     },
     "15810403999476894775": {
@@ -3845,7 +3853,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.4851817700707944,
+        "value": 0.5256595392902393,
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.8cc804ba.max"
     },
     "18439421347134905675": {
@@ -3884,7 +3892,7 @@
             "8270570985552561038"
         ],
         "forwardRefs": [],
-        "value": "len 4",
+        "value": "len 5",
         "creator": "3654169761293419214",
         "subType": "score",
         "browsePath": "root.new_thresholdScorer4_3708.output._total_score"
@@ -3901,9 +3909,42 @@
             "129"
         ],
         "forwardRefs": [],
-        "value": "len 4",
+        "value": "len 5",
         "subType": "score",
         "creator": "3654169761293419214",
         "browsePath": "root.new_thresholdScorer4_3708.output.scores.cos_score"
+    },
+    "13555846965115601741": {
+        "id": "13555846965115601741",
+        "name": "showLegend",
+        "type": "const",
+        "parent": "127",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.workbench.showLegend"
+    },
+    "10725007348039201844": {
+        "id": "10725007348039201844",
+        "name": "showLegend",
+        "type": "const",
+        "parent": "236",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.visualization.selfservice0.showLegend"
+    },
+    "10243357020817845009": {
+        "id": "10243357020817845009",
+        "name": "incremental",
+        "type": "const",
+        "parent": "3654169761293419214",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": true,
+        "browsePath": "root.new_thresholdScorer4_3708.incremental"
     }
 }
