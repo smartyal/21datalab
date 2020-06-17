@@ -25,3 +25,5 @@ models
 web/modules/**
 !web/modules/README.md
 web/plugins
+/web/customui/*.old
+/web/customui/hybif6.html
