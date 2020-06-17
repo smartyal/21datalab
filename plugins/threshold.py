@@ -1059,7 +1059,7 @@ def threshold_scorer_4(functionNode):
             outPutNode = functionNode.get_child("output").get_child("scores").get_child(node.get_name()+"_score")
 
             #write out the score
-            if onlyUpdate:
+            if onlyUpdate and numpy.any(~mask): #if the mask is all true, this is in fact a full update, so we take the "else" case
                 # take the old values and merge in the new ones, only where the masks are true
                 # we need to maks the outOfLimitIndices once more by the mask
                 outOfLimitMask = numpy.full(len(values),False,dtype=numpy.bool)

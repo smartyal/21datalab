@@ -2611,7 +2611,7 @@ class Model:
                 self.ts.delete(id)
 
 
-    def load(self,fileName,includeData = True, update = True):
+    def load(self,fileName,includeData = True, update = False):
         """
             replace the current model in memory with the model from disk
             please give only a name without extensions
@@ -2840,15 +2840,18 @@ class Model:
 
 
     def disable_observers(self):
-        with self.lock:
-            self.disableObserverCounter += 1
-            self.logger.debug(f"disable_observers() {self.disableObserverCounter}")
+        self.lock_model()
+        #with self.lock:
+        self.disableObserverCounter += 1
+        self.logger.debug(f"disable_observers() {self.disableObserverCounter}")
+
     def enable_observers(self):
-        with self.lock:
-            if self.disableObserverCounter >0:
-                self.disableObserverCounter -=1
-            else:
-                self.logger.error("enable_observers without disable observers")
+        self.release_model()
+
+        if self.disableObserverCounter >0:
+            self.disableObserverCounter -=1
+        else:
+            self.logger.error("enable_observers without disable observers")
         self.logger.debug(f"enable_observers() {self.disableObserverCounter}")
 
     def notify_observers(self, nodeIds, properties):
@@ -3034,6 +3037,7 @@ class Model:
         """
 
         if self.disableObserverCounter>0:
+            self.logger.info(f"__notify_observers disable return {nodeIds} {properties}")
             return
 
         with self.lock:
@@ -3309,7 +3313,9 @@ class Model:
         id = self.get_id(desc)
         if not id in self.model:
             return None
-        result =  self.ts.insert(id,values, times)
+        with self.lock:
+            result =  self.ts.insert(id,values, times)
+
         self.__notify_observers(id, "value")
         return result
 
@@ -3317,7 +3323,8 @@ class Model:
         id = self.get_id(desc)
         if not id in self.model:
             return None
-        result =  self.ts.set(id,values=values,times=times)
+        if self.lock:
+            result =  self.ts.set(id,values=values,times=times)
         self.__notify_observers(id, "value")
         return result
 

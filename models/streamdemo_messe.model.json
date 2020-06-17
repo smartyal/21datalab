@@ -129,7 +129,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-06-15T12:01:10.163022+02:00",
+        "value": "2020-06-17T09:51:54.689525+02:00",
         "browsePath": "root.visualization.workbench.startTime"
     },
     "131": {
@@ -140,7 +140,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-06-15T12:01:59.151893+02:00",
+        "value": "2020-06-17T09:52:34.631911+02:00",
         "browsePath": "root.visualization.workbench.endTime"
     },
     "132": {
@@ -169,7 +169,7 @@
         ],
         "backRefs": [],
         "forwardRefs": [],
-        "value": false,
+        "value": true,
         "browsePath": "root.visualization.workbench.hasAnnotation"
     },
     "134": {
@@ -1588,7 +1588,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 84058,
+        "value": 84696,
         "browsePath": "root.visualization.workbench.observerStream.triggerCounter"
     },
     "621": {
@@ -1599,7 +1599,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-06-15T12:03:52.668682",
+        "value": "2020-06-17T09:52:40.686063",
         "browsePath": "root.visualization.workbench.observerStream.lastTriggerTime"
     },
     "622": {
@@ -1702,7 +1702,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 185,
+        "value": 191,
         "browsePath": "root.visualization.workbench.observerVariables.triggerCounter"
     },
     "630": {
@@ -1713,7 +1713,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-02-17T17:46:29.423308",
+        "value": "2020-06-17T09:46:39.295385",
         "browsePath": "root.visualization.workbench.observerVariables.lastTriggerTime"
     },
     "631": {
@@ -2368,7 +2368,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 55,
+        "value": 57,
         "browsePath": "root.visualization.workbench.observerAnnotations.triggerCounter"
     },
     "1512825987021341680": {
@@ -2379,7 +2379,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-06-15T12:03:05.445983",
+        "value": "2020-06-17T09:52:36.049096",
         "browsePath": "root.visualization.workbench.observerAnnotations.lastTriggerTime"
     },
     "181254564156835464": {
@@ -2481,7 +2481,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 73,
+        "value": 82,
         "browsePath": "root.visualization.workbench.observerVisibleElements.triggerCounter"
     },
     "8776597143574159736": {
@@ -2492,7 +2492,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-06-15T12:04:35.338991",
+        "value": "2020-06-17T09:52:27.487956",
         "browsePath": "root.visualization.workbench.observerVisibleElements.lastTriggerTime"
     },
     "7833314493455544321": {
@@ -2507,7 +2507,8 @@
             "4993903403011060147",
             "3279455800604652246",
             "14083443961796641780",
-            "11667732642926331192"
+            "11667732642926331192",
+            "16382337157999104057"
         ],
         "value": null,
         "browsePath": "root.visualization.workbench.observerVisibleElements.targets"
@@ -2695,11 +2696,11 @@
         "backRefs": [],
         "forwardRefs": [],
         "value": {
-            "root.stream.variables.cos": {
-                "lineColor": "#eba4fc"
-            },
             "root.new_thresholdScorer4_3708.output.scores.cos_score": {
                 "lineColor": "red"
+            },
+            "root.stream.variables.cos": {
+                "lineColor": "#eba4fc"
             }
         },
         "browsePath": "root.visualization.workbench.currentColors"
@@ -2742,7 +2743,7 @@
             "7833314493455544321"
         ],
         "forwardRefs": [],
-        "value": false,
+        "value": true,
         "browsePath": "root.visualization.workbench.streamingMode"
     },
     "12756498574441070081": {
@@ -3357,7 +3358,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 48145,
+        "value": 50348,
         "browsePath": "root.system.progress.triggerCounter"
     },
     "4425723408065578788": {
@@ -3368,7 +3369,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-06-15T12:03:53.828245",
+        "value": "2020-06-17T09:52:40.771126",
         "browsePath": "root.system.progress.lastTriggerTime"
     },
     "3939645154328067705": {
@@ -3460,9 +3461,11 @@
         "type": "const",
         "parent": "127",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "7833314493455544321"
+        ],
         "forwardRefs": [],
-        "value": false,
+        "value": true,
         "browsePath": "root.visualization.workbench.showMarker"
     },
     "8323719243909058740": {
@@ -3737,7 +3740,7 @@
             "3939645154328067705"
         ],
         "forwardRefs": [],
-        "value": 0,
+        "value": 1,
         "browsePath": "root.new_thresholdScorer4_3708.control.progress"
     },
     "9882416059300118138": {
@@ -3770,7 +3773,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 5019,
+        "value": 5664,
         "browsePath": "root.new_thresholdScorer4_3708.control.executionCounter"
     },
     "5290080539601212057": {
@@ -3781,7 +3784,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.126214,
+        "value": 0.066768,
         "browsePath": "root.new_thresholdScorer4_3708.control.lastExecutionDuration"
     },
     "10957971835073517190": {
@@ -3792,7 +3795,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-06-15T12:03:52.684233",
+        "value": "2020-06-17T09:52:40.717348",
         "browsePath": "root.new_thresholdScorer4_3708.control.lastStartTime"
     },
     "312098300128511023": {
@@ -3853,7 +3856,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.5256595392902393,
+        "value": 0.7918498389871076,
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.8cc804ba.max"
     },
     "18439421347134905675": {
@@ -3944,7 +3947,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": true,
+        "value": false,
         "browsePath": "root.new_thresholdScorer4_3708.incremental"
     }
 }

@@ -47,7 +47,7 @@ globalAlpha = 1.0#0.3
 globalAnnotationLevel  = "image"
 globalBackgroundsLevel = "underlay"
 globalThresholdsLevel = "underlay"
-globalAnnotationsAlpha = 0.99
+globalAnnotationsAlpha = 0.90
 globalThresholdsAlpha = 0.5
 globalBackgroundsAlpha = 0.2
 
@@ -776,6 +776,7 @@ class TimeSeriesWidget():
         self.renderersGarbage = [] # a list of renderers to be deleted when time allowes
 
         self.autoAdjustY = True # autoscaling of the y axis
+        self.inPan = False      #we are not currently in pan mode
         self.annoHovers=[]      #holding the objects for hovering annotatios (extra glyph, eg. a circle)
 
 
@@ -963,6 +964,9 @@ class TimeSeriesWidget():
                         self.__dispatch_function(self.show_legend)
                     else:
                         self.__dispatch_function(self.hide_legend)
+
+            if "autoScaleY" in newMirror:
+                self.autoAdjustY = newMirror["autoScaleY"][".properties"]["value"]
 
         elif data["event"] == "timeSeriesWidget.values":
             #the data has changed, typically the score values?
@@ -2035,9 +2039,12 @@ class TimeSeriesWidget():
         """
             this function automatically adjusts the limts of the y-axis that the data fits perfectly in the plot window
         """
-        self.logger.debug(f"adjust_y_axis_limits {self.autoAdjustY}")
+        self.logger.debug(f"adjust_y_axis_limits self.autoAdjustY:{self.autoAdjustY}")
 
         if not self.autoAdjustY:
+            ## only rescale the box_modifier, this is needed in streaming to keep the left
+            # and right limits
+            self.box_modifier_rescale() # only rescale the box_modifier, this is needed in streaming to keep the left
             return
 
         lineData = []
@@ -2193,7 +2200,7 @@ class TimeSeriesWidget():
         boxYCenter = float(self.plot.y_range.start + self.plot.y_range.end) / 2
         boxXCenter = float(self.plot.x_range.start + self.plot.x_range.end) / 2
         boxYHeight = (self.plot.y_range.end - self.plot.y_range.start) * 4
-        boxXWidth = (self.plot.x_range.end - self.plot.x_range.start)
+        boxXWidth = (self.plot.x_range.end - self.plot.x_range.start) *4 
 
         if anno["type"] in ["time","motif"]:
             start = anno["startTime"]
@@ -2239,8 +2246,17 @@ class TimeSeriesWidget():
 
     # this is called when we resize the plot via variable selection, mouse wheel etc
     def box_modifier_rescale(self):
+        self.logger.info(f"box_modifier_rescale self.boxModifierVisible{self.boxModifierVisible}, self.inPan{self.inPan}")
+        #self.logger.debug(f"box_modifier_rescale self.boxModifierVisible={self.boxModifierVisible}")
         if self.boxModifierVisible == False:
             return
+
+        # also, if we currently move the boxmodifier around per drag and drop,
+        # we don't want to touch it here until the user releases
+        if self.inPan:
+            self.logger.info("box_modifier_rescale skipped in pan")
+            return
+
         anno = self.server.get_annotations()[self.boxModifierAnnotationName]
         if anno["type"] in ["time","motif"]:
             #adjust the limits to span the rectangles on full view area
@@ -2338,6 +2354,10 @@ class TimeSeriesWidget():
 
 
     def check_boxes(self):
+        if self.inPan:
+            self.logger.debug("check_boxes skip in pan")
+            return
+
         if self.boxModifierVisible:
             try:
                 #self.logger.debug(self.boxData.data)
@@ -2450,6 +2470,9 @@ class TimeSeriesWidget():
         settings= self.server.get_settings()
         variables = self.server.get_variables_selected()
         mirr = self.server.get_mirror()
+        if "autoScaleY" in mirr:
+            self.autoAdjustY = mirr["autoScaleY"][".properties"]["value"]
+
         showMarker = False
         if "showMarker" in mirr:
             showMarker = mirr["showMarker"][".properties"]["value"]
@@ -2800,6 +2823,7 @@ class TimeSeriesWidget():
         if eventType in ["PanStart","Pan"]:
             if self.streamingMode:
                 self.userZoomRunning = True # the user is starting with pannin, we old the ui updates during user pan
+            self.inPan = True
 
         """
         if eventType == "PanEnd":
@@ -2813,6 +2837,7 @@ class TimeSeriesWidget():
 
         #if eventType == "LODEnd":
         if eventType in ["LODEnd","PanEnd"]:
+            self.inPan = False
             if self.streamingMode:
                 self.userZoomRunning = False # the user is finished with zooming, we can now push data to the UI again
                 # also update the zoom level during streaming
