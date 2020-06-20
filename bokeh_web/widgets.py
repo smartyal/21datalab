@@ -306,33 +306,11 @@ class TimeSeriesWidgetDataServer():
             response = self.__web_call("post","_get",[self.path+"."+"hasAnnotation"])
             annotationsInfo = get_const_nodes_as_dict(response[0]["children"])
             self.settings.update(annotationsInfo)
-
-        #self.load_annotations()
         self.annotations=self.fetch_annotations() # get all the annotations
-        """
-        #now grab more infor for annotations if needed:
-        if (self.settings["hasAnnotation"] == True) or (self.settings["hasThreshold"] == True):
-            response = self.__web_call("post","_get",[self.path+"."+"hasAnnotation"])
-            annotationsInfo = get_const_nodes_as_dict(response[0]["children"])
-            self.settings.update(annotationsInfo)
-            #now get all annotations
-            nodes = self.__web_call("post","_getleaves",self.path+".hasAnnotation.annotations")
-            #self.logger.debug("ANNOTATIONS"+json.dumps(nodes,indent=4))
-            #now parse the stuff and build up our information
-            self.annotations={}
-            for node in nodes:
-                if node["type"]=="annotation":
-                    self.annotations[node["browsePath"]]=get_const_nodes_as_dict(node["children"])
 
-                    if "startTime" in self.annotations[node["browsePath"]]:
-                        self.annotations[node["browsePath"]]["startTime"] = date2secs(self.annotations[node["browsePath"]]["startTime"])*1000
-                    if "endTime" in self.annotations[node["browsePath"]]:
-                        self.annotations[node["browsePath"]]["endTime"] = date2secs(self.annotations[node["browsePath"]]["endTime"]) * 1000
-                    if self.annotations[node["browsePath"]]["type"] == "threshold":
-                        #we also pick the target
-                        self.annotations[node["browsePath"]]["variable"]=self.annotations[node["browsePath"]]["variable"][0]
-            #self.logger.debug("server annotations" + json.dumps(self.annotations, indent=4))
-        """
+        #for the events
+        self.events = self.fetch_events()
+
         #grab the info for the buttons
         myButtons=[]
         for node in info[0]["children"]:
@@ -390,7 +368,17 @@ class TimeSeriesWidgetDataServer():
         self.logger.debug("%s",json.dumps(self.settings,indent=4))
 
 
+    def fetch_events(self):
+        # return a dict with {id:eventdict}
+        nodes = self.__web_call("post", "_getleaves", self.path + ".hasEvents.events")
+        self.logger.debug(f"fetch_events: {len(nodes)} events")
+        query = {"nodes":[node["id"] for node in nodes if node["type"]=="eventseries"]}
+        events = self.__web_call("post","_getEvents",query)
+        self.logger.debug(f"events result {events}")
+        return events   # dict "nodeid":{"events":{"one":....,"two":... }"eventMap"....},"id2":{}
 
+    def get_events(self):
+        return copy.deepcopy(self.events)
 
 
     def fetch_annotations(self):
@@ -779,6 +767,9 @@ class TimeSeriesWidget():
         self.inPan = False      #we are not currently in pan mode
         self.annoHovers=[]      #holding the objects for hovering annotatios (extra glyph, eg. a circle)
 
+        self.eventLines = {}    #holding event line renderes and the columndatasources
+        self.eventsVisible = False  #set true if events are currently turned on
+
 
 
         self.__init_figure() #create the graphical output
@@ -887,12 +878,14 @@ class TimeSeriesWidget():
             oldMirror = copy.deepcopy(self.server.get_mirror())
             visibleElementsOld = oldMirror["visibleElements"][".properties"]["value"]
             visibleTagsOld =oldMirror["hasAnnotation"]["visibleTags"][".properties"]["value"]
+            visibleEventsOld = oldMirror["hasEvents"]["visibleEvents"][".properties"]["value"]
 
             newMirror = copy.deepcopy(self.server.fetch_mirror())
             visibleElementsNew = newMirror["visibleElements"][".properties"]["value"]
             visibleTagsNew = newMirror["hasAnnotation"]["visibleTags"][".properties"]["value"]
+            visibleEventsNew = newMirror["hasEvents"]["visibleEvents"][".properties"]["value"]
 
-            for entry in ["thresholds","annotations","scores","background","motifs"]:
+            for entry in ["thresholds","annotations","scores","background","motifs","events"]:
                 #check for turn on:
                 if entry in visibleElementsNew and visibleElementsNew[entry] == True:
                     if not entry in visibleElementsOld or visibleElementsOld[entry] == False:
@@ -907,7 +900,8 @@ class TimeSeriesWidget():
                             self.__dispatch_function(self.show_backgrounds)
                         elif entry == "motifs":
                             self.__dispatch_function(self.show_motifs)
-
+                        elif entry == "events":
+                            self.__dispatch_function(self.show_all_events)
 
                 if entry in visibleElementsOld and visibleElementsOld[entry] == True:
                     if not entry in visibleElementsNew or visibleElementsNew[entry]== False:
@@ -922,11 +916,16 @@ class TimeSeriesWidget():
                             self.__dispatch_function(self.hide_backgrounds)
                         elif entry == "motifs":
                             self.__dispatch_function(self.hide_motifs)
+                        elif entry == "events":
+                            self.__dispatch_function(self.hide_all_events)
+
 
             #visible tag selections for annotations has changed
             if (visibleTagsOld != visibleTagsNew) and self.showAnnotations:
                 self.__dispatch_function(self.show_annotations)
 
+            if (visibleEventsOld != visibleEventsNew):
+                self.__dispatch_function(self.show_all_events)
             #startime/endtime has changed
 
             if (oldMirror["startTime"][".properties"]["value"] !=
@@ -1469,7 +1468,7 @@ class TimeSeriesWidget():
                 buttonControls.append(button)
 
 
-        if 0: # turn this helper button on to put some debug code
+        if 1: # turn this helper button on to put some debug code
             self.debugButton= Button(label="debug")
             self.debugButton.on_click(self.debug_button_cb)
             self.debugButton2 = Button(label="debug2")
@@ -1488,6 +1487,9 @@ class TimeSeriesWidget():
 
         if self.server.get_settings()["hasAnnotation"] == True:
             self.init_annotations() # we create all annotations that we have into self.annotations
+
+        if self.server.get_settings()["hasEvents"] == True:
+            self.init_events()
 
 
     def init_additional_elements(self):
@@ -1555,92 +1557,67 @@ class TimeSeriesWidget():
 
 
     def debug_button_2_cb(self):
-        self.logger.debug("debug button cb2 ")
 
-        total = 100
+        if 0:
+            source = copy.deepcopy(self.debugsource.data)
 
-
-        if not 'extraAnnos' in self.__dict__:
-            self.extraAnnos = []
-
-        dur  = (self.plot.x_range.end-self.plot.x_range.start)/4
-        start = self.plot.x_range.start + dur
-        end = self.plot.x_range.end - dur
-        infinity = 1000000
-
-
-        dic={}
-        for x in range(100):
-            dic["x_"+str(x)]=[start,end]
-            dic["y1_"+str(x)]=[-infinity, -infinity]
-            dic["y2_"+str(x)]=[infinity, infinity]
-
-        source2 = ColumnDataSource(dic)
-
-        newones = []
-
-        for x in range(200):
+            infi = 1000000
+            self.logger.debug("debug button cb")
+            basic = date2secs("20150214T12:00:00+02:00")
+            times=[]
+            ys = []
+            for n in range(500):
+                tim = basic+n
+                times.extend([tim,tim,numpy.nan])
+                ys.extend([-infi,infi,numpy.nan])
+            times=numpy.asarray(times)*1000
+            dic = {"x":times,"y":ys}
+            self.debugsource.data = dic # update
 
 
-
-            name = "tset"+str(x)
-
-            if x==50:
-                source = ColumnDataSource(dict(x=[start, end], y1=[-infinity, -infinity], y2=[infinity, infinity]))
-                area = VArea(x="x", y1="y1", y2="y2",
-                             fill_color="gray",
-                             name=name,
-                             fill_alpha=globalAnnotationsAlpha,
-                             hatch_color="black",
-                             hatch_pattern="v",
-                             hatch_alpha=globalAnnotationsAlpha,
-                             level = globalAnnotationLevel)
-                myrenderer = GlyphRenderer(data_source=source, glyph=area, name=name)
-
-            """
-            area = VArea(x="x_"+str(x), y1="y1_"+str(x), y2="y2_"+str(x),
-                         fill_color="gray",
-                         name=name,
-                         fill_alpha=0.3,
-                         hatch_color="black",
-                         hatch_pattern="v",
-                         hatch_alpha=0.5
-                         )
-            myrenderer = GlyphRenderer(data_source=source2, glyph=area, name=name)
-            """
-            
-
-
-
-
-            myrenderer = BoxAnnotation(left=start,right=end,fill_color="red",name=name)
-
-
-            self.logger.debug(f"add renderer {name}")
-            newones.append(myrenderer)
-
-
-        self.add_renderers(newones)
-
-        self.extraAnnos.extend(newones)
-
-
+        if 1:
+            self.evs.visible=False
 
 
 
     def debug_button_cb(self):
 
-        newData = {}
+        if 1:
+            infi = 1000000
+            self.logger.debug("debug button cb")
+            basic = date2secs("20150214T00:00:00+02:00")
+            times=[]
+            ys = []
+            for n in range(10000):
+                tim = basic+n
+                times.extend([tim,tim,numpy.nan])
+                ys.extend([-infi,infi,numpy.nan])
+            times=numpy.asarray(times)*1000
+            self.debugsource = ColumnDataSource({"x": times,"y":ys})
+            self.logger.debug(f"epoches {times}")
 
-        for k,v in self.columnData.items():
-            newData[k]=ColumnDataSource(v.data)
-        self.columnData = newData
+            infinity = 1000000000
+
+            self.evs = self.plot.line(x="x",y="y", source=self.debugsource,color="red") # works
+
+        if 0:
+            basic = date2secs("20150214T00:00:00+02:00")
+            ss=[]
+            self.logger.debug("start span createion")
+            for n in range(5000):
+                s= Span(location=(basic+n)*1000, dimension='height', line_color='red', line_width=3)
+                ss.append(s)
+            self.logger.debug("add spans")
+            self.add_renderers(ss)
+            self.ss = ss
+            self.logger.debug("adding done")
 
 
 
 
 
-        
+
+
 
 
 
@@ -2200,7 +2177,7 @@ class TimeSeriesWidget():
         boxYCenter = float(self.plot.y_range.start + self.plot.y_range.end) / 2
         boxXCenter = float(self.plot.x_range.start + self.plot.x_range.end) / 2
         boxYHeight = (self.plot.y_range.end - self.plot.y_range.start) * 4
-        boxXWidth = (self.plot.x_range.end - self.plot.x_range.start) *4 
+        boxXWidth = (self.plot.x_range.end - self.plot.x_range.start) *4
 
         if anno["type"] in ["time","motif"]:
             start = anno["startTime"]
@@ -2421,8 +2398,7 @@ class TimeSeriesWidget():
                 else:
                     fkt()
 
-        except Exception as ex:
-            self.logger.error(f"Error in periodic callback {ex} , {str(traceback.format_exc())}")
+        except Exception as ex:            self.logger.error(f"Error in periodic callback {ex} , {str(traceback.format_exc())}")
 
         if legendChange or executelist != []:
             self.logger.debug(f"periodic_cb was {time.time()-start}")
@@ -2644,10 +2620,10 @@ class TimeSeriesWidget():
         for k,v in newData.items():
             if k.endswith("__time"):
                 check=[mini]
-                check.extend(v)
+                check.extend(v[1:-1])
                 mini =  min(check)
                 check=[maxi]
-                check.extend(v)
+                check.extend(v[1:-1])
                 maxi=max(check)
         return mini,maxi
 
@@ -3053,8 +3029,25 @@ class TimeSeriesWidget():
 
         self.logger.debug("init annotations done")
 
-    def draw_threshold2(self,anno,visible=False):
-        self.logger.debug(f"draw_threshold2() {anno['name']} visible:{visible}")
+
+    def init_events(self):
+        self.logger.debug(f"init_events")
+        #create all renderers but don't show them
+        visible = self.server.get_mirror()["visibleElements"][".properties"]["value"]
+        if "events" in visible and visible["events"]==True:
+            self.eventsVisible = True #currently turned on
+            self.logger.debug(f"init_events visible")
+            self.show_all_events()
+        else:
+            self.logger.debug("init events invisible")
+
+
+    def show_all_events(self):
+        self.logger.debug("show_all_events")
+        data = self.server.get_events()
+        self.eventsVisible = True
+        if data:
+            self.show_events(data)
 
     def init_annotations_old(self):
         """
@@ -3301,11 +3294,86 @@ class TimeSeriesWidget():
             self.logger.error(f"error draw annotation {anno}"+str(ex))
             return None
 
+    def hide_all_events(self):
+        self.eventsVisible = False
+        self.hide_events()
 
+    def hide_events(self,keep=[],selectId=None):
+        """
+            hide all events excpect the keep list
+            keep: a list of event tags
+            selectId: give a nodeid, we only work on the renderes of that node
+        """
+        #hide the ones which are not here
 
+        deleteList=[]
+        for nodeId,entry in self.eventLines.items():
+            if selectId and selectId != nodeId:
+                continue# we have a id filter and it did not match
+            if entry["eventString"] not in keep:
+                deleteList.append(nodeId)
+        for id in deleteList:
+            self.remove_renderers(renderers=[self.eventLines[id]["renderer"]])
+            del self.eventLines[id]
 
+    def show_events(self,eventsData,redraw=False):
+        """
+            show all currently visible event tags
 
+            Args:
+                nodeId: the node id
+                redraw: if set to true, we delete the lines of a node and redraw them, if not, we keep them
+                eventes: a dict containing  {"nodeid":{"events":{"one":[t1,t2,t3],"two":[t1,t,2,t3]...}},"nodeid2":{}
+        """
+        self.eventsVisible = True
+        myColors = self.server.get_mirror()["hasEvents"]["colors"][".properties"]["value"]
+        visibleEvents = self.server.get_mirror()["hasEvents"]["visibleEvents"][".properties"]["value"]
+        visible = [k for k,v in visibleEvents.items() if v==True]
 
+        #hide the ones which are not here
+        self.hide_events(keep=visible)
+
+        #now show the ones to show
+        for nodeId, eventInfo in eventsData.items():
+            if redraw:
+                #make sure we delete all lines of this node
+                self.hide_events(selectId=nodeId)  # delete all lines of this node
+
+            for eventString,times in eventInfo["events"].items():
+                if eventString not in visible:
+                    continue
+                key = nodeId+"."+eventString
+                if key not in self.eventLines:
+                    #only draw if it is not there yet
+                    if eventString in myColors:
+                        color = myColors[eventString]["color"]
+                    else:
+                        color = "yellow"
+
+                    times = numpy.asarray(times)
+                    times = times*1000 # in ms for bokeh
+                    infi = 1000*1000
+                    x=[]
+                    y=[]
+                    for t in times:
+                        x.extend([t,t,numpy.nan])
+                        y.extend([-infi,infi,numpy.nan])
+
+                    source = ColumnDataSource({"x":x,"y":y})
+                    #source = ColumnDataSource({"x":[date2secs("20150214T00:00:00+00:00")*1000,date2secs("20150214T00:00:00+00:00")*1000],"y":[-infi,infi]})
+                    # drawing lines is much faster than any other object
+                    # Span had problems, single lines are also slower, rays do not work properly
+                    # line_dash does not work when zooming in deep , so we leave it out
+                    li = self.plot.line(x="x",y="y", source=source,color=color,line_width=1)
+                    self.eventLines[key] = {"renderer":li,"data":source,"eventString":eventString,"nodeId":nodeId}
+
+    def update_events(self,nodeId,eventData):
+        """
+            delete all events of a nodeId and redraw them
+            eventData contains ["<nodeid>":"events:[]....} for one node
+        """
+        self.hide_events(keep=[],selectId=nodeId)
+        self.show_events(eventData)
 
 
     def find_thresholds_of_line(self,path):

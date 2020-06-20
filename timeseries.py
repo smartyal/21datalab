@@ -53,7 +53,7 @@ class TimeSeries:
             if profiling: profiling.lap("alloc")
 
 
-        if times[0]>self.times[lastOldValueIndex]:
+        if lastOldValueIndex==-1 or times[0]>self.times[lastOldValueIndex]:
             #simply append the data
             start = self.lastValidIndex + 1
             self.values[start:start + newLen] = values
@@ -212,8 +212,8 @@ class TimeSeries:
 
 
         else:
-            times=[]
-            values=[]
+            times=numpy.asarray([])
+            values=numpy.asarray([])
 
 
         if copy:
@@ -307,6 +307,8 @@ class TimeSeriesTable:
         self.store={}
 
     def insert(self,name,values=None,times=None):
+        if name not in self.store:
+            self.create(name)
         return self.store[name].insert(values,times)
 
     def set(self,name,values = None,times = None):
