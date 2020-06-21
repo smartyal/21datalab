@@ -375,6 +375,7 @@ class TimeSeriesWidgetDataServer():
         query = {"nodes":[node["id"] for node in nodes if node["type"]=="eventseries"]}
         events = self.__web_call("post","_getEvents",query)
         self.logger.debug(f"events result {events}")
+        self.events = events
         return events   # dict "nodeid":{"events":{"one":....,"two":... }"eventMap"....},"id2":{}
 
     def get_events(self):
@@ -856,6 +857,9 @@ class TimeSeriesWidget():
             # sync from the server
             #self.__dispatch_function(self.reinit_annotations)
             self.__dispatch_function(self.update_annotations_and_thresholds)
+        elif data["event"] == "timeSeriesWidget.eventSeries":
+            self.logger.debug(f"must reload events")
+            self.__dispatch_function(self.update_events,data)
 
 
         elif data["event"] == "timeSeriesWidget.visibleElements":
@@ -3367,13 +3371,18 @@ class TimeSeriesWidget():
                     li = self.plot.line(x="x",y="y", source=source,color=color,line_width=1)
                     self.eventLines[key] = {"renderer":li,"data":source,"eventString":eventString,"nodeId":nodeId}
 
-    def update_events(self,nodeId,eventData):
+    def update_events(self,observerEvent):
         """
-            delete all events of a nodeId and redraw them
+            observerEvent: the event data coming from the observer
             eventData contains ["<nodeid>":"events:[]....} for one node
         """
-        self.hide_events(keep=[],selectId=nodeId)
-        self.show_events(eventData)
+        self.logger.debug(f"update_evetns {observerEvent}")
+        #simply kill and redraw all events
+        self.hide_events()
+        self.server.fetch_events()
+        self.show_all_events()
+
+
 
 
     def find_thresholds_of_line(self,path):

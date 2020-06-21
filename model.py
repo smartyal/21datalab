@@ -141,11 +141,11 @@ class Node():
         """
         return self.model.time_series_set(self.id,values=values,times=times)
 
-    def insert_time_series(self,values=None,times=None):
+    def insert_time_series(self,values=None,times=None,allowDuplicates = False):
         """
             insert data, if the time stamp exists already, we replace it
         """
-        return self.model.time_series_insert(self.id,values=values, times=times)
+        return self.model.time_series_insert(self.id,values=values, times=times, allowDuplicates=allowDuplicates)
 
 
     #####################
@@ -161,6 +161,9 @@ class Node():
 
     def insert_event_series(self,values=None,times=None):
         return self.model.event_series_insert(self.id,values,times)
+
+    def delete_event_series(self,start=None, end = None, eventsToDelete=[]):
+        return self.model.event_series_delete(desc=self.id,start=start,end=end,eventsToDelete=eventsToDelete)
 
 
     def get_parent(self):
@@ -3330,12 +3333,12 @@ class Model:
         id = self.get_id(desc)
         return self.ts.delete(id)
 
-    def time_series_insert(self, desc, values=None, times=None):
+    def time_series_insert(self, desc, values=None, times=None, allowDuplicates = False):
         id = self.get_id(desc)
         if not id in self.model:
             return None
         with self.lock:
-            result =  self.ts.insert(id,values, times)
+            result =  self.ts.insert(id,values, times,allowDuplicates=allowDuplicates)
 
         self.__notify_observers(id, "value")
         return result
@@ -3577,8 +3580,6 @@ class Model:
             self.model[id]["eventMap"]=map.copy()
         return self.ts.create(id)
 
-    def event_series_delete(self,desc):
-        self.time_series_delete(desc)
 
     def event_series_get_new_number_entry(self,id):
         eventMap = self.model[id]["eventMap"]
@@ -3642,7 +3643,7 @@ class Model:
         epochs = [t if type(t) is not str else date2secs(t) for t in times  ]
 
         with self.lock:
-            result =  self.ts.insert(id,numbers, epochs)
+            result =  self.ts.insert(id,numbers, epochs, allowDuplicates=True)# we allow 2 events to appear on the same time!
 
         self.__notify_observers(id, "value")
         return result
@@ -3653,7 +3654,7 @@ class Model:
             return None
         if self.lock:
             # now "refresh" the event map
-            self.model[id]["eventMap"]={}
+            #self.model[id]["eventMap"]={}
             numbers = [self.event_series_get_event_number(id, event) for event in values]
             result =  self.ts.set(id,values=numbers,times=times)
         self.__notify_observers(id, "value")
@@ -3777,14 +3778,44 @@ class Model:
                 times = blob["__time"]
         return self.event_series_insert(blob["node"],events,times)
 
-    def event_series_delete(self,desc):
+    def event_series_delete(self,desc,start=None, end = None, eventsToDelete=[]):
         id = self.get_id(desc)
         if not id:
             return None
-        with self.lock:
-            self.model[id]["eventMap"]={}
-            result = self.ts.set(id, values=[], times=[])
 
+        if start == None and end == None and eventsToDelete == []:
+            #delete all
+            with self.lock:
+                self.model[id]["eventMap"]={}
+                result = self.ts.set(id, values=[], times=[])
+        else:
+            #delete some events
+            with self.lock:
+                data = self.ts.get_table([id])
+                if not start:
+                    start = 0
+                if not end:
+                    end = numpy.inf
+
+                times = data[id]["__time"]
+                values = data[id]["values"]
+                over = times>=start
+                under = times<=end
+                deleteMaskTime = over & under
+                if eventsToDelete == []:
+                    deleteMaskValues = numpy.full(len(deleteMaskTime),True)
+                else:
+                    deleteMaskValues = numpy.full(len(deleteMaskTime),False)
+                    for ev in eventsToDelete:
+                        evNumber = self.model[id]["eventMap"][ev]
+                        mask = values == evNumber
+                        deleteMaskValues = deleteMaskValues | mask
+                deleteMask = deleteMaskTime & deleteMaskValues
+                times = times[~deleteMask]
+                values = values[~deleteMask]
+                self.event_series_set(id,values,times)
+
+            print(data)
 
 
     def create_test(self,testNo=1):
