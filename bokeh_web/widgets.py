@@ -120,6 +120,7 @@ class TimeSeriesWidgetDataServer():
         #self.timeOffset = 0 # the timeoffset of display in seconds (from ".displayTimeZone)
         self.annotations = {}
         self.scoreVariables = []
+        self.events = None
         self.sseCb = None # the callbackfunction on event
 
         self.__init_logger(logging.DEBUG)
@@ -309,7 +310,8 @@ class TimeSeriesWidgetDataServer():
         self.annotations=self.fetch_annotations() # get all the annotations
 
         #for the events
-        self.events = self.fetch_events()
+        if "hasEvents" in self.settings and self.settings["hasEvents"] == True:
+            self.events = self.fetch_events()
 
         #grab the info for the buttons
         myButtons=[]
