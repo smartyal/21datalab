@@ -1494,7 +1494,7 @@ class TimeSeriesWidget():
         if self.server.get_settings()["hasAnnotation"] == True:
             self.init_annotations() # we create all annotations that we have into self.annotations
 
-        if self.server.get_settings()["hasEvents"] == True:
+        if "hasEvents" in self.server.get_settings() and self.server.get_settings()["hasEvents"] == True:
             self.init_events()
 
 
