@@ -2034,7 +2034,16 @@ class TimeSeriesWidget():
         selected = self.server.get_variables_selected()
         for item in self.columnData:
             if item in selected and not self.is_second_axis(item):
-                lineData.extend(self.columnData[item].data["y"])
+                yData = self.columnData[item].data["y"]
+                if len(yData) >= 2:
+                    # the outer left and right are ignored in the scaling to avoid influence of
+                    # points that are included in the data query and which are far away due to a missin data area
+                    # if you have small variation of values and then a gap and than a totally different value
+                    # and that value is part of the query but only one point, the small variations can't be seen
+                    # now it's possible, this problem was introduced via the "include borders" style of the data
+                    # query to get the connecting lines to the next point OUT of the visible area
+                    yData=yData[1:-1]
+                lineData.extend(yData)
 
         if len(lineData) > 0:
             all_data = numpy.asarray(lineData, dtype=numpy.float)
@@ -2590,7 +2599,7 @@ class TimeSeriesWidget():
         if not self.hasLegend:
             #at the first time, we create the "Legend" object
             self.plot.add_layout(Legend(items=legendItems))
-            self.plot.legend.location = "top_right"
+            self.plot.legend.location = "top_left"
             self.plot.legend.click_policy = "hide"
             self.hasLegend = True
             #check if we need to hide it on start
