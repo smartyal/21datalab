@@ -2617,7 +2617,7 @@ class TimeSeriesWidget():
         if not self.hasLegend:
             #at the first time, we create the "Legend" object
             self.plot.add_layout(Legend(items=legendItems))
-            self.plot.legend.location = "top_right"
+            self.plot.legend.location = "top_left"
             self.plot.legend.click_policy = "hide"
             self.hasLegend = True
             #check if we need to hide it on start
