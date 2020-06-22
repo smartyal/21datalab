@@ -79,6 +79,9 @@ class Node():
         """
         return self.model.get_value(self.id)
 
+    #####################
+    # time series node API
+
     def get_time_series(self, start=None,
                               end=None,
                               noBins=None,
@@ -138,11 +141,30 @@ class Node():
         """
         return self.model.time_series_set(self.id,values=values,times=times)
 
-    def insert_time_series(self,values=None,times=None):
+    def insert_time_series(self,values=None,times=None,allowDuplicates = False):
         """
             insert data, if the time stamp exists already, we replace it
         """
-        return self.model.time_series_insert(self.id,values=values, times=times)
+        return self.model.time_series_insert(self.id,values=values, times=times, allowDuplicates=allowDuplicates)
+
+
+    #####################
+    # event series node API
+    def get_event_series(self, start=None, end=None, format="default",eventFilter = None):
+        return self.model.event_series_get(self.id,start=start,end=end,format=format,eventFilter=eventFilter)
+
+    def set_event_series(self, values=None, times=None):
+        """
+            replaces the event series with value and times, it deletes the existing
+        """
+        return self.model.event_series_set(self.id,values=values,times=times)
+
+    def insert_event_series(self,values=None,times=None):
+        return self.model.event_series_insert(self.id,values,times)
+
+    def delete_event_series(self,start=None, end = None, eventsToDelete=[]):
+        return self.model.event_series_delete(desc=self.id,start=start,end=end,eventsToDelete=eventsToDelete)
+
 
     def get_parent(self):
         """ Returns:
@@ -1053,6 +1075,8 @@ class Model:
             self.model[newId] = newNode
             if newNode["type"] == "timeseries":
                 self.time_series_create(newId)
+            if newNode["type"] == "eventseries":
+                self.event_series_create(newId)
             self.__notify_observers(parentId,"children")
             return newNode["id"]
 
@@ -3309,12 +3333,12 @@ class Model:
         id = self.get_id(desc)
         return self.ts.delete(id)
 
-    def time_series_insert(self, desc, values=None, times=None):
+    def time_series_insert(self, desc, values=None, times=None, allowDuplicates = False):
         id = self.get_id(desc)
         if not id in self.model:
             return None
         with self.lock:
-            result =  self.ts.insert(id,values, times)
+            result =  self.ts.insert(id,values, times,allowDuplicates=allowDuplicates)
 
         self.__notify_observers(id, "value")
         return result
@@ -3542,6 +3566,256 @@ class Model:
         self.__notify_observers(idsInBlobs, "value")
         result = self.ts.insert_blobs(newBlobs)
         return result
+
+
+    # ########################################
+    # event series api
+
+    def event_series_create(self,desc,map={}):
+        id = self.get_id(desc)
+
+        if "eventMap" in self.model[id]:
+            self.model[id]["eventMap"].update(map)
+        else:
+            self.model[id]["eventMap"]=map.copy()
+        return self.ts.create(id)
+
+
+    def event_series_get_new_number_entry(self,id):
+        eventMap = self.model[id]["eventMap"]
+        numbers = [v for k, v in eventMap.items()]
+        newNumber = max(numbers)+1
+        while newNumber in numbers:
+            newNumber = newNumber+1
+        return newNumber
+
+    def event_series_get_event_number(self, desc, event, autoCreate=True):
+        id = self.get_id(desc)
+        if not id:
+            return None
+        with self.lock:
+            eventMap = self.model[id]["eventMap"] # a dict like {"starting":1, "machineStop":2,...}
+            if type(event) is str:
+                if event not in [k for k,v in eventMap.items()]:
+                    if not autoCreate:
+                        return None
+                    # we must put a new eventString
+                    if eventMap == {}:
+                        newEventNumber = 1
+                    else:
+                        newEventNumber = self.event_series_get_new_number_entry(id)
+                    self.model[id]["eventMap"][event] = newEventNumber
+                    return newEventNumber
+                else:
+                    #is a known event string, get the number
+                    return eventMap[event]
+            else:
+                #this is a number already, check if it is in the map
+                eventNumbers = [v for k,v in eventMap.items()]
+                if event in eventNumbers:
+                    return event
+                else:
+                    if not autoCreate:
+                        return None
+                    #must create a new entry
+                    newEventString = "event_"+str(event)
+                    self.model[id]["eventMap"][newEventString]=event
+                    return event
+
+
+    def event_series_insert(self, desc, values=None, times=None):
+        """
+            Args:
+                values: list of events, where the event is either an eventString or an event number
+                        if values is a scalar, we assume that for all times the same event will be inserted
+        """
+        id = self.get_id(desc)
+        if not id in self.model:
+            return None
+        if not values or not times:
+            return None
+        if not(type(values) is list or type(values) is numpy.ndarray):
+            values = [values]*len(times)
+
+        #convert the values to numbers and create new map entry if needed
+        numbers = [self.event_series_get_event_number(id,event) for event in values]
+        #convert the times to epoch if not already done
+        epochs = [t if type(t) is not str else date2secs(t) for t in times  ]
+
+        with self.lock:
+            result =  self.ts.insert(id,numbers, epochs, allowDuplicates=True)# we allow 2 events to appear on the same time!
+
+        self.__notify_observers(id, "value")
+        return result
+
+    def event_series_set(self,desc,values=None,times=None):
+        id = self.get_id(desc)
+        if not id in self.model:
+            return None
+        if self.lock:
+            # now "refresh" the event map
+            #self.model[id]["eventMap"]={}
+            numbers = [self.event_series_get_event_number(id, event) for event in values]
+            result =  self.ts.set(id,values=numbers,times=times)
+        self.__notify_observers(id, "value")
+        return result
+
+    def event_series_get(self,desc, start=None,end=None,format="default",eventFilter=None):
+        """
+            get events from a event series
+            Args:
+                desc: node descricptor
+                start , end [float]:
+                                the start and endtime of the table given as seconds since epoch
+                                we also allow the special case of endTime = 0 and startTime = -interval
+                                we also allow the special case of startTime given and end time= 0
+
+                format:  [enum] "default"
+                eventFilter : [string] a list of eventStrings as positive match filter
+
+                toList: (bool) True: return data as python list, False: return numpy arrays
+
+                examples:
+                - get all data of the variables
+                    data = m.get_time_series_table(["root.mytable.variables.a","root.mytable.variables.b"]) # get all data
+                - request max 300 values of data (this is what the UI does)
+                    data = m.get_time_series_table(["a","b"],"root.mytable",start=1581483065.323,end=1581483080.323,noBins=300,includeIntervalLimits=True)
+                - request data and resample to equiditant 25 sec spacing, also fill possible nan values with interpolation
+                    times = list(range(1581483065,1581483065+100,25))
+                    data = m.get_time_series_table(["a","b"],"root.mytable",resampleTimes = times,resampleMethod = "linearfill")
+            Returns(dict)
+                formatting depends on the "format" option
+                 "defaut": return the result as {{"values":[],"__time":[]}, "eventstrings": "map":{1:"myevent",2:"anotherevent"}
+        """
+        id = self.get_id(desc)
+        if not id:
+            return None
+
+        data = self.ts.get_table([id], start=start, end=end)
+        eventMap = self.model[id]["eventMap"].copy()
+        reverseMap = {v:k for k,v in eventMap.items()}
+        values = data[id]["values"].astype(numpy.int)
+        times = data[id]["__time"]
+
+        #now filter
+        if eventFilter:
+            filter = []
+            if type(eventFilter) is not list:
+                eventFilter = [eventFilter]
+            for evString in eventFilter:
+                if evString in eventMap:
+                    filter.append(eventMap[evString])
+            indices = [idx for idx,val in enumerate(values) if val in filter]
+            values = values[indices]
+            times = times[indices]
+
+        result = {
+                "values":values,
+                "__time":times,
+                "eventMap":eventMap,
+                "eventStrings":[reverseMap[v] for v in values]
+        }
+        if format == "iso":
+            #convert the timestamps to iso
+            result["__time"]=[epochToIsoString(t) for t in result["__time"]]
+        if format == "events":
+            existingEvents = set(result["values"])
+            events = {reverseMap[ev]:[] for ev in existingEvents}
+            for ev,ti in zip(result["values"],result["__time"]):
+                events[reverseMap[ev]].append(ti)
+            result["events"]=events
+            del result["values"]
+            del result["__time"]
+            del result["eventStrings"]
+
+        return result
+
+    def event_series_insert_blob(self,blob):
+        """
+            insert events in various blob syntax
+
+            Args:
+                desc: the node descriptor
+                blob: a dictionary in various styles
+                    a) {
+                        "node": nodedescriptor
+                        "events":"startMachine"
+                        "__time": ["2018.01.01T00:10:08.445+02:00",1546437120.2,1546437121.2,1546437122.2]# allowes iso or epoch
+                        }
+                    b)  {
+                        "node": nodedescriptor
+                        "events":["startMachine","stopMachine","startMachine","startMachine]
+                        "__time": ["2018.01.01T00:10:08.445+02:00",1546437120.2,1546437121.2,1546437122.2]# allowes iso or epoch
+                        }
+                    c)  "events:[
+                            {"event":"startMachine",
+                             "__time":"2018.01.01T00:10:08.445+02:00"
+                             },
+                             {"event":"stopMachine",
+                             "__time":"2018.01.01T00:10:08.445+02:00"
+                             }
+            Returns
+                true/false for success
+
+        """
+
+        if type(blob["events"]) is not list:
+            #style a)
+            events = blob["events"]
+            times = blob["__time"]
+        else:
+            #events is a list
+            if type(blob["events"][0]) is dict:
+                #style c)
+                events = []
+                times = []
+                for d in blob["events"]:
+                    events.append(d["event"])
+                    times.append(d["__time"])
+            else:
+                #style b)
+                events =  blob["events"]
+                times = blob["__time"]
+        return self.event_series_insert(blob["node"],events,times)
+
+    def event_series_delete(self,desc,start=None, end = None, eventsToDelete=[]):
+        id = self.get_id(desc)
+        if not id:
+            return None
+
+        if start == None and end == None and eventsToDelete == []:
+            #delete all
+            with self.lock:
+                self.model[id]["eventMap"]={}
+                result = self.ts.set(id, values=[], times=[])
+        else:
+            #delete some events
+            with self.lock:
+                data = self.ts.get_table([id])
+                if not start:
+                    start = 0
+                if not end:
+                    end = numpy.inf
+
+                times = data[id]["__time"]
+                values = data[id]["values"]
+                over = times>=start
+                under = times<=end
+                deleteMaskTime = over & under
+                if eventsToDelete == []:
+                    deleteMaskValues = numpy.full(len(deleteMaskTime),True)
+                else:
+                    deleteMaskValues = numpy.full(len(deleteMaskTime),False)
+                    for ev in eventsToDelete:
+                        evNumber = self.model[id]["eventMap"][ev]
+                        mask = values == evNumber
+                        deleteMaskValues = deleteMaskValues | mask
+                deleteMask = deleteMaskTime & deleteMaskValues
+                times = times[~deleteMask]
+                values = values[~deleteMask]
+                self.event_series_set(id,values,times)
+
+            print(data)
 
 
     def create_test(self,testNo=1):

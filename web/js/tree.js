@@ -29,6 +29,7 @@ class TreeWidget
             folder : "far fa-folder tree-icon-class",
             variable:"fas fa-random tree-icon-class",
             timeseries : "fas fa-stream fa-xs tree-icon-class",
+            eventseries : "fas fa-list-ul tree-icon-class",
             table :"fas fa-table tree-icon-class",
             annotation: "fas fa-pencil-alt tree-icon-class",
             widget : "fas fa-chart-line fa-xs tree-icon-class",
@@ -572,7 +573,20 @@ class TreeWidget
                                             "label":"column",
                                             "action":function(obj){treeWidgetObject.context_menu_create(node,"column");},
                                             "icon":treeWidgetObject.treeIcons["column"]
+                                        },
+                                        "timeseries":
+                                        {
+                                            "label":"timeseries",
+                                            "action":function(obj){treeWidgetObject.context_menu_create(node,"timeseries");},
+                                            "icon":treeWidgetObject.treeIcons["timeseries"]
+                                        },
+                                        "eventseries":
+                                        {
+                                            "label":"eventseries",
+                                            "action":function(obj){treeWidgetObject.context_menu_create(node,"eventseries");},
+                                            "icon":treeWidgetObject.treeIcons["eventseries"]
                                         }
+
                                     }
                                 },
                                 "template":

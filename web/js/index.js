@@ -734,6 +734,32 @@ function context_menu_tag_select_click(option,contextMenuIndex, optionIndex)
 
 }
 
+function context_menu_tag_select_click_event(option,contextMenuIndex, optionIndex)
+{
+   console.log("context_menu_tag_select_click",option);
+    //make the true/false check box adjustment
+
+
+    if (option.currentValue == true)
+    {
+        option.currentValue = false;
+        option.icon = "far fa-square";
+    }
+    else
+    {
+        option.currentValue = true;
+        option.icon = "far fa-check-square";
+    }
+
+    option.data[option.entry]=option.currentValue;
+    var query = [{browsePath:option.modelPath+".hasEvents.visibleEvents",value:option.data}];
+    http_post('/setProperties',JSON.stringify(query), null, this, null);
+    superCm.setMenuOption(contextMenuIndex, optionIndex, option);
+    superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
+
+}
+
+
 function context_menu_variable_select_click(option,contextMenuIndex, optionIndex)
 {
 
@@ -835,6 +861,51 @@ function context_menu_tag_select_click_all(option,contextMenuIndex, optionIndex)
 
 }
 
+
+function context_menu_tag_select_click_all_events(option,contextMenuIndex, optionIndex)
+{
+    console.log("context_menu_tag_select_click_all_events",option);
+    //make the true/false check box adjustment
+
+
+    if (option.currentValue == true)
+    {
+        option.currentValue = false;
+        option.icon = "far fa-square";
+    }
+    else
+    {
+        option.currentValue = true;
+        option.icon = "far fa-check-square";
+    }
+
+    //now set them all
+    for(key in option.data)
+    {
+        option.data[key]=option.currentValue;
+    }
+
+    var query = [{browsePath:option.modelPath+".hasEvents.visibleEvents",value:option.data}];
+    http_post('/setProperties',JSON.stringify(query), null, this, null);
+
+    // now we also need to set all checkboxes accordingly
+    // for all options: set current value and set icon
+
+    allOptions = superCm.getMenuOptions(contextMenuIndex)
+    for (key in allOptions)
+    {
+        let thisOption = allOptions[key];
+        thisOption.currentValue = option.currentValue;
+        thisOption.icon = option.icon;
+        superCm.setMenuOption(contextMenuIndex, key, thisOption);
+    }
+
+
+
+    superCm.setMenuOption(contextMenuIndex, optionIndex, option);
+    superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
+
+}
 
 
 /*
@@ -1154,6 +1225,57 @@ function prepare_context_menu(dataString,modelPath)
 
 
 
+    // for switching on and off the annotation tags
+    let eventsSubmenu = [];
+    visibleEvents = data.hasEvents.visibleEvents[".properties"].value;
+    colors = data.hasEvents.colors[".properties"].value;
+
+    //the "all" entry
+    var entry = {
+            icon:"far fa-check-square",
+            label:"(all)",
+            entry:" all",
+            data:visibleEvents,
+            modelPath:modelPath,
+            currentValue:true,
+            action: function(option, contextMenuIndex, optionIndex){
+                    var opt = option;
+                    var idx = contextMenuIndex; var
+                    optIdx = optionIndex;
+                    context_menu_tag_select_click_all_events(opt,idx,optIdx);
+                }
+        }
+    eventsSubmenu.push(entry);
+
+    for (tag in visibleEvents)
+    {
+        let icon = "far fa-square";
+        if (visibleEvents[tag]== true) {icon = "far fa-check-square";}
+        let mycolor = colors[tag].color;
+        let mypattern = "&nbsp &nbsp &nbsp";
+        let mycolorString = `<span style='background-color:${mycolor};text-color:red;font-family:monospace;'> <font color='white'> ${mypattern}</font> </span> <i> &nbsp ${tag}</i>`;
+
+        var entry = {
+            icon:icon,
+            label:mycolorString,
+            entry:tag,
+            data:visibleEvents,
+            modelPath:modelPath,
+            currentValue:visibleEvents[tag],
+            action: function(option, contextMenuIndex, optionIndex){
+                    var opt = option;
+                    var idx = contextMenuIndex; var
+                    optIdx = optionIndex;
+                    context_menu_tag_select_click_event(opt,idx,optIdx);
+                }
+        }
+
+        eventsSubmenu.push(entry);
+    }
+
+
+
+
     //create variables submenu
 
     try
@@ -1184,7 +1306,8 @@ function prepare_context_menu(dataString,modelPath)
 
 
     var showSubmenu = [];
-    let elements = ["variables","annotations","background","thresholds","scores","motifs"];
+    //let elements = ["variables","annotations","background","thresholds","scores","motifs"];
+    let elements = Object.keys( data.visibleElements[".properties"].value);
     var jsonValue = data.visibleElements[".properties"].value;
     for (let element of elements)
     {
@@ -1214,6 +1337,10 @@ function prepare_context_menu(dataString,modelPath)
         {
             entry.submenu = variablesSubmenu;
             delete entry.icon;
+        }
+        if (element == "events")
+        {
+            entry.submenu = eventsSubmenu;
         }
 
         showSubmenu.push(entry);
@@ -1274,9 +1401,12 @@ function prepare_context_menu(dataString,modelPath)
 
 
 
-    //the "new area"
+    //the "new" area
 
     // new annotation submenu
+    var visibleTags = data.hasAnnotation.visibleTags[".properties"].value;
+    var colors = data.hasAnnotation.colors[".properties"].value;
+
     let newAnnnotationsSubmenu = [];
     for (tag in visibleTags)
     {

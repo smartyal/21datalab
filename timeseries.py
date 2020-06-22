@@ -27,7 +27,7 @@ class TimeSeries:
         self.values=numpy.append(self.values,alloc)
         self.times =numpy.append(self.times,alloc)
 
-    def insert(self, values=None, times=None, deleteDuplicates = True, profiling =None):
+    def insert(self, values=None, times=None, profiling =None, allowDuplicates=False):
 
         #convert to numpy
         if type(times) is not numpy.ndarray:
@@ -41,9 +41,17 @@ class TimeSeries:
 
         lastOldValueIndex = self.lastValidIndex #remember for later
 
-        #sort the new values before inserting and remove duplicates of the times
-        times,indices = numpy.unique(times, return_index=True)
-        values = values[indices]
+
+        if not allowDuplicates:
+            # sort the new values before inserting and remove duplicates of the times
+            times,indices = numpy.unique(times, return_index=True)
+            values = values[indices]
+        else:
+            #keep the duplicates but sort
+            sortedIndices = numpy.argsort(times)
+            times = times[sortedIndices]
+            values = values[sortedIndices]
+
 
         remainingSpace = (self.times.size-1)-self.lastValidIndex
 
@@ -53,7 +61,7 @@ class TimeSeries:
             if profiling: profiling.lap("alloc")
 
 
-        if times[0]>self.times[lastOldValueIndex]:
+        if lastOldValueIndex==-1 or times[0]>self.times[lastOldValueIndex]:
             #simply append the data
             start = self.lastValidIndex + 1
             self.values[start:start + newLen] = values
@@ -65,8 +73,10 @@ class TimeSeries:
             insertIndicesLeft = numpy.searchsorted(self.times,times,side="right")
             if profiling: profiling.lap(f"searchsorted")
 
-            for index,newTime,newValue in zip(insertIndicesLeft,times,values):
-                if self.times[index-1] == newTime:
+            inserted = 0 # the number of elements already inserted, for each already inserted element, we need to add 1 on the insert index for the remaining elements to insert
+            for idx,newTime,newValue in zip(insertIndicesLeft,times,values):
+                index = idx + inserted
+                if not allowDuplicates and self.times[index-1] == newTime:
                     #this is just a replacement of existing data
                     self.values[index-1] = newValue
                 else:
@@ -78,6 +88,7 @@ class TimeSeries:
                     self.times[index]=newTime
                     self.values[index] = newValue
                     self.lastValidIndex += 1
+                    inserted = inserted+1
             if profiling: profiling.lap(f"inserted in array with shift and duplicates")
 
 
@@ -212,8 +223,8 @@ class TimeSeries:
 
 
         else:
-            times=[]
-            values=[]
+            times=numpy.asarray([])
+            values=numpy.asarray([])
 
 
         if copy:
@@ -306,8 +317,10 @@ class TimeSeriesTable:
     def clear(self):
         self.store={}
 
-    def insert(self,name,values=None,times=None):
-        return self.store[name].insert(values,times)
+    def insert(self,name,values=None,times=None,allowDuplicates = False):
+        if name not in self.store:
+            self.create(name)
+        return self.store[name].insert(values,times,allowDuplicates = allowDuplicates)
 
     def set(self,name,values = None,times = None):
         return self.store[name].set(values,times)

@@ -99,6 +99,8 @@ POST /_push          [<nodedict.json>]                                   # push 
 GET  /_upload        -                          [<fileinfo.json>]        # get the list of files in the /upload folder
 POST /_upload       <jquery file upload>                                 # upload files via jquery file upload module-style
 POST /_clone        <clone.json>                -                        # clone a node and its subnodes
+POST /_insertEvents  <eventinsert.json>           -                       # insert event series data
+POST /_getEvents    <eventquery.json>           <eventresponse.json>     # get event series data
 
 data:
 JSONS ------------------------
@@ -160,6 +162,45 @@ datablob.json
         },
         {...},..
         ]
+}
+
+# the insertevent support various syntax, see the model api "Model.event_series_insert_blob(...)"
+# times can be iso string or epoch
+# events can be numbers or event strings
+eventinsert.json
+{   
+    "delete" : True                 # optional, if set, we SET the data, otherwise we INSERT
+    "node":"root.myeventnode",
+    "events":"startMachine",    #list or one string for all 
+    "__time": ["2018.01.01T00:10:08.445+02:00",1546437120.2,1546437121.2,1546437122.2]
+}
+#another option is to put the events in a dict
+{
+    "node":"root.myeventnode",
+    "events":[
+        {"event":"startMacine","__time":"2018.01.01T00:10:08.445+02:00"},
+        {"event":"stopMachine","__time":150093466.8}
+}
+
+
+eventquery.json
+{
+    "nodes": ["345","root.eventnode"],  // various event series nodes or only one (as string scalar)
+    "start": "2018.01.01T00:10:08.445+02:00"        //iso format string
+    "end": "2018.01.01T00:10:08.445+02:00"          
+    "filter" : ["startMachine"]             //optional: list of positive filters
+}
+
+eventresponse.json
+{
+    "345": {
+        "eventMap" : {"startMachine":1,"stopMachine":2,"other":3},
+        "events": { "startMachine":[1,2,3,5], "stopMachine":[55] }
+    }
+    "root.eventnode": {
+        "eventMap" : {"startMachine":1,"stopMachine":2,"other":3},
+        "events": { "startMachine":[1,2,3,5], "stopMachine":[55] }
+    }
 }
 
 
@@ -475,6 +516,39 @@ def all(path):
             else:
                 responseCode = 201
                 #m.show()
+
+        elif (str(path)=="_insertEvents"):
+            logger.debug("insert events")
+            if "delete" in data and data["delete"]== True:
+                m.event_series_set(data["node"],values=[],times=[])
+            result = m.event_series_insert_blob(data)
+            if not result:
+                responseCode = 400
+            else:
+                responseCode = 201
+
+
+        elif (str(path)=="_getEvents"):
+            logger.debug("get events data")
+
+            filter=start=end= None
+            if "filter" in data:
+                filter = data["filter"]
+            if "start" in data:
+                start = data["start"]
+            if "end" in data:
+                end = data["end"]
+
+            if type(data["nodes"]) is list:
+                result = {}
+                for node in data["nodes"]:
+                    result[node] = m.event_series_get(node,start=start, end = end, eventFilter=filter,format="events")
+            else:
+                node = data["nodes"]
+                result = m.event_series_get(node,start=start, end = end, eventFilter=filter,format="events")
+            response = json.dumps(result, indent=4)
+            responseCode = 200
+
 
 
         elif (str(path)=="_getdata"):
