@@ -1225,53 +1225,63 @@ function prepare_context_menu(dataString,modelPath)
 
 
 
-    // for switching on and off the annotation tags
-    let eventsSubmenu = [];
-    visibleEvents = data.hasEvents.visibleEvents[".properties"].value;
-    colors = data.hasEvents.colors[".properties"].value;
-
-    //the "all" entry
-    var entry = {
-            icon:"far fa-check-square",
-            label:"(all)",
-            entry:" all",
-            data:visibleEvents,
-            modelPath:modelPath,
-            currentValue:true,
-            action: function(option, contextMenuIndex, optionIndex){
-                    var opt = option;
-                    var idx = contextMenuIndex; var
-                    optIdx = optionIndex;
-                    context_menu_tag_select_click_all_events(opt,idx,optIdx);
-                }
-        }
-    eventsSubmenu.push(entry);
-
-    for (tag in visibleEvents)
+    // events submenu, only if the events are part of the model
+    var hasEvents;
+    if (data.hasOwnProperty("hasEvents"))
     {
-        let icon = "far fa-square";
-        if (visibleEvents[tag]== true) {icon = "far fa-check-square";}
-        let mycolor = colors[tag].color;
-        let mypattern = "&nbsp &nbsp &nbsp";
-        let mycolorString = `<span style='background-color:${mycolor};text-color:red;font-family:monospace;'> <font color='white'> ${mypattern}</font> </span> <i> &nbsp ${tag}</i>`;
+        hasEvents = true;
+        let eventsSubmenu = [];
+        visibleEvents = data.hasEvents.visibleEvents[".properties"].value;
+        colors = data.hasEvents.colors[".properties"].value;
 
+        //the "all" entry
         var entry = {
-            icon:icon,
-            label:mycolorString,
-            entry:tag,
-            data:visibleEvents,
-            modelPath:modelPath,
-            currentValue:visibleEvents[tag],
-            action: function(option, contextMenuIndex, optionIndex){
-                    var opt = option;
-                    var idx = contextMenuIndex; var
-                    optIdx = optionIndex;
-                    context_menu_tag_select_click_event(opt,idx,optIdx);
-                }
-        }
-
+                icon:"far fa-check-square",
+                label:"(all)",
+                entry:" all",
+                data:visibleEvents,
+                modelPath:modelPath,
+                currentValue:true,
+                action: function(option, contextMenuIndex, optionIndex){
+                        var opt = option;
+                        var idx = contextMenuIndex; var
+                        optIdx = optionIndex;
+                        context_menu_tag_select_click_all_events(opt,idx,optIdx);
+                    }
+            }
         eventsSubmenu.push(entry);
+
+        for (tag in visibleEvents)
+        {
+            let icon = "far fa-square";
+            if (visibleEvents[tag]== true) {icon = "far fa-check-square";}
+            let mycolor = colors[tag].color;
+            let mypattern = "&nbsp &nbsp &nbsp";
+            let mycolorString = `<span style='background-color:${mycolor};text-color:red;font-family:monospace;'> <font color='white'> ${mypattern}</font> </span> <i> &nbsp ${tag}</i>`;
+
+            var entry = {
+                icon:icon,
+                label:mycolorString,
+                entry:tag,
+                data:visibleEvents,
+                modelPath:modelPath,
+                currentValue:visibleEvents[tag],
+                action: function(option, contextMenuIndex, optionIndex){
+                        var opt = option;
+                        var idx = contextMenuIndex; var
+                        optIdx = optionIndex;
+                        context_menu_tag_select_click_event(opt,idx,optIdx);
+                    }
+            }
+
+            eventsSubmenu.push(entry);
+        }
     }
+    else
+    {
+        hasEvents = false;
+    }
+
 
 
 
@@ -1338,7 +1348,7 @@ function prepare_context_menu(dataString,modelPath)
             entry.submenu = variablesSubmenu;
             delete entry.icon;
         }
-        if (element == "events")
+        if ((element == "events") && (hasEvents == true))
         {
             entry.submenu = eventsSubmenu;
         }
