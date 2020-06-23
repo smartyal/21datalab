@@ -708,6 +708,18 @@ class Model:
             if id:
                 return Node(self,id)
 
+
+    def find_node(self,search):
+        """
+            the search is a match pattern for the path, we return the first match
+            with
+        """
+        with self.lock:
+            for id in self.model:
+                if search in self.get_browse_path(id):
+                    return Node(self,id)
+        return None
+
     def get_node_info(self,desc,includeLongValues=True):
         """
             Args:
