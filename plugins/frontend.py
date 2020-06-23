@@ -47,5 +47,5 @@ def widget_sync(functionNode):
 
         observer.get_child("enabled").set_value(True)
 
-
+    return True
 
