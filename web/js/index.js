@@ -1227,10 +1227,10 @@ function prepare_context_menu(dataString,modelPath)
 
     // events submenu, only if the events are part of the model
     var hasEvents;
+    var eventsSubmenu = [];
     if (data.hasOwnProperty("hasEvents"))
     {
         hasEvents = true;
-        let eventsSubmenu = [];
         visibleEvents = data.hasEvents.visibleEvents[".properties"].value;
         colors = data.hasEvents.colors[".properties"].value;
 

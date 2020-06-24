@@ -148,6 +148,7 @@ class TimeSeriesWidgetDataServer():
                     #self.logger.debug(f"nodeid in parsedata {parseData['nodeId']} in {self.settings['observerIds']}")
                     if parseData["nodeId"] in self.settings["observerIds"]: #only my own observers are currently taken
                         #self.logger.info("sse match")
+                        data["data"]=parseData # replace the string with the parsed info
                         if self.sseCb:
                             self.sseCb(data)
             except Exception as ex:
@@ -866,7 +867,7 @@ class TimeSeriesWidget():
 
         elif data["event"] == "timeSeriesWidget.visibleElements":
             self.logger.debug("update the visible Elements")
-            eventData  = json.loads(data["data"])
+            eventData  = data["data"]
 
             #check for start/EndTime
             if "sourcePath" in eventData:
@@ -3331,6 +3332,17 @@ class TimeSeriesWidget():
             self.remove_renderers(renderers=[self.eventLines[id]["renderer"]])
             del self.eventLines[id]
 
+    def __make_colum_data_for_events(self,times):
+        times = numpy.asarray(times)
+        times = times * 1000  # in ms for bokeh
+        infi = 1000 * 1000
+        x = []
+        y = []
+        for t in times:
+            x.extend([t, t, numpy.nan])
+            y.extend([-infi, infi, numpy.nan])
+        return {"x": x, "y": y}
+
     def show_events(self,eventsData,redraw=False):
         """
             show all currently visible event tags
@@ -3343,7 +3355,7 @@ class TimeSeriesWidget():
         self.eventsVisible = True
         myColors = self.server.get_mirror()["hasEvents"]["colors"][".properties"]["value"]
         visibleEvents = self.server.get_mirror()["hasEvents"]["visibleEvents"][".properties"]["value"]
-        visible = [k for k,v in visibleEvents.items() if v==True]
+        visible = [k for k,v in visibleEvents.items() if v == True]
 
         #hide the ones which are not here
         self.hide_events(keep=visible)
@@ -3358,31 +3370,22 @@ class TimeSeriesWidget():
                 if eventString not in visible:
                     continue
                 key = nodeId+"."+eventString
+                dic = self.__make_colum_data_for_events(times)
+
                 if key not in self.eventLines:
                     #only draw if it is not there yet
                     if eventString in myColors:
                         color = myColors[eventString]["color"]
                     else:
                         color = "yellow"
-
-                    times = numpy.asarray(times)
-                    times = times*1000 # in ms for bokeh
-                    infi = 1000*1000
-                    x=[]
-                    y=[]
-                    for t in times:
-                        x.extend([t,t,numpy.nan])
-                        y.extend([-infi,infi,numpy.nan])
-
-                    source = ColumnDataSource({"x":x,"y":y})
-                    #source = ColumnDataSource({"x":[date2secs("20150214T00:00:00+00:00")*1000,date2secs("20150214T00:00:00+00:00")*1000],"y":[-infi,infi]})
-                    # drawing lines is much faster than any other object
-                    # Span had problems, single lines are also slower, rays do not work properly
-                    # line_dash does not work when zooming in deep , so we leave it out
+                    source = ColumnDataSource(dic)
                     li = self.plot.line(x="x",y="y", source=source,color=color,line_width=1)
                     self.eventLines[key] = {"renderer":li,"data":source,"eventString":eventString,"nodeId":nodeId}
+                else:
+                    #line is there already, update per bokeh data replacement
+                    self.eventLines[key]['data'].data = dic
 
-    def update_events(self,observerEvent):
+    def update_events_old(self,observerEvent):
         """
             observerEvent: the event data coming from the observer
             eventData contains ["<nodeid>":"events:[]....} for one node
@@ -3393,6 +3396,31 @@ class TimeSeriesWidget():
         self.server.fetch_events()
         self.show_all_events()
 
+    def update_events(self,observerEvent):
+        """
+            observerEvent: the event data coming from the observer
+            eventData contains ["<nodeid>":"events:[]....} for one node
+        """
+        self.logger.debug(f"update_evetns {observerEvent}")
+        eventsData = self.server.fetch_events()
+
+
+        self.show_events(eventsData)
+        """
+        for nodeId, eventInfo in eventsData.items():
+            if nodeId!=observerEvent["data"]["sourceId"]:
+                continue #only the new event series are touched
+            #xxx also check if this event is new or update
+            for eventString, times in eventInfo["events"].items():
+                self.logger.debug(f"eventlines {self.eventLines.keys()}")
+                #prepare the update data
+                key = nodeId + "." + eventString
+                dic = self.__make_colum_data_for_events(times)
+                #update the data
+                self.eventLines[key]['data'].data = dic
+
+        self.show_all_events()
+        """
 
 
 

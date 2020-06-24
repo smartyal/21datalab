@@ -1,4 +1,5 @@
 import numpy
+import threading
 
 
 
@@ -21,11 +22,14 @@ class TimeSeries:
         self.times = numpy.asarray(times,dtype=numpy.float64)
         self.values = numpy.asarray(values,dtype=numpy.float64)
         self.lastValidIndex = self.times.size-1
+        self.lock = threading.RLock()
 
     def __realloc(self,size=0):
+
         alloc = numpy.full(self.allocSize+size, numpy.nan, dtype=numpy.float64)
-        self.values=numpy.append(self.values,alloc)
-        self.times =numpy.append(self.times,alloc)
+        with self.lock:
+            self.values=numpy.append(self.values,alloc)
+            self.times =numpy.append(self.times,alloc)
 
     def insert(self, values=None, times=None, profiling =None, allowDuplicates=False):
 
@@ -39,76 +43,79 @@ class TimeSeries:
         if values.size != times.size:
             return False
 
-        lastOldValueIndex = self.lastValidIndex #remember for later
+        with self.lock:
+            lastOldValueIndex = self.lastValidIndex #remember for later
 
 
-        if not allowDuplicates:
-            # sort the new values before inserting and remove duplicates of the times
-            times,indices = numpy.unique(times, return_index=True)
-            values = values[indices]
-        else:
-            #keep the duplicates but sort
-            sortedIndices = numpy.argsort(times)
-            times = times[sortedIndices]
-            values = values[sortedIndices]
+            if not allowDuplicates:
+                # sort the new values before inserting and remove duplicates of the times
+                times,indices = numpy.unique(times, return_index=True)
+                values = values[indices]
+            else:
+                #keep the duplicates but sort
+                sortedIndices = numpy.argsort(times)
+                times = times[sortedIndices]
+                values = values[sortedIndices]
 
 
-        remainingSpace = (self.times.size-1)-self.lastValidIndex
+            remainingSpace = (self.times.size-1)-self.lastValidIndex
 
-        newLen = values.size
-        if remainingSpace < newLen:
-            self.__realloc(newLen)
-            if profiling: profiling.lap("alloc")
+            newLen = values.size
+            if remainingSpace < newLen:
+                self.__realloc(newLen)
+                if profiling: profiling.lap("alloc")
 
 
-        if lastOldValueIndex==-1 or times[0]>self.times[lastOldValueIndex]:
-            #simply append the data
-            start = self.lastValidIndex + 1
-            self.values[start:start + newLen] = values
-            self.times[start:start + newLen] = times
-            self.lastValidIndex += newLen
-            if profiling: profiling.lap(f"put in array")
-        else:
-            #must insert and avoid producing dublicates
-            insertIndicesLeft = numpy.searchsorted(self.times,times,side="right")
-            if profiling: profiling.lap(f"searchsorted")
+            if lastOldValueIndex==-1 or times[0]>self.times[lastOldValueIndex]:
+                #simply append the data
+                start = self.lastValidIndex + 1
+                self.values[start:start + newLen] = values
+                self.times[start:start + newLen] = times
+                self.lastValidIndex += newLen
+                if profiling: profiling.lap(f"put in array")
+            else:
+                #must insert and avoid producing dublicates
+                insertIndicesLeft = numpy.searchsorted(self.times,times,side="right")
+                if profiling: profiling.lap(f"searchsorted")
 
-            inserted = 0 # the number of elements already inserted, for each already inserted element, we need to add 1 on the insert index for the remaining elements to insert
-            for idx,newTime,newValue in zip(insertIndicesLeft,times,values):
-                index = idx + inserted
-                if not allowDuplicates and self.times[index-1] == newTime:
-                    #this is just a replacement of existing data
-                    self.values[index-1] = newValue
-                else:
-                    #this is a real new one, we must insert at position index
-                    #make room
-                    self.times[index+1:]=self.times[index:-1]
-                    self.values[index + 1:] = self.values[index:-1]
-                    #put in
-                    self.times[index]=newTime
-                    self.values[index] = newValue
-                    self.lastValidIndex += 1
-                    inserted = inserted+1
-            if profiling: profiling.lap(f"inserted in array with shift and duplicates")
+                inserted = 0 # the number of elements already inserted, for each already inserted element, we need to add 1 on the insert index for the remaining elements to insert
+                for idx,newTime,newValue in zip(insertIndicesLeft,times,values):
+                    index = idx + inserted
+                    if not allowDuplicates and self.times[index-1] == newTime:
+                        #this is just a replacement of existing data
+                        self.values[index-1] = newValue
+                    else:
+                        #this is a real new one, we must insert at position index
+                        #make room
+                        self.times[index+1:]=self.times[index:-1]
+                        self.values[index + 1:] = self.values[index:-1]
+                        #put in
+                        self.times[index]=newTime
+                        self.values[index] = newValue
+                        self.lastValidIndex += 1
+                        inserted = inserted+1
+                if profiling: profiling.lap(f"inserted in array with shift and duplicates")
 
 
         return True
 
     def set_masked(self, values, mask):
-        #only with indices
-        if len(values) == len(self.values):
-            return False
-        self.values[mask]=values[mask]
-        return True
+        with self.lock:
+            #only with indices
+            if len(values) == len(self.values):
+                return False
+            self.values[mask]=values[mask]
+            return True
 
     def set(self,values=None,times=None):
-        if type(values) != type(None):
-            self.values = numpy.copy(numpy.asarray(values))
-            self.lastValidIndex = self.values.size -1
-        if type(times) != type(None):
-            self.times = numpy.copy(numpy.asarray(times))
-            self.lastValidIndex = self.times.size - 1
-        return True
+        with self.lock:
+            if type(values) != type(None):
+                self.values = numpy.copy(numpy.asarray(values))
+                self.lastValidIndex = self.values.size -1
+            if type(times) != type(None):
+                self.times = numpy.copy(numpy.asarray(times))
+                self.lastValidIndex = self.times.size - 1
+            return True
 
     def get_values(self):
         return self.values
@@ -146,93 +153,94 @@ class TimeSeries:
                  {"values":[..],"__time":[...]}
 
         """
-        haveData = True
+        with self.lock:
+            haveData = True
 
-        #remainingSpace = numpy.count_nonzero(numpy.isnan(self.times)) #the times will not have any intermediate nan, only at the end
-        #lastValidIndex = len(self.times)-remainingSpace-1
-        lastValidIndex = self.lastValidIndex
+            #remainingSpace = numpy.count_nonzero(numpy.isnan(self.times)) #the times will not have any intermediate nan, only at the end
+            #lastValidIndex = len(self.times)-remainingSpace-1
+            lastValidIndex = self.lastValidIndex
 
 
 
 
-        if start:
-            if start < 0:
-                # we support the -start time, endtime = None, typically used for streaming
-                # to query interval from the end
-                # get the last time and subtract the query time
-                lastTime = self.times[lastValidIndex]
-                start = lastTime + start  # look back from the end, note that start is negative
+            if start:
                 if start < 0:
-                    start = 0
-            startIndex = numpy.searchsorted(self.times, start)
-        else:
-            startIndex = 0
-
-        if end:
-            endIndex = numpy.searchsorted(self.times, end, side="right") # this endIndex is one more than the last that we take
-        else:
-            endIndex = lastValidIndex +1
-
-        if startIndex == endIndex:
-            haveData = False
-        else:
-            #assure limits
-            if startIndex > lastValidIndex:
-                #this means, all the data is left from the query, we should no provide data
-                haveData = False
-            if endIndex > lastValidIndex+1:
-                endIndex = lastValidIndex+1
-
-
-        if haveData:
-            if type(resampleTimes) == type(None):
-                #print(f"startIdex:{startIndex}:{self.times[startIndex]}, endIndex:{endIndex-1}:{self.times[endIndex-1]}, diff:{self.times[endIndex-1]-self.times[startIndex]}")
-                #print(f"lastvalid {lastValidIndex}:{self.times[lastValidIndex]} ")
-                if includeIntervalLimits:
-                    if startIndex != 0:
-                        startIndex = startIndex -1
-                    if endIndex < lastValidIndex +1: #we can go one above, as the linspace and arange do not include the right
-                        endIndex = endIndex +1
-                if noBins:
-                    #we pick samples only if we have more than requested
-                    if (endIndex-startIndex)>noBins:
-                        takeIndices = numpy.linspace(startIndex, endIndex-1, noBins, endpoint=True, dtype=int)
-                    else:
-                        takeIndices = numpy.arange(startIndex, endIndex) #arange excludes the last
-                else:
-                    takeIndices = numpy.arange(startIndex,endIndex) #arange exludes the last
-
-                times = self.times[takeIndices]
-                #print(f"{(times[0])} => {(times[-1])}")
-                values = self.values[takeIndices]
+                    # we support the -start time, endtime = None, typically used for streaming
+                    # to query interval from the end
+                    # get the last time and subtract the query time
+                    lastTime = self.times[lastValidIndex]
+                    start = lastTime + start  # look back from the end, note that start is negative
+                    if start < 0:
+                        start = 0
+                startIndex = numpy.searchsorted(self.times, start)
             else:
-                #must resample the data
-                #oldTimes = self.times[startIndex:endIndex]
-                #oldValues = self.values[startIndex:endIndex]
+                startIndex = 0
 
-                if resampleMethod == "linear":
-                    values = numpy.interp(resampleTimes,self.times,self.values)
-                elif resampleMethod == "linearfill":
-                    #fill the nans with data
-                    indices = numpy.isfinite(self.values)
-                    values = numpy.interp(resampleTimes, self.times[indices], self.values[indices])
+            if end:
+                endIndex = numpy.searchsorted(self.times, end, side="right") # this endIndex is one more than the last that we take
+            else:
+                endIndex = lastValidIndex +1
+
+            if startIndex == endIndex:
+                haveData = False
+            else:
+                #assure limits
+                if startIndex > lastValidIndex:
+                    #this means, all the data is left from the query, we should no provide data
+                    haveData = False
+                if endIndex > lastValidIndex+1:
+                    endIndex = lastValidIndex+1
+
+
+            if haveData:
+                if type(resampleTimes) == type(None):
+                    #print(f"startIdex:{startIndex}:{self.times[startIndex]}, endIndex:{endIndex-1}:{self.times[endIndex-1]}, diff:{self.times[endIndex-1]-self.times[startIndex]}")
+                    #print(f"lastvalid {lastValidIndex}:{self.times[lastValidIndex]} ")
+                    if includeIntervalLimits:
+                        if startIndex != 0:
+                            startIndex = startIndex -1
+                        if endIndex < lastValidIndex +1: #we can go one above, as the linspace and arange do not include the right
+                            endIndex = endIndex +1
+                    if noBins:
+                        #we pick samples only if we have more than requested
+                        if (endIndex-startIndex)>noBins:
+                            takeIndices = numpy.linspace(startIndex, endIndex-1, noBins, endpoint=True, dtype=int)
+                        else:
+                            takeIndices = numpy.arange(startIndex, endIndex) #arange excludes the last
+                    else:
+                        takeIndices = numpy.arange(startIndex,endIndex) #arange exludes the last
+
+                    times = self.times[takeIndices]
+                    #print(f"{(times[0])} => {(times[-1])}")
+                    values = self.values[takeIndices]
                 else:
-                    #the default is ffill
-                    values = self.__resample_ffill(resampleTimes, self.times, self.values)
-                times = resampleTimes
+                    #must resample the data
+                    #oldTimes = self.times[startIndex:endIndex]
+                    #oldValues = self.values[startIndex:endIndex]
+
+                    if resampleMethod == "linear":
+                        values = numpy.interp(resampleTimes,self.times,self.values)
+                    elif resampleMethod == "linearfill":
+                        #fill the nans with data
+                        indices = numpy.isfinite(self.values)
+                        values = numpy.interp(resampleTimes, self.times[indices], self.values[indices])
+                    else:
+                        #the default is ffill
+                        values = self.__resample_ffill(resampleTimes, self.times, self.values)
+                    times = resampleTimes
 
 
-        else:
-            times=numpy.asarray([])
-            values=numpy.asarray([])
+            else:
+                times=numpy.asarray([])
+                values=numpy.asarray([])
 
 
-        if copy:
-            result = {"__time": numpy.copy(times), "values":numpy.copy(values)}
-        else:
-            result = {"__time": times, "values": values}
+            if copy:
+                result = {"__time": numpy.copy(times), "values":numpy.copy(values)}
+            else:
+                result = {"__time": times, "values": values}
 
-        return result
+            return result
 
     def __resample_ffill(self,newTimes, oldTimes, values):
         """
@@ -280,12 +288,13 @@ class TimeSeries:
             double times will be removed
             the new values will get priority on dublicate times
         """
-        mergeTimes = merge_times(self.times,timeseries.get_times())
-        oldValues = self.get(resampleTimes=mergeTimes)["values"]
-        newValues = timeseries.get(resampleTimes=mergeTimes)["values"]
-        indices=numpy.isfinite(newValues)
-        oldValues[indices]=newValues[indices]
-        self.set(oldValues,mergeTimes)
+        with self.lock:
+            mergeTimes = merge_times(self.times,timeseries.get_times())
+            oldValues = self.get(resampleTimes=mergeTimes)["values"]
+            newValues = timeseries.get(resampleTimes=mergeTimes)["values"]
+            indices=numpy.isfinite(newValues)
+            oldValues[indices]=newValues[indices]
+            self.set(oldValues,mergeTimes)
 
 class TimeSeriesTable:
     """
