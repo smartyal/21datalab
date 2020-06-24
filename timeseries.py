@@ -43,6 +43,9 @@ class TimeSeries:
         if values.size != times.size:
             return False
 
+        if values.size == 0:
+            return True
+
         with self.lock:
             lastOldValueIndex = self.lastValidIndex #remember for later
 

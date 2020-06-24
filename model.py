@@ -159,8 +159,8 @@ class Node():
         """
         return self.model.event_series_set(self.id,values=values,times=times)
 
-    def insert_event_series(self,values=None,times=None):
-        return self.model.event_series_insert(self.id,values,times)
+    def insert_event_series(self,values=None,times=None,allowEventDuplicates = False):
+        return self.model.event_series_insert(self.id,values,times,allowEventDuplicates=allowEventDuplicates)
 
     def delete_event_series(self,start=None, end = None, eventsToDelete=[]):
         return self.model.event_series_delete(desc=self.id,start=start,end=end,eventsToDelete=eventsToDelete)
@@ -3635,11 +3635,13 @@ class Model:
                     return event
 
 
-    def event_series_insert(self, desc, values=None, times=None):
+    def event_series_insert(self, desc, values=None, times=None, allowEventDuplicates = False):
         """
             Args:
                 values: list of events, where the event is either an eventString or an event number
                         if values is a scalar, we assume that for all times the same event will be inserted
+                allowEventDuplicates: set this to true allowes the same events to appear multiple times on the same time
+                                        different events are always allowed on the same time
         """
         id = self.get_id(desc)
         if not id in self.model:
@@ -3650,11 +3652,26 @@ class Model:
             values = [values]*len(times)
 
         #convert the values to numbers and create new map entry if needed
-        numbers = [self.event_series_get_event_number(id,event) for event in values]
+        numbers = numpy.asarray([self.event_series_get_event_number(id,event) for event in values],dtype=numpy.float64)
         #convert the times to epoch if not already done
-        epochs = [t if type(t) is not str else date2secs(t) for t in times  ]
+        epochs = numpy.asarray([t if type(t) is not str else date2secs(t) for t in times  ],dtype=numpy.float64)
+
+        if not allowEventDuplicates:
+            # we must delete the events which exist already at the same time with the same event
+            data = self.event_series_get(desc)
+            takeIndices = numpy.full(len(times),True)
+            for idx,tim in enumerate(times):
+                duplicates = numpy.where(data["__time"]==tim)[0]
+                for pos in duplicates:
+                    if numbers[idx] == data["values"][pos]:
+                        takeIndices[idx] = False
+            numbers = numbers[takeIndices]
+            epochs = epochs[takeIndices]
 
         with self.lock:
+            #on the TimeSeries class the allowDuplicates means that the same time can appear mulitple times
+            # such that different or the same events can happen at the same time and thus produce the same
+            # time stamp in the time series
             result =  self.ts.insert(id,numbers, epochs, allowDuplicates=True)# we allow 2 events to appear on the same time!
 
         self.__notify_observers(id, "value")
@@ -3697,7 +3714,7 @@ class Model:
                     data = m.get_time_series_table(["a","b"],"root.mytable",resampleTimes = times,resampleMethod = "linearfill")
             Returns(dict)
                 formatting depends on the "format" option
-                 "defaut": return the result as {{"values":[],"__time":[]}, "eventstrings": "map":{1:"myevent",2:"anotherevent"}
+                 "defaut": return the result as {"values":[],"__time":[], "eventstrings": "map":{1:"myevent",2:"anotherevent"}
         """
         id = self.get_id(desc)
         if not id:
