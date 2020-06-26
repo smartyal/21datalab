@@ -84,6 +84,8 @@ def secs2dateString(epoch,tz="+00:00"):
         return None
 
 def epochToIsoString(epoch,zone=pytz.UTC):
+    if type(zone) is str:
+        zone = pytz.timezone(zone)
     dat = datetime.datetime(1970, 1, 1, 0, 0,tzinfo=pytz.utc) + datetime.timedelta(seconds=epoch)
     dat=dat.astimezone(zone) # we must do this later conversion due to a bug in tz lib
     return dat.isoformat()

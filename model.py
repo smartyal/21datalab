@@ -3228,6 +3228,37 @@ class Model:
                     pass
                 return newLen
 
+    def get_upload_folder_files(self, matchFilter=None, blackList = []):
+        """
+            Args:
+                fileNameMatch: a string that must be contained in the files to deliver
+                blackList: a list of filenames which should not be delivered
+            Returns list of files with absolute file names, list of files with fileNames
+        """
+
+
+        full_path = os.path.realpath(__file__)       # returns a string representing the canonical path,  argument file is a file system path
+        path, filename = os.path.split(full_path)
+        folder = path+r'\upload'
+
+        absFileNames = []
+        foundFileNames = []
+        #now iterate the uploaded files
+        fileNames = os.listdir(folder)
+        for idx,fileName in enumerate(fileNames):
+            if matchFilter:
+                if matchFilter not in fileName:
+                    continue # this file will be ignored
+            if fileName in blackList:
+                continue
+            foundFileNames.append(fileName)
+
+        absFileNames = [folder+"\\"+fileName for fileName in foundFileNames]
+        return foundFileNames,absFileNames
+
+
+
+
     def update(self):
         """
             update all known widgets to the latest template including complex backward compatibility changes
