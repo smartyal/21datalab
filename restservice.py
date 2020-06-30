@@ -508,14 +508,18 @@ def all(path):
 
         elif (str(path)=="_insert"):
             logger.debug("insert Blobs")
-            table = data["table"]
-            blobs = data["blobs"]
-            result =  m.time_series_insert_blobs(table,blobs)
-            if not result:
+            try:
+                table = data["table"]
+                blobs = data["blobs"]
+                result =  m.time_series_insert_blobs(table,blobs)
+                if not result:
+                    responseCode = 400
+                else:
+                    responseCode = 201
+                    #m.show()
+            except Exception as ex:
+                logger.error("_insert failed" + str(ex) + str(sys.exc_info()[0]))
                 responseCode = 400
-            else:
-                responseCode = 201
-                #m.show()
 
         elif (str(path)=="_insertEvents"):
             logger.debug("insert events")

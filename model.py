@@ -90,10 +90,14 @@ class Node():
                               format="default",
                               toList = False,
                               resampleMethod = None):
+        """
+            Returns
+                dict with ["__time":[...],"values":[...]
+        """
 
         browsePath = self.model.get_browse_path(self.id)
 
-        return self.model.time_series_get_table(variables = [browsePath],
+        data = self.model.time_series_get_table(variables = [browsePath],
                                                 tableDescriptor=None,
                                                 start=start,
                                                 end=end,
@@ -102,7 +106,11 @@ class Node():
                                                 resampleTimes=resampleTimes,
                                                 format=format,
                                                 toList=toList,
-                                                resampleMethod=resampleMethod)[browsePath]
+                                                resampleMethod=resampleMethod)
+        if data !={} :
+            return data[browsePath]
+        else:
+            return None
 
     def add_references(self,targetNodes,deleteAll=False):
         """
@@ -709,7 +717,7 @@ class Model:
                 return Node(self,id)
 
 
-    def find_node(self,search):
+    def find_node(self,search,matchProperty={}):
         """
             the search is a match pattern for the path, we return the first match
             with
@@ -717,8 +725,31 @@ class Model:
         with self.lock:
             for id in self.model:
                 if search in self.get_browse_path(id):
+                    if matchProperty!={}:
+                        for k,v in matchProperty.items():
+                            if k not in self.model[id]:
+                                continue
+                            if self.model[id][k]!=v:
+                                continue
                     return Node(self,id)
         return None
+
+    def find_nodes(self,search,matchProperty={}):
+        """
+            the search is a match pattern for the path, we return all matches as nodes
+        """
+        found = []
+        with self.lock:
+            for id in self.model:
+                if search in self.get_browse_path(id):
+                    if matchProperty!={}:
+                        for k,v in matchProperty.items():
+                            if k not in self.model[id]:
+                                break
+                            if self.model[id][k]!=v:
+                                break
+                            found.append(Node(self,id))
+        return found
 
     def get_node_info(self,desc,includeLongValues=True):
         """
@@ -1549,7 +1580,11 @@ class Model:
             if not id: return None
 
             if self.model[id]["type"] == "timeseries":
-                return self.time_series_get_table(id)[id]["values"]
+                values = self.time_series_get_table(id)
+                if values:
+                    return self.time_series_get_table(id)[id]["values"]
+                else:
+                    return None
 
             if "value" in self.model[id]:
                 return copy.deepcopy(self.model[id]["value"])

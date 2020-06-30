@@ -377,7 +377,7 @@ class TimeSeriesWidgetDataServer():
         self.logger.debug(f"fetch_events: {len(nodes)} events")
         query = {"nodes":[node["id"] for node in nodes if node["type"]=="eventseries"]}
         events = self.__web_call("post","_getEvents",query)
-        self.logger.debug(f"events result {events}")
+        self.logger.debug(f"events result {len(events)}")
         self.events = events
         return events   # dict "nodeid":{"events":{"one":....,"two":... }"eventMap"....},"id2":{}
 
@@ -3379,7 +3379,7 @@ class TimeSeriesWidget():
                     else:
                         color = "yellow"
                     source = ColumnDataSource(dic)
-                    li = self.plot.line(x="x",y="y", source=source,color=color,line_width=1)
+                    li = self.plot.line(x="x",y="y", source=source,color=color,line_width=2)
                     self.eventLines[key] = {"renderer":li,"data":source,"eventString":eventString,"nodeId":nodeId}
                 else:
                     #line is there already, update per bokeh data replacement

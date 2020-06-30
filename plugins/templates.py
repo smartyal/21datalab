@@ -146,8 +146,13 @@ timeseriesWidget = {
         {"name": "contextMenuSettings","type":"folder"},                         # configure here the "settings" submenu of the context menu: each child should be a referencer pointing to a bool variable
                                                                                 # the entry displayed in the context menu will be the name of the referencder
         {"name": "contextMenuPipelines","type":"referencer"},
-        {"name":"showLegend","type":"const","value":True}
-
-
+        {"name": "showLegend","type":"const","value":True},
+        {"name": "hasEvents", "type": "const", "value": False, "children": [  # show/hide annotations and annotations buttons
+            {"name": "events", "type": "referencer"},
+            {"name": "newEvents", "type": "eventseries"},  # the timeseries where manually created goes
+            {"name": "colors", "type": "const", "value": {}}, # the colors for events {"myeveent1":{"color":"red"},"myev2":{"color":"blue"}
+            {"name": "visibleEvents", "type": "variable", "value": {}}  # {"myevent1":true,"myev2":false}
+            ]
+        }
     ]
 }
