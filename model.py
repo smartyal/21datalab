@@ -2480,7 +2480,7 @@ class Model:
                     self.functions[functionName]["function"] = functionPointer
 
 
-                self.logger.info(f"in execution Thread {threading.get_ident()}, executing {id}")
+                self.logger.info(f"in execution Thread {threading.get_ident()}, executing {id} {functionName}")
                 #check the function
                 functionName = self.model[id]["functionPointer"]
                 functionPointer = self.functions[functionName]['function']
