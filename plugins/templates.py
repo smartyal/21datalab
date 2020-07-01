@@ -153,6 +153,19 @@ timeseriesWidget = {
             {"name": "colors", "type": "const", "value": {}}, # the colors for events {"myeveent1":{"color":"red"},"myev2":{"color":"blue"}
             {"name": "visibleEvents", "type": "variable", "value": {}}  # {"myevent1":true,"myev2":false}
             ]
-        }
+        },
+        {"name": "observerEventSeries", "type": "observer",
+         "children": [  # observer for the value change of selected vars (especialy for streaming)
+             {"name": "enabled", "type": "const", "value": True},  # turn on/off the observer
+             {"name": "triggerCounter", "type": "variable", "value": 0},  # increased on each trigger
+             {"name": "lastTriggerTime", "type": "variable", "value": ""},  # last datetime when it was triggered
+             {"name": "targets", "type": "referencer", "references": ["timeseriesWidget.hasEvents.events"]},
+             {"name": "properties", "type": "const", "value": ["value"]},
+             {"name": "onTriggerFunction", "type": "referencer"},  # the function(s) to be called when triggering
+             {"name": "hasEvent", "type": "const", "value": True},  # set to true if we want an event as well
+             {"name": "eventString", "type": "const", "value": "timeSeriesWidget.eventSeries"}
+             # the string of the event
+         ]
+         }
     ]
 }
