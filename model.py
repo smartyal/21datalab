@@ -1323,7 +1323,7 @@ class Model:
         p=utils.Profiling("get_model_for_web")
         with self.lock:
             for nodeId, nodeDict in self.model.items():
-                if nodeDict["type"] in ["column","file","timeseries"]:
+                if nodeDict["type"] in ["column","file","timeseries","eventseries"]:
                     # with columns we filter out the values
                     node = {}
                     for nk, nv in nodeDict.items():
