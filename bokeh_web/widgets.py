@@ -39,8 +39,9 @@ from bokeh.models.glyphs import VArea,VBar
 from bokeh.models.renderers import GlyphRenderer
 
 
-#"underlay", "image", "guide", "glyph", "annotation", "tool", etc. (cf. Chaco)
-#image, underlay, glyph, annotation or overlay
+
+#RenderLevel = Enumeration(image, underlay, glyph, guide, annotation, overlay)
+
 haveLogger = False
 globalAlpha = 1.0#0.3
 
@@ -3280,7 +3281,13 @@ class TimeSeriesWidget():
                                     fill_alpha=globalAlpha)
                 """
                 source = None
-                myrenderer = BoxAnnotation(left=start,right=end,fill_color=color,fill_alpha=globalAnnotationsAlpha,name=anno['id'],level=globalAnnotationLevel)
+
+                if any([True for tag in anno["tags"] if "anomaly" in tag]):
+                    #if we have an anomaly to draw, we put it on top
+                    level = globalThresholdsLevel
+                else:
+                    level = globalAnnotationLevel
+                myrenderer = BoxAnnotation(left=start,right=end,fill_color=color,fill_alpha=globalAnnotationsAlpha,name=anno['id'],level=level)
                 rendererType = "BoxAnnotation"
 
             # bokeh hack to avoid adding the renderers directly: we create a renderer from the glyph and store it for later bulk assing to the plot
