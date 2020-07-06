@@ -52,7 +52,7 @@ globalAnnotationsAlpha = 0.90
 globalThresholdsAlpha = 0.5
 globalBackgroundsAlpha = 0.2
 
-globalRESTTimeout = 60
+globalRESTTimeout = 90
 
 
 
