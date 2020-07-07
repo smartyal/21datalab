@@ -119,7 +119,7 @@ thresholdScorer5={
         {"name":"annotationsFilter","type":"const","value":[]}, # a list of strings to filter tags, if an annotation holds one of the filter tags, then we take it in
         {"name":"thresholds","type":"referencer"},              # pointing to the thresholds
         {"name":"incremental","type":"const","value":False},    # if set true, we only score in the selected region, not touching the "outside" and the old
-        {"name":"processedUntil","type":"variable","value":None}, #we have processed until this time, if incremental is set true, wil will only process values after this time
+        {"name":"processedUntil","type":"variable","value":None}, #this is just a rough information, we actually processed for each variable until the last time point of it, this value here is the max of all vars
         {"name":"widgets","type":"referencer"},                 # pointing to the widget on which we work, can be multiple widgets
         __functioncontrolfolder                                 # signal "reset" is used to initialize the function, create and hook the outputs, reset all values
     ]
@@ -1171,13 +1171,9 @@ def threshold_scorer_5(functionNode):
     progressNode = functionNode.get_child("control").get_child("progress")
 
     onlyUpdate = functionNode.get_child("incremental").get_value() #if this is set, we don't touch old existing scores outside our region filters, this is useful for streaming
-
     if onlyUpdate:
-        processedUntil = dates.date2secs(functionNode.get_child("processedUntil").get_value(),ignoreError=False)
-        if not processedUntil:
-            processedUntil = 0
-    else:
-        processedUntil = 0
+        processedUntil = 0      #during the thresholds, we will collect the latest time of any sensor and put it in the processedUntil
+
 
 
 
@@ -1356,11 +1352,9 @@ def threshold_scorer_5(functionNode):
 
             #write out the score
 
-            if onlyUpdate and numpy.any(~mask):
-                # if the mask is all true, the if fails and we do the "else" case  - this is in fact a full update,
-                # so we expect at least one timepoint to be false to do a differential process
+            if onlyUpdate:
                 # take the old values and merge in the new ones, only where the masks are true
-                # we need to maks the outOfLimitIndices once more by the mask
+                # we need to mask the outOfLimitIndices once more by the mask
                 outOfLimitMask = numpy.full(len(values),False,dtype=numpy.bool)
                 outOfLimitMask[outOfLimitIndices] = True
                 outOfLimitMask = outOfLimitMask & mask #merge with the mask
@@ -1373,19 +1367,18 @@ def threshold_scorer_5(functionNode):
                 scores = values.copy()
                 scores[mask]=numpy.nan # delete all under the mask
                 scores[outOfLimitMask] = values[outOfLimitMask]
-                scoreTimes = times[outOfLimitMask]
 
                 # if we do a differential process, we will only set those score values which are AFTER the last score that
                 # we have already in the output node, so we actually only score "NEW" times
-                if onlyUpdate:
-                    timesScored = outPutNode.get_time_series()["__time"]
-                    if not timesScored:
-                        lastTimeScored = 0
-                    else:
-                        lastTimeScores = timesScored[-1]# take the last time
 
-                    isNew = times > lastTimeScored
-                    mask = mask & isNew
+                timesScored = outPutNode.get_time_series()["__time"]
+                if not len(timesScored):
+                    lastTimeScored = 0
+                else:
+                    lastTimeScored = timesScored[-1]# take the last time
+                processedUntil = max(processedUntil,lastTimeScored)
+                isNew = times > lastTimeScored
+                mask = mask & isNew
 
                 outPutNode.insert_time_series(scores[mask],times[mask])
                 score = outPutNode.get_time_series()["values"]
@@ -1422,7 +1415,11 @@ def threshold_scorer_5(functionNode):
 
     #update the processedUntil if needed
     if onlyUpdate:
-        processedIso = processedUntil
+        #try to write the processedUntil, if it exists
+        processedUntilNode = functionNode.get_child("processedUntil")
+        if processedUntilNode:
+            isoDate = dates.epochToIsoString(processedUntil, zone="Europe/Berlin")
+            processedUntilNode.set_value(isoDate)
 
     progressNode.set_value(1)
     if mustTriggerObserver:
