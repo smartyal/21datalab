@@ -1382,12 +1382,14 @@ def threshold_scorer_5(functionNode):
 
                 outPutNode.insert_time_series(scores[mask],times[mask])
                 score = outPutNode.get_time_series()["values"]
+                scoreTimes = outPutNode.get_time_series()["__time"]
             else:
                 #overwrite the old values
                 score = numpy.full(len(values),numpy.nan,dtype=numpy.float64) # rest all
                 #score[mask]=numpy.nan
                 score[outOfLimitIndices] = values[outOfLimitIndices]
                 outPutNode.set_time_series(score,times)
+                scoreTimes = times
 
 
             # build the total score:
@@ -1398,9 +1400,9 @@ def threshold_scorer_5(functionNode):
             # we get a True, False, True,False mixture
             # so we build the merge vector, first resample then merge
             if type(total) is type(None):
-                total = TimeSeries(values = score, times = times)
+                total = TimeSeries(values = score, times = scoreTimes)
             else:
-                local = TimeSeries(values = score, times = times)
+                local = TimeSeries(values = score, times = scoreTimes)
                 total.merge(local)
 
             mustTriggerObserver = True
