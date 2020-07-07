@@ -1313,7 +1313,7 @@ def threshold_scorer_5(functionNode):
                 outOfLimit = out_of_limits(values,entry['min'],entry['max'])#tooSmall | tooBig #numpy.logical_or( values < entry['min'], values > entry['max'] )
                 outOfLimit = numpy.logical_and(outOfLimit,mask) #this is the global time filter (regions etc)
                 #additionally the specific filters:
-                myAnnos = mh.filter_annotations(annos1,entry["tags"])
+                myAnnos = mh.filter_annotations(annos1,[entry["tags"][0]]) # we take only the first tag , there might be multiple like ["running","open"] or ["idle","anomaly"]
                 localFilter = mh.annotations_to_class_vector(myAnnos,times)
                 localFilter = numpy.isfinite(localFilter)
                 outOfLimit = numpy.logical_and(outOfLimit, localFilter)
