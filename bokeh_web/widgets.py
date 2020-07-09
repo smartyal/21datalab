@@ -886,12 +886,18 @@ class TimeSeriesWidget():
             oldMirror = copy.deepcopy(self.server.get_mirror())
             visibleElementsOld = oldMirror["visibleElements"][".properties"]["value"]
             visibleTagsOld =oldMirror["hasAnnotation"]["visibleTags"][".properties"]["value"]
-            visibleEventsOld = oldMirror["hasEvents"]["visibleEvents"][".properties"]["value"]
+            if "hasEvents" in oldMirror:
+                visibleEventsOld = oldMirror["hasEvents"]["visibleEvents"][".properties"]["value"]
+            else:
+                visibleEventsOld = None
 
             newMirror = copy.deepcopy(self.server.fetch_mirror())
             visibleElementsNew = newMirror["visibleElements"][".properties"]["value"]
             visibleTagsNew = newMirror["hasAnnotation"]["visibleTags"][".properties"]["value"]
-            visibleEventsNew = newMirror["hasEvents"]["visibleEvents"][".properties"]["value"]
+            if "hasEvents" in newMirror:
+                visibleEventsNew = newMirror["hasEvents"]["visibleEvents"][".properties"]["value"]
+            else:
+                visibleEventsNew = None
 
             for entry in ["thresholds","annotations","scores","background","motifs","events"]:
                 #check for turn on:
