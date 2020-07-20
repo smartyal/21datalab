@@ -120,6 +120,7 @@ class TimeSeriesWidgetDataServer():
         self.path = avatarPath # here is the struct for the timeserieswidget
         #self.timeOffset = 0 # the timeoffset of display in seconds (from ".displayTimeZone)
         self.annotations = {}
+        self.pendingScoreVariablesUpdate = False# is set to true if there has been a silent update of the score variables list without telling the ts widget
         self.scoreVariables = []
         self.events = None
         self.sseCb = None # the callbackfunction on event
@@ -508,9 +509,10 @@ class TimeSeriesWidgetDataServer():
         nodes = self.__web_call("post", "_getleaves", self.path + ".scoreVariables")
         scoreVariables = [node["browsePath"] for node in nodes]
         self.scoreVariables = copy.deepcopy(scoreVariables)
-        self.logger.debug(f"fetch_score_variables => {self.scoreVariables}")
+        self.logger.debug(f"fetch_score_variables : old {old}, new:{self.scoreVariables}")
 
-        if old != self.scoreVariables:
+        if old != self.scoreVariables or self.pendingScoreVariablesUpdate:
+            self.pendingScoreVariablesUpdate = False
             return True # have something new
         else:
             return False
@@ -519,6 +521,7 @@ class TimeSeriesWidgetDataServer():
         scoreVars = []
         for id,node in self.mirror["scoreVariables"][".properties"]["leavesProperties"].items():
             scoreVars.append(node["browsePath"])
+        self.pendingScoreVariablesUpdate = True # if the TSwidget asks later if there was a diff in the meantime, we better say yes to not skip updates
         self.scoreVariables = scoreVars
 
 
