@@ -25,7 +25,12 @@ def get_data():
         "bins": 30*4*valuesPerInsert,
         "includeIntervalLimits": False
     }
-    response = requests.post("http://127.0.0.1:6001/_getdata", data=json.dumps(body))
+    while 1:
+        try:
+            response = requests.post("http://127.0.0.1:6001/_getdata", data=json.dumps(body))
+            break
+        except:
+            print("cant get initial data, try again")
 
     r = json.loads(response.content.decode("utf-8"))
 
@@ -98,9 +103,12 @@ def write_test(rate,port =6001):
             try:
                 host = "http://127.0.0.1:" + str(port) + "/_insert"
                 start = time.time()
-                r = requests.post(host, data=json.dumps(body),timeout=5)
-                end = time.time()-start
-                print(f" result {r.status_code} in {end}")
+                try:
+                    r = None
+                    r = requests.post(host, data=json.dumps(body),timeout=5)
+                finally:
+                    end = time.time()-start
+                    print(f" result {r.status_code} in {end}")
             except Exception as ex:
                 print(f"sent {json.dumps(body)} with exception {ex}")
 
@@ -112,9 +120,14 @@ def write_test(rate,port =6001):
                     reqData["__time"].append(evt)
             if len(reqData["__time"])>0:
                 start = time.time()
-                response = requests.post("http://127.0.0.1:6001/_insertEvents", data=json.dumps(reqData))
-                diff = time.time()-start
-                print(f" {r.status_code} in {diff}")
+                try:
+                    r = None
+                    r = requests.post("http://127.0.0.1:6001/_insertEvents", data=json.dumps(reqData))
+                finally:
+                    diff = time.time()-start
+                    print(f" {r.status_code} in {diff}")
+
+
 
 
 if __name__ == '__main__':
@@ -129,5 +142,6 @@ if __name__ == '__main__':
         port = int(sys.argv[2])
     else:
         port = 6001
+
 
     write_test(rate, port)

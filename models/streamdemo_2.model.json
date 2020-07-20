@@ -6001,7 +6001,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 132,
+        "value": 140,
         "browsePath": "root.visualization.workbench.observerVariables.triggerCounter"
     },
     "645": {
@@ -6012,7 +6012,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-06-12T13:15:05.468429",
+        "value": "2020-07-20T17:17:17.145495",
         "browsePath": "root.visualization.workbench.observerVariables.lastTriggerTime"
     },
     "646": {
@@ -6225,7 +6225,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 3096,
+        "value": 3713,
         "browsePath": "root.visualization.workbench.observerStream.triggerCounter"
     },
     "663": {
@@ -6236,7 +6236,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:39.696385",
+        "value": "2020-07-20T17:10:44.780836",
         "browsePath": "root.visualization.workbench.observerStream.lastTriggerTime"
     },
     "664": {
@@ -6563,7 +6563,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 3020,
+        "value": 3637,
         "browsePath": "root.visualization.selfservice0.observerStream.triggerCounter"
     },
     "690": {
@@ -6574,7 +6574,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:39.710377",
+        "value": "2020-07-20T17:10:44.780836",
         "browsePath": "root.visualization.selfservice0.observerStream.lastTriggerTime"
     },
     "691": {
@@ -6901,7 +6901,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 3020,
+        "value": 3637,
         "browsePath": "root.visualization.selfservice1.observerStream.triggerCounter"
     },
     "717": {
@@ -6912,7 +6912,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:39.707378",
+        "value": "2020-07-20T17:10:44.780836",
         "browsePath": "root.visualization.selfservice1.observerStream.lastTriggerTime"
     },
     "718": {
@@ -7239,7 +7239,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 3020,
+        "value": 3637,
         "browsePath": "root.visualization.selfservice2.observerStream.triggerCounter"
     },
     "744": {
@@ -7250,7 +7250,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:39.694387",
+        "value": "2020-07-20T17:10:44.779151",
         "browsePath": "root.visualization.selfservice2.observerStream.lastTriggerTime"
     },
     "745": {
@@ -7577,7 +7577,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 3020,
+        "value": 3637,
         "browsePath": "root.visualization.selfservice3.observerStream.triggerCounter"
     },
     "771": {
@@ -7588,7 +7588,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:39.705381",
+        "value": "2020-07-20T17:10:44.780836",
         "browsePath": "root.visualization.selfservice3.observerStream.lastTriggerTime"
     },
     "772": {
@@ -7915,7 +7915,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 3020,
+        "value": 3637,
         "browsePath": "root.visualization.selfservice4.observerStream.triggerCounter"
     },
     "798": {
@@ -7926,7 +7926,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:39.698397",
+        "value": "2020-07-20T17:10:44.780836",
         "browsePath": "root.visualization.selfservice4.observerStream.lastTriggerTime"
     },
     "799": {
@@ -8253,7 +8253,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 3020,
+        "value": 3637,
         "browsePath": "root.visualization.selfservice5.observerStream.triggerCounter"
     },
     "825": {
@@ -8264,7 +8264,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:39.693386",
+        "value": "2020-07-20T17:10:44.777152",
         "browsePath": "root.visualization.selfservice5.observerStream.lastTriggerTime"
     },
     "826": {
@@ -8544,7 +8544,8 @@
         "backRefs": [],
         "forwardRefs": [
             "218",
-            "15325922506801289201"
+            "15325922506801289201",
+            "18133595189220387199"
         ],
         "value": null,
         "browsePath": "root.visualization.workbench.contextMenuFunctions"
@@ -8599,7 +8600,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 1113,
+        "value": 1138,
         "browsePath": "root.visualization.workbench.observerAnnotations.triggerCounter"
     },
     "13646722735659859395": {
@@ -8610,7 +8611,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:39.462518",
+        "value": "2020-07-20T17:10:44.517004",
         "browsePath": "root.visualization.workbench.observerAnnotations.lastTriggerTime"
     },
     "12416654533870087467": {
@@ -8713,7 +8714,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 1345,
+        "value": 1394,
         "browsePath": "root.visualization.workbench.observerVisibleElements.triggerCounter"
     },
     "15683200324838571042": {
@@ -8724,7 +8725,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:39.532480",
+        "value": "2020-07-20T17:17:23.560804",
         "browsePath": "root.visualization.workbench.observerVisibleElements.lastTriggerTime"
     },
     "13071347114919871021": {
@@ -8969,7 +8970,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 834,
+        "value": 1148,
         "browsePath": "root.thresholdScorer.control.executionCounter"
     },
     "5131199841340550266": {
@@ -8980,7 +8981,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.224883,
+        "value": 0.235443,
         "browsePath": "root.thresholdScorer.control.lastExecutionDuration"
     },
     "8402630191021691744": {
@@ -8991,7 +8992,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:39.490502",
+        "value": "2020-07-20T17:10:44.561324",
         "browsePath": "root.thresholdScorer.control.lastStartTime"
     },
     "16087097520903802600": {
@@ -9044,7 +9045,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 3752,
+        "value": 4678,
         "browsePath": "root.visualization.workbench.observerValues.triggerCounter"
     },
     "5201468128014100031": {
@@ -9055,7 +9056,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:39.708378",
+        "value": "2020-07-20T17:10:44.780836",
         "browsePath": "root.visualization.workbench.observerValues.lastTriggerTime"
     },
     "10029816200158863035": {
@@ -9536,11 +9537,11 @@
         "backRefs": [],
         "forwardRefs": [],
         "value": {
-            "root.occupancyData.variables.Temperature": {
-                "lineColor": "#eba4fc"
-            },
             "root.thresholdScorer.output.scores.Temperature_score": {
                 "lineColor": "red"
+            },
+            "root.occupancyData.variables.Temperature": {
+                "lineColor": "#eba4fc"
             }
         },
         "browsePath": "root.visualization.workbench.currentColors"
@@ -9556,7 +9557,7 @@
             "18218839907846559574"
         ],
         "forwardRefs": [],
-        "value": false,
+        "value": true,
         "browsePath": "root.visualization.workbench.autoScaleY"
     },
     "12067833386036335427": {
@@ -12439,7 +12440,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 5635,
+        "value": 7436,
         "browsePath": "root.system.progress.triggerCounter"
     },
     "10857910486653991896": {
@@ -12450,7 +12451,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:39.991217",
+        "value": "2020-07-20T17:10:45.323673",
         "browsePath": "root.system.progress.lastTriggerTime"
     },
     "16724694746718170912": {
@@ -14187,7 +14188,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 801,
+        "value": 1116,
         "browsePath": "root.new_timeSeriesAssessor_f894.observerAssessment.triggerCounter"
     },
     "10247007460397305658": {
@@ -14198,7 +14199,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:39.999212",
+        "value": "2020-07-20T17:10:45.334668",
         "browsePath": "root.new_timeSeriesAssessor_f894.observerAssessment.lastTriggerTime"
     },
     "14644974754486382278": {
@@ -14325,7 +14326,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 798,
+        "value": 1113,
         "browsePath": "root.new_timeSeriesAssessor_f894.observerVariable.triggerCounter"
     },
     "15874314998773512907": {
@@ -14336,7 +14337,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:39.703380",
+        "value": "2020-07-20T17:10:44.780836",
         "browsePath": "root.new_timeSeriesAssessor_f894.observerVariable.lastTriggerTime"
     },
     "8576733986874244741": {
@@ -14557,7 +14558,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 801,
+        "value": 1116,
         "browsePath": "root.new_timeSeriesAssessor_f894.assessor.control.executionCounter"
     },
     "12469585344293785506": {
@@ -14568,7 +14569,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.006996,
+        "value": 0.011997,
         "browsePath": "root.new_timeSeriesAssessor_f894.assessor.control.lastExecutionDuration"
     },
     "6871820691871204644": {
@@ -14579,7 +14580,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:39.993214",
+        "value": "2020-07-20T17:10:45.325672",
         "browsePath": "root.new_timeSeriesAssessor_f894.assessor.control.lastStartTime"
     },
     "10216238499352314142": {
@@ -14737,7 +14738,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 100,
+        "value": 113,
         "browsePath": "root.visualization.workbench.observerEventSeries.triggerCounter"
     },
     "14623169857893575309": {
@@ -14748,7 +14749,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:38.457095",
+        "value": "2020-07-20T17:10:43.241243",
         "browsePath": "root.visualization.workbench.observerEventSeries.lastTriggerTime"
     },
     "1772761250548064225": {
@@ -17384,7 +17385,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 98,
+        "value": 111,
         "browsePath": "root.events2Annotation.control.executionCounter"
     },
     "11263723261911738137": {
@@ -17395,7 +17396,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.010993,
+        "value": 0.011088,
         "browsePath": "root.events2Annotation.control.lastExecutionDuration"
     },
     "11040698250593739100": {
@@ -17406,7 +17407,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:39.456522",
+        "value": "2020-07-20T17:10:44.508014",
         "browsePath": "root.events2Annotation.control.lastStartTime"
     },
     "5893648447505164673": {
@@ -17431,7 +17432,9 @@
             "1234427700659234258",
             "16754730615032852186"
         ],
-        "backRefs": [],
+        "backRefs": [
+            "14814504338557830832"
+        ],
         "forwardRefs": [],
         "value": null,
         "functionPointer": "clean.deleter",
@@ -17553,7 +17556,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 17,
+        "value": 18,
         "browsePath": "root.deleteNewData.control.executionCounter"
     },
     "6301897784206401149": {
@@ -17564,7 +17567,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.460738,
+        "value": 0.537294,
         "browsePath": "root.deleteNewData.control.lastExecutionDuration"
     },
     "3668682657682455301": {
@@ -17575,7 +17578,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:38.068317",
+        "value": "2020-07-20T17:10:42.796897",
         "browsePath": "root.deleteNewData.control.lastStartTime"
     },
     "4092404900851132227": {
@@ -17694,7 +17697,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 96,
+        "value": 109,
         "browsePath": "root.eventsObserver.triggerCounter"
     },
     "10530831407299421544": {
@@ -17705,7 +17708,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:38.459096",
+        "value": "2020-07-20T17:10:43.242243",
         "browsePath": "root.eventsObserver.lastTriggerTime"
     },
     "15441791543622941825": {
@@ -17835,7 +17838,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 721,
+        "value": 1022,
         "browsePath": "root.streamData.triggerCounter"
     },
     "5554138087426739254": {
@@ -17846,7 +17849,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-07-20T16:54:38.203240",
+        "value": "2020-07-20T17:10:42.950105",
         "browsePath": "root.streamData.lastTriggerTime"
     },
     "15612488531342230404": {
