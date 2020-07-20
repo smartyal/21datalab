@@ -3376,6 +3376,7 @@ class TimeSeriesWidget():
         #hide the ones which are not here
         self.hide_events(keep=visible)
 
+        deliveredKeys = []  # build a list of all eventLines that we updated with the data
         #now show the ones to show
         for nodeId, eventInfo in eventsData.items():
             if redraw:
@@ -3386,6 +3387,7 @@ class TimeSeriesWidget():
                 if eventString not in visible:
                     continue
                 key = nodeId+"."+eventString
+                deliveredKeys.append(key) # remember that we got this in the data
                 dic = self.__make_colum_data_for_events(times)
 
                 if key not in self.eventLines:
@@ -3400,6 +3402,15 @@ class TimeSeriesWidget():
                 else:
                     #line is there already, update per bokeh data replacement
                     self.eventLines[key]['data'].data = dic
+
+        #now check the eventLines which have not been in the data delivered, those must be deleted, as the backend has no data for them anymore
+        toBeDeleted = set(self.eventLines.keys())-set(deliveredKeys)
+        for id in toBeDeleted:
+            self.remove_renderers(renderers=[self.eventLines[id]["renderer"]])
+            del self.eventLines[id]
+
+
+
 
     def update_events_old(self,observerEvent):
         """

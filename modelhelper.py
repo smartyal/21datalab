@@ -42,7 +42,7 @@ def get_indices_from_interval(times,start,end):
     return numpy.where(mask)[0]
 
 
-def annotations_to_class_vector(annotations, times, tagsMap = {}, regionTag=None):
+def annotations_to_class_vector(annotations, times, tagsMap = {}, regionTag=None, ignoreTags=["region"]):
     """
         create a classification vector based on given time areas in the annotations
         for times where we don't classify, we return a numpy.nan
@@ -50,7 +50,7 @@ def annotations_to_class_vector(annotations, times, tagsMap = {}, regionTag=None
             annotations: list of annotationNodes
             tagsMap: a dict with "tags":classId, classIds
             tagFilter: a list of strings to match, if one of them matches, we take the annotation, otherwise not
-
+            ignoreTags: those are not considered useful Annotations to look for
             regionTag: the tag to be used as region filter: we only take times inside annotations with the tag regionTag
                 if not given, we take all, typically the region tag is "region"
     # Returns:
@@ -73,7 +73,7 @@ def annotations_to_class_vector(annotations, times, tagsMap = {}, regionTag=None
 
     for anno in annotations:
         tag = anno.get_child("tags").get_value()[0]
-        if tag == "region":
+        if tag in ignoreTags:
             continue
         if not anno.get_child("type").get_value() in ["time"]:
             continue # we void thresholds and others
