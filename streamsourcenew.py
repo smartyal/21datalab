@@ -95,9 +95,28 @@ def write_test(rate,port =6001):
         print("iterate")
         for idx in range(0,len(times),valuesPerInsert):
             time.sleep(float(rate)/1000)
+
+            #prepare the data
             blob = {var:list(vals[idx:idx+valuesPerInsert]) for var,vals in data.items()}
             blob["__time"]=list(times[idx:idx+valuesPerInsert])
             t=blob["__time"][0]
+
+            # now prepare the events
+            reqData = {"node": "root.events", "events": [], "__time": []}
+            for ev, evt in zip(events, eventTimes):
+                if evt >= blob["__time"][0] and evt <= blob["__time"][-1]:
+                    reqData["events"].append(ev)
+                    reqData["__time"].append(evt)
+            if len(reqData["__time"]) > 0:
+                start = time.time()
+                try:
+                    r = None
+                    r = requests.post("http://127.0.0.1:6001/_insertEvents", data=json.dumps(reqData))
+                finally:
+                    diff = time.time() - start
+                    print(f" {r.status_code} in {diff}")
+
+            #send the data
             print(f"t now {t} {dates.epochToIsoString(t)}")
             body = {"table":"root.occupancyData","blobs":[blob]}
             try:
@@ -112,20 +131,6 @@ def write_test(rate,port =6001):
             except Exception as ex:
                 print(f"sent {json.dumps(body)} with exception {ex}")
 
-            #now prepare the events
-            reqData = {"node": "root.events", "events": [], "__time": []}
-            for ev,evt in zip(events,eventTimes):
-                if evt>=blob["__time"][0] and evt<=blob["__time"][-1]:
-                    reqData["events"].append(ev)
-                    reqData["__time"].append(evt)
-            if len(reqData["__time"])>0:
-                start = time.time()
-                try:
-                    r = None
-                    r = requests.post("http://127.0.0.1:6001/_insertEvents", data=json.dumps(reqData))
-                finally:
-                    diff = time.time()-start
-                    print(f" {r.status_code} in {diff}")
 
 
 
