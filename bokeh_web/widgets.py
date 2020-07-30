@@ -1398,7 +1398,9 @@ class TimeSeriesWidget():
             return datestring.slice(0,-6);
             """%settings["timeZone"])
 
-        self.plot.xaxis.ticker = DatetimeTicker(desired_num_ticks=4)# give more room for the date time string (default was 6)
+        self.plot.xaxis.ticker = DatetimeTicker(desired_num_ticks=5)# give more room for the date time string (default was 6)
+
+        self.plot.xgrid.ticker = self.plot.xaxis.ticker
 
         self.build_second_y_axis()
 
