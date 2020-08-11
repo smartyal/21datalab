@@ -421,6 +421,10 @@ def all(path):
 
         elif (str(path) == "templates") and str(flask.request.method) in ["GET"]:
             logger.debug(" get templates")
+
+            #we first import from the upload directory (maybe recently changed)
+            m.import_plugins_from_directory("upload")
+
             templates = list(m.get_templates().keys())
             logger.debug(" templates are "+str(templates))
             response = json.dumps(templates)

@@ -45,6 +45,9 @@ def date2secs(value,ignoreError = True,zone = 'Europe/Berlin'):
         value = make_aware(value,zone=zone)
         timeDelta = value - datetime.datetime(1970, 1, 1, 0, 0,tzinfo=pytz.UTC)
         return timeDelta.total_seconds()
+    elif type(value) == type(datetime.date(1970,1,1)):
+        timeDelta = value - datetime.date(1970, 1, 1)
+        return timeDelta.total_seconds()
     elif type(value) is str:
         #try a string parser
         try:
