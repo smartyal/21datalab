@@ -1240,9 +1240,15 @@ class Model:
                 if "references" in self.model[newNodeId]:
                     #we must create forward references
                     for ref in self.model[newNodeId]["references"]:
-                        # the given path is of the form templatename.levelone.leveltwo inside the template
-                        # we replace the "templatename" with the path name the template was given
-                        targetPath = parentPath+'.'+template['name']+'.'+'.'.join(ref.split('.')[1:])
+                        # now there are two options:
+                            # the given path is of the form templatename.levelone.leveltwo inside the template
+                            # we replace the "templatename" with the path name the template was given
+                            # or the path is absolute id or browsepath, then we don't modify
+                        splitted = ref.split('.')
+                        if len(splitted) == 1 or splitted[0]=="root":
+                            targetPath = ref
+                        else:
+                            targetPath = parentPath+'.'+template['name']+'.'+'.'.join(ref.split('.')[1:])
                         self.add_forward_refs(newNodeId,[targetPath])
                     del self.model[newNodeId]["references"] # we remove the reference information from the template
 
@@ -3107,9 +3113,23 @@ class Model:
 
         """
 
+        #exception for the progress node
+        if type(properties) is not list:
+            properties = [properties]
+        if type(nodeIds) is not list:
+            nodeIds = [nodeIds]
+
         if self.disableObserverCounter>0:
-            self.logger.info(f"__notify_observers disable return {nodeIds} {properties}")
-            return
+            #only one exception: progress works always
+            mustReturn = True
+            with self.lock:
+                for nodeId in nodeIds:
+                    if self.model[nodeId]["name"] == "progress":
+                        mustReturn = False
+                        break
+            if mustReturn:
+                self.logger.info(f"__notify_observers disable return {nodeIds} {properties}")
+                return
 
         with self.lock:
             # this is for the tree updates, any change is taken
@@ -3122,10 +3142,7 @@ class Model:
                 "data": ""}
             collectedEvents.append(event) #send later
 
-            if type(properties) is not list:
-                properties = [properties]
-            if type(nodeIds) is  not list:
-                nodeIds = [nodeIds]
+
 
             names =[self.model[id]["name"] for id in nodeIds]
             self.logger.debug(f"__notify_observers {names}: {properties}")
