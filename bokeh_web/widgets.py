@@ -1398,7 +1398,9 @@ class TimeSeriesWidget():
             return datestring.slice(0,-6);
             """%settings["timeZone"])
 
-        self.plot.xaxis.ticker = DatetimeTicker(desired_num_ticks=4)# give more room for the date time string (default was 6)
+        self.plot.xaxis.ticker = DatetimeTicker(desired_num_ticks=5)# give more room for the date time string (default was 6)
+
+        self.plot.xgrid.ticker = self.plot.xaxis.ticker
 
         self.build_second_y_axis()
 
@@ -1761,10 +1763,12 @@ class TimeSeriesWidget():
         #check if lines have changed:
         if self.hoverTool:
             newLines = set([v for k,v in self.lines.items() if not self.server.is_score_variable(k) ]) # only the non-score lines
+            newEventLines = set([ v["renderer"] for k,v in self.eventLines.items()])
+            newLines.update(newEventLines)
             hoverLines = set(self.hoverTool.renderers)
             if newLines != hoverLines:
 
-                self.logger.debug(f"reset hover tool newLines {newLines}, hoverLines{hoverLines}")
+                self.logger.debug(f"reset hover tool MUSt UPDATE newLines {newLines}, hoverLines{hoverLines}")
                 self.hoverTool.renderers = []
                 store = self.toolBarBox.toolbar.tools
                 newTools = []
@@ -1774,17 +1778,27 @@ class TimeSeriesWidget():
                 self.toolBarBox.toolbar.tools = newTools
                 self.hoverTool = None
 
+        if not self.hoverTool or  newLines != hoverLines:
+            renderers = []
 
-        renderers = []
-        for k, v in self.lines.items():
+            for k, v in self.eventLines.items():
+                self.logger.debug(f"add {k} to hover")
+                renderers.append(v["renderer"])
 
-            if not self.server.is_score_variable(k):
-                self.logger.debug(f"add line {k} t hover")
-                renderers.append(v)
+            for k, v in self.lines.items():
+                if not self.server.is_score_variable(k):
+                    self.logger.debug(f"add line {k} t hover")
+                    renderers.append(v)
 
-        for h in self.annoHovers:
-            #print(f"add hover {h}")
-            renderers.append(h)
+            self.logger.info(f"number of new hovers {len(renderers)}")
+            #for h in self.annoHovers:
+            #    #print(f"add hover {h}")
+            #    renderers.append(h)
+
+
+
+
+
 
         if not self.hoverTool:
             #we do this only once
@@ -1823,7 +1837,7 @@ class TimeSeriesWidget():
             if self.server.get_settings()["hasHover"] in ['vline','hline','mouse']:
                 hover.mode = self.server.get_settings()["hasHover"]
             hover.mode = "mouse"
-            hover.line_policy = 'nearest'
+            hover.line_policy = 'interp'#need this instead of nearest for the event lines: they end in +- infinity, with the "nearest", they would show their tooltip hover at the end of their line, outside the visible area
             self.plot.add_tools(hover)
 
             self.hoverTool = hover
@@ -3355,8 +3369,8 @@ class TimeSeriesWidget():
         x = []
         y = []
         for t in times:
-            x.extend([t, t, numpy.nan])
-            y.extend([-infi, infi, numpy.nan])
+            x.extend([t, t])#, numpy.nan])
+            y.extend([-infi, infi])#, numpy.nan])
         return {"x": x, "y": y}
 
     def show_events(self,eventsData,redraw=False):
@@ -3397,7 +3411,7 @@ class TimeSeriesWidget():
                     else:
                         color = "yellow"
                     source = ColumnDataSource(dic)
-                    li = self.plot.line(x="x",y="y", source=source,color=color,line_width=2)
+                    li = self.plot.line(x="x",y="y", source=source,color=color,line_width=2,name=key)
                     self.eventLines[key] = {"renderer":li,"data":source,"eventString":eventString,"nodeId":nodeId}
                 else:
                     #line is there already, update per bokeh data replacement
@@ -3409,7 +3423,8 @@ class TimeSeriesWidget():
             self.remove_renderers(renderers=[self.eventLines[id]["renderer"]])
             del self.eventLines[id]
 
-
+        #now also update the hovers
+        self.__make_tooltips()
 
 
     def update_events_old(self,observerEvent):

@@ -432,6 +432,9 @@ def pps_mining(motif, series, timeRanges={1: [0.8,1.5]}, valueRanges={1: [0.5,2]
                         typeFilter []: list of types select only some types out of the pps, like ["min", "max"]
 
     """
+    if not typeFilter:
+        typeFilter = list(set([p["type"] for p in motif]))
+        print(f"autotypefilter: {typeFilter}")
     startTime = time.time()
     found = []
     # print([pp for pp in motif])
@@ -473,9 +476,10 @@ def pps_mining(motif, series, timeRanges={1: [0.8,1.5]}, valueRanges={1: [0.5,2]
                         motifDiff = motif[motifIndex]["time"] - motif[motifIndex - k]["time"]
                         seriesDiff = series[index]["time"] - series[index - k]["time"]
                         motifDiffMin = max(0, motifDiff - vMinus * motifDiff)
-                        motifDiffMax = motifDiff + vPlus * motifDiff
+                        motifDiffMax = motifDiff + vPlus * motifDiff # -400 +0.5*-200 = -500
 
                         ok = seriesDiff > motifDiffMin and seriesDiff < motifDiffMax
+
                         if debug:
                             print(
                                 f"check diff ({k}: {motifDiffMin} < {seriesDiff}< {motifDiffMax}) motif:{motifDiff}: {ok}")
@@ -490,13 +494,23 @@ def pps_mining(motif, series, timeRanges={1: [0.8,1.5]}, valueRanges={1: [0.5,2]
                             break
             if motifIndex > 0:
                 for k, v in valueRanges.items():
-                    if motifIndex > k:
+                    if motifIndex >= k:
                         # check this
-                        motifDiff = abs(motif[motifIndex]["value"] - motif[motifIndex - k]["value"])
-                        seriesDiff = abs(series[index]["value"] - series[index - k]["value"])
-                        motifDiffMin = max(0, motifDiff - v * motifDiff)
-                        motifDiffMax = motifDiff + v * motifDiff
-                        ok = seriesDiff > motifDiffMin and seriesDiff < motifDiffMax
+                        if type(v) is list:
+                            vMinus = v[0]
+                            vPlus = v[1]
+                        else:
+                            vMinus = v
+                            vPlus = v
+                        motifDiff = (motif[motifIndex]["value"] - motif[motifIndex - k]["value"])
+                        seriesDiff = (series[index]["value"] - series[index - k]["value"])
+                        #print(f" value ranges max{motifDiff - v * motifDiff}")
+                        motifDiffMin = motifDiff - vMinus * motifDiff  # -400 -0.5*-200 = -300
+                        motifDiffMax = motifDiff + vPlus * motifDiff  # -400 +0.5*-200 = -500
+                        if motifDiff > 0:
+                            ok = seriesDiff > motifDiffMin and seriesDiff < motifDiffMax
+                        else:
+                            ok = seriesDiff > motifDiffMax and seriesDiff < motifDiffMin
                         if debug:
                             print(
                                 f"check value diff ({k}: {motifDiffMin} < {seriesDiff}< {motifDiffMax}) motif:{motifDiff}: {ok}")
