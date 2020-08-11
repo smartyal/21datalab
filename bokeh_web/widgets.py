@@ -3369,8 +3369,8 @@ class TimeSeriesWidget():
         x = []
         y = []
         for t in times:
-            x.extend([t, t])#, numpy.nan])
-            y.extend([-infi, infi])#, numpy.nan])
+            x.extend([t, t, numpy.nan]) #need the nan to avoid connecting diagonals between the vertical lines
+            y.extend([-infi, infi, numpy.nan])
         return {"x": x, "y": y}
 
     def show_events(self,eventsData,redraw=False):
