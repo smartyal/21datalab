@@ -60,9 +60,9 @@ def events_to_annotations(functionNode):
     eventSelection = functionNode.get_child("eventSelection").get_value()
     progressNode.set_value(0)
     m = functionNode.get_model()
-    startEvents = [v[0] for k,v in eventSelection.items()] # always the first event
-    endEvents = [v[1] for k, v in eventSelection.items()]  # always the second event
-    ev2Anno={ev:anno for anno,eventStrings in eventSelection.items() for ev in eventStrings}#a helper lookup dict for events to annotations {eventname:annotationsTags}
+    startEvents = {v[0]:k for k,v in eventSelection.items()} # always the first event
+    endEvents = {v[1]:k for k, v in eventSelection.items()}  # always the second event
+    #ev2Anno={ev:anno for anno,eventStrings in eventSelection.items() for ev in eventStrings}#a helper lookup dict for events to annotations {eventname:annotationsTags}
 
     evs = functionNode.get_child("eventSeries").get_targets() # a list of nodes where the events are located
 
@@ -95,7 +95,7 @@ def events_to_annotations(functionNode):
 
     #now collect all events filtered by the selection of events and the time (if differential process)
     #we build up a list of dicts with ["event"."hello", "startTime":1234494., "endTime":2345346.:
-    filter = startEvents+endEvents
+    filter = list(startEvents.keys())+list(endEvents.keys())
 
 
     #from now on we use these lists
@@ -125,8 +125,9 @@ def events_to_annotations(functionNode):
             tim = times[index]
             if tim>lastTimeSeen:
                 lastTimeSeen = tim
-            tag = ev2Anno[evStr]
+            #tag = ev2Anno[evStr]
             if evStr in startEvents:
+                tag = startEvents[evStr]
                 #this is a start of a new event
                 if openAnnos:
                     # we have at least on e annotation running already:
@@ -163,6 +164,7 @@ def events_to_annotations(functionNode):
 
             if evStr in endEvents:
                 #this is an end event, see if we have a matching open annotation
+                tag = endEvents[evStr]
                 newOpenAnnos = []
                 for openAnnotation in openAnnos:
                     if tag in openAnnotation["tags"]:
@@ -183,10 +185,13 @@ def events_to_annotations(functionNode):
                 if len(newOpenAnnos) == len(openAnnos):
                     logger.warning(f"annotation creation ende without start {tim} {evStr}")
                 openAnnos = newOpenAnnos
+            #print(f"open annotations {openAnnos} new annos {newAnnotations}")
+
 
 
     #now create the annotations
     logger.debug(f"creating {len(newAnnotations)} annotation, have {len(openAnnos)} open annotations")
+    #print(f"creating {len(newAnnotations)} annotation, have {len(openAnnos)} open annotations")
     m.disable_observers()
     try:
 
