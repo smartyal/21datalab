@@ -17,6 +17,7 @@ events2Annotation = {
         {"name": "eventSeries", "type": "referencer"},  # pointer to an eventseries
         {"name": "processedUntil","type":"variable","value":None},      # holds the time until the differential process has run, it is the timestamp of the last processed event
         {"name": "differential","type":"const","value":False},          #set true if differential execution is wanted
+        {"name": "interleaved","type":"const","value":False},           #when set to true, we allow interleaved events, that means one event is running while another starts, if set true this is not allowed and events can never overlap
         {"name": "eventSelection","type":"const","value":{              #name of the resulting anno: [start,end] names of the events
                 "busy": ["busy_start","busy_end"],
                 "free": ["free_start","free_end"]}},
@@ -28,6 +29,10 @@ events2Annotation = {
 
 
 def events_to_annotations(functionNode):
+    """
+        this function creates annotations from events
+
+    """
     logger = functionNode.get_logger()
     logger.info("==>>>> events_to_annotations "+functionNode.get_browse_path())
 
@@ -35,6 +40,11 @@ def events_to_annotations(functionNode):
     newAnnosNode = functionNode.get_child("annotations")
     differential = functionNode.get_child("differential").get_value()
     valueNotifyNodeIds = []  #this variable will hold node id to post a value notification (the nodes that were open before)
+
+    interleaved = functionNode.get_child("interleaved")
+    if interleaved:
+        #if the node is there
+        interleaved = interleaved.get_value()
 
     if differential:
         processedUntil = dates.date2secs(functionNode.get_child("processedUntil").get_value(),ignoreError=False)
@@ -52,7 +62,7 @@ def events_to_annotations(functionNode):
     m = functionNode.get_model()
     startEvents = [v[0] for k,v in eventSelection.items()] # always the first event
     endEvents = [v[1] for k, v in eventSelection.items()]  # always the second event
-    ev2Anno={ev:anno for anno,eventStrings in eventSelection.items() for ev in eventStrings}#a helper lookup dict for events to annotations
+    ev2Anno={ev:anno for anno,eventStrings in eventSelection.items() for ev in eventStrings}#a helper lookup dict for events to annotations {eventname:annotationsTags}
 
     evs = functionNode.get_child("eventSeries").get_targets() # a list of nodes where the events are located
 
@@ -75,7 +85,12 @@ def events_to_annotations(functionNode):
         annos = newAnnosNode.get_children()
         for anno in annos:
             if "open" in anno.get_child("tags").get_value():
-                openAnnos.append(anno)
+                openAnnotation = {
+                    "tags": anno.get_child("tags").get_value(),   #using "tag" to note that an open annotation has only one tag
+                    "startTime": anno.get_child("startTime").get_value(),
+                    "node": anno
+                }
+                openAnnos.append(openAnnotation)
 
 
     #now collect all events filtered by the selection of events and the time (if differential process)
@@ -83,21 +98,14 @@ def events_to_annotations(functionNode):
     filter = startEvents+endEvents
 
 
+    #from now on we use these lists
     newAnnotations = []     # the annotations to be created new, a list of dicts, it will also contain "updates" for existing nodes
                             # those update entries will be found by the key "node" which holds the node that has to be updated
-    openAnnotation = {}    # {"key":"litu":{"startTime":132412334,"node"} # will also hold the node if we have one already
+    #openAnnos : a list of # {"key":"litu":{"startTime":132412334,"node"} # will also hold the node if we have one already
 
     #put the open annotations in a fast look up table
-    if len(openAnnos) > 1:
-        logger.error("there should be only one")
-
-    if openAnnos:
-        openAnnotation = {
-            "key": openAnnos[0].get_child("tags").get_value(),
-            "startTime":openAnnos[0].get_child("startTime").get_value(),
-            "node":anno
-        }
-
+    if len(openAnnos) > 1 and not interleaved:
+        logger.error("there should be only one open annotation at max in non-interleaved mode")
 
 
     #now iterate over all events
@@ -117,63 +125,76 @@ def events_to_annotations(functionNode):
             tim = times[index]
             if tim>lastTimeSeen:
                 lastTimeSeen = tim
-            key = ev2Anno[evStr]
+            tag = ev2Anno[evStr]
             if evStr in startEvents:
-                if openAnnotation:
-                    # we have an annotation running already, this should not be the case, so we
-                    # submit the currently open annotation as anomaly and start a new open annotaton
-                    # with the current time
+                #this is a start of a new event
+                if openAnnos:
+                    # we have at least on e annotation running already:
+                    # in non-interleaved wo submitt all open annotations as anomaly
+                    # in interleaved mode we only submit those with the same event as anomaly
                     # if the "open" entry was from an existing annotation in the tree, we also put that
                     # node handle to later use if for updating the annotation and not creating it new
 
-                    #build the anomaly annotations
-                    anno = {
-                        "type": "time",
-                        "endTime": dates.epochToIsoString(tim, zone='Europe/Berlin'),
-                        "startTime": openAnnotation["startTime"],
-                        "tags": ["anomaly",key]
-                    }
-                    if "node" in openAnnotation:
-                        anno["node"] = openAnnotation["node"]
-                    newAnnotations.append(anno) # put the anomaly node there
-
+                    newOpenAnnos = []
+                    for openAnnotation in openAnnos:
+                        if not interleaved or tag in openAnnotation["tags"]:
+                            # we must close this open annotation as anomaly
+                            # build the anomaly annotations
+                            anno = {
+                                "type": "time",
+                                "endTime": dates.epochToIsoString(tim, zone='Europe/Berlin'),
+                                "startTime": openAnnotation["startTime"],
+                                "tags": ["anomaly",tag]
+                            }
+                            if "node" in openAnnotation:
+                                anno["node"] = openAnnotation["node"]
+                            newAnnotations.append(anno) # put the anomaly node there
+                        else:
+                            #keep this annotation
+                            newOpenAnnos.append(openAnnotation)
+                    openAnnos = newOpenAnnos
 
                 #now remember the current as the open one
                 openAnnotation = {
                     "startTime":dates.epochToIsoString(tim, zone='Europe/Berlin'),
-                    "key":key
-                 }
+                    "tags":[tag]
+                }
+                openAnnos.append(openAnnotation)
 
             if evStr in endEvents:
-                if openAnnotation and key in openAnnotation["key"]:
-                    #take this annotation, we can close it
-                    anno  = {
-                        "type": "time",
-                        "endTime": dates.epochToIsoString(tim, zone='Europe/Berlin'),
-                        "startTime": openAnnotation["startTime"],
-                        "tags": [ev2Anno[evStr]]
-                    }
-                    if "node" in openAnnotation:
-                        #  if it was an existing annotation, we also put the anno handle to make an "update"
-                        #  instead of a new creation further down
-                        anno["node"]=openAnnotation["node"]
-                    newAnnotations.append(anno)
-
-                    openAnnotation = {} # no current open annotation
-                else:
+                #this is an end event, see if we have a matching open annotation
+                newOpenAnnos = []
+                for openAnnotation in openAnnos:
+                    if tag in openAnnotation["tags"]:
+                        #take this annotation, we can close it
+                        anno  = {
+                            "type": "time",
+                            "endTime": dates.epochToIsoString(tim, zone='Europe/Berlin'),
+                            "startTime": openAnnotation["startTime"],
+                            "tags": [tag]
+                        }
+                        if "node" in openAnnotation:
+                            #  if it was an existing annotation, we also put the anno handle to make an "update"
+                            #  instead of a new creation further down
+                            anno["node"]=openAnnotation["node"]
+                        newAnnotations.append(anno)
+                    else:
+                        newOpenAnnos.append(openAnnotation)#keep this one
+                if len(newOpenAnnos) == len(openAnnos):
                     logger.warning(f"annotation creation ende without start {tim} {evStr}")
+                openAnnos = newOpenAnnos
+
 
     #now create the annotations
-    logger.debug(f"creating {len(newAnnotations)} annotation, have {openAnnotation} open annotations")
+    logger.debug(f"creating {len(newAnnotations)} annotation, have {len(openAnnos)} open annotations")
     m.disable_observers()
     try:
 
-        #now the open annotations
         if differential:
             # in the open annotations list, we will find
             # - open annotations that have existed before and have not found an update yet and were not closed
             # - new open annotations that have started now
-            if openAnnotation:
+            for openAnnotation in openAnnos:
                 nowIso = dates.epochToIsoString(time.time(),zone='Europe/Berlin')
                 if "node" in openAnnotation:
                     # this existed before, we just update the endtime
@@ -186,7 +207,7 @@ def events_to_annotations(functionNode):
                         "type": "time",
                         "endTime": nowIso,
                         "startTime": openAnnotation["startTime"],
-                        "tags": [ev2Anno[evStr],"open"]
+                        "tags": openAnnotation["tags"]+["open"]
                     }
                     newAnnotations.append(entry) # put it to the creation list
 
