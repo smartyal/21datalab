@@ -4,6 +4,7 @@ from system import __functioncontrolfolder
 import time
 import dates
 import numpy
+import streaming
 
 
 
@@ -27,6 +28,30 @@ events2Annotation = {
 }
 
 
+
+events2State = {
+    "name":"events2State",
+    "type": "object",
+    "class":"events.Events2StateClass",  # filename.functionname
+    "autoReload": True,  # set this to true to reload the module on each execution
+    "children": [
+        {"name": "annotations", "type": "folder" },  # this is where we put the result annos
+        {"name": "eventSeries", "type": "referencer"},  # pointer to an eventseries
+        {"name": "eventSelection","type":"const","value":{              #name of the resulting anno: [start,end] names of the events
+                "busy": ["busy_start","busy_end"],
+                "free": ["free_start","free_end"]}},
+        __functioncontrolfolder,
+        {"name":"processAll","type":"function","functionPointer":"events.events_to_state_all","autoReload":False,"children":[
+            __functioncontrolfolder]}
+    ]
+
+}
+
+
+def events_to_state_all(functionNode):
+    logger = functionNode.get_logger()
+    logger.debug("==>>>> events_to_state_all" + functionNode.get_browse_path())
+    return True
 
 def events_to_annotations(functionNode):
     """
@@ -126,8 +151,10 @@ def events_to_annotations(functionNode):
             if tim>lastTimeSeen:
                 lastTimeSeen = tim
             tag = ev2Anno[evStr]
+            print(r"ev:{evStr}, tag:{tag}, open Annos {openAnnos}")
             if evStr in startEvents:
                 #this is a start of a new event
+                print("is start")
                 if openAnnos:
                     # we have at least on e annotation running already:
                     # in non-interleaved wo submitt all open annotations as anomaly
@@ -161,7 +188,9 @@ def events_to_annotations(functionNode):
                 }
                 openAnnos.append(openAnnotation)
 
+            #not an else if, because it can be in both start and end events
             if evStr in endEvents:
+                print("is end")
                 #this is an end event, see if we have a matching open annotation
                 newOpenAnnos = []
                 for openAnnotation in openAnnos:
@@ -186,7 +215,7 @@ def events_to_annotations(functionNode):
 
 
     #now create the annotations
-    logger.debug(f"creating {len(newAnnotations)} annotation, have {len(openAnnos)} open annotations")
+    logger.debug(f"creating {len(newAnnotations)} annotation, have {openAnnos} open annotations")
     m.disable_observers()
     try:
 
@@ -240,3 +269,173 @@ def events_to_annotations(functionNode):
     functionNode.get_child("processedUntil").set_value(isoDate) # this is for me, next time I can check what has been processed
 
     return True
+
+
+class Events2StateClass(streaming.Interface):
+
+    def __init__(self,objectNode):
+        self.logger=objectNode.get_logger()
+        self.objectNode = objectNode
+        self.model = objectNode.get_model()
+        self.reset()
+
+    def reset(self,data):
+        return data
+
+    def feed(self,blob):
+        """
+            expected format of blob
+            {"type":"eventseries",
+             "data":{
+                        "__time":[11,12,13,14],
+                        "23488923400":["p1.start","p2.start",...]
+                    }
+            }
+            #the blob will have only one event variable
+        """
+
+        self.logger.debug("Events2StateClass.feed()")
+        #we look for eventseries to switch the state:
+        if blob["type"] == "eventseries":
+            times = blob["data"]["__time"]
+            evSeries = [v for k,v in blob["data"].items() if k!="__time"][0] # we take the first entry that is not __time, we expect there to be only ONE!
+            newAnnos = self.process_event_series(times, evSeries)
+
+            for anno in newAnnos:
+                newAnno = self.newAnnosNode.create_child(type="annotation")
+                for k, v in anno.items():
+                    newAnno.create_child(properties={"name": k, "value": v, "type": "const"})
+            return blob
+
+        elif blob["type"] == "timeseries":
+            """
+            # we need to add the state to the timeseries in the form
+            {
+                "type": "timeseries",
+                "data": {
+                    "__time": [120, 130, 140, 150, 160, 170, ....]
+                    "var1": [20, 30, 40, 50, 60, 70, ......] //
+                    "var2":[2, 3, 4, 5, 6, ....]
+                    "__states": {
+                        "euv": [True, False, True, .....]
+                        "evacuating": [False, False, False, ....]
+                    }
+                }
+            }
+            """
+            times = blob["data"]["__time"]
+            addStates = {}
+            length = len(times)
+            for tag,startTime in self.state.items():
+                addStates[tag]=numpy.full(length,True)
+            blob["data"]["__states"]=addStates
+            return blob
+
+        return blob
+
+    def flush(self,data=None):
+        return data
+
+    def reset(self,data=None):
+        self.progressNode = self.objectNode.get_child("control").get_child("progress")
+        self.newAnnosNode = self.objectNode.get_child("annotations")
+
+        # eventSelection is a dict to translate and select the events from the processed event series (stream or historical)
+        # e.g. {"machine1.init":"Preparation", "machine1.op2":"Printing"}:
+        #   we will select the "machine1.init and the "macine1.op2" events and name the annotation type as Preparation, Printing
+
+        self.eventSelection = self.objectNode.get_child("eventSelection").get_value()
+        self.startEvents = [v[0] for k, v in self.eventSelection.items()]  # always the first event
+        self.endEvents = [v[1] for k, v in self.eventSelection.items()]  # always the second event
+        self.ev2Anno = {ev: anno for anno, eventStrings in self.eventSelection.items() for ev in
+                   eventStrings}  # a helper lookup dict for events to annotations {eventname:annotationsTags}
+
+
+        self.state = {}
+        # in self.openAnnos, we store the currently running system state in the form
+        # { "state": epoch (the start time of the state
+
+
+
+    def process_historical(self):
+
+        self.logger.debug("process_historical")
+        #delete the old results:
+        annos = self.newAnnosNode.get_children()
+        if annos:
+            try:
+                self.model.disable_observers()
+                for anno in annos:
+                    anno.delete()
+            finally:
+                self.model.enable_observers()
+            self.model.notify_observers(self.newAnnosNode.get_id(), "children")
+
+
+
+    def get_open_annos(self):
+
+        openAnnos = []
+        annos = self.newAnnosNode.get_children()
+        for anno in annos:
+            if "open" in anno.get_child("tags").get_value():
+                openAnnotation = {
+                    "tags": anno.get_child("tags").get_value(),# using "tag" to note that an open annotation has only one tag
+                    "startTime": anno.get_child("startTime").get_value(),
+                    "node": anno
+                }
+                openAnnos.append(openAnnotation)
+        self.openAnnos = openAnnos
+
+
+    def process_event_series(self,times,eventStrings):
+        """
+            process one event series
+
+            we update the self.state according to the current events
+
+            Args: times[ndarray] the epochs
+                    eventStrings: [list of strings] of the events, which can be converted per map
+
+        """
+
+        newAnnotations = []
+
+        for index in range(len(times)):
+            evStr = eventStrings[index]
+            tim = times[index]
+            tag = self.ev2Anno[evStr]
+            print(r"ev:{evStr}, tag:{tag}, open Annos {openAnnos}")
+            if evStr in self.startEvents:
+                # this is a start of a new event
+                print("is start")
+                if tag in self.state:
+                    # we are in this state already, and get a repeated start event, this is an error
+                    # so we submit an anomaly annotation
+                    anno = {
+                        "type": "time",
+                        "endTime": dates.epochToIsoString(tim, zone='Europe/Berlin'),
+                        "startTime": dates.epochToIsoString(self.state[tag], zone='Europe/Berlin'),
+                        "tags": ["anomaly", tag]
+                    }
+                    newAnnotations.append(anno)  # put the anomaly node
+
+                self.state[tag]=tim  #also update the current state
+
+            # not an else if, because it can be in both start and end events
+            if evStr in self.endEvents:
+                print("is end")
+                # this is an end event, see if we have a matching running state
+                if tag in self.state:
+                    anno = {
+                        "type": "time",
+                        "endTime": dates.epochToIsoString(tim, zone='Europe/Berlin'),
+                        "startTime": dates.epochToIsoString(self.state[tag], zone='Europe/Berlin'),
+                        "tags": [tag]
+                    }
+                    newAnnotations.append(anno)
+                    del self.state[tag] # remove the state from the current states
+                else:
+                    self.logger.warning(f"end event without start {tim} {evStr} ")
+
+        return newAnnotations

@@ -1,4 +1,5 @@
 import datetime
+import time
 
 class Timer:
     def __init__(self):
@@ -29,13 +30,17 @@ class Profiling:
         self.result = []
         if rename:
             self.name= rename
-        now = datetime.datetime.now()
+        #now = datetime.datetime.now()
+        now = time.time()
         self.initTime = now
         self.startTime =now
     def lap(self,label):
-        now = datetime.datetime.now()
-        delta = (now - self.startTime).total_seconds()
-        total = (now-self.initTime).total_seconds()
+        #now = datetime.datetime.now()
+        #delta = (now - self.startTime).total_seconds()
+        #total = (now-self.initTime).total_seconds()
+        now = time.time()
+        delta = now -self.startTime
+        total = now-self.initTime
         self.result.append({"label":label,"delta":delta,"total":total})
         self.startTime=now
     def __repr__(self):
