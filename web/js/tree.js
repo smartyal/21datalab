@@ -53,7 +53,9 @@ class TreeWidget
             toolbox: "fas fa-toolbox tree-icon-class",
             unknown: "fas fa-question-circle tree-icon-class",
             observer: "far fa-eye",
-            setlen: "fas fa-arrows-alt-h"
+            setlen: "fas fa-arrows-alt-h",
+            object: "fas fa-dice-d6",
+            reset: "fas fa-redo-alt"
         };
 
         this.eventSource = undefined;
@@ -585,7 +587,14 @@ class TreeWidget
                                             "label":"eventseries",
                                             "action":function(obj){treeWidgetObject.context_menu_create(node,"eventseries");},
                                             "icon":treeWidgetObject.treeIcons["eventseries"]
+                                        },
+                                        "object":
+                                        {
+                                            "label":"object",
+                                            "action":function(obj){treeWidgetObject.context_menu_create(node,"object");},
+                                            "icon":treeWidgetObject.treeIcons["object"]
                                         }
+
 
                                     }
                                 },
@@ -644,6 +653,24 @@ class TreeWidget
                             "icon": treeWidgetObject.treeIcons["function"]
                         }
                     }
+
+                    //if treeWidgetObject node is an object instantiation is also possible
+                    if ((node.id in treeWidgetObject.treeNodes) && (treeWidgetObject.treeNodes[node.id].type == "object"))
+                    {
+
+                        menuObject["instantiate"] = {
+                            "label": "instantiate",
+                            "action": function(obj){treeWidgetObject.context_menu_instantiate(node);},
+                            "icon": treeWidgetObject.treeIcons["object"]
+                        };
+                        menuObject["reset"] = {
+                            "label": "reset",
+                            "action": function(obj){treeWidgetObject.context_menu_reset_object(node);},
+                            "icon": treeWidgetObject.treeIcons["reset"]
+                        }
+                    }
+
+
 
                     //if treeWidgetObject node is not a referencee node, renaming is possible
                     if ((node.original.nodeType != "referencee"))
@@ -865,6 +892,21 @@ class TreeWidget
         var query=node.id;
         http_post("/_execute",JSON.stringify(query),null,null,null);
     }
+
+    context_menu_instantiate(node)
+    {
+        console.log("context instantiate",node);
+        var query=node.id;
+        http_post("/_instantiate",JSON.stringify(query),null,null,null);
+    }
+
+    context_menu_reset_object(node)
+    {
+        console.log("reset object",node);
+        var query = {"node":node.id,"function":"reset","parameter":null};
+        http_post("/_execute",JSON.stringify(query),null,null,null);
+    }
+
 
     context_menu_create_template(node,templateType)
     {

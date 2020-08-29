@@ -86,6 +86,7 @@ POST /_appendRow     [<data.json>] #deprecated
 POST /_insert       <datablob.json>
 POST /_references <referencequery.json>                                  ## adjust references, details see json
 POST /_execute      <nodedescriptor>            //nothing                ## execute a function
+POST /_execute      <functioncall.json>          result                  ## execute a function of an object
 GET  /templates      -                           [templatename]          ## get all available templates to be created
 POST /_createTemplate  <createtemplate.json>     -                       #create a template at a path given
 GET  /models         -                           [string]                #  a list of available models from the /model folder 
@@ -301,6 +302,14 @@ getNodesresponse.json
 clone.json
 {
     node:<desc>
+}
+
+
+functioncall.json
+{
+    nodes: descriptor of node
+    function : name of the function to call
+    parameter: parameter of the function /typically a dict
 }
 
 '''
@@ -701,14 +710,36 @@ def all(path):
 
         elif (str(path) == "_execute"):
             logger.debug(f"execute function {data} (start the function thread)")
-            result =[]
-            launch = m.execute_function(data)
+            if type(data) is str:
+                result =[]
+                launch = m.execute_function(data)
+            else:
+                parameter = None
+                if "parameter" in data:
+                    parameter = data["parameter"]
+
+                launch = m.execute_object_function(data["node"],data["function"],parameter)
+
             if launch==True:
                 responseCode = 200
             elif launch == "busy":
                 responseCode = 429
             else:
                 responseCode = 404
+
+
+
+
+
+        elif (str(path) == "_instantiate"):
+            logger.debug(f"instantiate {data}")
+            result = m.instantiate_object(data)
+            if result:
+                responseCode = 201
+            else:
+                responseCode = 404
+
+
 
         elif (str(path) == "_diffUpdate") and str(flask.request.method) in ["GET","POST"]:
 

@@ -33,6 +33,7 @@ import utils
 from timeseries import TimeSeriesTable
 from dates import *
 
+import inspect
 
 """
 next Todo
@@ -431,6 +432,11 @@ class Node():
     def execute(self):
         return self.model.execute_function(self.id)
 
+    def instantiate(self):
+        return self.model.instantiate_object(self.id)
+
+    def get_object(self):
+        return self.model.get_object(self.id)
 
     def get_logger(self):
         return self.model.logger
@@ -635,6 +641,8 @@ class Model:
         self.templates={} # holding all templates from ./plugins
         self.lock = threading.RLock()
         self.executeFunctionRunning = False # set to true, makes sure only one functions runs at a time
+
+        self.objectClasses = {}  # a dictionaryholding all object clases from the /plugins
         self.import_default_plugins()
         self.differentialHandles ={} # containing model_copy entries to support differential queries
         self.diffHandleCounter = 0  # used only for debugging
@@ -648,7 +656,6 @@ class Model:
         self.sse_event_id = 1
 
         self.start_function_execution_thread()
-
 
     def __del__(self):
         self.functionExecutionRunning = False # stop the execution thread of functions
@@ -768,15 +775,18 @@ class Model:
         with self.lock:
             id = self.__get_id(desc)
             if not id: return None
-            if includeLongValues:
-                return copy.deepcopy(self.model[id])
-            else:
-                #we do not include values of columns and files
-                if self.model[id]["type"] in ["column","file","timeseries"]:
-                    return  {k:v for k,v in self.model[id].items() if k!="value"}
-                else:
-                    #take all
+
+            #we do not include values of columns and files
+            if self.model[id]["type"] in ["column","file","timeseries"]:
+                if includeLongValues:
                     return copy.deepcopy(self.model[id])
+                else:
+                    return  {k:v for k,v in self.model[id].items() if k!="value"}
+            elif self.model[id]["type"]== "object":
+                return {k: v for k, v in self.model[id].items() if k != "object"} # don't take the "object" key
+            else:
+                #take all
+                return copy.deepcopy(self.model[id])
 
 
 
@@ -1014,6 +1024,9 @@ class Model:
                 if type(element) is dict:
                     #this is a template information
                     self.templates[moduleName+"."+objName]=copy.deepcopy(element)
+                elif (inspect.isclass(element)):
+                    newClass = {"module":module,"class":element}
+                    self.objectClasses[moduleName + "." + objName] = newClass
                 elif callable(element):
                     #this is a function, get more info
                     newFunction = {"module":module, "function":element}
@@ -1127,6 +1140,11 @@ class Model:
                 self.time_series_create(newId)
             if newNode["type"] == "eventseries":
                 self.event_series_create(newId)
+            if newNode["type"] == "object":
+                if "class" not in newNode:
+                    newNode["class"]=None
+                if "autoReload" not in newNode:
+                    newNode["autoReload"] = False # set this to true means: on a "instantiate object, we reload the module
             self.__notify_observers(parentId,"children")
             return newNode["id"]
 
@@ -1354,6 +1372,10 @@ class Model:
                         else:
                             node[nk] = copy.deepcopy(nv)  # values can be list, dict and deeper objects
                     model[nodeId] = node
+                elif nodeDict["type"]=="object":
+                    node={k:v for k,v in nodeDict.items() if k!="object"}
+                    model[nodeId]=node
+
                 else:
                     #this node is not a colum, can still hold huge data
                     model[nodeId] = copy.deepcopy(nodeDict)  # values can be list, dict and deeper objects nodeDict
@@ -2302,7 +2324,22 @@ class Model:
         for child in self.model[rootId]["children"]:
             self.__show_subtree(child)
 
-    def execute_function(self,desc):
+    def execute_object_function(self,desc,functionName,parameter=None):
+        with self.lock:
+            id = self.get_id(desc)
+            object = self.get_object(id)
+            if not object:
+                return False
+            try:
+                functionPointer = getattr(object,functionName)
+                self.executionQueue.put({"functionPointer":functionPointer,"parameter":parameter,"id":id})
+                return True
+            except:
+                self.logger.error(f"function {functionName} not sttr of object {desc} {object}")
+        return False
+
+
+    def execute_function(self,desc,parameter = None):
         """
             create a thread to execute a function there,
             if the function has autoReload, we re-import the external
@@ -2477,26 +2514,39 @@ class Model:
             all inputs and outputs are found in the model
             we also set the status and result from here, not needed to do that in the function
             Args:
-                id: the node id of the function to be executed
+                id: the node id of the function to be executed or the dict for an object call
         """
         try:
+            if type(id) is str:
+                if self.model[id]["type"] == "function":
+                    isFunction = True
+            else:
+                isFunction = False
+
 
             with self.lock:
 
-                if self.model[id]["autoReload"] == True:
-                    # must reload the module
+                if isFunction:
+                    if self.model[id]["autoReload"] == True:
+                        # must reload the module
+                        functionName = self.model[id]["functionPointer"]
+                        module = importlib.reload(self.functions[functionName]["module"])
+                        functionPointer = getattr(module, functionName.split('.', 1).pop())
+                        # now update our global list
+                        self.functions[functionName]["module"] = module
+                        self.functions[functionName]["function"] = functionPointer
+
+
+                    #self.logger.info(f"in execution Thread {threading.get_ident()}, executing {id} {functionName}")
+                    #check the function
                     functionName = self.model[id]["functionPointer"]
-                    module = importlib.reload(self.functions[functionName]["module"])
-                    functionPointer = getattr(module, functionName.split('.', 1).pop())
-                    # now update our global list
-                    self.functions[functionName]["module"] = module
-                    self.functions[functionName]["function"] = functionPointer
-
-
-                self.logger.info(f"in execution Thread {threading.get_ident()}, executing {id} {functionName}")
-                #check the function
-                functionName = self.model[id]["functionPointer"]
-                functionPointer = self.functions[functionName]['function']
+                    functionPointer = self.functions[functionName]['function']
+                    self.logger.info(f"in execution Thread {threading.get_ident()}, executing {id} {functionName}")
+                else:
+                    functionPointer = id["functionPointer"]
+                    functionName = functionPointer.__name__
+                    parameter = id["parameter"]
+                    id = id["id"] #for deeper down
 
                 #now set some controls
                 try:
@@ -2517,7 +2567,10 @@ class Model:
                     pass
 
             # model lock open: we execute without model lock
-            result = functionPointer(node) # this is the actual execution
+            if isFunction:
+                result = functionPointer(node) # this is the actual execution
+            else:
+                result = functionPointer(parameter)
 
             #now we are back, set the status to finished
             duration = (datetime.datetime.now()-startTime).total_seconds()
@@ -2771,6 +2824,9 @@ class Model:
                                         continue
                                     self.ts.set(id,times=times)
                     self.clean_ts_entries()  # make sure the model and ts table is consistent
+
+                self.instantiate_all_objects()
+
                 self.enable_observers()
                 self.publish_event(f"loading model {fileName} done.")
                 self.model["1"]["version"]=self.version #update the version
@@ -3967,6 +4023,57 @@ class Model:
                 self.event_series_set(id,values,times)
 
             print(data)
+
+    def get_object(self,desc):
+        id = self.get_id(desc)
+        if not id:
+            return False
+        with self.lock:
+            if not self.model[id]["type"] == "object":
+                return None
+            if "object" not in self.model[id]:
+                return None
+            return self.model[id]["object"]
+
+    def instantiate_object(self,desc,writeToModel=True):
+        id = self.get_id(desc)
+        if not id:
+            return False
+        with self.lock:
+            if not self.model[id]["type"] == "object":
+                return False
+            try:
+                className = self.model[id]["class"]
+                if "autoReload" in self.model[id] and self.model[id]["autoReload"]==True:
+                        # must reload the module
+
+
+                    module = importlib.reload(self.objectClasses[className]["module"])
+                    classDefinition = getattr(module, className.split('.', 1).pop())
+                    # now update our global list
+                    self.objectClasses[className]["module"] = module
+                    self.objectClasses[className]["class"] = classDefinition
+
+                classDefinition = self.objectClasses[className]["class"]
+                object = classDefinition(self.get_node(id)) #instantiate the object
+                if writeToModel:
+                    self.model[id]["object"]=object
+                return object
+            except:
+                self.log_error()
+                return None
+
+    def instantiate_all_objects(self):
+        with self.lock:
+            #make a list first for iteration, we can't iterate over the model,
+            # as the instantiation of object might produce new nodes while we iterate
+            objects = [k for k,v in self.model.items() if v["type"] == "object"]
+
+            for id in objects:
+                try:
+                     self.instantiate_object(id)
+                except:
+                    self.log_error()
 
 
     def create_test(self,testNo=1):

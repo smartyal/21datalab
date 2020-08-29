@@ -13,7 +13,7 @@ import json
 
 
 
-thresholdScorer= {
+thresholdScorer = {
     "name":"thresholdScorer",
     "type":"function",
     "functionPointer":"threshold.threshold_scorer",   #filename.functionname
