@@ -7,8 +7,9 @@ import modelhelper as mh
 
 from timeseries import TimeSeries
 import dates
+from utils import Profiling
 
-
+import json
 
 
 
@@ -1001,6 +1002,7 @@ def threshold_scorer_4(functionNode):
     inputNodes=[node for node in inputNodes if node.get_id() in thresholds]
     total=None
 
+    p = utils.P
     for counter,node in enumerate(inputNodes):
         progressNode.set_value(counter/len(inputNodes))
 
@@ -1177,7 +1179,7 @@ def threshold_scorer_5(functionNode):
 
 
 
-
+    p=Profiling("initialization")
     #timeNode = tableNode.get_table_time_node()
     #tableLen = len(timeNode.get_value())
     outputNodes = functionNode.get_child("output").get_child("scores").get_leaves()
@@ -1185,21 +1187,23 @@ def threshold_scorer_5(functionNode):
     m = functionNode.get_model()
     mustTriggerObserver = False
 
-
+    p.lap("a")
     #create and connect the two main outputs
     totalOutputNode = functionNode.get_child("output").get_child("_total_score")
     if not totalOutputNode:
         totalOutputNode=functionNode.get_child("output").create_child("_total_score",properties={"type":"timeseries","creator":functionNode.get_id(),"subType":"score"})
         columnsNode.add_references(totalOutputNode) #connect to table
 
-
-
+    p.lap("b")
     # first find the time areas to work on for all sensors, this is a global filter for all activities
     # we store it as a list of start and end time to evaluate for each sensor separately
     regionFilter = []
     annos1 = functionNode.get_child("annotations").get_leaves()
     annos1Filter = functionNode.get_child("annotationsFilter").get_value()
+    #print(f"have {len(annos1)} a nnos")
 
+
+    p.lap("c")
     if annos1Filter:
         for anno in annos1:
             logger.debug(f"processing anno {anno.get_name()}")
@@ -1209,8 +1213,7 @@ def threshold_scorer_5(functionNode):
             if  any([tag in annos1Filter for tag in tags]):
                 regionFilter.append({"start": anno.get_child("startTime").get_value(), "end": anno.get_child("endTime").get_value()})
 
-
-
+    p.lap("d")
     # we convert all thresholds into a list of dicts for faster access
     thresholds ={} # a dict holding the nodeid and the threshold thereof (min and max)
     for anno in functionNode.get_child("thresholds").get_leaves():
@@ -1233,6 +1236,7 @@ def threshold_scorer_5(functionNode):
         else:
             thresholds[id].append(entry)
 
+    p.lap("e")
     # now create dynamically the needed score variables,
     # the existing outputNodes with no current threshold definiton will also be deleted
     thresholdVarNames = [functionNode.get_node(id).get_name()+"_score" for id in thresholds]
@@ -1260,7 +1264,8 @@ def threshold_scorer_5(functionNode):
     finally:
         model.enable_observers()
 
-
+    p.lap("f")
+    print(p)
     #
     #   threshold scoring starts here
     #
@@ -1268,18 +1273,23 @@ def threshold_scorer_5(functionNode):
     #remove the inputNodes from the list which have no threshold to score on
     inputNodes=[node for node in inputNodes if node.get_id() in thresholds]
     total=None
-
+    pp = Profiling("total")
+    m.disable_observers()
     for counter,node in enumerate(inputNodes):
-        progressNode.set_value(counter/len(inputNodes))
-
-        m.disable_observers()
+        pp.lap(node.get_name()+"start")
+        p = Profiling(node.get_name())
+        #progressNode.set_value(counter/len(inputNodes))
+        p.lap("10")
         try:
             id = node.get_id()
             logger.debug(f" threshold scoring on {node.get_browse_path()} ")#with {thresholds[id]['min']}, {thresholds[id]['max']}")
             get = node.get_time_series()
+            p.lap("30")
             values = get["values"]
             times = get["__time"]
             mask = mask_from_regions(regionFilter,times) # gives true where there is a region
+            p.lap(f"40")
+            print(f"len {len(times)}")
 
 
             #now find where the limits are over/under
@@ -1294,7 +1304,7 @@ def threshold_scorer_5(functionNode):
                 outOfLimit = out_of_limits(values,entry['min'],entry['max'])#numpy.logical_or( values < entry['min'], values > entry['max'] )
                 outOfLimit = numpy.logical_and(outOfLimit,mask) #this is the global time filter (regions etc)
                 variableTotal = numpy.logical_and(outOfLimit,variableTotal)
-
+            p.lap("50")
             if not haveAnyGlobal:
                 variableTotal = numpy.full(len(values), False, dtype=numpy.bool)
 
@@ -1307,22 +1317,25 @@ def threshold_scorer_5(functionNode):
             specificResults = numpy.full(len(values), False,dtype=numpy.bool) # holds the areas where the results must be replaced
             haveAnyLocal = False
             for entry in thresholds[id]:
+                p.lap("51")
                 if entry["tags"] == []:
                     continue # those have been handled above
                 haveAnyLocal = True
                 outOfLimit = out_of_limits(values,entry['min'],entry['max'])#tooSmall | tooBig #numpy.logical_or( values < entry['min'], values > entry['max'] )
                 outOfLimit = numpy.logical_and(outOfLimit,mask) #this is the global time filter (regions etc)
                 #additionally the specific filters:
+                p.lap("511")
                 myAnnos = mh.filter_annotations(annos1,entry["tags"]) # we take all the tags, so multiple selection of annotations for a threshold are possible
+                p.lap("512")
                 localFilter = mh.annotations_to_class_vector(myAnnos,times)
+                p.lap("513")
                 localFilter = numpy.isfinite(localFilter)
                 outOfLimit = numpy.logical_and(outOfLimit, localFilter)
-
                 #now we have results in outOfLimit which are valid during localFilter
                 # if we have already results during local Filter then this is another thresholds of the same tags
                 # we had already earlier, so we will "and" the outoflimit to the total, otherwise "or" it
 
-
+                p.lap("52")
                 additionalLocalResultFilter = localFilter & specificResults # true where we have results that must be "and"ed
                 if (numpy.any(additionalLocalResultFilter)):
                     #we have results in an area that has been scored before
@@ -1338,6 +1351,7 @@ def threshold_scorer_5(functionNode):
                 specificResults = numpy.logical_or(specificResults,localFilter) # remember known areas
 
                 #variableTotal = numpy.logical_and(outOfLimit,variableTotal) #
+            p.lap("60")
             if not haveAnyLocal:
                 variableTotal = numpy.full(len(values), False, dtype=numpy.bool)
 
@@ -1351,7 +1365,7 @@ def threshold_scorer_5(functionNode):
             outPutNode = functionNode.get_child("output").get_child("scores").get_child(node.get_name()+"_score")
 
             #write out the score
-
+            p.lap("70")
             if onlyUpdate:
                 # take the old values and merge in the new ones, only where the masks are true
                 # we need to mask the outOfLimitIndices once more by the mask
@@ -1390,7 +1404,7 @@ def threshold_scorer_5(functionNode):
                 score[outOfLimitIndices] = values[outOfLimitIndices]
                 outPutNode.set_time_series(score,times)
                 scoreTimes = times
-
+            p.lap("80")
 
             # build the total score:
             # merge in the new times, resample the total score, resampel the local score, then merge them
@@ -1403,12 +1417,15 @@ def threshold_scorer_5(functionNode):
                 total = TimeSeries(values = score, times = scoreTimes)
             else:
                 local = TimeSeries(values = score, times = scoreTimes)
+                p.lap("81")
                 total.merge(local)
-
+            p.lap("90")
             mustTriggerObserver = True
         finally:
-            m.enable_observers()
-
+            pass
+        print(p)
+    m.enable_observers()
+    print("TOTALL",pp)
     #finally, set all values of the total score to -1 or nan
     if total:
         totalValues = total.get_values()
@@ -1429,6 +1446,372 @@ def threshold_scorer_5(functionNode):
         m.notify_observers([node.get_id() for node in functionNode.get_child("output").get_child("scores").get_leaves()],"value")
 
     return True
+
+
+def threshold_scorer_6(functionNode):
+    """
+        the threshold-scorer 5
+
+        - the _total_output and __differential nodes are created if they don't exist
+
+
+
+        modelling:
+        - put the scorer where you like
+        - connect annotations and inputs
+        - execute it once with signal "reset"
+        - connect the widgets.scoreVariables to the output folder (to make them scores)
+        - install an observer (event:timeSeriesWidget.variables) in the widget to watch the selectedVariables and scoreVariables value change
+
+
+        Args: the functionNode
+
+    """
+    logger = functionNode.get_logger()
+    logger.debug(f'threshold_scorer_6() {functionNode.get_child("control").get_child("signal").get_value()}')
+
+    inputNodes = functionNode.get_child("input").get_leaves()
+    tableNode = inputNodes[0].get_table_node()
+    columnsNode = tableNode.get_child("columns")
+    progressNode = functionNode.get_child("control").get_child("progress")
+
+    onlyUpdate = functionNode.get_child("incremental").get_value() #if this is set, we don't touch old existing scores, so we start at the end of the score
+    if onlyUpdate:
+        processedUntil = 0      #during the thresholds, we will collect the latest time of any sensor and put it in the processedUntil
+
+
+
+
+    p=Profiling("initialization")
+    #timeNode = tableNode.get_table_time_node()
+    #tableLen = len(timeNode.get_value())
+    outputNodes = functionNode.get_child("output").get_child("scores").get_leaves()
+    model = functionNode.get_model()
+    m = functionNode.get_model()
+    mustTriggerObserver = False
+
+    p.lap("a")
+    #create and connect the two main outputs
+    totalOutputNode = functionNode.get_child("output").get_child("_total_score")
+    if not totalOutputNode:
+        totalOutputNode=functionNode.get_child("output").create_child("_total_score",properties={"type":"timeseries","creator":functionNode.get_id(),"subType":"score"})
+        columnsNode.add_references(totalOutputNode) #connect to table
+
+    p.lap("b")
+    # first find the time areas to work on for all sensors, this is a global filter for all activities
+    # we store it as a list of start and end time to evaluate for each sensor separately
+    regionFilter = []
+
+    annos1Filter = functionNode.get_child("annotationsFilter").get_value()
+
+    p.lap("bb")
+    annos1 = functionNode.get_child("annotations").get_leaves()
+    #create lookupAnnos: dict with {endTimes:array annos: list of annos annotation}
+    lookupAnnos = {"endTimes":[],"annos":[],"startTimes":[],"endEpochs":[]}
+    for anno in annos1:
+        if anno.get_child("type").get_value()!="time":
+            continue
+        ende = anno.get_child("endTime").get_value()
+        #start = anno.get_child("startTime").get_value()
+        epoch = dates.date2secs(ende)
+        #lookupAnnos["endTimes"].append(ende)
+        lookupAnnos["endEpochs"].append(epoch)
+        #lookupAnnos["startTimes"].append(start)
+        lookupAnnos["annos"].append(anno)
+    #now convert all to numpy arrays
+    for k in ["endEpochs"]:#,"endTimes","startTimes","endEpochs"]:
+        lookupAnnos[k]=numpy.asarray(lookupAnnos[k])
+    p.lap("bc")
+
+    #XXX FAST CONVERT
+    """
+    annosFolderId = functionNode.get_child("annotations").get_target().get_id()
+    lookupAnnos = {"endTimes":[],"annos":[],"startTimes":[],"endEpochs":[]}
+
+    for nodeId in m.model[annosFolderId]["children"]:
+        dic={}
+        for childId in m.model[nodeId]["children"]:
+            name = m.model[childId]["name"]
+            val = m.model[childId]["value"]
+            dic[name]=val
+        if dic["type"]!="time":
+            continue
+        ende = dic["endTime"]
+        anno = childId
+        #start = anno.get_child("startTime").get_value()
+        epoch = dates.date2secs(ende)
+        lookupAnnos["endTimes"].append(ende)
+        #lookupAnnos["endEpochs"].append(epoch)
+        #lookupAnnos["startTimes"].append(start)
+        lookupAnnos["annos"].append(anno)
+    #now convert all to numpy arrays
+    lookupAnnos["endEpochs"]=[dates.date2secs(ende) for end in lookupAnnos["endTimes"]]
+    p.lap("bd")
+    for k in ["endEpochs"]:#,"endTimes","startTimes","endEpochs"]:
+        lookupAnnos[k]=numpy.asarray(lookupAnnos[k])
+    """
+
+    p.lap("c")
+    if annos1Filter:
+        for anno in annos1:
+            logger.debug(f"processing anno {anno.get_name()}")
+            if anno.get_child("type").get_value() != "time":
+                continue # only time annotations
+            tags = anno.get_child("tags").get_value()
+            if  any([tag in annos1Filter for tag in tags]):
+                regionFilter.append({"start": anno.get_child("startTime").get_value(), "end": anno.get_child("endTime").get_value()})
+
+    p.lap("d")
+    # we convert all thresholds into a list of dicts for faster access
+    thresholds ={} # a dict holding the nodeid and the threshold thereof (min and max)
+    for anno in functionNode.get_child("thresholds").get_leaves():
+        if anno.get_child("type").get_value() != "threshold":
+            continue # only thresholds
+        id = anno.get_child("variable").get_leaves()[0].get_id() # the first id of the targets of the annotation target pointer, this is the node that the threshold is referencing to
+
+        thisMin  = anno.get_child("min").get_value()
+        if type(thisMin) is type(None):
+            thisMin = -numpy.inf
+        thisMax = anno.get_child("max").get_value()
+        if type(thisMax) is type(None):
+            thisMax = numpy.inf
+        tags = anno.get_child("tags").get_value()
+        if "threshold" in tags:
+            tags.remove("threshold")
+        entry = {"min": thisMin, "max": thisMax,"tags":tags}
+        if id not in thresholds:
+            thresholds[id] = [entry]
+        else:
+            thresholds[id].append(entry)
+
+    p.lap("e")
+    # now create dynamically the needed score variables,
+    # the existing outputNodes with no current threshold definiton will also be deleted
+    thresholdVarNames = [functionNode.get_node(id).get_name()+"_score" for id in thresholds]
+    deleteOld = []
+
+
+
+    model.disable_observers()# we do not trigger the change of nodes, as this is done later with the values anyways
+    try:
+        for node in outputNodes:
+            if node.get_name() not in thresholdVarNames:
+                logger.info(f"delete old score {node.get_browse_path()}")
+                deleteOld.append(node)
+        for node in deleteOld:
+            node.delete()
+            mustTriggerObserver = True
+
+
+        #create needed new ones
+        outputNodes = functionNode.get_child("output").get_child("scores").get_leaves() # get the remaining fresh
+        outputNodeNames =[node.get_name() for node in outputNodes]
+        for name in thresholdVarNames:
+            if name not in outputNodeNames:
+                logger.info(f"create new threshold score {name}")
+                newScore = functionNode.get_child("output").get_child("scores").create_child(name,properties={"type":"timeseries","subType":"score","creator":functionNode.get_id()})
+                columnsNode.add_references(newScore)
+                mustTriggerObserver = True
+    finally:
+        model.enable_observers()
+
+    p.lap("f")
+    print(p)
+    #
+    #   threshold scoring starts here
+    #
+
+    return True
+
+    #remove the inputNodes from the list which have no threshold to score on
+    inputNodes=[node for node in inputNodes if node.get_id() in thresholds]
+    total=None
+    pp = Profiling("total")
+    m.disable_observers()
+    try:
+        for counter,node in enumerate(inputNodes):
+            pp.lap(node.get_name()+"start")
+            p = Profiling(node.get_name())
+            #progressNode.set_value(counter/len(inputNodes))
+            p.lap("10")
+            try:
+                id = node.get_id()
+                logger.debug(f" threshold scoring on {node.get_browse_path()} ")#with {thresholds[id]['min']}, {thresholds[id]['max']}")
+
+                if onlyUpdate:
+                    outPutNode = functionNode.get_child("output").get_child("scores").get_child(node.get_name() + "_score")
+
+                    if 1:
+                        #fake the limit
+                        #print(f"cut Time  {outPutNode.get_raw_time_series()} {len(outPutNode.get_raw_time_series()['__time'])} {len(node.get_raw_time_series()['__time'])}")
+                        #print(f" the last times {outPutNode.get_raw_time_series()['__time'][-1]} {node.get_raw_time_series()['__time'][-1]}")
+                        lastTimeScored = outPutNode.get_raw_time_series()["__time"][-1000]
+
+                        #print(f" delete from {lastTimeScored}")
+                        res = outPutNode.delete_time_series(lastTimeScored)
+
+
+                    lastTimeScored = outPutNode.get_raw_time_series()["__time"][-1]
+                    #print(f"{res} lastTimeScored  {lastTimeScored}")
+
+                    get = node.get_raw_time_series(lastTimeScored) #get only the new data
+                    #print(f"last picked data times is {list(get['__time'])}")
+                else:
+                    get = node.get_raw_time_series()  # get full data
+
+                p.lap("30")
+                values = get["values"]
+                times = get["__time"]
+                if times[0] == lastTimeScored:
+                    #have this one already, get_raw returns including the <= start time
+                    values = values[1:]
+                    times = times[1:]
+
+                p.lap(f"40")
+                print(f"len {len(times)}")
+
+
+                #now find where the limits are over/under
+                variableTotal = numpy.full(len(values), True,dtype=numpy.bool)
+                haveAnyGlobal = False
+
+                #we start with the global valid thresholds
+                for entry in thresholds[id]:
+                    if entry["tags"] != []:
+                        continue # we don't handle thresholds now with are linked to certain annotations
+                    haveAnyGlobal = True
+                    outOfLimit = out_of_limits(values,entry['min'],entry['max'])#numpy.logical_or( values < entry['min'], values > entry['max'] )
+                    #outOfLimit = numpy.logical_and(outOfLimit,mask) #this is the global time filter (regions etc)
+                    variableTotal = numpy.logical_and(outOfLimit,variableTotal)
+                p.lap("50")
+                if not haveAnyGlobal:
+                    variableTotal = numpy.full(len(values), False, dtype=numpy.bool)
+
+
+                globalOutOfLimit = variableTotal #holds true for outlier and false for ok for the global valid thresholds
+
+
+                #now the ones bound to a annotation tag
+                variableTotal =  numpy.full(len(values), False,dtype=numpy.bool)
+                specificResults = numpy.full(len(values), False,dtype=numpy.bool) # holds the areas where the results must be replaced
+                haveAnyLocal = False
+                for entry in thresholds[id]:
+                    p.lap("51")
+                    if entry["tags"] == []:
+                        continue # those have been handled above
+                    haveAnyLocal = True
+                    outOfLimit = out_of_limits(values,entry['min'],entry['max'])#tooSmall | tooBig #numpy.logical_or( values < entry['min'], values > entry['max'] )
+                    #outOfLimit = numpy.logical_and(outOfLimit,mask) #this is the global time filter (regions etc)
+                    #additionally the specific filters:
+                    if 1:
+                        p.lap("511")
+                        #preselect only those annotations which are in this time area
+                        before = len(annos1)
+                        first=numpy.searchsorted(lookupAnnos["endEpochs"],times[0],"right")-1
+                        annos = lookupAnnos["annos"][first:]
+                        selected = len(annos)
+                        print(f"reduce look up {before} {selected}")
+                        myAnnos = mh.filter_annotations(annos,entry["tags"]) # we take all the tags, so multiple selection of annotations for a threshold are possible
+                        p.lap("512")
+                        localFilter = mh.annotations_to_class_vector(myAnnos,times)
+                        p.lap("513")
+                        localFilter = numpy.isfinite(localFilter)
+                        outOfLimit = numpy.logical_and(outOfLimit, localFilter)
+                    else:
+                        localFilter = numpy.full(len(times),True,dtype=numpy.bool)
+                    #now we have results in outOfLimit which are valid during localFilter
+                    # if we have already results during local Filter then this is another thresholds of the same tags
+                    # we had already earlier, so we will "and" the outoflimit to the total, otherwise "or" it
+
+                    p.lap("52")
+                    additionalLocalResultFilter = localFilter & specificResults # true where we have results that must be "and"ed
+                    if (numpy.any(additionalLocalResultFilter)):
+                        #we have results in an area that has been scored before
+                        newScore = variableTotal & additionalLocalResultFilter & outOfLimit
+                        variableTotal[additionalLocalResultFilter]=False
+                        variableTotal = variableTotal | newScore
+
+                    else:
+                        #just invalidade
+                        variableTotal = numpy.logical_or(outOfLimit, variableTotal)  #
+
+
+                    specificResults = numpy.logical_or(specificResults,localFilter) # remember known areas
+
+                    #variableTotal = numpy.logical_and(outOfLimit,variableTotal) #
+                p.lap("60")
+                if not haveAnyLocal:
+                    variableTotal = numpy.full(len(values), False, dtype=numpy.bool)
+
+                #now merge both
+                globalOutOfLimit[specificResults]=False # invalidate global results where we have specific results
+                variableTotal = numpy.logical_or(variableTotal,globalOutOfLimit)
+
+
+
+                outOfLimitIndices = numpy.where(variableTotal==True)
+                outPutNode = functionNode.get_child("output").get_child("scores").get_child(node.get_name()+"_score")
+
+                #write out the score
+                p.lap("70")
+                if onlyUpdate:
+
+                    scores = numpy.full(len(values),numpy.nan,dtype=numpy.float64)
+                    scores[outOfLimitIndices] = values[outOfLimitIndices]
+                    outPutNode.insert_time_series(scores,times) #this is in fact an appednd
+                else:
+                    #overwrite the old values
+                    score = numpy.full(len(values),numpy.nan,dtype=numpy.float64) # rest all
+                    score[outOfLimitIndices] = values[outOfLimitIndices]
+                    outPutNode.set_time_series(score,times)
+                p.lap("80")
+
+                # build the total score:
+                # merge in the new times, resample the total score, resampel the local score, then merge them
+                # the merge function will use the new values whereever there is one (empty fields are named "nan"
+                #  for the total score, we need a resampling to avoid the mixing of results e.g.
+                # two sensor have different result during a given interval, but different times, if we just merge
+                # we get a True, False, True,False mixture
+                # so we build the merge vector, first resample then merge
+                """
+                if type(total) is type(None):
+                    total = TimeSeries(values = score, times = scoreTimes)
+                else:
+                    local = TimeSeries(values = score, times = scoreTimes)
+                    p.lap("81")
+                    total.merge(local)
+                """
+
+                p.lap("90")
+                mustTriggerObserver = True
+            finally:
+                pass
+            print(p)
+    finally:
+        m.enable_observers()
+    print("TOTALL",pp)
+    #finally, set all values of the total score to -1 or nan
+    if total:
+        totalValues = total.get_values()
+        totalValues[numpy.isfinite(totalValues)]=-1
+        totalOutputNode.set_time_series(values=totalValues,times = total.get_times())
+
+    #update the processedUntil if needed
+    if onlyUpdate:
+        #try to write the processedUntil, if it exists
+        processedUntilNode = functionNode.get_child("processedUntil")
+        if processedUntilNode:
+            isoDate = dates.epochToIsoString(processedUntil, zone="Europe/Berlin")
+            processedUntilNode.set_value(isoDate)
+
+    progressNode.set_value(1)
+    if mustTriggerObserver:
+        m.notify_observers(functionNode.get_child("output").get_child("scores").get_id(),"children")
+        m.notify_observers([node.get_id() for node in functionNode.get_child("output").get_child("scores").get_leaves()],"value")
+
+    return True
+
+
 
 
 

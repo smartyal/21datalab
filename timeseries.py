@@ -78,7 +78,7 @@ class TimeSeries:
                 if profiling: profiling.lap(f"put in array")
             else:
                 #must insert and avoid producing dublicates
-                insertIndicesLeft = numpy.searchsorted(self.times,times,side="right")
+                insertIndicesLeft = numpy.searchsorted(self.get_times(),times,side="right")
                 if profiling: profiling.lap(f"searchsorted")
 
                 inserted = 0 # the number of elements already inserted, for each already inserted element, we need to add 1 on the insert index for the remaining elements to insert
@@ -102,6 +102,28 @@ class TimeSeries:
 
         return True
 
+    def delete_area(self,start=None,end=None):
+        #delete all data where start<=times<=end
+        if type(start) == type(None):
+            left = 0
+        else:
+            left = numpy.searchsorted(self.get_times(), start)
+
+        if type(end) == type(None):
+            # this is a tail delete that is easy:
+            print("adjust last valid in des  {self.lastValidIndex} -> {left -1}")
+            self.lastValidIndex = left -1
+
+        else:
+            right = numpy.searchsorted(self.get_times(), end, side="right")
+            siz = right-left+1
+            self.times[left:self.lastValidIndex-siz] = self.times[right+1:self.lastValidIndex]
+            self.values[left:self.lastValidIndex - siz] = self.values[right+1:self.lastValidIndex]
+            self.lastValidIndex = self.lastValidIndex - siz
+
+        return True
+
+
     def set_masked(self, values, mask):
         with self.lock:
             #only with indices
@@ -121,10 +143,10 @@ class TimeSeries:
             return True
 
     def get_values(self):
-        return self.values
+        return self.values[0:self.lastValidIndex+1]
 
     def get_times(self):
-        return self.times
+        return self.times[0:self.lastValidIndex+1]
 
     def get(self, start=None, end=None, copy=False, resampleTimes = None, noBins = None, includeIntervalLimits = False, resampleMethod = None):
         """
@@ -175,12 +197,12 @@ class TimeSeries:
                     start = lastTime + start  # look back from the end, note that start is negative
                     if start < 0:
                         start = 0
-                startIndex = numpy.searchsorted(self.times, start)
+                startIndex = numpy.searchsorted(self.get_times(), start,"right")-1 #the first index to take
             else:
                 startIndex = 0
 
             if end:
-                endIndex = numpy.searchsorted(self.times, end, side="right") # this endIndex is one more than the last that we take
+                endIndex = numpy.searchsorted(self.get_times(), end, side="right") # this endIndex is one more than the last that we take
             else:
                 endIndex = lastValidIndex +1
 
@@ -210,26 +232,28 @@ class TimeSeries:
                             takeIndices = numpy.linspace(startIndex, endIndex-1, noBins, endpoint=True, dtype=int)
                         else:
                             takeIndices = numpy.arange(startIndex, endIndex) #arange excludes the last
-                    else:
-                        takeIndices = numpy.arange(startIndex,endIndex) #arange exludes the last
 
-                    times = self.times[takeIndices]
-                    #print(f"{(times[0])} => {(times[-1])}")
-                    values = self.values[takeIndices]
+                        times = self.times[takeIndices]
+                        values = self.values[takeIndices]
+
+                    else:
+                        #takeIndices = numpy.arange(startIndex,endIndex) #arange exludes the last
+                        times = self.times[startIndex:endIndex]
+                        values = self.values[startIndex:endIndex]
                 else:
                     #must resample the data
                     #oldTimes = self.times[startIndex:endIndex]
                     #oldValues = self.values[startIndex:endIndex]
 
                     if resampleMethod == "linear":
-                        values = numpy.interp(resampleTimes,self.times,self.values)
+                        values = numpy.interp(resampleTimes,self.get_times(),self.get_values())
                     elif resampleMethod == "linearfill":
                         #fill the nans with data
-                        indices = numpy.isfinite(self.values)
-                        values = numpy.interp(resampleTimes, self.times[indices], self.values[indices])
+                        indices = numpy.isfinite(self.get_values())
+                        values = numpy.interp(resampleTimes, self.get_times()[indices], self.get_values()[indices])
                     else:
                         #the default is ffill
-                        values = self.__resample_ffill(resampleTimes, self.times, self.values)
+                        values = self.__resample_ffill(resampleTimes, self.get_times(), self.get_values())
                     times = resampleTimes
 
 
@@ -292,7 +316,7 @@ class TimeSeries:
             the new values will get priority on dublicate times
         """
         with self.lock:
-            mergeTimes = merge_times(self.times,timeseries.get_times())
+            mergeTimes = merge_times(self.get_times(),timeseries.get_times())
             oldValues = self.get(resampleTimes=mergeTimes)["values"]
             newValues = timeseries.get(resampleTimes=mergeTimes)["values"]
             indices=numpy.isfinite(newValues)
@@ -334,6 +358,12 @@ class TimeSeriesTable:
             self.create(name)
         return self.store[name].insert(values,times,allowDuplicates = allowDuplicates)
 
+    def append(self, name, values=None, times=None):
+        if name not in self.store:
+            self.create(name)
+        return self.store[name].insert(values,times)
+
+
     def set(self,name,values = None,times = None):
         return self.store[name].set(values,times)
 
@@ -349,6 +379,7 @@ class TimeSeriesTable:
                 result[name]=self.store[name].get(start=start,end=end,copy=copy,resampleTimes=resampleTimes,noBins=noBins,includeIntervalLimits=includeIntervalLimits,resampleMethod=resampleMethod)
         return result
 
+
     def get_info(self,name = None):
         if not name:
             s=""
@@ -363,6 +394,10 @@ class TimeSeriesTable:
 
                 return f"time series len {len(dat)}, data:{dat[0:min(len(dat),10)]}"
 
+    def delete_area(self,name,start=None,end=None):
+        if name not in self.store:
+            return False
+        return self.store[name].delete_area(start,end)
 
     def insert_blobs(self,blobs):
         """ blob is a dict or list of dicts of key and values containing one time base like

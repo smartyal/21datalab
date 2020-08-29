@@ -112,6 +112,9 @@ class Node():
         else:
             return None
 
+    def get_raw_time_series(self,start=None,end=None):
+        return self.model.time_series_get_raw(self.id,start=start,end=end)
+
     def add_references(self,targetNodes,deleteAll=False):
         """
             add references from the node to the targets
@@ -155,6 +158,9 @@ class Node():
         """
         return self.model.time_series_insert(self.id,values=values, times=times, allowDuplicates=allowDuplicates)
 
+
+    def delete_time_series(self,start=None,end=None):
+        return self.model.time_series_delete_area(self.id, start=start, end=end)
 
     #####################
     # event series node API
@@ -999,6 +1005,7 @@ class Model:
             moduleName = os.path.splitext(filename_relative)[0].replace(os.path.sep, '.')
             self.logger.info(f"import plugin lib {moduleName}")
             module = importlib.import_module(moduleName)
+            module = importlib.reload(module) # if we change an already imported, python uses the cache, so to make sure we always get the latest, reimport here
             #now analyze all objects in the module
             for objName in dir(module):
                 if objName.startswith('__'):
@@ -3438,6 +3445,28 @@ class Model:
         self.__notify_observers(id, "value")
         return result
 
+    def time_series_append(self, desc, values=None, times=None):
+        id = self.get_id(desc)
+        if not id in self.model:
+            return None
+        with self.lock:
+            result =  self.ts.append(id,values, times)
+        self.__notify_observers(id, "value")
+        return result
+
+    def time_series_delete_area(self,desc,start=None,end=None):
+        id = self.get_id(desc)
+        if not id in self.model:
+            return None
+        with self.lock:
+            result =  self.ts.delete_area(id,start=start,end=end)
+            self.__notify_observers(id, "value")
+        return result
+
+
+
+
+
     def time_series_set(self,desc,values=None,times=None):
         id = self.get_id(desc)
         if not id in self.model:
@@ -3457,7 +3486,8 @@ class Model:
                               resampleTimes=None,
                               format="default",
                               toList = False,
-                              resampleMethod = None):
+                              resampleMethod = None,
+                              copy=True):
         """
             get a time series table from variables (nodes of type "timeseries").
 
@@ -3576,6 +3606,15 @@ class Model:
     def time_series_get_info(self,name=None):
         return self.ts.get_info(name)
 
+
+    def time_series_get_raw(self,id,start=None,end=None):
+
+        table = self.ts.get_table([id], start=start, end=end, copy=False, resampleTimes=None,
+                                  noBins=None, includeIntervalLimits=False,
+                                  resampleMethod=None)
+
+        result = table[id]
+        return result
 
     def time_series_insert_blobs(self, tableDesc, blobs=[]):
         """ blob is a dict or list of dicts of key and values containing one time base like

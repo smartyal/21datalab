@@ -431,7 +431,7 @@ def all(path):
             responseCode = 200
 
         elif (str(path) == "models") and str(flask.request.method) in ["GET"]:
-            logger.debug(" get templates")
+            logger.debug(" get models")
             models = m.get_models()
             response = json.dumps(models)
             responseCode = 200
