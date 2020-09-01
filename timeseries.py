@@ -206,6 +206,9 @@ class TimeSeries:
             else:
                 endIndex = lastValidIndex +1
 
+            startIndex = max(startIndex,0) # make sure, startIndex is not negative
+
+
             if startIndex == endIndex:
                 haveData = False
             else:
