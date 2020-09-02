@@ -30,7 +30,7 @@ ThresholdPipeline={
     "class": "streamthreshold.ThresholdPipelineClass",
     "children":[
         {"name": "processors","type":"referencer"},
-        {"name":"variables","type":"referencer"},
+        {"name":"variables","type":"referencer"},       #ref to the variables and eventseries (only one) for the renaming of incoming descriptors
         __functioncontrolfolder
     ]
 }
@@ -88,17 +88,12 @@ class ThresholdPipelineClass():
 
         """
         p=Profiling("feed")
-        #self.logger.debug("feedMyStream {data}")
         for blob in data:
             #first, we convert all names to ids
             if blob["type"]in["timeseries","eventseries"]:
-                if blob["type"] == "eventseries":
-                    print("hallo")
                 blob["data"] = self.__convert_to_ids__(blob["data"])
             p.lap("#")
             blob = self.pipeline.feed(blob)
-
-
         #print(p)
         return True
 
@@ -125,15 +120,18 @@ class ThresholdPipelineClass():
     def reset(self,data=None):
         #create look up table for variables
         leaves = self.functionNode.get_child("variables").get_leaves()
-        self.varNameLookup = {node.get_name():node for node in leaves if node.get_type() in ["timeseries","eventseries"]}
+        self.varNameLookup = {}
+        for node in leaves:
+            typ = node.get_type()
+            if typ == "timeseries":
+                self.varNameLookup[node.get_name()] = node
+            elif typ == "eventseries":
+                self.varNameLookup[node.get_name()] = node
+                self.varNameLookup["__events"] = node # this is the default entry for incoming events
         varBrowsePathLookup = {node.get_browse_path():node for node in leaves if node.get_type() in ["timeseries","eventseries"]}
         self.varNameLookup.update(varBrowsePathLookup)
 
-
-
         #build the pipeline
-
-        #objects=[processor.get_object() for processor in self.functionNode.get_child("processors").get_targets()]
         self.pipeline = streaming.Pipeline(self.functionNode.get_child("processors").get_targets())
         self.pipeline.reset() # reset all processors
 

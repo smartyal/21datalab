@@ -38,6 +38,7 @@ events2State = {
         {"name": "annotations", "type": "folder" },  # this is where we put the result annos
         {"name": "eventSeries", "type": "referencer"},  # pointer to the eventseries to pick the history from
         {"name": "recoverEnabled", "type":"const","value":True},        # recover the state on reset
+        {"name": "currentState","type":"variable"},                     # the current state (output)
         {"name": "recoverInterval", "type":"const","value":2419200},    #28 days in seconds
         {"name": "eventSelection","type":"const","value":{              #name of the resulting anno: [start,end] names of the events
                 "busy": ["busy_start","busy_end"],
@@ -282,6 +283,7 @@ class Events2StateClass(streaming.Interface):
         self.logger=objectNode.get_logger()
         self.objectNode = objectNode
         self.model = objectNode.get_model()
+        self.stateNode = objectNode.get_child("currentState")
         #self.reset()
 
     def feed(self,blob):
@@ -340,6 +342,7 @@ class Events2StateClass(streaming.Interface):
 
 
     def __recover_state(self):
+
         """
             we get the latest events and recover the state thereof
         """
@@ -454,4 +457,6 @@ class Events2StateClass(streaming.Interface):
                 else:
                     self.logger.warning(f"end event without start {tim} {evStr} ")
 
+        if self.stateNode:
+            self.stateNode.set_value(list(self.state.keys()))
         return newAnnotations
