@@ -5,6 +5,7 @@ import streaming
 import numpy
 from utils import Profiling
 import streaming
+import json
 
 
 
@@ -44,6 +45,15 @@ Writer = {
     ]
 }
 
+StreamLogger = {
+    "name":"Logger",
+    "type":"object",
+    "class": "streamthreshold.StreamLoggerClass",
+    "children": [
+        __functioncontrolfolder
+    ]
+}
+
 
 def write_series(node,data,appendOnly=True):
     if node.get_type()=="eventseries":
@@ -68,7 +78,7 @@ class ThresholdPipelineClass():
         self.logger.debug("init ThresholdScorer()")
         self.functionNode = functionNode
         self.model = functionNode.get_model()
-        self.reset()
+        #self.reset() #this is executed at startup
 
 
     def feed(self,data):
@@ -89,7 +99,7 @@ class ThresholdPipelineClass():
             blob = self.pipeline.feed(blob)
 
 
-        print(p)
+        #print(p)
         return True
 
 
@@ -98,11 +108,15 @@ class ThresholdPipelineClass():
         newBlob = {}
         for k, v in blob.items():
             if k == "__time":
-                newBlob[k] = v
+                if type(v) is not list:
+                    v = [v]
+                newBlob[k] = numpy.asarray(v)
             else:
                 # try to convert
                 if k in self.varNameLookup:
                     id = self.varNameLookup[k].get_id()
+                    if type(v) is not list:
+                        v=[v]
                     newBlob[id]=numpy.asarray(v)
                 else:
                     self.logger.error(f"__convert_to_ids__: cant find {k}")
@@ -121,6 +135,7 @@ class ThresholdPipelineClass():
 
         #objects=[processor.get_object() for processor in self.functionNode.get_child("processors").get_targets()]
         self.pipeline = streaming.Pipeline(self.functionNode.get_child("processors").get_targets())
+        self.pipeline.reset() # reset all processors
 
 
         return True
@@ -259,7 +274,7 @@ class ThresholdsClass(streaming.Interface):
     def __init__(self,objectNode):
         self.logger=objectNode.get_logger()
         pass
-    def reset(self,data):
+    def reset(self,data=None):
         return data
     def feed(self,data):
         self.logger.debug("Thresholds.feed()")
@@ -282,7 +297,8 @@ class StreamWriterClass(streaming.Interface):
         return data
 
     def feed(self,blob=None):
-
+        self.logger.debug("StreamWriterClass.feed()")
+        pro=Profiling("WRITER")
         notifyIds = []
         self.model.disable_observers()
         if self.writeEnableNode.get_value()== True:
@@ -295,6 +311,7 @@ class StreamWriterClass(streaming.Interface):
                         if id[0:2] !="__": # the __ entries are others like state etc.
                             self.model.time_series_insert(id, values=values, times=times, allowDuplicates=True)
                             notifyIds.append(id)
+                            pro.lap(id)
                 if blob["type"] == "eventseries":
                     times = blob["data"]["__time"]
                     for id, values in blob["data"].items():
@@ -304,11 +321,40 @@ class StreamWriterClass(streaming.Interface):
             except Exception as ex:
                 self.logger.error(f"can't write data to model {ex}")
 
+        pro.lap("XXX")
         self.model.enable_observers()
         if notifyIds:
             self.model.notify_observers(notifyIds,"value")
+        pro.lap("YYY")
+        #print(pro)
         return blob
 
     def flush(self,data):
+        return data
+
+
+
+
+class StreamLoggerClass(streaming.Interface):
+
+    def __init__(self,objectNode):
+        self.objectNode = objectNode
+        self.logger = objectNode.get_logger()
+        self.name = objectNode.get_browse_path()
+        pass
+
+    def reset(self,data=None):
+        self.logger.debug(f"{self.name}.reset()")
+        self.logger.debug(f"{data}")
+        return data
+
+    def feed(self,data=None):
+        self.logger.debug(f"{self.name}.feed():")
+        self.logger.debug(f"{data}")
+        return data
+
+    def flush(self,data=None):
+        self.logger.debug(f"{self.name}.flush():")
+        self.logger.debug(f"{data}")
         return data
 

@@ -2826,6 +2826,7 @@ class Model:
                     self.clean_ts_entries()  # make sure the model and ts table is consistent
 
                 self.instantiate_all_objects()
+                self.reset_all_objects()
 
                 self.enable_observers()
                 self.publish_event(f"loading model {fileName} done.")
@@ -3191,7 +3192,7 @@ class Model:
                         mustReturn = False
                         break
             if mustReturn:
-                self.logger.info(f"__notify_observers disable return {nodeIds} {properties}")
+                #self.logger.info(f"__notify_observers disable return {nodeIds} {properties}")
                 return
 
         with self.lock:
@@ -4074,6 +4075,20 @@ class Model:
                      self.instantiate_object(id)
                 except:
                     self.log_error()
+
+    def reset_all_objects(self):
+        with self.lock:
+            #make a list first for iteration, we can't iterate over the model,
+            # as the instantiation of object might produce new nodes while we iterate
+            objects = [k for k,v in self.model.items() if v["type"] == "object"]
+
+            for id in objects:
+                try:
+                     self.get_object(id).reset(None)
+                except:
+                    self.log_error()
+
+
 
 
     def create_test(self,testNo=1):

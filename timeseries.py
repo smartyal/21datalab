@@ -132,14 +132,26 @@ class TimeSeries:
             self.values[mask]=values[mask]
             return True
 
-    def set(self,values=None,times=None):
+    def set(self,values=None,times=None,withAllocSpace=False):
+        """
+            Args:
+                withAllocSpace: if set true, we also make space for additional values
+        """
         with self.lock:
             if type(values) != type(None):
-                self.values = numpy.copy(numpy.asarray(values))
-                self.lastValidIndex = self.values.size -1
+                if withAllocSpace:
+                    alloc = numpy.full(self.allocSize, numpy.nan, dtype=numpy.float64)
+                    self.values = numpy.append(numpy.asarray(values), alloc)
+                else:
+                    self.values = numpy.copy(numpy.asarray(values))
+                self.lastValidIndex = len(values) -1
             if type(times) != type(None):
-                self.times = numpy.copy(numpy.asarray(times))
-                self.lastValidIndex = self.times.size - 1
+                if withAllocSpace:
+                    alloc = numpy.full(self.allocSize, numpy.nan, dtype=numpy.float64)
+                    self.times =numpy.append(numpy.asarray(times), alloc)
+                else:
+                    self.times = numpy.copy(numpy.asarray(times))
+                self.lastValidIndex = len(times) - 1
             return True
 
     def get_values(self):
@@ -459,8 +471,8 @@ class TimeSeriesTable:
             if not id in self.store:
                 self.create(id)
             if entry.endswith("__time"):
-                self.store[id].set(times=get[entry])
+                self.store[id].set(times=get[entry],withAllocSpace=True)
             else:
-                self.store[id].set(values=get[entry])
+                self.store[id].set(values=get[entry],withAllocSpace=True)
         return True
 
