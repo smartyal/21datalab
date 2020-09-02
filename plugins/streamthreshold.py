@@ -148,7 +148,7 @@ class StreamThresholdScorerClass(streaming.Interface):
         self.model = objectNode.get_model()
         self.logger = objectNode.get_logger()
         self.scoreNodesFolder = objectNode.get_child("output").get_child("scores")
-        self.reset()
+        #self.reset()
 
     def out_of_limits(self,values, mini, maxi):
         """

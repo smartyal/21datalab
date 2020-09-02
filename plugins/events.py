@@ -282,10 +282,7 @@ class Events2StateClass(streaming.Interface):
         self.logger=objectNode.get_logger()
         self.objectNode = objectNode
         self.model = objectNode.get_model()
-        self.reset()
-
-    def reset(self,data=None):
-        return data
+        #self.reset()
 
     def feed(self,blob):
         """
