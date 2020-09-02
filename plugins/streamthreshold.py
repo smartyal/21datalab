@@ -6,7 +6,7 @@ import numpy
 from utils import Profiling
 import streaming
 import json
-
+import dates
 
 
 
@@ -90,7 +90,10 @@ class ThresholdPipelineClass():
         p=Profiling("feed")
         for blob in data:
             #first, we convert all names to ids
-            if blob["type"]in["timeseries","eventseries"]:
+            if blob["type"] in ["timeseries","eventseries"]:
+                if blob["type"] == "eventseries":
+                    #print(f"eventseries coming {blob}")
+                    pass
                 blob["data"] = self.__convert_to_ids__(blob["data"])
             p.lap("#")
             blob = self.pipeline.feed(blob)
@@ -100,11 +103,18 @@ class ThresholdPipelineClass():
 
 
     def __convert_to_ids__(self,blob):
+        """
+            convert incoming descriptors to ids
+            convert times to epoch
+            support the __events name for a default eventnode
+        """
         newBlob = {}
         for k, v in blob.items():
             if k == "__time":
                 if type(v) is not list:
                     v = [v]
+                if type(v[0]) is str:
+                    v = [dates.date2secs(t) for t in v] # convert to epoch
                 newBlob[k] = numpy.asarray(v)
             else:
                 # try to convert

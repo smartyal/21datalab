@@ -152,7 +152,7 @@ def events_to_annotations(functionNode):
             tim = times[index]
             if tim>lastTimeSeen:
                 lastTimeSeen = tim
-            print(r"ev:{evStr}, tag:{tag}, open Annos {openAnnos}")
+            print(f"ev:{evStr}, tag:{tag}, open Annos {openAnnos}")
             if evStr in startEvents:
                 tag = startEvents[evStr]
                 #this is a start of a new event
@@ -426,7 +426,7 @@ class Events2StateClass(streaming.Interface):
             if evStr in self.startEvents:
                 # this is a start of a new event
                 tag = self.startEvents[evStr]
-                #print(f" {evStr} is start of {tag}")
+                self.logger.debug(f" {evStr} is start of {tag}")
                 if tag in self.state:
                     # we are in this state already, and get a repeated start event, this is an error
                     # so we submit an anomaly annotation
@@ -440,10 +440,12 @@ class Events2StateClass(streaming.Interface):
 
                 self.state[tag]=tim  #also update the current state
 
+
+
             # not an else if, because it can be in both start and end events
             if evStr in self.endEvents:
                 tag = self.endEvents[evStr]
-                #print(f" {evStr} is end of {tag}")
+                self.logger.debug(f" {evStr} is end of {tag}")
                 # this is an end event, see if we have a matching running state
                 if tag in self.state:
                     anno = {
