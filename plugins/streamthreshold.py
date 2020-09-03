@@ -111,7 +111,14 @@ class ThresholdPipelineClass():
     def reset(self,data=None):
         #create look up table for variables
         leaves = self.functionNode.get_child("variables").get_leaves()
-        self.varNameLookup = {node.get_name():node for node in leaves if node.get_type() in ["timeseries","eventseries"]}
+        self.varNameLookup = {}
+        for node in leaves:
+            typ = node.get_type()
+            if typ == "timeseries":
+                self.varNameLookup[node.get_name()] = node
+            if type == "eventseries":
+                self.varNameLookup[node.get_name()] = node
+                self.varNameLookup["__events"] = node # this is the default entry for incoming events
         varBrowsePathLookup = {node.get_browse_path():node for node in leaves if node.get_type() in ["timeseries","eventseries"]}
         self.varNameLookup.update(varBrowsePathLookup)
 
