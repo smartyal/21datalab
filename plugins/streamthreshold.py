@@ -29,8 +29,9 @@ ThresholdPipeline={
     "type":"object",
     "class": "streamthreshold.ThresholdPipelineClass",
     "children":[
+        {"name": "enabled", "type":"const","value":True},
         {"name": "processors","type":"referencer"},
-        {"name":"variables","type":"referencer"},       #ref to the variables and eventseries (only one) for the renaming of incoming descriptors
+        {"name": "variables","type":"referencer"},       #ref to the variables and eventseries (only one) for the renaming of incoming descriptors
         __functioncontrolfolder
     ]
 }
@@ -78,6 +79,7 @@ class ThresholdPipelineClass():
         self.logger.debug("init ThresholdScorer()")
         self.functionNode = functionNode
         self.model = functionNode.get_model()
+        self.enabledNode = functionNode.get_child("enabled")
         #self.reset() #this is executed at startup
 
 
@@ -88,6 +90,10 @@ class ThresholdPipelineClass():
 
         """
         p=Profiling("feed")
+
+        if not self.enabledNode.get_value():
+            return True
+
         for blob in data:
             #first, we convert all names to ids
             if blob["type"] in ["timeseries","eventseries"]:
@@ -203,6 +209,7 @@ class StreamThresholdScorerClass(streaming.Interface):
             for state,mask in states.items():
                 globalState[mask]=False # delete the globalState where there are local states
             states["__global"] = globalState
+            totalScore = numpy.full(len(times),numpy.inf,dtype=numpy.float64)
 
             scoresBlob={}  #the entries to be added in the blob
             for id,values in blob["data"].items():
@@ -218,11 +225,13 @@ class StreamThresholdScorerClass(streaming.Interface):
                     #now we have the score for the variable, put it in the blob
                     score = numpy.full(length,numpy.nan)
                     score[scoreMask]=values[scoreMask]
+                    totalScore[scoreMask]=-1    # set a finite value where we have an anomaly
 
                     scoreNodeId = self.scoreNodes[id] #lookup the score node
                     #self.model.time_series_insert(id, values=score, times=times, allowDuplicates=True)
                     scoresBlob[scoreNodeId] = score
                     #print(f"SCORE {id}: {list(scoreMask)}")
+            scoresBlob[self.totalScoreNode.get_id()]=totalScore # also add the total score
             blob["data"].update(scoresBlob)
 
         return blob
@@ -365,4 +374,5 @@ class StreamLoggerClass(streaming.Interface):
         self.logger.debug(f"{self.name}.flush():")
         self.logger.debug(f"{data}")
         return data
+
 

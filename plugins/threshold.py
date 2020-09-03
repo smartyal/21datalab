@@ -130,8 +130,8 @@ thresholdScorer5={
 thresholdDrillDown= {
     "name":"thresholdDrillDown",
     "type":"function",
-    "functionPointer":"threshold.threshold_drill_down",           #filename.functionname
-    "autoReload":True,                                          #set this to true to reload the module on each execution
+    "functionPointer":"threshold.threshold_drill_down",         # filename.functionname
+    "autoReload":True,                                          # set this to true to reload the module on each execution
     "children":[
         {"name":"widget","type":"referencer"},                  # the widget on which to work
         {"name":"drillVariables","type":"referencer"},          # the variables which have an error in the selected time

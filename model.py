@@ -538,6 +538,7 @@ class Observer:
             try:
                 # Try to retrieve an item from the update queue
                 event = self.updateQueue.get(block=True,timeout=self.minWaitTime)
+                #self.logger.debug(f"event pick {event}")
                 if "nodeId" in event["data"]:
                     eventIdentification = event["event"]+event["data"]["nodeId"]
                 else:
@@ -560,7 +561,7 @@ class Observer:
                 for k,v in self.eventQueues.items():
                     q = v["queue"]
                     qLen = q.qsize()
-                    self.logger.debug(f"Queue {k}: len {qLen} {[q.queue[id] for id in range(qLen)]}")
+                    #self.logger.debug(f"Queue {k}: len {qLen} {[q.queue[id] for id in range(qLen)]}")
             try:
                 now = time.time()
                 for eventIdentification,entry in self.eventQueues.items(): # entry is {"lasttimestampe": "queue":
@@ -3261,8 +3262,8 @@ class Model:
                                 try:
                                     if event["event"] == "system.progress":
                                         progressNode = self.get_node(self.get_leaves_ids("root.system.progress.targets")[0])
-                                        event["data"]["value"]=progressNode.get_value()
-                                        event["data"]["function"]=progressNode.get_parent().get_parent().get_browse_path()
+                                        event["data"]["value"] = progressNode.get_value()
+                                        event["data"]["function"] = progressNode.get_parent().get_parent().get_browse_path()
                                     else:
                                         eventNode = self.get_node(observerId)
                                         extraInfoNode = eventNode.get_child("eventData")
@@ -3283,6 +3284,7 @@ class Model:
             #p.lap("complete backrefs {nodeId}, {backrefs}")
         #self.logger.debug(p)
         self.logger.debug("now send the events")
+        event = copy.deepcopy(event)
         for event in collectedEvents:
             for observerObject in self.observers:
                 observerObject.update(event)
