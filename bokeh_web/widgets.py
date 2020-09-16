@@ -510,7 +510,7 @@ class TimeSeriesWidgetDataServer():
         nodes = self.__web_call("post", "_getleaves", self.path + ".scoreVariables")
         scoreVariables = [node["browsePath"] for node in nodes]
         self.scoreVariables = copy.deepcopy(scoreVariables)
-        self.logger.debug(f"fetch_score_variables : old {old}, new:{self.scoreVariables}")
+        #self.logger.debug(f"fetch_score_variables : old {old}, new:{self.scoreVariables}")
 
         if old != self.scoreVariables or self.pendingScoreVariablesUpdate:
             self.pendingScoreVariablesUpdate = False

@@ -329,6 +329,8 @@ def all(path):
 
     requestStartTime = datetime.datetime.now()
     #print("here")
+    data = str(flask.request.data)
+    data = data[0:max(len(data),50)]
     logger.info("http request "+str(flask.request.method) +"'"+str(path)+"'" +" DATA="+str(flask.request.data))
     data = None
     response="{}" #default is empty

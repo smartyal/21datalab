@@ -3788,7 +3788,7 @@ class Model:
             return None
         with self.lock:
             eventMap = self.model[id]["eventMap"] # a dict like {"starting":1, "machineStop":2,...}
-            if type(event) is str:
+            if type(event) in [str,numpy.str_]:
                 if event not in [k for k,v in eventMap.items()]:
                     if not autoCreate:
                         return None
@@ -3833,7 +3833,7 @@ class Model:
             values = [values]*len(times)
 
         #convert the values to numbers and create new map entry if needed
-        numbers = numpy.asarray([self.event_series_get_event_number(id,event) for event in values],dtype=numpy.float64)
+        numbers = numpy.asarray([self.event_series_get_event_number(id,event) for event in values],dtype=numpy.int)
         #convert the times to epoch if not already done
         epochs = numpy.asarray([t if type(t) is not str else date2secs(t) for t in times  ],dtype=numpy.float64)
 
@@ -3902,6 +3902,10 @@ class Model:
             return None
 
         data = self.ts.get_table([id], start=start, end=end)
+        if data == {}:
+            #this variable is not in the store
+            data = {id:{"values":numpy.asarray([]),"__time":numpy.asarray([])}}
+
         eventMap = self.model[id]["eventMap"].copy()
         reverseMap = {v:k for k,v in eventMap.items()}
         values = data[id]["values"].astype(numpy.int)
