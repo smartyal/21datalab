@@ -1954,7 +1954,7 @@ def assessor(functionNode):
     lookBack = functionNode.get_child("lookbackSeconds").get_value()
     assessment = functionNode.get_child("assessment")
     data = var.get_time_series(start=-lookBack)["values"]
-    print(f"{list(data)}")
+    #print(f"{list(data)}")
     #now check if the data is valid or invalid
     if numpy.any(numpy.isfinite(data)):
         assessment.set_value(True)
