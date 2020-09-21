@@ -8,7 +8,23 @@
             <div class="modal-body">
               <br>
                 <div class="form-group row">
-                    <div class="col-6">Evaluate all thresholds for all variables</div>
+                    <div class ="col-9">
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio" name="varSelection" id="onlyVisibleVars" value="onlyVisibleVars" checked>
+                          <label class="form-check-label" for="onlyVisibleVars">
+                              evaluate thresholds for <b>only</b> the visible variables
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio" name="varSelection" id="allVars" value="allVars">
+                          <label class="form-check-label" for="allVars">
+                              evaluate thresholds for <b>all</b> the variables (can take long)
+                          </label>
+                        </div>
+                    </div>
+
+
+
 
                 </div>
            </div>
@@ -39,7 +55,6 @@ function btn_eval_thresholds()
     http_post('/_getvalue',JSON.stringify(query), null, this, (self,status,data,params) => {
         if (status==200)
         {
-
             var value = JSON.parse(data)[0];
             value.scores = true;
             value.thresholds = true;
@@ -49,8 +64,30 @@ function btn_eval_thresholds()
             {
                 if (status==201)
                 {
-                    let path = cockpitPath+".scorer";
-                    http_post("/_execute",JSON.stringify(path),null,null,null);
+                    // now get the id of scorer
+                    query = {"nodes":[cockpitPath+".scorer"],"resultKey":"browsePath","includeLongValues":false}
+                    http_post('/_getnodes',JSON.stringify(query), null, this, (self,status,data,params) => {
+                        if (status==200)
+                        {
+                            var value = JSON.parse(data);
+                            var scorerId = value[cockpitPath+".scorer"].forwardRefs[0];
+                            if ($('#onlyVisibleVars')[0].checked == true)
+                            {
+                                var query={"deleteExisting":true,"parent":scorerId+".variables","add":[widget+".selectedVariables"]}
+                            }
+                            else
+                            {
+                               var query={"deleteExisting":true,"parent":scorerId+".variables","add":[widget+".selectableVariables"]}
+                            }
+                            http_post('/_references',JSON.stringify(query), null, this, (self,status,data,params) => {
+                                if (status==201)
+                                {
+                                    http_post("/_execute",JSON.stringify(scorerId),null,null,null);
+                                }
+
+                            });
+                        }
+                    });
                 }
             });
         }
@@ -74,3 +111,6 @@ function cockpit_close()
 {
 
 }
+    </script>
+    </div>
+</div>

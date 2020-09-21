@@ -34,7 +34,7 @@ from timeseries import TimeSeriesTable
 from dates import *
 
 import inspect
-
+from utils import str_lim
 """
 next Todo
 -  
@@ -1689,7 +1689,7 @@ class Model:
         return leaveIds
 
 
-    def get_leaves(self,desc):
+    def get_leaves(self,desc,allowDuplicates=False):
         """
             this function returns a list of dicts containing the leaves where this referencer points to
             this functions works only for nodes of type "referencer", as we are following the forward references
@@ -1710,8 +1710,19 @@ class Model:
             if targets and targets[0]["id"] == id:
                 #this can happen if the node is not a folder, ref and had no children
                 targets.pop(0)
-            return targets
 
+            #before we return, we remove duplicates if wanted
+            if targets and allowDuplicates == False:
+                reducedTargets = []
+                ids = []
+                for t in targets:
+                    if t["id"] in ids:
+                        continue
+                    reducedTargets.append(t)
+                    ids.append(t["id"])
+                return reducedTargets
+            else:
+                return targets
 
     def __get_referencer_parents(self,ids):
         backRefs = []
@@ -2415,7 +2426,7 @@ class Model:
         while self.functionExecutionRunning:
             try:
                 nextId = self.executionQueue.get(timeout=1)
-                self.logger.info(f"now executing function {nextId}")
+                self.logger.info(f"now executing function {str_lim(nextId,300)}")
                 self.__execution_thread(nextId)
             except:
                 pass
@@ -3000,7 +3011,7 @@ class Model:
         """
             public wrapper for __notify observser, only expert use!
         """
-        self.logger.info(f"notify observser, {nodeIds}, {properties}")
+        self.logger.info(f"notify observser, {str_lim(nodeIds,50)}, {properties}")
         return self.__notify_observers(nodeIds,properties)
 
     def __notify_observers_old(self, nodeIds, properties ):
@@ -3036,7 +3047,7 @@ class Model:
                 nodeIds = [nodeIds]
 
             names =[self.model[id]["name"] for id in nodeIds]
-            self.logger.debug(f"__notify_observers {names}: {properties}")
+            self.logger.debug(f"__notify_observers {str_lim(names,50)}: {properties}")
 
             triggeredObservers=[] # we use this to suppress multiple triggers of the same observer, the list holds the observerIds to be triggered
             #p=utils.Profiling("__notify.iterate_nodes")
@@ -3210,7 +3221,7 @@ class Model:
 
 
             names =[self.model[id]["name"] for id in nodeIds]
-            self.logger.debug(f"__notify_observers {names}: {properties}")
+            self.logger.debug(f"__notify_observers {str_lim(names,50)}: {properties}")
 
             triggeredObservers=[] # we use this to suppress multiple triggers of the same observer, the list holds the observerIds to be triggered
             #p=utils.Profiling("__notify.iterate_nodes")
@@ -3218,7 +3229,7 @@ class Model:
             referencers = self.get_referencers(nodeIds,deepLevel=5)#deeplevel 5: nodes can be organized by the user in hierachy
             nodeId = self.__get_id(nodeIds[0])#take the first for the event string,
             #p.lap(f"get refs for {nodeId}")
-            self.logger.debug(f"__notify on referencers {[self.get_browse_path(id) for id in referencers]}")
+            self.logger.debug(f"__notify on referencers {str_lim([self.get_browse_path(id) for id in referencers],50)}")
             for id in referencers:
                 if self.model[id]["name"] == "targets" and self.model[self.model[id]["parent"]]["type"] == "observer":
                     # this referencers is an observer,

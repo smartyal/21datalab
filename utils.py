@@ -51,3 +51,10 @@ class Profiling:
             s=s+f" {l['label']}: {l['delta']}"
         s=s+f"total: {l['total']}"
         return s
+
+def str_lim(obj,lim):
+    stri = str(obj)
+    if len(stri)>lim:
+        return stri[:lim]+"..."
+    else:
+        return stri
