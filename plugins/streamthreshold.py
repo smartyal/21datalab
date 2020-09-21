@@ -7,7 +7,8 @@ from utils import Profiling
 import streaming
 import json
 import dates
-
+import modelhelper as mh
+from timeseries import TimeSeries
 
 
 
@@ -20,7 +21,14 @@ ThresholdScorer={
         {"name":"output","type":"folder","children":[{"name":"scores","type":"folder"}]},
         {"name":"thresholds","type":"referencer"},
         {"name":"variables","type":"referencer"},
-        {"name":"scoreAll","type":"function","children":[__functioncontrolfolder]}
+        {"name":"scoreAll",
+         "type":"function",
+         "functionPointer": "streamthreshold.score_all",  # filename.functionname
+         "autoReload": False,  # set this to true to reload the module on each execution
+         "children":[
+            {"name":"annotations","type":"referencer"}, #pointing to the time annotations (typically produced by the event 2 annotations streaming object
+            {"name":"variables","type":"referencer"},   #pointint to the variables to be scored, can be all or only a selection
+            __functioncontrolfolder]}
     ]
 }
 
@@ -284,6 +292,89 @@ class StreamThresholdScorerClass(streaming.Interface):
         self.totalScoreNode = totalOutputNode
 
         return data
+
+    def get_thresholds(self):
+        return self.thresholds
+
+def score_all(functionNode):
+    """
+        score all thresholds again by using the stream implementation
+        #works only on context of the class object
+    """
+    logger = functionNode.get_logger()
+    logger.debug("score_all")
+    progressNode = functionNode.get_child("control").get_child("progress")
+    progressNode.set_value(0)
+    model = functionNode.get_model() # for the model API
+    annos = functionNode.get_child("annotations").get_leaves()
+    annos = [anno for anno in annos if anno.get_child("type").get_value() == "time"] #only the time annotations
+    variableIds = functionNode.get_child("variables").get_leaves_ids() # the variableids to work on
+
+
+    obj = functionNode.get_parent().get_object()
+    obj.reset() #read the new thresholds into the object!! this also affects parallel streaming processes
+
+    # for each id (variable) that has threshold(s)
+    # take the values and times of that varialbe
+    # find out the annotations we need, create the stream data blob, send it over
+    progressStep =1/float(len(obj.get_thresholds()))
+    total = None
+
+    for id, thresholdsInfo in obj.get_thresholds().items(): # thresholds is a dict of {id: {tag:{"min":0,"max":1}, tag2:{} .. ,id2:{}}
+        if id not in variableIds:
+            continue # skip this one, is not selected
+        progressNode.set_value(progressNode.get_value()+progressStep)
+        var = model.get_node(id)
+        data = var.get_time_series()
+        times = data["__time"]
+        #now produce the interesting states
+        blob = {"type": "timeseries",
+                "data": {
+                    "__time": times,
+                    id: data["values"],
+                    "__states": {}
+                }}
+        for state in thresholdsInfo.keys(): #iterate over the states where the variable has special thresholds
+            myAnnos = mh.filter_annotations(annos, state)
+            stateMask = mh.annotations_to_class_vector(myAnnos, data["__time"])
+            stateMask = numpy.isfinite(stateMask)
+            blob["data"]["__states"][state]=stateMask
+
+        #now we have prepared a data and state blob, we will now score by feeding it into the stream scorer
+        #del blob["data"]["__states"]#for test, now
+        blob = obj.feed(blob)
+        #now the blob contains more entries, e.g. the score variable id and the according scores, that is what we want
+        for blobId,values in blob["data"].items():
+            if blobId not in ["__time",id,"__states"]:
+                #this is the score, overwrite the whole thing
+                scoreNode = model.get_node(blobId)
+                if scoreNode.get_name()=="_total_score":
+                    continue # this is the combined result of several variables going into the stream scoring, not relevant here
+
+
+                scoreNode.set_time_series(values=values,times=times)  # xxx is set ok here, or do we need "insert" to make sure there has not been changed in the meantime?
+                model.notify_observers(scoreNode.get_parent().get_id(), "children") # we trigger
+
+                # build the total score:
+                # merge in the new times, resample the total score, resampel the local score, then merge them
+                # the merge function will use the new values whereever there is one (empty fields are named "nan"
+                #  for the total score, we need a resampling to avoid the mixing of results e.g.
+                # two sensor have different result during a given interval, but different times, if we just merge
+                # we get a True, False, True,False mixture
+                # so we build the merge vector, first resample then merge
+
+                values[numpy.isfinite(values)] = -1 # set -1 for all out of limit
+                if type(total) is type(None):
+                    total = TimeSeries(values=values, times=times)
+                else:
+                    local = TimeSeries(values=values, times=times)
+                    total.merge(local) # the merge resamples the incoming data to the existing time series, NaN will be replaced by new values,
+    #finally, write the total
+    totalScoreNode = functionNode.get_parent().get_child("output").get_child("_total_score")
+    totalScoreNode.set_time_series(values = total.get_values(),times=total.get_times())
+
+    return True
+
 
 
 class ThresholdsClass(streaming.Interface):
