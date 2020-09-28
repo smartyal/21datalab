@@ -333,6 +333,9 @@ class TimeSeries:
         with self.lock:
             mergeTimes = merge_times(self.get_times(),timeseries.get_times())
             oldValues = self.get(resampleTimes=mergeTimes)["values"]
+            if len(oldValues) == 0:
+                #the oldValues is empty, so we create a NaN array
+                oldValues = numpy.full(len(mergeTimes),numpy.nan,dtype=numpy.float64)
             newValues = timeseries.get(resampleTimes=mergeTimes)["values"]
             indices=numpy.isfinite(newValues)
             oldValues[indices]=newValues[indices]
@@ -449,6 +452,14 @@ class TimeSeriesTable:
                 self.create(k)
             self.store[k].insert(values=v,times=blob["__time"])
 
+    def merge(self,name,values,times):
+        """
+            merge the additional into the origin see merge function to
+        """
+        if name not in self.store:
+            return False
+        ts = TimeSeries(values = values, times= times)
+        return self.store[name].merge(ts)
 
 
 

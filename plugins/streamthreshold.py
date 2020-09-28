@@ -28,6 +28,7 @@ ThresholdScorer={
          "children":[
             {"name":"annotations","type":"referencer"}, #pointing to the time annotations (typically produced by the event 2 annotations streaming object
             {"name":"variables","type":"referencer"},   #pointint to the variables to be scored, can be all or only a selection
+            {"name":"overWrite","type":"const","value":True}, #set this to False to merge a new total score with the existing score, True for replace
             __functioncontrolfolder]}
     ]
 }
@@ -254,7 +255,13 @@ class StreamThresholdScorerClass(streaming.Interface):
         for anno in self.objectNode.get_child("thresholds").get_leaves():
             if anno.get_child("type").get_value() != "threshold":
                 continue  # only thresholds
-            id = anno.get_child("variable").get_leaves()[0].get_id()  # the first id of the targets of the annotation target pointer, this is the node that the threshold is referencing to
+
+            leaves = anno.get_child("variable").get_leaves()
+            if leaves:
+                id = leaves[0].get_id()  # the first id of the targets of the annotation target pointer, this is the node that the threshold is referencing to
+            else:
+                self.logger.warning(f"no leaves for {anno.get_name()}")
+                continue
 
             thisMin = anno.get_child("min").get_value()
             if type(thisMin) is type(None):
@@ -309,6 +316,10 @@ def score_all(functionNode):
     annos = functionNode.get_child("annotations").get_leaves()
     annos = [anno for anno in annos if anno.get_child("type").get_value() == "time"] #only the time annotations
     variableIds = functionNode.get_child("variables").get_leaves_ids() # the variableids to work on
+    try:
+        overWrite = functionNode.get_child("overWrite").get_value()
+    except:
+        overWrite = True
 
 
     obj = functionNode.get_parent().get_object()
@@ -369,9 +380,13 @@ def score_all(functionNode):
                 else:
                     local = TimeSeries(values=values, times=times)
                     total.merge(local) # the merge resamples the incoming data to the existing time series, NaN will be replaced by new values,
-    #finally, write the total
+    # finally, write the total
+    # if the overWrite is True, we replace, otherwise we merge with the existing, previous result
     totalScoreNode = functionNode.get_parent().get_child("output").get_child("_total_score")
-    totalScoreNode.set_time_series(values = total.get_values(),times=total.get_times())
+    if overWrite:
+        totalScoreNode.set_time_series(values = total.get_values(),times=total.get_times())
+    else:
+        totalScoreNode.merge_time_series(values = total.get_values(),times=total.get_times())
 
     return True
 

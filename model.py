@@ -159,6 +159,9 @@ class Node():
         """
         return self.model.time_series_insert(self.id,values=values, times=times, allowDuplicates=allowDuplicates)
 
+    def merge_time_series(self,values=None, times=None):
+        """ merge the times series of mergeNode into this node"""
+        return self.model.time_series_merge(self.id,values = values,times=times)
 
     def delete_time_series(self,start=None,end=None):
         return self.model.time_series_delete_area(self.id, start=start, end=end)
@@ -2600,6 +2603,8 @@ class Model:
                         #if the progress was used, we reset it
                         self.__dispatch(self.reset_progress_bar,1,controlNode)
                     #controlNode.get_child("progress").set_value(0)
+                    if not isFunction:
+                        result = True # for execution of member function we don't have a general return code
                     if result == True:
                         controlNode.get_child("result").set_value("ok")
                         self.publish_event("result of " + str(functionName) + ": " + controlNode.get_child("result").get_value())
@@ -3534,6 +3539,11 @@ class Model:
         return result
 
 
+    def time_series_merge(self, desc, values = None, times = None):
+        id = self.get_id(desc)
+        if not id in self.model:
+            return False
+        return self.ts.merge(id,values=values,times=times)
 
 
 
