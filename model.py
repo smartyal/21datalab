@@ -744,6 +744,7 @@ class Model:
                                 continue
                             if self.model[id][k]!=v:
                                 continue
+                        return Node(self,id)
                     return Node(self,id)
         return None
 
@@ -2994,12 +2995,12 @@ class Model:
             self.logger.error("enable_observers without disable observers")
         self.logger.debug(f"enable_observers() {self.disableObserverCounter}")
 
-    def notify_observers(self, nodeIds, properties):
+    def notify_observers(self, nodeIds, properties, eventInfo={}):
         """
             public wrapper for __notify observser, only expert use!
         """
         self.logger.info(f"notify observser, {nodeIds}, {properties}")
-        return self.__notify_observers(nodeIds,properties)
+        return self.__notify_observers(nodeIds,properties,eventInfo)
 
     def __notify_observers_old(self, nodeIds, properties ):
         """
@@ -3094,6 +3095,7 @@ class Model:
                                                     if type(extraInfo) is not dict:
                                                         extraInfo={"info":extraInfo}
                                                     event["data"].update(extraInfo)
+                                                even.update(eventInfo)
 
                                         except Exception as ex:
                                             self.logger.error(f"error getting extra info for event {ex}, {sys.exc_info()[0]}")
@@ -3165,7 +3167,7 @@ class Model:
                 referencers = workList.copy()
         return list(collectedReferencers)
 
-    def __notify_observers(self, nodeIds, properties ):
+    def __notify_observers(self, nodeIds, properties, eventInfo={} ):
         """
             this function is called internally when nodes or properties have changed. Then, we look if any
             observer has to be triggered
@@ -3270,6 +3272,7 @@ class Model:
                                             if type(extraInfo) is not dict:
                                                 extraInfo={"info":extraInfo}
                                             event["data"].update(extraInfo)
+                                        event["data"].update(eventInfo)
 
                                 except Exception as ex:
                                     self.logger.error(f"error getting extra info for event {ex}, {sys.exc_info()[0]}")
