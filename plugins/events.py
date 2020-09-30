@@ -36,7 +36,10 @@ events2State = {
     "autoReload": True,  # set this to true to reload the module on each execution
     "children": [
         {"name": "annotations", "type": "folder" },  # this is where we put the result annos
-        {"name": "eventSeries", "type": "referencer"},  # pointer to an eventseries
+        {"name": "eventSeries", "type": "referencer"},  # pointer to the eventseries to pick the history from
+        {"name": "recoverEnabled", "type":"const","value":True},        # recover the state on reset
+        {"name": "currentState","type":"variable"},                     # the current state (output)
+        {"name": "recoverInterval", "type":"const","value":2419200},    #28 days in seconds
         {"name": "eventSelection","type":"const","value":{              #name of the resulting anno: [start,end] names of the events
                 "busy": ["busy_start","busy_end"],
                 "free": ["free_start","free_end"]}},
@@ -87,7 +90,6 @@ def events_to_annotations(functionNode):
     m = functionNode.get_model()
     startEvents = {v[0]:k for k,v in eventSelection.items()} # always the first event
     endEvents = {v[1]:k for k, v in eventSelection.items()}  # always the second event
-    #ev2Anno={ev:anno for anno,eventStrings in eventSelection.items() for ev in eventStrings}#a helper lookup dict for events to annotations {eventname:annotationsTags}
 
     evs = functionNode.get_child("eventSeries").get_targets() # a list of nodes where the events are located
 
@@ -150,8 +152,7 @@ def events_to_annotations(functionNode):
             tim = times[index]
             if tim>lastTimeSeen:
                 lastTimeSeen = tim
-            #tag = ev2Anno[evStr]
-            print(r"ev:{evStr}, tag:{tag}, open Annos {openAnnos}")
+            print(f"ev:{evStr}, tag:{tag}, open Annos {openAnnos}")
             if evStr in startEvents:
                 tag = startEvents[evStr]
                 #this is a start of a new event
@@ -282,10 +283,8 @@ class Events2StateClass(streaming.Interface):
         self.logger=objectNode.get_logger()
         self.objectNode = objectNode
         self.model = objectNode.get_model()
-        self.reset()
-
-    def reset(self,data):
-        return data
+        self.stateNode = objectNode.get_child("currentState")
+        #self.reset()
 
     def feed(self,blob):
         """
@@ -341,6 +340,20 @@ class Events2StateClass(streaming.Interface):
     def flush(self,data=None):
         return data
 
+
+    def __recover_state(self):
+
+        """
+            we get the latest events and recover the state thereof
+        """
+        lookback = self.objectNode.get_child("recoverInterval").get_value()
+        events = self.objectNode.get_child("eventSeries").get_target().get_event_series(start=-lookback)
+        self.process_event_series(events["__time"],events["eventStrings"])  # ignore the annotations created, the state will be set inside the function call
+        self.logger.debug(f"current state after state recovery : {self.state}")
+
+        return
+
+
     def reset(self,data=None):
         self.progressNode = self.objectNode.get_child("control").get_child("progress")
         self.newAnnosNode = self.objectNode.get_child("annotations")
@@ -350,16 +363,15 @@ class Events2StateClass(streaming.Interface):
         #   we will select the "machine1.init and the "macine1.op2" events and name the annotation type as Preparation, Printing
 
         self.eventSelection = self.objectNode.get_child("eventSelection").get_value()
-        self.startEvents = [v[0] for k, v in self.eventSelection.items()]  # always the first event
-        self.endEvents = [v[1] for k, v in self.eventSelection.items()]  # always the second event
-        self.ev2Anno = {ev: anno for anno, eventStrings in self.eventSelection.items() for ev in
-                   eventStrings}  # a helper lookup dict for events to annotations {eventname:annotationsTags}
-
+        self.startEvents = {v[0]:k for k, v in self.eventSelection.items()}  # always the first event startEvent:machinestate
+        self.endEvents = {v[1]:k for k, v in self.eventSelection.items()}  # always the second event
 
         self.state = {}
         # in self.openAnnos, we store the currently running system state in the form
         # { "state": epoch (the start time of the state
 
+        if self.objectNode.get_child("recoverEnabled").get_value():
+            self.__recover_state()
 
 
     def process_historical(self):
@@ -409,11 +421,12 @@ class Events2StateClass(streaming.Interface):
         for index in range(len(times)):
             evStr = eventStrings[index]
             tim = times[index]
-            tag = self.ev2Anno[evStr]
-            print(r"ev:{evStr}, tag:{tag}, open Annos {openAnnos}")
+            if evStr not in self.startEvents and evStr not in self.endEvents:
+                self.logger.debug(f"event {evStr} unknown, ignore")
             if evStr in self.startEvents:
                 # this is a start of a new event
-                print("is start")
+                tag = self.startEvents[evStr]
+                self.logger.debug(f" {evStr} is start of {tag}")
                 if tag in self.state:
                     # we are in this state already, and get a repeated start event, this is an error
                     # so we submit an anomaly annotation
@@ -427,9 +440,12 @@ class Events2StateClass(streaming.Interface):
 
                 self.state[tag]=tim  #also update the current state
 
+
+
             # not an else if, because it can be in both start and end events
             if evStr in self.endEvents:
-                print("is end")
+                tag = self.endEvents[evStr]
+                self.logger.debug(f" {evStr} is end of {tag}")
                 # this is an end event, see if we have a matching running state
                 if tag in self.state:
                     anno = {
@@ -443,4 +459,6 @@ class Events2StateClass(streaming.Interface):
                 else:
                     self.logger.warning(f"end event without start {tim} {evStr} ")
 
+        if self.stateNode:
+            self.stateNode.set_value(list(self.state.keys()))
         return newAnnotations

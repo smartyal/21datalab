@@ -27,16 +27,15 @@ class Pipeline():
     def __init__(self,processors=[]):
         self.processors=processors # these are Nodes()!
 
-    def reset(self):
+    def reset(self,data=None):
         for p in self.processors:
-            p.get_object().reset()
+            p.get_object().reset(data)
 
     def feed(self,data):
         pro = utils.Profiling("pipee")
         for p in self.processors:
-            pro.lap(p.get_name()+"<")
             data = p.get_object().feed(data)
-            pro.lap(p.get_name()+">")
+            pro.lap(p.get_name())
         print(pro)
         return data
 

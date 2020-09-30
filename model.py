@@ -34,7 +34,7 @@ from timeseries import TimeSeriesTable
 from dates import *
 
 import inspect
-
+from utils import str_lim
 """
 next Todo
 -  
@@ -159,6 +159,9 @@ class Node():
         """
         return self.model.time_series_insert(self.id,values=values, times=times, allowDuplicates=allowDuplicates)
 
+    def merge_time_series(self,values=None, times=None):
+        """ merge the times series of mergeNode into this node"""
+        return self.model.time_series_merge(self.id,values = values,times=times)
 
     def delete_time_series(self,start=None,end=None):
         return self.model.time_series_delete_area(self.id, start=start, end=end)
@@ -538,6 +541,7 @@ class Observer:
             try:
                 # Try to retrieve an item from the update queue
                 event = self.updateQueue.get(block=True,timeout=self.minWaitTime)
+                #self.logger.debug(f"event pick {event}")
                 if "nodeId" in event["data"]:
                     eventIdentification = event["event"]+event["data"]["nodeId"]
                 else:
@@ -560,7 +564,7 @@ class Observer:
                 for k,v in self.eventQueues.items():
                     q = v["queue"]
                     qLen = q.qsize()
-                    self.logger.debug(f"Queue {k}: len {qLen} {[q.queue[id] for id in range(qLen)]}")
+                    #self.logger.debug(f"Queue {k}: len {qLen} {[q.queue[id] for id in range(qLen)]}")
             try:
                 now = time.time()
                 for eventIdentification,entry in self.eventQueues.items(): # entry is {"lasttimestampe": "queue":
@@ -1689,7 +1693,7 @@ class Model:
         return leaveIds
 
 
-    def get_leaves(self,desc):
+    def get_leaves(self,desc,allowDuplicates=False):
         """
             this function returns a list of dicts containing the leaves where this referencer points to
             this functions works only for nodes of type "referencer", as we are following the forward references
@@ -1710,8 +1714,19 @@ class Model:
             if targets and targets[0]["id"] == id:
                 #this can happen if the node is not a folder, ref and had no children
                 targets.pop(0)
-            return targets
 
+            #before we return, we remove duplicates if wanted
+            if targets and allowDuplicates == False:
+                reducedTargets = []
+                ids = []
+                for t in targets:
+                    if t["id"] in ids:
+                        continue
+                    reducedTargets.append(t)
+                    ids.append(t["id"])
+                return reducedTargets
+            else:
+                return targets
 
     def __get_referencer_parents(self,ids):
         backRefs = []
@@ -2415,7 +2430,7 @@ class Model:
         while self.functionExecutionRunning:
             try:
                 nextId = self.executionQueue.get(timeout=1)
-                self.logger.info(f"now executing function {nextId}")
+                self.logger.info(f"now executing function {str_lim(nextId,300)}")
                 self.__execution_thread(nextId)
             except:
                 pass
@@ -2589,6 +2604,8 @@ class Model:
                         #if the progress was used, we reset it
                         self.__dispatch(self.reset_progress_bar,1,controlNode)
                     #controlNode.get_child("progress").set_value(0)
+                    if not isFunction:
+                        result = True # for execution of member function we don't have a general return code
                     if result == True:
                         controlNode.get_child("result").set_value("ok")
                         self.publish_event("result of " + str(functionName) + ": " + controlNode.get_child("result").get_value())
@@ -2827,6 +2844,7 @@ class Model:
                     self.clean_ts_entries()  # make sure the model and ts table is consistent
 
                 self.instantiate_all_objects()
+                self.reset_all_objects()
 
                 self.enable_observers()
                 self.publish_event(f"loading model {fileName} done.")
@@ -2999,7 +3017,7 @@ class Model:
         """
             public wrapper for __notify observser, only expert use!
         """
-        self.logger.info(f"notify observser, {nodeIds}, {properties}")
+        self.logger.info(f"notify observser, {str_lim(nodeIds,50)}, {properties}")
         return self.__notify_observers(nodeIds,properties,eventInfo)
 
     def __notify_observers_old(self, nodeIds, properties ):
@@ -3035,7 +3053,7 @@ class Model:
                 nodeIds = [nodeIds]
 
             names =[self.model[id]["name"] for id in nodeIds]
-            self.logger.debug(f"__notify_observers {names}: {properties}")
+            self.logger.debug(f"__notify_observers {str_lim(names,50)}: {properties}")
 
             triggeredObservers=[] # we use this to suppress multiple triggers of the same observer, the list holds the observerIds to be triggered
             #p=utils.Profiling("__notify.iterate_nodes")
@@ -3193,7 +3211,7 @@ class Model:
                         mustReturn = False
                         break
             if mustReturn:
-                self.logger.info(f"__notify_observers disable return {nodeIds} {properties}")
+                #self.logger.info(f"__notify_observers disable return {nodeIds} {properties}")
                 return
 
         with self.lock:
@@ -3210,7 +3228,7 @@ class Model:
 
 
             names =[self.model[id]["name"] for id in nodeIds]
-            self.logger.debug(f"__notify_observers {names}: {properties}")
+            self.logger.debug(f"__notify_observers {str_lim(names,50)}: {properties}")
 
             triggeredObservers=[] # we use this to suppress multiple triggers of the same observer, the list holds the observerIds to be triggered
             #p=utils.Profiling("__notify.iterate_nodes")
@@ -3218,7 +3236,7 @@ class Model:
             referencers = self.get_referencers(nodeIds,deepLevel=5)#deeplevel 5: nodes can be organized by the user in hierachy
             nodeId = self.__get_id(nodeIds[0])#take the first for the event string,
             #p.lap(f"get refs for {nodeId}")
-            self.logger.debug(f"__notify on referencers {[self.get_browse_path(id) for id in referencers]}")
+            self.logger.debug(f"__notify on referencers {str_lim([self.get_browse_path(id) for id in referencers],50)}")
             for id in referencers:
                 if self.model[id]["name"] == "targets" and self.model[self.model[id]["parent"]]["type"] == "observer":
                     # this referencers is an observer,
@@ -3262,8 +3280,8 @@ class Model:
                                 try:
                                     if event["event"] == "system.progress":
                                         progressNode = self.get_node(self.get_leaves_ids("root.system.progress.targets")[0])
-                                        event["data"]["value"]=progressNode.get_value()
-                                        event["data"]["function"]=progressNode.get_parent().get_parent().get_browse_path()
+                                        event["data"]["value"] = progressNode.get_value()
+                                        event["data"]["function"] = progressNode.get_parent().get_parent().get_browse_path()
                                     else:
                                         eventNode = self.get_node(observerId)
                                         extraInfoNode = eventNode.get_child("eventData")
@@ -3285,6 +3303,7 @@ class Model:
             #p.lap("complete backrefs {nodeId}, {backrefs}")
         #self.logger.debug(p)
         self.logger.debug("now send the events")
+        event = copy.deepcopy(event)
         for event in collectedEvents:
             for observerObject in self.observers:
                 observerObject.update(event)
@@ -3523,6 +3542,11 @@ class Model:
         return result
 
 
+    def time_series_merge(self, desc, values = None, times = None):
+        id = self.get_id(desc)
+        if not id in self.model:
+            return False
+        return self.ts.merge(id,values=values,times=times)
 
 
 
@@ -3788,7 +3812,7 @@ class Model:
             return None
         with self.lock:
             eventMap = self.model[id]["eventMap"] # a dict like {"starting":1, "machineStop":2,...}
-            if type(event) is str:
+            if type(event) in [str,numpy.str_]:
                 if event not in [k for k,v in eventMap.items()]:
                     if not autoCreate:
                         return None
@@ -3833,7 +3857,7 @@ class Model:
             values = [values]*len(times)
 
         #convert the values to numbers and create new map entry if needed
-        numbers = numpy.asarray([self.event_series_get_event_number(id,event) for event in values],dtype=numpy.float64)
+        numbers = numpy.asarray([self.event_series_get_event_number(id,event) for event in values],dtype=numpy.int)
         #convert the times to epoch if not already done
         epochs = numpy.asarray([t if type(t) is not str else date2secs(t) for t in times  ],dtype=numpy.float64)
 
@@ -3902,6 +3926,10 @@ class Model:
             return None
 
         data = self.ts.get_table([id], start=start, end=end)
+        if data == {}:
+            #this variable is not in the store
+            data = {id:{"values":numpy.asarray([]),"__time":numpy.asarray([])}}
+
         eventMap = self.model[id]["eventMap"].copy()
         reverseMap = {v:k for k,v in eventMap.items()}
         values = data[id]["values"].astype(numpy.int)
@@ -4077,6 +4105,20 @@ class Model:
                      self.instantiate_object(id)
                 except:
                     self.log_error()
+
+    def reset_all_objects(self):
+        with self.lock:
+            #make a list first for iteration, we can't iterate over the model,
+            # as the instantiation of object might produce new nodes while we iterate
+            objects = [k for k,v in self.model.items() if v["type"] == "object"]
+
+            for id in objects:
+                try:
+                     self.get_object(id).reset(None)
+                except:
+                    self.log_error()
+
+
 
 
     def create_test(self,testNo=1):

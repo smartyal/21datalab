@@ -25,7 +25,7 @@ from werkzeug.utils import secure_filename
 import os
 import argparse
 
-
+from utils import str_lim
 
 
 UPLOAD_FOLDER = './upload'
@@ -329,7 +329,7 @@ def all(path):
 
     requestStartTime = datetime.datetime.now()
     #print("here")
-    logger.info("http request "+str(flask.request.method) +"'"+str(path)+"'" +" DATA="+str(flask.request.data))
+    logger.info("http request "+str(flask.request.method) +"'"+str(path)+"'" +" DATA="+str_lim(flask.request.data,200)) # limit to plot max 50 chars
     data = None
     response="{}" #default is empty
     responseCode = 404 # default is not found
@@ -709,7 +709,7 @@ def all(path):
                 responseCode = 400
 
         elif (str(path) == "_execute"):
-            logger.debug(f"execute function {data} (start the function thread)")
+            logger.debug(f"execute function {str_lim(data,50)} (start the function thread)") #limit the plot to 50
             if type(data) is str:
                 result =[]
                 launch = m.execute_function(data)

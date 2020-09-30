@@ -5,8 +5,10 @@ import streaming
 import numpy
 from utils import Profiling
 import streaming
-
-
+import json
+import dates
+import modelhelper as mh
+from timeseries import TimeSeries
 
 
 
@@ -19,7 +21,15 @@ ThresholdScorer={
         {"name":"output","type":"folder","children":[{"name":"scores","type":"folder"}]},
         {"name":"thresholds","type":"referencer"},
         {"name":"variables","type":"referencer"},
-        {"name":"scoreAll","type":"function","children":[__functioncontrolfolder]}
+        {"name":"scoreAll",
+         "type":"function",
+         "functionPointer": "streamthreshold.score_all",  # filename.functionname
+         "autoReload": False,  # set this to true to reload the module on each execution
+         "children":[
+            {"name":"annotations","type":"referencer"}, #pointing to the time annotations (typically produced by the event 2 annotations streaming object
+            {"name":"variables","type":"referencer"},   #pointint to the variables to be scored, can be all or only a selection
+            {"name":"overWrite","type":"const","value":True}, #set this to False to merge a new total score with the existing score, True for replace
+            __functioncontrolfolder]}
     ]
 }
 
@@ -28,8 +38,9 @@ ThresholdPipeline={
     "type":"object",
     "class": "streamthreshold.ThresholdPipelineClass",
     "children":[
+        {"name": "enabled", "type":"const","value":True},
         {"name": "processors","type":"referencer"},
-        {"name":"variables","type":"referencer"},
+        {"name": "variables","type":"referencer"},       #ref to the variables and eventseries (only one) for the renaming of incoming descriptors
         __functioncontrolfolder
     ]
 }
@@ -40,6 +51,15 @@ Writer = {
     "class": "streamthreshold.StreamWriterClass",
     "children": [
         {"name":"enabled","type":"const","value":True},
+        __functioncontrolfolder
+    ]
+}
+
+StreamLogger = {
+    "name":"Logger",
+    "type":"object",
+    "class": "streamthreshold.StreamLoggerClass",
+    "children": [
         __functioncontrolfolder
     ]
 }
@@ -68,7 +88,8 @@ class ThresholdPipelineClass():
         self.logger.debug("init ThresholdScorer()")
         self.functionNode = functionNode
         self.model = functionNode.get_model()
-        self.reset()
+        self.enabledNode = functionNode.get_child("enabled")
+        #self.reset() #this is executed at startup
 
 
     def feed(self,data):
@@ -78,31 +99,44 @@ class ThresholdPipelineClass():
 
         """
         p=Profiling("feed")
-        #self.logger.debug("feedMyStream {data}")
+
+        if not self.enabledNode.get_value():
+            return True
+
         for blob in data:
             #first, we convert all names to ids
-            if blob["type"]in["timeseries","eventseries"]:
+            if blob["type"] in ["timeseries","eventseries"]:
                 if blob["type"] == "eventseries":
-                    print("hallo")
+                    #print(f"eventseries coming {blob}")
+                    pass
                 blob["data"] = self.__convert_to_ids__(blob["data"])
             p.lap("#")
             blob = self.pipeline.feed(blob)
-
-
-        print(p)
+        #print(p)
         return True
 
 
 
     def __convert_to_ids__(self,blob):
+        """
+            convert incoming descriptors to ids
+            convert times to epoch
+            support the __events name for a default eventnode
+        """
         newBlob = {}
         for k, v in blob.items():
             if k == "__time":
-                newBlob[k] = v
+                if type(v) is not list:
+                    v = [v]
+                if type(v[0]) is str:
+                    v = [dates.date2secs(t) for t in v] # convert to epoch
+                newBlob[k] = numpy.asarray(v)
             else:
                 # try to convert
                 if k in self.varNameLookup:
                     id = self.varNameLookup[k].get_id()
+                    if type(v) is not list:
+                        v=[v]
                     newBlob[id]=numpy.asarray(v)
                 else:
                     self.logger.error(f"__convert_to_ids__: cant find {k}")
@@ -116,18 +150,15 @@ class ThresholdPipelineClass():
             typ = node.get_type()
             if typ == "timeseries":
                 self.varNameLookup[node.get_name()] = node
-            if type == "eventseries":
+            elif typ == "eventseries":
                 self.varNameLookup[node.get_name()] = node
                 self.varNameLookup["__events"] = node # this is the default entry for incoming events
         varBrowsePathLookup = {node.get_browse_path():node for node in leaves if node.get_type() in ["timeseries","eventseries"]}
         self.varNameLookup.update(varBrowsePathLookup)
 
-
-
         #build the pipeline
-
-        #objects=[processor.get_object() for processor in self.functionNode.get_child("processors").get_targets()]
         self.pipeline = streaming.Pipeline(self.functionNode.get_child("processors").get_targets())
+        self.pipeline.reset() # reset all processors
 
 
         return True
@@ -140,7 +171,7 @@ class StreamThresholdScorerClass(streaming.Interface):
         self.model = objectNode.get_model()
         self.logger = objectNode.get_logger()
         self.scoreNodesFolder = objectNode.get_child("output").get_child("scores")
-        self.reset()
+        #self.reset()
 
     def out_of_limits(self,values, mini, maxi):
         """
@@ -187,6 +218,7 @@ class StreamThresholdScorerClass(streaming.Interface):
             for state,mask in states.items():
                 globalState[mask]=False # delete the globalState where there are local states
             states["__global"] = globalState
+            totalScore = numpy.full(len(times),numpy.inf,dtype=numpy.float64)
 
             scoresBlob={}  #the entries to be added in the blob
             for id,values in blob["data"].items():
@@ -202,11 +234,13 @@ class StreamThresholdScorerClass(streaming.Interface):
                     #now we have the score for the variable, put it in the blob
                     score = numpy.full(length,numpy.nan)
                     score[scoreMask]=values[scoreMask]
+                    totalScore[scoreMask]=-1    # set a finite value where we have an anomaly
 
                     scoreNodeId = self.scoreNodes[id] #lookup the score node
                     #self.model.time_series_insert(id, values=score, times=times, allowDuplicates=True)
                     scoresBlob[scoreNodeId] = score
                     #print(f"SCORE {id}: {list(scoreMask)}")
+            scoresBlob[self.totalScoreNode.get_id()]=totalScore # also add the total score
             blob["data"].update(scoresBlob)
 
         return blob
@@ -221,7 +255,13 @@ class StreamThresholdScorerClass(streaming.Interface):
         for anno in self.objectNode.get_child("thresholds").get_leaves():
             if anno.get_child("type").get_value() != "threshold":
                 continue  # only thresholds
-            id = anno.get_child("variable").get_leaves()[0].get_id()  # the first id of the targets of the annotation target pointer, this is the node that the threshold is referencing to
+
+            leaves = anno.get_child("variable").get_leaves()
+            if leaves:
+                id = leaves[0].get_id()  # the first id of the targets of the annotation target pointer, this is the node that the threshold is referencing to
+            else:
+                self.logger.warning(f"no leaves for {anno.get_name()}")
+                continue
 
             thisMin = anno.get_child("min").get_value()
             if type(thisMin) is type(None):
@@ -260,13 +300,104 @@ class StreamThresholdScorerClass(streaming.Interface):
 
         return data
 
+    def get_thresholds(self):
+        return self.thresholds
+
+def score_all(functionNode):
+    """
+        score all thresholds again by using the stream implementation
+        #works only on context of the class object
+    """
+    logger = functionNode.get_logger()
+    logger.debug("score_all")
+    progressNode = functionNode.get_child("control").get_child("progress")
+    progressNode.set_value(0)
+    model = functionNode.get_model() # for the model API
+    annos = functionNode.get_child("annotations").get_leaves()
+    annos = [anno for anno in annos if anno.get_child("type").get_value() == "time"] #only the time annotations
+    variableIds = functionNode.get_child("variables").get_leaves_ids() # the variableids to work on
+    try:
+        overWrite = functionNode.get_child("overWrite").get_value()
+    except:
+        overWrite = True
+
+
+    obj = functionNode.get_parent().get_object()
+    obj.reset() #read the new thresholds into the object!! this also affects parallel streaming processes
+
+    # for each id (variable) that has threshold(s)
+    # take the values and times of that varialbe
+    # find out the annotations we need, create the stream data blob, send it over
+    progressStep =1/float(len(obj.get_thresholds()))
+    total = None
+
+    for id, thresholdsInfo in obj.get_thresholds().items(): # thresholds is a dict of {id: {tag:{"min":0,"max":1}, tag2:{} .. ,id2:{}}
+        if id not in variableIds:
+            continue # skip this one, is not selected
+        progressNode.set_value(progressNode.get_value()+progressStep)
+        var = model.get_node(id)
+        data = var.get_time_series()
+        times = data["__time"]
+        #now produce the interesting states
+        blob = {"type": "timeseries",
+                "data": {
+                    "__time": times,
+                    id: data["values"],
+                    "__states": {}
+                }}
+        for state in thresholdsInfo.keys(): #iterate over the states where the variable has special thresholds
+            myAnnos = mh.filter_annotations(annos, state)
+            stateMask = mh.annotations_to_class_vector(myAnnos, data["__time"])
+            stateMask = numpy.isfinite(stateMask)
+            blob["data"]["__states"][state]=stateMask
+
+        #now we have prepared a data and state blob, we will now score by feeding it into the stream scorer
+        #del blob["data"]["__states"]#for test, now
+        blob = obj.feed(blob)
+        #now the blob contains more entries, e.g. the score variable id and the according scores, that is what we want
+        for blobId,values in blob["data"].items():
+            if blobId not in ["__time",id,"__states"]:
+                #this is the score, overwrite the whole thing
+                scoreNode = model.get_node(blobId)
+                if scoreNode.get_name()=="_total_score":
+                    continue # this is the combined result of several variables going into the stream scoring, not relevant here
+
+
+                scoreNode.set_time_series(values=values,times=times)  # xxx is set ok here, or do we need "insert" to make sure there has not been changed in the meantime?
+                model.notify_observers(scoreNode.get_parent().get_id(), "children") # we trigger
+
+                # build the total score:
+                # merge in the new times, resample the total score, resampel the local score, then merge them
+                # the merge function will use the new values whereever there is one (empty fields are named "nan"
+                #  for the total score, we need a resampling to avoid the mixing of results e.g.
+                # two sensor have different result during a given interval, but different times, if we just merge
+                # we get a True, False, True,False mixture
+                # so we build the merge vector, first resample then merge
+
+                values[numpy.isfinite(values)] = -1 # set -1 for all out of limit
+                if type(total) is type(None):
+                    total = TimeSeries(values=values, times=times)
+                else:
+                    local = TimeSeries(values=values, times=times)
+                    total.merge(local) # the merge resamples the incoming data to the existing time series, NaN will be replaced by new values,
+    # finally, write the total
+    # if the overWrite is True, we replace, otherwise we merge with the existing, previous result
+    totalScoreNode = functionNode.get_parent().get_child("output").get_child("_total_score")
+    if overWrite:
+        totalScoreNode.set_time_series(values = total.get_values(),times=total.get_times())
+    else:
+        totalScoreNode.merge_time_series(values = total.get_values(),times=total.get_times())
+
+    return True
+
+
 
 class ThresholdsClass(streaming.Interface):
 
     def __init__(self,objectNode):
         self.logger=objectNode.get_logger()
         pass
-    def reset(self,data):
+    def reset(self,data=None):
         return data
     def feed(self,data):
         self.logger.debug("Thresholds.feed()")
@@ -289,7 +420,8 @@ class StreamWriterClass(streaming.Interface):
         return data
 
     def feed(self,blob=None):
-
+        self.logger.debug("StreamWriterClass.feed()")
+        pro=Profiling("WRITER")
         notifyIds = []
         self.model.disable_observers()
         if self.writeEnableNode.get_value()== True:
@@ -302,6 +434,7 @@ class StreamWriterClass(streaming.Interface):
                         if id[0:2] !="__": # the __ entries are others like state etc.
                             self.model.time_series_insert(id, values=values, times=times, allowDuplicates=True)
                             notifyIds.append(id)
+                            pro.lap(id)
                 if blob["type"] == "eventseries":
                     times = blob["data"]["__time"]
                     for id, values in blob["data"].items():
@@ -311,11 +444,41 @@ class StreamWriterClass(streaming.Interface):
             except Exception as ex:
                 self.logger.error(f"can't write data to model {ex}")
 
+        pro.lap("XXX")
         self.model.enable_observers()
         if notifyIds:
             self.model.notify_observers(notifyIds,"value")
+        pro.lap("YYY")
+        #print(pro)
         return blob
 
     def flush(self,data):
         return data
+
+
+
+
+class StreamLoggerClass(streaming.Interface):
+
+    def __init__(self,objectNode):
+        self.objectNode = objectNode
+        self.logger = objectNode.get_logger()
+        self.name = objectNode.get_browse_path()
+        pass
+
+    def reset(self,data=None):
+        self.logger.debug(f"{self.name}.reset()")
+        self.logger.debug(f"{data}")
+        return data
+
+    def feed(self,data=None):
+        self.logger.debug(f"{self.name}.feed():")
+        self.logger.debug(f"{data}")
+        return data
+
+    def flush(self,data=None):
+        self.logger.debug(f"{self.name}.flush():")
+        self.logger.debug(f"{data}")
+        return data
+
 

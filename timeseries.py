@@ -132,14 +132,26 @@ class TimeSeries:
             self.values[mask]=values[mask]
             return True
 
-    def set(self,values=None,times=None):
+    def set(self,values=None,times=None,withAllocSpace=False):
+        """
+            Args:
+                withAllocSpace: if set true, we also make space for additional values
+        """
         with self.lock:
             if type(values) != type(None):
-                self.values = numpy.copy(numpy.asarray(values))
-                self.lastValidIndex = self.values.size -1
+                if withAllocSpace:
+                    alloc = numpy.full(self.allocSize, numpy.nan, dtype=numpy.float64)
+                    self.values = numpy.append(numpy.asarray(values), alloc)
+                else:
+                    self.values = numpy.copy(numpy.asarray(values))
+                self.lastValidIndex = len(values) -1
             if type(times) != type(None):
-                self.times = numpy.copy(numpy.asarray(times))
-                self.lastValidIndex = self.times.size - 1
+                if withAllocSpace:
+                    alloc = numpy.full(self.allocSize, numpy.nan, dtype=numpy.float64)
+                    self.times =numpy.append(numpy.asarray(times), alloc)
+                else:
+                    self.times = numpy.copy(numpy.asarray(times))
+                self.lastValidIndex = len(times) - 1
             return True
 
     def get_values(self):
@@ -321,6 +333,9 @@ class TimeSeries:
         with self.lock:
             mergeTimes = merge_times(self.get_times(),timeseries.get_times())
             oldValues = self.get(resampleTimes=mergeTimes)["values"]
+            if len(oldValues) == 0:
+                #the oldValues is empty, so we create a NaN array
+                oldValues = numpy.full(len(mergeTimes),numpy.nan,dtype=numpy.float64)
             newValues = timeseries.get(resampleTimes=mergeTimes)["values"]
             indices=numpy.isfinite(newValues)
             oldValues[indices]=newValues[indices]
@@ -437,6 +452,14 @@ class TimeSeriesTable:
                 self.create(k)
             self.store[k].insert(values=v,times=blob["__time"])
 
+    def merge(self,name,values,times):
+        """
+            merge the additional into the origin see merge function to
+        """
+        if name not in self.store:
+            return False
+        ts = TimeSeries(values = values, times= times)
+        return self.store[name].merge(ts)
 
 
 
@@ -459,8 +482,8 @@ class TimeSeriesTable:
             if not id in self.store:
                 self.create(id)
             if entry.endswith("__time"):
-                self.store[id].set(times=get[entry])
+                self.store[id].set(times=get[entry],withAllocSpace=True)
             else:
-                self.store[id].set(values=get[entry])
+                self.store[id].set(values=get[entry],withAllocSpace=True)
         return True
 

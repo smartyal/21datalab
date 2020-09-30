@@ -527,6 +527,13 @@ class TreeWidget
                         }
                     };
 
+                    menuObject["deletechildren"] = {
+                            "label": "delete children",
+                            "action": function(obj){treeWidgetObject.context_menu_delete_children(node);},
+                            "icon": treeWidgetObject.treeIcons["delete"]
+                        };
+
+
                     //creation is only for non-referencer
                     if ((node.id in treeWidgetObject.treeNodes) && (treeWidgetObject.treeNodes[node.id].type != "referencer"))
                     {
@@ -883,6 +890,18 @@ class TreeWidget
                 var query={"parent":parent,"remove":allRefs[parent]};
                 http_post("/_references",JSON.stringify(query),null,null,null);
             }
+        }
+    }
+
+    context_menu_delete_children(node)
+    {
+
+
+        var toDelete = node.children;
+        //now delete normal nodes
+        if (Object.keys(toDelete).length != 0)
+        {
+            http_post("/_delete",JSON.stringify(toDelete),null,null,null);
         }
     }
 

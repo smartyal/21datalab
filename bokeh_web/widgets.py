@@ -51,6 +51,7 @@ globalThresholdsLevel = "underlay"
 globalAnnotationsAlpha = 0.90
 globalThresholdsAlpha = 0.5
 globalBackgroundsAlpha = 0.2
+globalBackgroundsHighlightAlpha = 0.6
 
 globalRESTTimeout = 90
 
@@ -509,7 +510,7 @@ class TimeSeriesWidgetDataServer():
         nodes = self.__web_call("post", "_getleaves", self.path + ".scoreVariables")
         scoreVariables = [node["browsePath"] for node in nodes]
         self.scoreVariables = copy.deepcopy(scoreVariables)
-        self.logger.debug(f"fetch_score_variables : old {old}, new:{self.scoreVariables}")
+        #self.logger.debug(f"fetch_score_variables : old {old}, new:{self.scoreVariables}")
 
         if old != self.scoreVariables or self.pendingScoreVariablesUpdate:
             self.pendingScoreVariablesUpdate = False
@@ -2170,8 +2171,8 @@ class TimeSeriesWidget():
                     backStart = r.left
                     backEnd = r.right
                     if x >= backStart and x <= backEnd:
-                        alphaNow = r.fill_alpha
-                        r.fill_alpha = alphaNow + 0.5 * (1 - alphaNow)
+                        #alphaNow = r.fill_alpha
+                        r.fill_alpha = globalBackgroundsHighlightAlpha#alphaNow + 0.5 * (1 - alphaNow)
                         self.logger.debug("inside Background!")
                         self.server.set_background_highlight(x,y,backStart,backEnd)
                         self.backgroundHighlightVisible = True
@@ -2188,8 +2189,8 @@ class TimeSeriesWidget():
                 if r.name:
                     if r.name.startswith("__background"):
                         alphaNow = r.fill_alpha
-                        if alphaNow != globalAlpha:
-                            r.fill_alpha = globalAlpha
+                        if alphaNow != globalBackgroundsAlpha:
+                            r.fill_alpha = globalBackgroundsAlpha
                             self.server.set_background_highlight(0,0,0,0,remove=True)
                             return
 
@@ -2798,6 +2799,8 @@ class TimeSeriesWidget():
             self.show_backgrounds()
 
     def refresh_backgrounds(self):
+        if self.backgroundHighlightVisible:
+            return #don't touch a running selection
         self.background_highlight_hide()
         # we show the new backgrounds first and then delete the old to avoid the short empty time, looks a bit better
         deleteList = []
@@ -3638,9 +3641,9 @@ class TimeSeriesWidget():
         if roundValues:
             # round the values, it is not useful to have float values here, we use the background value
             # for lookup of coloring, so we need int
-            self.logger.debug(f"before round {data[backGroundNodeId]}")
+            #self.logger.debug(f"before round {data[backGroundNodeId]}")
             data[backGroundNodeId]=[ round(value) if numpy.isfinite(value) else value for value in data[backGroundNodeId] ]
-            self.logger.debug(f"after round {data[backGroundNodeId]}")
+            #self.logger.debug(f"after round {data[backGroundNodeId]}")
 
 
         for value, time in zip(data[backGroundNodeId], data[backGroundNodeId+"__time"]):
