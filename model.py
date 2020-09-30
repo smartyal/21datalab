@@ -542,10 +542,13 @@ class Observer:
                 # Try to retrieve an item from the update queue
                 event = self.updateQueue.get(block=True,timeout=self.minWaitTime)
                 #self.logger.debug(f"event pick {event}")
-                if "nodeId" in event["data"]:
-                    eventIdentification = event["event"]+event["data"]["nodeId"]
-                else:
-                    eventIdentification = event["event"]#+str(event["data"])
+                #create an eventIdentification, this is used to filter out repeated events
+                # we select the eventIdentificton in a way that events that have unique information keeps them
+                # we take all information from the event.data field, so only the events WITHOUT unique data will be removed
+                # those are typically the tree.update events
+                eventIdentification = event["event"] #the event name itself
+                for key in event["data"]:
+                    eventIdentification = eventIdentification+str(key)+str(event["data"][key])
                 #now sort this event into the queues of eventids
                 if eventIdentification not in self.eventQueues:
                     # this is a new type/identificatin of event, create an entry in the event  queue
@@ -954,7 +957,7 @@ class Model:
             Args:
                 desc (string): give a browsepath ("root.myfolder.myvariable") or a nodeId ("10")
             Returns:
-                (Node()): a node object of the given node
+                (Node()): a node object of the given node including the browsepath
                 None if not found
         """
         with self.lock:
@@ -962,10 +965,13 @@ class Model:
             if not id: return None
 
             response = copy.deepcopy(self.model[id])
+            response["browsePath"]=self.get_browse_path(id)
             if response["children"]!=[]:
                 children =[]
                 for childId in response["children"]:
-                    children.append(copy.deepcopy(self.model[childId]))
+                    childInfo = copy.deepcopy(self.model[childId])
+                    childInfo["browsePath"]=self.get_browse_path(childId)
+                    children.append(childInfo)
             response["children"]=children
             return response
 
@@ -3020,121 +3026,6 @@ class Model:
         self.logger.info(f"notify observser, {str_lim(nodeIds,50)}, {properties}")
         return self.__notify_observers(nodeIds,properties,eventInfo)
 
-    def __notify_observers_old(self, nodeIds, properties ):
-        """
-            this function is called internally when nodes or properties have changed. Then, we look if any
-            observer has to be triggered
-            we also increase the counter and time on the root.observers.modelObserver
-            Args:
-                nodeId: the nodeId where a change occurred
-                properties: the property or list of properties of the node that has changed
-
-        """
-
-        # for now we only do the tree update thing
-        if self.disableObserverCounter>0:
-            return
-        #  tree update thing
-        with self.lock:
-            #self.logger.debug(f"__notify_observers {nodeIds}: {properties}")
-            # this is for the tree updates, any change is taken
-            self.modelUpdateCounter = self.modelUpdateCounter + 1 #this is used by the diff update function and model copies
-            # Notify all observers about the tree update
-            collectedEvents=[]
-            event = {
-                "id": self.modelUpdateCounter,
-                "event": "tree.update",
-                "data": ""}
-            collectedEvents.append(event) #send later
-
-            if type(properties) is not list:
-                properties = [properties]
-            if type(nodeIds) is  not list:
-                nodeIds = [nodeIds]
-
-            names =[self.model[id]["name"] for id in nodeIds]
-            self.logger.debug(f"__notify_observers {str_lim(names,50)}: {properties}")
-
-            triggeredObservers=[] # we use this to suppress multiple triggers of the same observer, the list holds the observerIds to be triggered
-            #p=utils.Profiling("__notify.iterate_nodes")
-            for nodeId in nodeIds:
-                #now check if the node is being observed, we do everything over ids to have max speed
-                #for id in self.model[nodeId]["backRefs"]:
-                #paths = [ self.model[id]['browsePath'] for id in self.get_referencers(nodeId)] # this one might not work because browsepath is not available always
-                #self.logger.debug(f"nodeId {nodeId} {self.get_browse_path(nodeId)}:{paths}")
-                #if self.model[nodeId]["browsePath"]=="root.folder.cos":
-                #    print("debug cos")
-
-
-                backrefs =  self.get_referencers(nodeId,deepLevel=3) # deepLevel non standard, three parents! we support ref->ref->node->child->child->child
-                #p.lap(f"get refs for {nodeId}")
-                for id in backrefs:
-                    if self.model[id]["name"] == "targets" and self.model[self.model[id]["parent"]]["type"] == "observer":
-                        # this node is being observed,
-                        observerId = self.model[id]["parent"]
-                        observer = self.get_children_dict(observerId)
-                        # check if trigger
-                        if observer["enabled"]["value"] == True:
-                            #self.logger.debug(f"{self.model[nodeId]['name']} is targeted by observer {self.get_browse_path(observerId)}")
-                            if observerId in triggeredObservers:
-                                self.logger.debug(f"we have triggered the observer {self.get_browse_path(observerId)} in this call already, pass")
-                                continue
-                            for property in properties:
-                                if property in observer["properties"]["value"]:
-                                    #self.logger.debug(f"observer trigger on {self.get_browse_path(observerId)} for change in {property}")
-                                    self.model[observer["triggerCounter"]["id"]]["value"] = self.model[observer["triggerCounter"]["id"]]["value"]+1
-                                    self.model[observer["lastTriggerTime"]["id"]]["value"] = datetime.datetime.now().isoformat()
-                                    for funcNodeId in self.get_leaves_ids(observer["onTriggerFunction"]["id"]):
-                                        self.logger.debug(f"execute ontrigger function {funcNodeId}")
-                                        self.execute_function(funcNodeId)
-                                    if "triggerSourceId" in observer:
-                                        self.model[observer["triggerSourceId"]["id"]]["value"] = nodeId
-                                    if observer["hasEvent"]["value"] == True:
-                                        #self.logger.debug(f"send event {observer['eventString']['value']}")
-                                        #also send the real event
-                                        #self.modelUpdateCounter = self.modelUpdateCounter+1
-                                        event = {
-                                            "id": self.modelUpdateCounter,
-                                            "event": observer["eventString"]["value"],
-                                            "data": {"nodeId":observerId,"sourceId":nodeId,"sourcePath":self.get_browse_path(nodeId)}}
-                                        if self.model[nodeId]["type"] not in ["column","file","timeseries"]:
-                                            event["data"]["value"]=self.model[nodeId]["value"]
-                                        #some special handling
-                                        try:
-                                            if event["event"] == "system.progress":
-                                                progressNode = self.get_node(self.get_leaves_ids("root.system.progress.targets")[0])
-                                                event["data"]["value"]=progressNode.get_value()
-                                                event["data"]["function"]=progressNode.get_parent().get_parent().get_browse_path()
-                                            else:
-                                                eventNode = self.get_node(observerId)
-                                                extraInfoNode = eventNode.get_child("eventData")
-                                                if extraInfoNode:
-                                                    extraInfo = extraInfoNode.get_value()
-                                                    if type(extraInfo) is not dict:
-                                                        extraInfo={"info":extraInfo}
-                                                    event["data"].update(extraInfo)
-                                                even.update(eventInfo)
-
-                                        except Exception as ex:
-                                            self.logger.error(f"error getting extra info for event {ex}, {sys.exc_info()[0]}")
-                                        #for all other events, take the event data if there is one (as json)
-
-                                        self.logger.debug(f"preprare send event {event}")
-                                        #for observerObject in self.observers:
-                                        #    observerObject.update(event)
-                                        collectedEvents.append(event)
-                                    triggeredObservers.append(observerId)# next time, we don't trigger
-                                    break # leave the properties, we only trigger once
-                #p.lap("complete backrefs {nodeId}, {backrefs}")
-        #self.logger.debug(p)
-        self.logger.debug("now send the events")
-        for event in collectedEvents:
-            for observerObject in self.observers:
-                observerObject.update(event)
-        #self.logger.debug("done sending events")
-
-
-
     def get_referencers(self,descList,deepLevel = 0):
         """
             get the references to this node via backtraversing the leaves algorithm
@@ -3290,7 +3181,8 @@ class Model:
                                             if type(extraInfo) is not dict:
                                                 extraInfo={"info":extraInfo}
                                             event["data"].update(extraInfo)
-                                        event["data"].update(eventInfo)
+                                        if eventInfo:
+                                            event["data"]["_eventInfo"]=eventInfo #put this only if we have info
 
                                 except Exception as ex:
                                     self.logger.error(f"error getting extra info for event {ex}, {sys.exc_info()[0]}")

@@ -286,6 +286,18 @@ class Events2StateClass(streaming.Interface):
         self.stateNode = objectNode.get_child("currentState")
         #self.reset()
 
+    def __build_info(self,annotation):
+        infoDict={
+            "id":annotation.get_id(),
+            "name":annotation.get_name(),
+            "browsePath":annotation.get_browse_path(),
+            "type":annotation.get_child("type").get_value(),
+            "startTime":annotation.get_child("startTime").get_value(),
+            "endTime":annotation.get_child("endTime").get_value(),
+            "tags":annotation.get_child("tags").get_value(),
+        }
+        return infoDict
+
     def feed(self,blob):
         """
             expected format of blob
@@ -298,7 +310,7 @@ class Events2StateClass(streaming.Interface):
             #the blob will have only one event variable
         """
 
-        notification = {"new": [], "delete": [],"modify": []}  # keep the info which ids have changed and notify them at the end
+        notification = {"new": {}, "delete": {},"modify": {}}  # keep the info which ids have changed and notify them at the end
 
         self.logger.debug("Events2StateClass.feed()")
 
@@ -316,13 +328,14 @@ class Events2StateClass(streaming.Interface):
                         existingAnno = anno["node"]
                         existingAnno.get_child("endTime").set_value(anno["endTime"])
                         existingAnno.get_child("tags").set_value(anno["tags"])
-                        notification["modify"].append(existingAnno.get_id())
+                        #build a special info dictionary for the receiver of this event
+                        notification["modify"][existingAnno.get_id()]=self.__build_info(existingAnno)
                     else:
                         #this is a new annotation
                         newAnno = self.newAnnosNode.create_child(type="annotation")
                         for k, v in anno.items():
                             newAnno.create_child(properties={"name": k, "value": v, "type": "const"})
-                        notification["new"].append(newAnno.get_id())
+                        notification["new"][newAnno.get_id()]=self.__build_info(newAnno)
 
                 #now process the open annotations
                 for tag,anno in self.openAnnos.items():
@@ -330,15 +343,16 @@ class Events2StateClass(streaming.Interface):
                         #update of exisiting
                         existingAnno = anno["node"]
                         existingAnno.get_child("endTime").set_value(anno["endtime"])
-                        notification["modify"].append(existingAnno.get_id())
+                        notification["modify"][existingAnno.get_id()] = self.__build_info(existingAnno)
                     else:
                         newAnno = self.newAnnosNode.create_child(type="annotation")
                         for k, v in anno.items():
                             newAnno.create_child(properties={"name": k, "value": v, "type": "const"})
                         self.openAnnos[tag]["node"]=newAnno # remember open annotation
-                        notification["new"].append(newAnno.get_id())
+                        notification["new"][newAnno.get_id()] = self.__build_info(newAnno)
             finally:
                 self.model.enable_observers()
+
 
         elif blob["type"] == "timeseries":
             """
@@ -365,14 +379,15 @@ class Events2StateClass(streaming.Interface):
                     if "node" in anno:
                         #update the endTime
                         anno["node"].get_child("endTime").set_value(dates.now_iso())
-                        notification["modify"].append(anno["node"].get_id())
+                        notification["modify"][anno["node"].get_id()] = self.__build_info(anno["node"])
                     addStates[tag]=numpy.full(length,True)
                 blob["data"]["__states"]=addStates
             finally:
                 self.model.enable_observers()
 
-        #now notify the changes
-        self.model.notify_observers(xxx)
+        #now notify the changes to annotations if there are any
+        if any([v for k,v in notification.items()]):#if any change is marked in the notifications
+            self.model.notify_observers(self.newAnnosNode.get_id(),"children",eventInfo=notification )
 
         return blob
 

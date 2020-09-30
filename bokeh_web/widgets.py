@@ -420,6 +420,38 @@ class TimeSeriesWidgetDataServer():
         self.annotations = copy.deepcopy(annotations)
         return annotations
 
+    def fetch_annotations_differential(self,info):
+        #args is a dict :{"new":[id1,id2], "delete":[id3,id4] "modify":[id5...] lists that contain ids where there have been changes
+
+        #the deletes
+        for id in info["delete"]:
+            if id in self.annotations:
+                del self.annotations[id]
+
+
+        #merge the new and modify and put them in our local info
+        nodes = info["new"]
+        nodes.update(info["modify"])
+
+        for id,annotation in nodes.items():
+            try:
+                # convert some stuff
+                if "startTime" in annotation:
+                    annotation["startTime"] = date2secs(
+                        annotation["startTime"]) * 1000
+                if "endTime" in annotation:
+                    annotation["endTime"] = date2secs(
+                        annotation["endTime"]) * 1000
+                if annotation["type"] in ["threshold", "motif"]:
+                    # we also pick the target, only the first
+                    annotation["variable"] = annotation["variable"][0]
+                self.annotations[id] = annotation #update or new entry
+            except Exception as ex:
+                self.logger.error(f"problem loading annotations {ex}, {str(sys.exc_info()[1])}")
+                continue
+        return self.annotations
+
+
 
 
 
@@ -864,7 +896,7 @@ class TimeSeriesWidget():
             #self.reInitAnnotationsVisible = self.annotationsVisible #store the state
             # sync from the server
             #self.__dispatch_function(self.reinit_annotations)
-            self.__dispatch_function(self.update_annotations_and_thresholds)
+            self.__dispatch_function(self.update_annotations_and_thresholds,arg=copy.deepcopy(data))
         elif data["event"] == "timeSeriesWidget.eventSeries":
             self.logger.debug(f"must reload events")
             self.__dispatch_function(self.update_events,data)
@@ -1102,12 +1134,16 @@ class TimeSeriesWidget():
 
 
 
-    def update_annotations_and_thresholds(self):
-        self.logger.debug("update_annotations")
+    def update_annotations_and_thresholds(self,arg=None):
+        self.logger.debug(f"update_annotations {arg}")
         # this is called when the backend has changed annotation leaves or values, it adjusts annotations
         # and thresholds
+
         lastAnnotations = self.server.get_annotations()
-        newAnnotations = self.server.fetch_annotations()
+        if "data" in arg and "_eventInfo" in arg["data"]:
+            newAnnotations = self.server.fetch_annotations_differential(arg["data"]["_eventInfo"])
+        else:
+            newAnnotations = self.server.fetch_annotations()
 
         #check for deletes
         deleteList = [] # a list of ids
