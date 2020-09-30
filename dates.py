@@ -1,6 +1,7 @@
 import datetime
 import pytz
 import dateutil.parser
+import time
 
 #from dates import *
 
@@ -92,3 +93,6 @@ def epochToIsoString(epoch,zone=pytz.UTC):
     dat = datetime.datetime(1970, 1, 1, 0, 0,tzinfo=pytz.utc) + datetime.timedelta(seconds=epoch)
     dat=dat.astimezone(zone) # we must do this later conversion due to a bug in tz lib
     return dat.isoformat()
+
+def now_iso(zone='Europe/Berlin'):
+    return epochToIsoString(time.time(), zone=zone)

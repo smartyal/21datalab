@@ -298,18 +298,47 @@ class Events2StateClass(streaming.Interface):
             #the blob will have only one event variable
         """
 
+        notification = {"new": [], "delete": [],"modify": []}  # keep the info which ids have changed and notify them at the end
+
         self.logger.debug("Events2StateClass.feed()")
+
         #we look for eventseries to switch the state:
         if blob["type"] == "eventseries":
             times = blob["data"]["__time"]
             evSeries = [v for k,v in blob["data"].items() if k!="__time"][0] # we take the first entry that is not __time, we expect there to be only ONE!
             newAnnos = self.process_event_series(times, evSeries)
 
-            for anno in newAnnos:
-                newAnno = self.newAnnosNode.create_child(type="annotation")
-                for k, v in anno.items():
-                    newAnno.create_child(properties={"name": k, "value": v, "type": "const"})
-            return blob
+            self.model.disable_observers()
+            try:
+                for anno in newAnnos:
+                    if "node" in anno:
+                        #this is an update of an open existing annotation
+                        existingAnno = anno["node"]
+                        existingAnno.get_child("endTime").set_value(anno["endTime"])
+                        existingAnno.get_child("tags").set_value(anno["tags"])
+                        notification["modify"].append(existingAnno.get_id())
+                    else:
+                        #this is a new annotation
+                        newAnno = self.newAnnosNode.create_child(type="annotation")
+                        for k, v in anno.items():
+                            newAnno.create_child(properties={"name": k, "value": v, "type": "const"})
+                        notification["new"].append(newAnno.get_id())
+
+                #now process the open annotations
+                for tag,anno in self.openAnnos.items():
+                    if "node" in anno:
+                        #update of exisiting
+                        existingAnno = anno["node"]
+                        existingAnno.get_child("endTime").set_value(anno["endtime"])
+                        notification["modify"].append(existingAnno.get_id())
+                    else:
+                        newAnno = self.newAnnosNode.create_child(type="annotation")
+                        for k, v in anno.items():
+                            newAnno.create_child(properties={"name": k, "value": v, "type": "const"})
+                        self.openAnnos[tag]["node"]=newAnno # remember open annotation
+                        notification["new"].append(newAnno.get_id())
+            finally:
+                self.model.enable_observers()
 
         elif blob["type"] == "timeseries":
             """
@@ -327,18 +356,31 @@ class Events2StateClass(streaming.Interface):
                 }
             }
             """
-            times = blob["data"]["__time"]
-            addStates = {}
-            length = len(times)
-            for tag,startTime in self.state.items():
-                addStates[tag]=numpy.full(length,True)
-            blob["data"]["__states"]=addStates
-            return blob
+            self.model.disable_observers()
+            try:
+                times = blob["data"]["__time"]
+                addStates = {}
+                length = len(times)
+                for tag,anno in self.openAnnos.items():
+                    if "node" in anno:
+                        #update the endTime
+                        anno["node"].get_child("endTime").set_value(dates.now_iso())
+                        notification["modify"].append(anno["node"].get_id())
+                    addStates[tag]=numpy.full(length,True)
+                blob["data"]["__states"]=addStates
+            finally:
+                self.model.enable_observers()
+
+        #now notify the changes
+        self.model.notify_observers(xxx)
 
         return blob
 
     def flush(self,data=None):
         return data
+
+
+
 
 
     def __recover_state(self):
@@ -348,10 +390,25 @@ class Events2StateClass(streaming.Interface):
         """
         lookback = self.objectNode.get_child("recoverInterval").get_value()
         events = self.objectNode.get_child("eventSeries").get_target().get_event_series(start=-lookback)
-        self.process_event_series(events["__time"],events["eventStrings"])  # ignore the annotations created, the state will be set inside the function call
-        self.logger.debug(f"current state after state recovery : {self.state}")
+        closedAnnos = self.process_event_series(events["__time"],events["eventStrings"])  # ignore the annotations created, the state will be set inside the function call
+        self.logger.debug(f"current state after state recovery : {self.openAnnos}")
 
-        return
+        ##
+        ## ignore the closed Annotations handle only the open annotations
+        #delete the currently open annos
+        self.del_open_annos() # first, delete any existing open annotation
+
+
+        #create the open annos if needed
+        for tag,anno in self.openAnnos.items():
+            #make an annotation each
+            newAnno = self.newAnnosNode.create_child(type="annotation")
+
+            for k, v in anno.items():
+                newAnno.create_child(properties={"name": k, "value": v, "type": "const"})
+            self.openAnnos[tag]["node"]=newAnno # keep the reference to the node for later updates
+
+        return True
 
 
     def reset(self,data=None):
@@ -366,12 +423,14 @@ class Events2StateClass(streaming.Interface):
         self.startEvents = {v[0]:k for k, v in self.eventSelection.items()}  # always the first event startEvent:machinestate
         self.endEvents = {v[1]:k for k, v in self.eventSelection.items()}  # always the second event
 
-        self.state = {}
+        #self.state = {}
+        self.openAnnos = {}
         # in self.openAnnos, we store the currently running system state in the form
-        # { "state": epoch (the start time of the state
+        # { "state": {"startTime", "type"..... "node": node[Node] #
 
         if self.objectNode.get_child("recoverEnabled").get_value():
             self.__recover_state()
+
 
 
     def process_historical(self):
@@ -390,19 +449,10 @@ class Events2StateClass(streaming.Interface):
 
 
 
-    def get_open_annos(self):
-
-        openAnnos = []
-        annos = self.newAnnosNode.get_children()
-        for anno in annos:
+    def del_open_annos(self):
+        for anno in self.newAnnosNode.get_children():
             if "open" in anno.get_child("tags").get_value():
-                openAnnotation = {
-                    "tags": anno.get_child("tags").get_value(),# using "tag" to note that an open annotation has only one tag
-                    "startTime": anno.get_child("startTime").get_value(),
-                    "node": anno
-                }
-                openAnnos.append(openAnnotation)
-        self.openAnnos = openAnnos
+                anno.delete()
 
 
     def process_event_series(self,times,eventStrings):
@@ -427,18 +477,22 @@ class Events2StateClass(streaming.Interface):
                 # this is a start of a new event
                 tag = self.startEvents[evStr]
                 self.logger.debug(f" {evStr} is start of {tag}")
-                if tag in self.state:
+                if tag in self.openAnnos:
                     # we are in this state already, and get a repeated start event, this is an error
                     # so we submit an anomaly annotation
-                    anno = {
-                        "type": "time",
-                        "endTime": dates.epochToIsoString(tim, zone='Europe/Berlin'),
-                        "startTime": dates.epochToIsoString(self.state[tag], zone='Europe/Berlin'),
-                        "tags": ["anomaly", tag]
-                    }
+                    anno = self.openAnnos[tag].copy() # take the annotation away from the open list
+                    del self.openAnnos[tag]
+
+                    anno["endTime"]: dates.epochToIsoString(tim, zone='Europe/Berlin')
+                    anno["tags"]: ["anomaly", tag]
                     newAnnotations.append(anno)  # put the anomaly node
 
-                self.state[tag]=tim  #also update the current state
+                self.openAnnos[tag]={
+                    "type": "time",
+                    "endTime": dates.now_iso(),
+                    "startTime": dates.epochToIsoString(tim, zone='Europe/Berlin'),
+                    "tags":[tag,"open"]
+                }
 
 
 
@@ -447,18 +501,16 @@ class Events2StateClass(streaming.Interface):
                 tag = self.endEvents[evStr]
                 self.logger.debug(f" {evStr} is end of {tag}")
                 # this is an end event, see if we have a matching running state
-                if tag in self.state:
-                    anno = {
-                        "type": "time",
-                        "endTime": dates.epochToIsoString(tim, zone='Europe/Berlin'),
-                        "startTime": dates.epochToIsoString(self.state[tag], zone='Europe/Berlin'),
-                        "tags": [tag]
-                    }
+                if tag in self.openAnnos:
+                    anno = self.openAnnos[tag].copy()
+                    del  self.openAnnos[tag]
+
+                    anno["endTime"] = dates.epochToIsoString(tim, zone='Europe/Berlin')
+                    anno["tags"]=[tag]
                     newAnnotations.append(anno)
-                    del self.state[tag] # remove the state from the current states
                 else:
                     self.logger.warning(f"end event without start {tim} {evStr} ")
 
         if self.stateNode:
-            self.stateNode.set_value(list(self.state.keys()))
+            self.stateNode.set_value(list(self.openAnnos.keys()))
         return newAnnotations
