@@ -1178,6 +1178,8 @@ class TimeSeriesWidget():
                     #if anno != self.renderers[annoId]["info"]:
                     if not self._compare_anno(anno,self.renderers[annoId]["info"] ):
                         self.logger.debug(f"update_annotations() -- annotation has changed {annoId} {self.renderers[annoId]['info']} => {anno}")
+
+                        isVisible = self.renderers[annoId]["renderer"] in self.plot.renderers # remember if the annotation was currently visible
                         with self.renderersLock:
                             self.renderersGarbage.append(self.renderers[annoId]["renderer"])
                         del self.renderers[annoId]# kick out the entry,
@@ -1186,8 +1188,16 @@ class TimeSeriesWidget():
                             if self.boxModifierAnnotationName == annoId:
                                 self.box_modifier_hide()
 
-                        #now recreate
-                        self.draw_annotation(anno, visible=True) #show right away
+                        # now recreate: if the annotation was visible before (was in the plot.renderers
+                        # then we show it again, if not, we decide later in the show_annotations if it will be shown or not
+                        # depending on selected tags etc. this covers especially the exception case where a user
+                        # draws a new annotation, which is a currently NOT activated tag, then modifies that new annotation:
+                        # it should stay visible!
+                        if isVisible:
+                            self.draw_annotation(anno, visible=True)        #show right away because it was visible before
+                        else:
+                            self.draw_annotation(anno, visible=False)       # show later if allowed depending on tags etc.
+                            createdTimeAnnos.append(annoId)                 #show later if allowed
             if anno["type"] in ["threshold","motif"]:
                 # for thresholds/motifs we do not support delete/create per backend, only modify
                 # so check for modifications here
@@ -3181,7 +3191,7 @@ class TimeSeriesWidget():
 
         self.logger.debug(f"add {len(addList)} annotations to plot")
         self.plot.renderers.extend(addList)
-        self.remove_renderers(renderers=removeList)
+        self.remove_renderers(renderers=removeList,deleteFromLocal=True) ## xxx new
 
 
     def hide_annotations(self):

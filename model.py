@@ -972,7 +972,7 @@ class Model:
                     childInfo = copy.deepcopy(self.model[childId])
                     childInfo["browsePath"]=self.get_browse_path(childId)
                     children.append(childInfo)
-            response["children"]=children
+                response["children"]=children
             return response
 
 

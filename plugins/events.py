@@ -342,7 +342,7 @@ class Events2StateClass(streaming.Interface):
                     if "node" in anno:
                         #update of exisiting
                         existingAnno = anno["node"]
-                        existingAnno.get_child("endTime").set_value(anno["endtime"])
+                        existingAnno.get_child("endTime").set_value(anno["endTime"])
                         notification["modify"][existingAnno.get_id()] = self.__build_info(existingAnno)
                     else:
                         newAnno = self.newAnnosNode.create_child(type="annotation")
@@ -498,8 +498,8 @@ class Events2StateClass(streaming.Interface):
                     anno = self.openAnnos[tag].copy() # take the annotation away from the open list
                     del self.openAnnos[tag]
 
-                    anno["endTime"]: dates.epochToIsoString(tim, zone='Europe/Berlin')
-                    anno["tags"]: ["anomaly", tag]
+                    anno["endTime"] = dates.epochToIsoString(tim, zone='Europe/Berlin')
+                    anno["tags"] = ["anomaly", tag]
                     newAnnotations.append(anno)  # put the anomaly node
 
                 self.openAnnos[tag]={
