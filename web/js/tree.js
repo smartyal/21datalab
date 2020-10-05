@@ -55,7 +55,8 @@ class TreeWidget
             observer: "far fa-eye",
             setlen: "fas fa-arrows-alt-h",
             object: "fas fa-dice-d6",
-            reset: "fas fa-redo-alt"
+            reset: "fas fa-redo-alt",
+            alarm: "fas fa-exclamation-triangle"
         };
 
         this.eventSource = undefined;

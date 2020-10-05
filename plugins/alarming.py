@@ -11,7 +11,7 @@ alarmMessage = {"name":"alarmMessage","type":"alarm","children":[
         {"name": "startTime", "type": "variable", "value": "2020-10-01T08:00:00+02:00"},
         {"name": "endTime", "type": "variable", "value": None},
         {"name": "confirmTime", "type": "variable", "value": "2020-10-01T18:00:00+02:00"},
-        {"name": "mustExcalate", "type": "variable", "value": False}
+        {"name": "mustEscalate", "type": "variable", "value": False}
     ]
 }
 
@@ -108,7 +108,7 @@ def check_mail_sending(functionNode):
     sendMailFunction = functionNode.get_child("sendMailFunction").get_target()
     messages = functionNode.get_child("messages").get_leaves()
     for msg in messages:
-        mustSend= msg.get_child("mustExcalate")
+        mustSend= msg.get_child("mustEscalate")
         if mustSend and mustSend.get_value()== True:
             #prepare a mail from the message
             body = {child.get_name():child.get_value() for child in msg.get_children()}
