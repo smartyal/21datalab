@@ -1523,11 +1523,13 @@ class Model:
             if not id:
                 return False
 
+            notificationProperties = []
             for k,v in properties.items():
                 if k in ["id","browsePath","children","parent","forwardRefs","backRefs"]:
                     continue # we ignore these entries
                 self.model[id][k]=v # overwrite or set new
-            self.__notify_observers(id,list(properties.keys()))
+                notificationProperties.append(k)
+            self.__notify_observers(id,notificationProperties)
             return True
 
 
