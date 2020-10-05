@@ -434,6 +434,9 @@ class Node():
 
     def execute(self):
         return self.model.execute_function(self.id)
+    
+    def execute_synchronous(self):
+        return self.model.execute_synchronous(self.id)
 
     def instantiate(self):
         return self.model.instantiate_object(self.id)
@@ -2528,6 +2531,11 @@ class Model:
         self.__clone_referencer_targets(sourcePath,transferRoot)
         return True
 
+    def execute_synchronous(self,id):
+        """
+            execute a function synchronously here (this can be useful when executing a function within another
+        """
+        return self.__execution_thread(id)
 
     def __execution_thread(self,id):
         """
@@ -3727,8 +3735,13 @@ class Model:
                     if not autoCreate:
                         return None
                     #must create a new entry
-                    newEventString = "event_"+str(event)
-                    self.model[id]["eventMap"][newEventString]=event
+                    try:
+                        #to make sure we have only numbers there
+                        newEventString = "event_"+str(int(event))
+                        self.model[id]["eventMap"][newEventString]=int(event)
+                    except:
+                        self.log_error()
+                        return None
                     return event
 
 
