@@ -303,7 +303,6 @@ class TreeWidget
         {
             return;
         }
-
         $(this.treeDiv).on("select_cell.jstree-grid", (e,data) => {
             //alert( "The user double clicked a jstreegrid cell"+data.column+"  "+data.value+ );
             var id = data.node.get()[0].id;
@@ -319,6 +318,7 @@ class TreeWidget
             }
         });
 
+        $('#'+this.treeContainerId+'-editNodeModalButtonSave').unbind("click");
         $('#'+this.treeContainerId+'-editNodeModalButtonSave').click( () => {
             var id = $('#'+this.treeContainerId+'-editNodeModalId').val();
             var rawValue = $('#'+this.treeContainerId+'-editNodeModalValue').val();
@@ -335,7 +335,7 @@ class TreeWidget
                 $('#'+this.treeContainerId+'-editNodeModalButtonSave').click()
             }
         });
-
+        $('#'+this.treeContainerId+'-advancedEditModalButtonSave').unbind("click");
         $('#'+this.treeContainerId+'-advancedEditModalButtonSave').click(() => {
             // var id = $('#advancedEditModalId').val();
             // var value = JSON.parse($('#advancedEditModalValue').val());
@@ -367,6 +367,7 @@ class TreeWidget
             http_post("/setProperties",JSON.stringify([params]),null,null);
         });
 
+        $('#'+this.treeContainerId+'-advancedEditModalButtonAddPropery').unbind("click");
         $('#'+this.treeContainerId+'-advancedEditModalButtonAddPropery').click((event) => {
             let row = $(`<div class="form-group row">
                 <div class="col-5">
@@ -393,7 +394,7 @@ class TreeWidget
             $('#'+this.treeContainerId+'-advancedEditModalBody').append(row);
         });
 
-
+        $('#'+this.treeContainerId+'-editColumnModalButtonSave').unbind("click");
         $('#'+this.treeContainerId+'-editColumnModalButtonSave').click( () => {
             var id = $('#'+this.treeContainerId+'-editColumnModalId').val();
             var value = JSON.parse($('#'+this.treeContainerId+'-editColumnModalValue').val());
@@ -791,6 +792,7 @@ class TreeWidget
         */
 
         // trigger a rename on node double click
+        //$(this.treeDiv).unbind();
         $(this.treeDiv).on("dblclick.jstree", (e) => {
             var instance = $.jstree.reference($(this.treeDiv)),
             node = instance.get_node(e.target);
