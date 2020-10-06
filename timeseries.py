@@ -200,7 +200,7 @@ class TimeSeries:
 
 
 
-            if start:
+            if type(start) is not type(None):
                 if start < 0:
                     # we support the -start time, endtime = None, typically used for streaming
                     # to query interval from the end
@@ -209,11 +209,11 @@ class TimeSeries:
                     start = lastTime + start  # look back from the end, note that start is negative
                     if start < 0:
                         start = 0
-                startIndex = numpy.searchsorted(self.get_times(), start,"right")-1 #the first index to take
+                startIndex = numpy.searchsorted(self.get_times(), start,"left") #the first index to take
             else:
                 startIndex = 0
 
-            if end:
+            if type(end) is not type(None):
                 endIndex = numpy.searchsorted(self.get_times(), end, side="right") # this endIndex is one more than the last that we take
             else:
                 endIndex = lastValidIndex +1
