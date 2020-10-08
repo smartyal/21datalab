@@ -2406,7 +2406,7 @@ class Model:
                 return False
 
             #check if function is interactive, then we reload it right now
-            if self.model[id]["autoReload"] == True:
+            if self.model[id]["autoReload"] == True and self.global_auto_reload_enabled():
             #if self.functions[functionName]["isInteractive"]:
                 # must reload the module
                 module = importlib.reload(self.functions[functionName]["module"])
@@ -2559,7 +2559,7 @@ class Model:
             with self.lock:
 
                 if isFunction:
-                    if self.model[id]["autoReload"] == True:
+                    if self.model[id]["autoReload"] == True and self.global_auto_reload_enabled():
                         # must reload the module
                         functionName = self.model[id]["functionPointer"]
                         module = importlib.reload(self.functions[functionName]["module"])
@@ -2584,18 +2584,27 @@ class Model:
                 try:
                     node = self.get_node(id)
                     controlNode = node.get_child("control")
-                    controlNode.get_child("status").set_value("running")
-                    controlNode.get_child("result").set_value("pending")
+
                     targetId = self.get_id("root.system.progress.targets")
                     if targetId:
+                        self.disable_observers()
                         self.remove_forward_refs(targetId)
                         self.add_forward_refs(targetId,[controlNode.get_child("progress").get_id()])
+                        self.enable_observers()
 
+                    # we don't signal these things
+                    self.disable_observers()
+                    controlNode.get_child("status").set_value("running")
+                    controlNode.get_child("result")#.set_value("pending")
                     controlNode.get_child("progress").set_value(0)
                     #controlNode.get_child("signal").set_value("nosignal")
                     startTime = datetime.datetime.now()
                     controlNode.get_child("lastStartTime").set_value(startTime.isoformat())
-                finally:
+                    self.enable_observers()
+
+                except:
+                    self.logger.error("error during execution preparation, this can be critical, maybe disabled observers")
+                    self.log_error()
                     pass
 
             # model lock open: we execute without model lock
@@ -2612,14 +2621,18 @@ class Model:
                 # inner functions calls of node.xx() will return nothing, so we try, catch
                 try:
                     self.logger.debug(f"function {functionName} execution completed in {duration} ")
+
+                    self.disable_observers() # we don't signal these
                     controlNode.get_child("lastExecutionDuration").set_value(duration)
-                    #controlNode.get_child("signal").set_value("nosignal") #delete the signal
                     controlNode.get_child("status").set_value("finished")
-                    controlNode.get_child("executionCounter").set_value(controlNode.get_child("executionCounter").get_value()+1)
-                    if controlNode.get_child("progress").get_value() != 0:
-                        #if the progress was used, we reset it
-                        self.__dispatch(self.reset_progress_bar,1,controlNode)
-                    #controlNode.get_child("progress").set_value(0)
+                    controlExecutionCounter = controlNode.get_child("executionCounter")
+                    controlExecutionCounter.set_value(controlExecutionCounter.get_value() + 1)
+                    controlProgress = controlNode.get_child("progress")#.set_value(0)
+                    controlProgress.set_value(0)
+                    self.enable_observers()
+
+                    self.notify_observers([controlExecutionCounter.get_id(),controlProgress.get_id()],"value")
+
                     if not isFunction:
                         result = True # for execution of member function we don't have a general return code
                     if result == True:
@@ -2662,6 +2675,8 @@ class Model:
         """
         with self.lock:
             self.__show_subtree("1")
+
+
 
 
     # save model and data to files
@@ -3018,7 +3033,7 @@ class Model:
         self.lock_model()
         #with self.lock:
         self.disableObserverCounter += 1
-        self.logger.debug(f"disable_observers() {self.disableObserverCounter}")
+        #self.logger.debug(f"disable_observers() {self.disableObserverCounter}")
 
     def enable_observers(self):
         self.release_model()
@@ -3027,13 +3042,16 @@ class Model:
             self.disableObserverCounter -=1
         else:
             self.logger.error("enable_observers without disable observers")
-        self.logger.debug(f"enable_observers() {self.disableObserverCounter}")
+        #self.logger.debug(f"enable_observers() {self.disableObserverCounter}")
+
+
+
 
     def notify_observers(self, nodeIds, properties, eventInfo={}):
         """
             public wrapper for __notify observser, only expert use!
         """
-        self.logger.info(f"notify observser, {str_lim(nodeIds,50)}, {properties}")
+        #self.logger.info(f"notify observses(), {str_lim(nodeIds,50)}, {properties}")
         return self.__notify_observers(nodeIds,properties,eventInfo)
 
     def get_referencers(self,descList,deepLevel = 0):
@@ -3118,18 +3136,23 @@ class Model:
         with self.lock:
             # this is for the tree updates, any change is taken
             self.modelUpdateCounter = self.modelUpdateCounter + 1 #this is used by the diff update function and model copies
-            # Notify all observers about the tree update
-            collectedEvents=[]
-            event = {
-                "id": self.modelUpdateCounter,
-                "event": "tree.update",
-                "data": ""}
-            collectedEvents.append(event) #send later
 
+            collectedEvents=[]
+
+            enableTree = self.get_node("root.system.enableTreeUpdateEvents")
+            if enableTree and enableTree.get_value()==False:
+                pass
+            else:
+                # Notify all observers about the tree update, this is a standard
+                event = {
+                    "id": self.modelUpdateCounter,
+                    "event": "tree.update",
+                    "data": ""}
+                collectedEvents.append(event)  # send later
 
 
             names =[self.model[id]["name"] for id in nodeIds]
-            self.logger.debug(f"__notify_observers {str_lim(names,50)}: {properties}")
+            self.logger.debug(f"__notify_observers {len(nodeIds)} ids:{str_lim(names,100)}: {properties}")
 
             triggeredObservers=[] # we use this to suppress multiple triggers of the same observer, the list holds the observerIds to be triggered
             #p=utils.Profiling("__notify.iterate_nodes")
@@ -3137,7 +3160,7 @@ class Model:
             referencers = self.get_referencers(nodeIds,deepLevel=5)#deeplevel 5: nodes can be organized by the user in hierachy
             nodeId = self.__get_id(nodeIds[0])#take the first for the event string,
             #p.lap(f"get refs for {nodeId}")
-            self.logger.debug(f"__notify on referencers {str_lim([self.get_browse_path(id) for id in referencers],50)}")
+            self.logger.debug(f"__notify on {len(referencers)} referencers: {str_lim([self.get_browse_path(id) for id in referencers],200)}")
             for id in referencers:
                 if self.model[id]["name"] == "targets" and self.model[self.model[id]["parent"]]["type"] == "observer":
                     # this referencers is an observer,
@@ -3149,7 +3172,7 @@ class Model:
                         if observerId in triggeredObservers:
                             self.logger.debug(f"we have triggered the observer {self.get_browse_path(observerId)} in this call already, pass")
                             continue
-                        self.logger.debug(f"check properties to triggered the observer {self.get_browse_path(observerId)}")
+                        #self.logger.debug(f"check properties to triggered the observer {self.get_browse_path(observerId)}")
                         #check if any of the observed properties matches
                         propertyMatch = False
                         for property in properties:
@@ -3157,9 +3180,10 @@ class Model:
                                 propertyMatch=True
                                 break
                         if not propertyMatch:
-                            self.logger.debug(f"observer trigger on {self.get_browse_path(observerId)} no property match ")
+                            #self.logger.debug(f"observer trigger on {self.get_browse_path(observerId)} no property match ")
+                            pass
                         else:
-                            self.logger.debug(f"observer trigger on {self.get_browse_path(observerId)} for change in property ")
+                            self.logger.debug(f"observer trigger on {self.get_browse_path(observerId)} for change in {property}")
                             self.model[observer["triggerCounter"]["id"]]["value"] = self.model[observer["triggerCounter"]["id"]]["value"]+1
                             self.model[observer["lastTriggerTime"]["id"]]["value"] = datetime.datetime.now().isoformat()
                             for funcNodeId in self.get_leaves_ids(observer["onTriggerFunction"]["id"]):
@@ -3204,12 +3228,12 @@ class Model:
 
             #p.lap("complete backrefs {nodeId}, {backrefs}")
         #self.logger.debug(p)
-        self.logger.debug("now send the events")
-        event = copy.deepcopy(event)
+        #self.logger.debug("now send the events")
+        #event = copy.deepcopy(event)
         for event in collectedEvents:
             for observerObject in self.observers:
                 observerObject.update(event)
-        self.logger.debug("done sending events")
+        self.logger.debug(f"done sending {len(collectedEvents)} events")
 
 
 
@@ -3982,10 +4006,8 @@ class Model:
                 return False
             try:
                 className = self.model[id]["class"]
-                if "autoReload" in self.model[id] and self.model[id]["autoReload"]==True:
-                        # must reload the module
-
-
+                if "autoReload" in self.model[id] and self.model[id]["autoReload"]==True and self.global_auto_reload_enabled():
+                    # must reload the module
                     module = importlib.reload(self.objectClasses[className]["module"])
                     classDefinition = getattr(module, className.split('.', 1).pop())
                     # now update our global list
@@ -4025,6 +4047,13 @@ class Model:
                 except:
                     self.log_error()
 
+
+
+    def global_auto_reload_enabled(self):
+        if self.get_value("root.system.enableAutoReload") == False:
+            return False
+        else:
+            return True # this will also be the case if the node is not there, as the get_value return None then
 
 
 

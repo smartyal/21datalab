@@ -147,9 +147,7 @@ class TimeSeriesWidgetDataServer():
                 dataString = dataString.replace("'",'"') # json needs double quote for key/values entries
                 parseData = json.loads(dataString)
                 #self.logger.debug(f"parsed event {parseData}")
-                if "nodeId" in parseData:
-                    #self.logger.debug(f"nodeid in parsedata {parseData['nodeId']} in {self.settings['observerIds']}")
-                    if parseData["nodeId"] in self.settings["observerIds"]: #only my own observers are currently taken
+                if data["event"].startswith("global") or ("nodeId" in parseData and parseData["nodeId"] in self.settings["observerIds"]): #only my own observers are currently taken
                         #self.logger.info("sse match")
                         data["data"]=parseData # replace the string with the parsed info
                         if self.sseCb:
@@ -562,11 +560,9 @@ class TimeSeriesWidgetDataServer():
     def get_current_colors(self):
         return self.mirror["currentColors"][".properties"]["value"]
 
-    def update_current_colors(self,colors):
-        #currentColors = self.mirror["currentColors"][".properties"]["value"]
-        #currentColors.update(colors) # this is in place update
-        #colorsself.mirror["currentColors"]["_properties"]["value"]
-        currentColors = colors
+    def update_current_colors(self,currentColors):
+        if currentColors == self.mirror["currentColors"][".properties"]["value"]:
+            return # nothing to do
         nodesToModify = [{"browsePath": self.path + ".currentColors", "value": currentColors}]
         self.mirror["currentColors"][".properties"]["value"] = currentColors
         self.__web_call('POST', 'setProperties', nodesToModify)
@@ -848,6 +844,9 @@ class TimeSeriesWidget():
         #self.logger.setLevel(level)
 
 
+    def log_error(self):
+        self.logger.error(f"{sys.exc_info()[1]}, {traceback.format_exc()}")
+
     def observer_cb(self,data):
         """
          called by the ts server on reception of an event from the model server
@@ -869,6 +868,14 @@ class TimeSeriesWidget():
         elif data["event"] == "timeSeriesWidget.background":
             self.logger.debug("dispatch the refresh background")
             self.__dispatch_function(self.refresh_backgrounds)
+
+        elif data["event"] == "global.series.stream":
+            #this is a stream update, we only do something if the stream update in inside the visible area
+            if self.stream_update_is_relevant(data):
+                self.__dispatch_function(self.stream_update_new, arg=copy.deepcopy(data))
+            else:
+                self.logger.debug("stream update not relevant, ignore!")
+
         elif data["event"] == "timeSeriesWidget.stream":
             self.logger.debug(f"self.streamingMode {self.streamingMode}")
             if self.streamingMode and not self.streamingUpdateData:
@@ -897,6 +904,9 @@ class TimeSeriesWidget():
             # sync from the server
             #self.__dispatch_function(self.reinit_annotations)
             self.__dispatch_function(self.update_annotations_and_thresholds,arg=copy.deepcopy(data))
+        elif data["event"] == "global.annotations":
+            self.__dispatch_function(self.update_annotations_and_thresholds,arg=copy.deepcopy(data))
+
         elif data["event"] == "timeSeriesWidget.eventSeries":
             self.logger.debug(f"must reload events")
             self.__dispatch_function(self.update_events,data)
@@ -1970,6 +1980,50 @@ class TimeSeriesWidget():
 
         return
 
+    def stream_update_new(self,data):
+        """
+            this is triggered from the "global.series.stream" event, we first need to check if there is any id in this
+            event which we want
+        :return:
+        """
+
+        #check for variable/score update
+        for browsePath in data["data"]["_eventInfo"]["browsePaths"]:
+            if browsePath in self.lines and self.lines[browsePath].visible == True:
+                self.refresh_plot()
+                break
+
+        allEventIds = [v["nodeId"] for k, v in self.eventLines.items()]
+        for id in data["data"]["_eventInfo"]["nodeIds"]:
+            if id in allEventIds:
+                #must update the events
+                self.logger("XXX must upbdatethe events ")
+                break
+
+    def stream_update_is_relevant(self,data):
+        """
+            this is triggered from the "global.series.stream" event,
+            we first need to check if it is relevant for us
+            event which we want
+        :return:
+        """
+        try:
+            if data["data"]["_eventInfo"]["startTime"]>self.plot.x_range.end/1000:
+                #the update is outside (to the right) of the visible area, so ignore
+                return False
+            # now check if any of the ids are relevant
+            # they can be an line, a score, a background or an event
+            for browsePath in data["data"]["_eventInfo"]["browsePaths"]:
+                if browsePath in self.lines and self.lines[browsePath].visible==True:
+                    return True # a variable or score is updated
+
+            allEventIds = [v["nodeId"] for k,v in self.eventLines.items()]
+            for id in data["data"]["_eventInfo"]["nodeIds"]:
+                if id in allEventIds:
+                    return True # a currently visible event type is updated
+        except:
+            self.log_error()
+        return False
 
 
 
@@ -2457,6 +2511,7 @@ class TimeSeriesWidget():
             bokeh with not do anything else than this function here
 
         """
+        #self.logger.debug("periodic_cb")
         if self.inPeriodicCb:
             self.logger.error("in periodic cb")
             return
@@ -2685,6 +2740,7 @@ class TimeSeriesWidget():
         self.set_x_axis()
         #self.adjust_y_axis_limits()
 
+        return getData # so that later executed function don't need to get the data again
 
     def range_cb(self, attribute,old, new):
         """
@@ -2830,10 +2886,10 @@ class TimeSeriesWidget():
                 #return # wait for next event
 
 
-        self.__plot_lines(newLines)
+        data = self.__plot_lines(newLines) # the data contain all visible time series including the background
         #todo: make this differential as well
         if self.server.get_settings()["background"]["hasBackground"]:
-            self.refresh_backgrounds()
+            self.refresh_backgrounds(data)
 
         if self.server.get_settings()["hasHover"] not in [False,None]:
             self.__make_tooltips() #must be the last in the drawings
@@ -2844,7 +2900,7 @@ class TimeSeriesWidget():
         if self.showBackgrounds:
             self.show_backgrounds()
 
-    def refresh_backgrounds(self):
+    def refresh_backgrounds(self,data = None):
         if self.backgroundHighlightVisible:
             return #don't touch a running selection
         self.background_highlight_hide()
@@ -2855,7 +2911,7 @@ class TimeSeriesWidget():
                 if "__background" in r.name:
                     deleteList.append(r.name)
         if self.showBackgrounds:
-            self.show_backgrounds()
+            self.show_backgrounds(data = data)
         if deleteList:
             self.remove_renderers(deleteList=deleteList)
 
