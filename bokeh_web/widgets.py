@@ -859,12 +859,12 @@ class TimeSeriesWidget():
 
         """
         self.logger.debug(f"observer_cb {data}")
-        if data["event"] == "timeSeriesWidget.variables":
+        if data["event"] == "timeSeriesWidget.variables" or data["event"] == "global.timeSeries.values":
             #refresh the lines
             self.server.get_selected_variables_sync() # get the new set of lines
             self.logger.debug("dispatch the refresh lines")
             self.__dispatch_function(self.update_scores)
-            self.__dispatch_function(self.refresh_plot)
+            self.__dispatch_function(self.refresh_plot) #this includes the backgrounds
         elif data["event"] == "timeSeriesWidget.background":
             self.logger.debug("dispatch the refresh background")
             self.__dispatch_function(self.refresh_backgrounds)
@@ -904,6 +904,7 @@ class TimeSeriesWidget():
             # sync from the server
             #self.__dispatch_function(self.reinit_annotations)
             self.__dispatch_function(self.update_annotations_and_thresholds,arg=copy.deepcopy(data))
+
         elif data["event"] == "global.annotations":
             self.__dispatch_function(self.update_annotations_and_thresholds,arg=copy.deepcopy(data))
 
@@ -911,6 +912,9 @@ class TimeSeriesWidget():
             self.logger.debug(f"must reload events")
             self.__dispatch_function(self.update_events,data)
 
+        elif data["event"] == "global.evenSeries.value":
+            self.logger.debug(f"must reload events")
+            self.__dispatch_function(self.update_events, data)
 
         elif data["event"] == "timeSeriesWidget.visibleElements":
             self.logger.debug("update the visible Elements")
@@ -1988,16 +1992,17 @@ class TimeSeriesWidget():
         """
 
         #check for variable/score update
-        for browsePath in data["data"]["_eventInfo"]["browsePaths"]:
-            if browsePath in self.lines and self.lines[browsePath].visible == True:
-                self.refresh_plot()
-                break
+        if data["data"]["_eventInfo"]["startTime"] < self.plot.x_range.end / 1000:
+            for browsePath in data["data"]["_eventInfo"]["browsePaths"]:
+                if browsePath in self.lines and self.lines[browsePath].visible == True:
+                    self.refresh_plot()
+                    break
 
         allEventIds = [v["nodeId"] for k, v in self.eventLines.items()]
         for id in data["data"]["_eventInfo"]["nodeIds"]:
             if id in allEventIds:
                 #must update the events
-                self.logger("XXX must upbdatethe events ")
+                self.update_events()
                 break
 
     def stream_update_is_relevant(self,data):
@@ -2008,6 +2013,12 @@ class TimeSeriesWidget():
         :return:
         """
         try:
+            #first check if we have an event update info, then we pick it
+            allEventIds = [v["nodeId"] for k,v in self.eventLines.items()]
+            for id in data["data"]["_eventInfo"]["nodeIds"]:
+                if id in allEventIds:
+                    return True # a currently visible event type is updated
+
             if data["data"]["_eventInfo"]["startTime"]>self.plot.x_range.end/1000:
                 #the update is outside (to the right) of the visible area, so ignore
                 return False
@@ -2017,10 +2028,6 @@ class TimeSeriesWidget():
                 if browsePath in self.lines and self.lines[browsePath].visible==True:
                     return True # a variable or score is updated
 
-            allEventIds = [v["nodeId"] for k,v in self.eventLines.items()]
-            for id in data["data"]["_eventInfo"]["nodeIds"]:
-                if id in allEventIds:
-                    return True # a currently visible event type is updated
         except:
             self.log_error()
         return False
@@ -3543,7 +3550,7 @@ class TimeSeriesWidget():
         self.server.fetch_events()
         self.show_all_events()
 
-    def update_events(self,observerEvent):
+    def update_events(self,observerEvent=None):
         """
             observerEvent: the event data coming from the observer
             eventData contains ["<nodeid>":"events:[]....} for one node
