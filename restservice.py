@@ -81,6 +81,7 @@ POST /_getleaves    <nodedescriptor>            [<node.json>]           ## get t
 GET  /pipelines      -                          [<pipeline.json>]       ## get the pipelines
 POST /_load         fileName (str)              -
 POST /_save         fileName (str)              -
+POST /_saveModel                                                        ## save current model (jsut the model, not the data)            
 POST /_getdata      <dataquery.json>]
 POST /_appendRow     [<data.json>] #deprecated
 POST /_insert       <datablob.json>
@@ -515,6 +516,15 @@ def all(path):
             result = m.save(data)
             if result:
                 responseCode = 200
+            else:
+                responseCode = 404
+
+
+        elif (str(path) == "_saveModel") and str(flask.request.method) in ["POST","GET"]:
+            logger.debug("save just the model, this is for debugg/dev:" + data)
+            result = m.save_model()
+            if result:
+              responseCode = 200
             else:
                 responseCode = 404
 
