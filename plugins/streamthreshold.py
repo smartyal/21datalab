@@ -447,7 +447,7 @@ class StreamWriterClass(streaming.Interface):
         pro.lap("XXX")
         self.model.enable_observers()
         if notifyIds:
-            self.model.notify_observers(notifyIds,"value")
+            self.model.notify_observers(notifyIds[0],"stream",eventInfo={"nodeIds":notifyIds,"startTime":times[0], "browsePaths":[self.model.get_browse_path(id) for id in notifyIds]})
         pro.lap("YYY")
         #print(pro)
         return blob
