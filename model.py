@@ -2678,6 +2678,8 @@ class Model:
 
 
 
+    def save_model(self):
+        return self.save(self.currentModelName,includeData=False)
 
     # save model and data to files
     def save(self, fileName, includeData = True):
