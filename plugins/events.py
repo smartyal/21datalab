@@ -378,7 +378,7 @@ class Events2StateClass(streaming.Interface):
                 for tag,anno in self.openAnnos.items():
                     if "node" in anno:
                         #update the endTime
-                        anno["node"].get_child("endTime").set_value(dates.now_iso())
+                        anno["node"].get_child("endTime").set_value(dates.epochToIsoString(times[-1]))#take the last time point of the data as the end of the annotation dates.now_iso())
                         notification["modify"][anno["node"].get_id()] = self.__build_info(anno["node"])
                     addStates[tag]=numpy.full(length,True)
                 blob["data"]["__states"]=addStates
