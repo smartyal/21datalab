@@ -460,7 +460,7 @@ def all(path):
             responseCode = 200
 
         elif(str(path) == "_delete") and str(flask.request.method) in ["POST"]:
-            logger.debug("delete nodes")
+            #logger.debug("delete nodes")
             result = []
             responseCode = 200
             for nodePath in data:
@@ -486,7 +486,7 @@ def all(path):
 
 
         elif (str(path) == "_getvalue") and str(flask.request.method) in ["POST", "GET"]:
-            logger.debug("execute getvalue")
+            #logger.debug("execute getvalue")
             values = []
             try:
                 for nodeDesc in data:
@@ -520,7 +520,7 @@ def all(path):
 
 
         elif (str(path)=="_insert"):
-            logger.debug("insert Blobs")
+            #logger.debug("insert Blobs")
             try:
                 table = data["table"]
                 blobs = data["blobs"]
@@ -535,7 +535,7 @@ def all(path):
                 responseCode = 400
 
         elif (str(path)=="_insertEvents"):
-            logger.debug("insert events")
+            #logger.debug("insert events")
             if "delete" in data and data["delete"]== True:
                 m.event_series_set(data["node"],values=[],times=[])
             result = m.event_series_insert_blob(data)
@@ -546,7 +546,7 @@ def all(path):
 
 
         elif (str(path)=="_getEvents"):
-            logger.debug("get events data")
+            #logger.debug("get events data")
 
             filter=start=end= None
             if "filter" in data:
@@ -569,7 +569,7 @@ def all(path):
 
 
         elif (str(path)=="_getdata"):
-            logger.debug("get data")
+            #logger.debug("get data")
             startTime = None
             endTime = None
             if set(["bins","nodes"]).issubset(set(data.keys())):
@@ -670,7 +670,7 @@ def all(path):
 
 
         elif (str(path) == "setProperties"):
-            logger.debug("set properties ")
+            #logger.debug("set properties ")
             responseCode = 201
             result = True
             for blob in data:
@@ -679,7 +679,7 @@ def all(path):
                 responseCode = 400
 
         elif (str(path) == "_references"):
-            logger.debug("set new references")
+            #logger.debug("set new references")
             result = []
             m.lock_model()
             m.disable_observers() #avoid intermediate events
