@@ -9,19 +9,19 @@ import datetime as dt
 import time
 
 previewFileTemplate = {
-    "name":"preview_file",
+    "name":"importer_preview",
     "type":"function",
     "functionPointer":"importer.preview_file",   # filename.functionname
     "autoReload":True,                             # set this to true to reload the module on each execution
     "children":[
-        {"name":"previewdata","type":"variable"},
-        {"name":"filename","type":"variable"},
+        {"name":"data_preview","type":"variable"},
+        {"name":"fileName","type":"variable"},
         __functioncontrolfolder
     ]
 }
 
 importRunTemplate = {
-    "name":"import_run",
+    "name":"importer_import",
     "type":"function",
     "functionPointer":"importer.import_run",        # filename.functionname
     "autoReload":True,                              # set this to true to reload the module on each execution
@@ -39,16 +39,16 @@ pipeline = {
         { "name": "imports", "type": "folder" },
         { "name": "cockpit", "type": "const", "value": "customui/importer/index.htm" },
         previewFileTemplate,
-        { "name":"preview_observer",
+        { "name":"observer",
           "type": "observer", "children": [           # observer for the selected variables (not the values)
             {"name": "enabled", "type": "const", "value": True},                # on by default to enable drag + drop
             {"name": "triggerCounter", "type": "variable", "value": 0},         # increased on each trigger
             {"name": "lastTriggerTime", "type": "variable", "value": ""},       # last datetime when it was triggered
-            {"name": "targets", "type": "referencer", "references":["importer.preview_file.control.executionCounter"]},  # pointing to the nodes observed
+            {"name": "targets", "type": "referencer", "references":["importer.importer_preview.control.executionCounter"]},  # pointing to the nodes observed
             {"name": "properties", "type": "const", "value": ["value"]},  # properties to observe [“children”,“value”, “forwardRefs”]
             {"name": "onTriggerFunction", "type": "referencer"},                # the function(s) to be called when triggering
             {"name": "hasEvent", "type": "const", "value": True},               # set to true if we want an event as well
-            {"name": "eventString", "type": "const", "value": "importer.preview_file.data_imported"}  # the string of the event
+            {"name": "eventString", "type": "const", "value": "importer.importer_preview.data_imported"}  # the string of the event
             ]
         },
         importRunTemplate,
@@ -60,13 +60,13 @@ def preview_file(iN):
     _helper_log(f"PREVIEW FILE STARTED")
 
     # --- define vars
-    observer = iN.get_parent().get_child("preview_observer")
+    observer = iN.get_parent().get_child("observer")
     event = observer.get_child("eventString")
     parentName = iN.get_parent().get_name()
-    event.set_value(f"{parentName}.preview_file.data_imported")
+    event.set_value(f"{parentName}.importer_preview.data_imported")
 
     # --- set vars
-    filename = 'upload/' + iN.get_child("filename").get_value()
+    filename = 'upload/' + iN.get_child("fileName").get_value()
     pathBase = os.getcwd()
 
     # --- load csv data
@@ -75,7 +75,7 @@ def preview_file(iN):
     previewDataString = previewData.to_json(orient='table')
 
     # --- update node with preview data
-    node = iN.get_child("previewdata")
+    node = iN.get_child("data_preview")
     node.set_value(previewDataString)
 
     _helper_log(f"PREVIEW FILE FINISHED")

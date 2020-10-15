@@ -13,7 +13,7 @@ let importerHeaderExists = undefined
 function cockpit_importer_test() {
   _helper_log('cockpit_importer_test') 
   // _helper_modal_activate_step_no(4)
-  http_post( "/_execute", cockpitPath + ".import_run", null, null, (self, status, data, params) => {})
+  http_post( "/_execute", cockpitPath + ".importer_import", null, null, (self, status, data, params) => {})
 }
 
 // --- initializes the cockpit
@@ -24,7 +24,7 @@ function cockpit_init(path) {
   console.log('cockpitPath', cockpitPath) 
   $("#cockpit").attr("path",path)
   cockpiteventSource = new EventSource('/event/stream');
-  cockpiteventSource.addEventListener(`${cockpitPath.substr(5)}.preview_file.data_imported`, (e) => {
+  cockpiteventSource.addEventListener(`${cockpitPath.substr(5)}.importer_preview.data_imported`, (e) => {
     console.log('e', e) 
     cockpit_importer_2_approve_file_finished()
   });
@@ -65,15 +65,15 @@ function cockpit_importer_2_approve_file(filename) {
   $(selector).html('Waiting for file preview to load!')
   // --- set filename
   let path =$("#cockpit").attr("path");
-  let query = [ { browsePath: path + ".preview_file.filename", value: filename} ];
+  let query = [ { browsePath: path + ".importer_preview.fileName", value: filename} ];
   http_post( "/setProperties", JSON.stringify(query), null, null, function ( obj, status, data, params ) {
 
-    // --- delete current previewdata
-    query = [ { browsePath: path + ".preview_file.previewdata", value: undefined } ];
+    // --- delete current data_preview
+    query = [ { browsePath: path + ".importer_preview.data_preview", value: undefined } ];
     http_post( "/setProperties", JSON.stringify(query), null, null, function ( obj, status, data, params ) {
 
       // --- run import function
-      http_post( "/_execute", cockpitPath + ".preview_file", null, null, (self, status, data, params) => {
+      http_post( "/_execute", cockpitPath + ".importer_preview", null, null, (self, status, data, params) => {
         let importerApproveHtml = ``
         if ( status !== 200 ) {
           importerApproveHtml = `<p>Something went wrong while loading the file!</p>`
@@ -89,10 +89,10 @@ function cockpit_importer_2_approve_file(filename) {
 }
 
 function cockpit_importer_2_approve_file_finished() {
-  _helper_log(`im.preview_file.data_imported`)
+  _helper_log(`im.importer_preview.data_imported`)
   const selector = '#importer-content-2'
   // --- get data from node
-  http_post( "_getbranchpretty", cockpitPath + ".preview_file.previewdata", null, null, function( obj, status, data, params ) {
+  http_post( "_getbranchpretty", cockpitPath + ".importer_preview.data_preview", null, null, function( obj, status, data, params ) {
     const node = JSON.parse(data)
     const value = JSON.parse(node[".properties"].value)
     importerFields = value.schema.fields
@@ -339,31 +339,31 @@ function cockpit_importer_5_finish_import() {
   // if ( res.status > 201 ) $(selector).html(_helper_html_wrap(msg, btnHtml))
 
   // --- [api] set importer.tablename
-  res = http_post_sync('/_create', true, [ { browsePath: `${cockpitPath}.import_run.tablename`, type: 'const' } ])
+  res = http_post_sync('/_create', true, [ { browsePath: `${cockpitPath}.importer_import.tablename`, type: 'const' } ])
   msg = `Failed creating const 'root.importer.tablename'!`
   if ( res.status > 201 ) $(selector).html(_helper_html_wrap(msg, btnHtml))
 
   // --- [api] set const root.importer.filename
   if (res.status <= 201)
-    res = http_post_sync('/setProperties', true, [ { browsePath: `${cockpitPath}.import_run.tablename`, value: tablename } ])
+    res = http_post_sync('/setProperties', true, [ { browsePath: `${cockpitPath}.importer_import.tablename`, value: tablename } ])
   msg = `Failed setting value for const 'root.importer.tablename'!`
   if ( res.status > 201 ) $(selector).html(_helper_html_wrap(msg, btnHtml))
 
   // --- [api] create referencer columns
   if (res.status <= 201)
-    res = http_post_sync('/_create', true, [ { browsePath: `${cockpitPath}.import_run.metadata`, type: 'const' } ])
+    res = http_post_sync('/_create', true, [ { browsePath: `${cockpitPath}.importer_import.metadata`, type: 'const' } ])
   msg = `Failed creating const '${tablepath + ".metadata"}'!`
   if ( res.status > 201 ) $(selector).html(_helper_html_wrap(msg, btnHtml))
 
   // --- [api] set fields
   if (res.status <= 201)
-    res = http_post_sync('/setProperties', true, [ { browsePath: `${cockpitPath}.import_run.metadata`, value: JSON.stringify(importerObj) } ])
+    res = http_post_sync('/setProperties', true, [ { browsePath: `${cockpitPath}.importer_import.metadata`, value: JSON.stringify(importerObj) } ])
   msg = `Failed setting value for const '${tablepath + ".metadata"}'!`
   if ( res.status > 201 ) $(selector).html(_helper_html_wrap(msg, btnHtml))
 
   // --- [api] run importer function
   if (res.status <= 201) {
-      http_post( "/_execute", `${cockpitPath}.import_run`, null, null, (self, status, data, params) => {
+      http_post( "/_execute", `${cockpitPath}.importer_import`, null, null, (self, status, data, params) => {
         if ( status === 200 ) {
           msg = 'Import finished successful!'
           $(selector).html(_helper_html_wrap(msg, btnHtml))
@@ -378,7 +378,7 @@ function cockpit_importer_5_finish_import() {
 // --- Approve File (STEP 2)
 function cockpit_importer_preview() {
   _helper_log('cockpit_preview') 
-  http_post("/_execute", cockpitPath+".preview_file", null, null, (self, status, data, params) => {
+  http_post("/_execute", cockpitPath+".importer_preview", null, null, (self, status, data, params) => {
     console.log("cockpit_preview",status);
   });
 }
