@@ -1686,12 +1686,18 @@ function launch_cockpit(url,path,widget)
 
 function refresh_alarm_table()
 {
-   console.log("refresh_alarm_table ");
-   var query = {"node":"root.system.alarms.messages","depth":4,"ignore":[]}
+    console.log("refresh_alarm_table ");
 
-
-   http_post("_getbranchpretty",JSON.stringify(query), null,null, function(obj,status,data,params)
-   {
+    var alarmColors={};
+    http_post("_getvalue",JSON.stringify(["root.system.alarms.colors"]), null,null, function(obj,status,data,params)
+    {
+        if (status == 200)
+        {
+            alarmColors = JSON.parse(data)[0];
+        }
+        var query = {"node":"root.system.alarms.messages","depth":4,"ignore":[]}
+        http_post("_getbranchpretty",JSON.stringify(query), null,null, function(obj,status,data,params)
+        {
             if (status==200)
             {
                 var table = $('#alarmcontainer');
@@ -1716,15 +1722,12 @@ function refresh_alarm_table()
 
                     var statusDiv = document.createElement("div");
                     statusDiv.className = "col";
-                    if (msgs[msg].confirmed[".properties"].value == true)
+                    var classification = msgs[msg].confirmed[".properties"].value;
+                    if (classification in alarmColors)
                     {
-                        statusDiv.innerHTML = "confirmed";
+                        statusDiv.style.color = alarmColors[classification];
                     }
-                    else
-                    {
-                        statusDiv.style.color = "red";
-                        statusDiv.innerHTML = "unconfirmed";
-                    }
+                    statusDiv.innerHTML = msgs[msg].confirmed[".properties"].value;
 
                     var levelDiv = document.createElement("div");
                     levelDiv.className = "col";
@@ -1732,34 +1735,55 @@ function refresh_alarm_table()
 
                     var buttonDiv = document.createElement("div");
                     buttonDiv.className = "col";
+
+                    var selectDiv = document.createElement("div");
+                    selectDiv.className = "col";
+
+
                     if (statusDiv.innerHTML=="unconfirmed")
                     {
+                        //create the classify area only if the element is not yet confirmed
+                        var select = document.createElement("SELECT")
+                        var inner = "";
+                        for (var idx in msgs[msg].confirmed[".properties"].enumValues)
+                        {
+                            var enumval = msgs[msg].confirmed[".properties"].enumValues[idx];
+                            inner=inner+"<option>"+enumval+"</option>";
+                        }
+                        select.innerHTML=inner;
+                        select.id = "confirmSelect-"+msgs[msg].confirmed[".properties"].id;
+                        selectDiv.append(select);
+
                         var btn =  document.createElement("BUTTON");   // Create a <button> element
                         btn.className = "btn btn-secondary";
                         btn.id = "confirmAlarm-"+msgs[msg].confirmed[".properties"].id;
                         btn.innerHTML = '<i class="fas fa-check"></i>';
                         btn.onclick = confirmAlarm;
+
                         buttonDiv.append(btn);
                     }
 
 
-                    row.append(timeDiv,msgDiv,statusDiv,levelDiv,buttonDiv);
+                    row.append(timeDiv,msgDiv,statusDiv,levelDiv,selectDiv, buttonDiv);
                     //row.appendChild(msgDiv);
                     table.append(row);
                 }
             }
-        }
-   );
-
+        });
+    });
 
 }
-
+//executed on confirm click
 function confirmAlarm()
 {
     var id=$(this).attr('id');
-    console.log("the node id is ",id.substr(13));
+    var idStr = id.substr(13);
+    console.log("the node id is ",idStr);
 
-    var query = [{"id":id.substr(13),"value":true}];
+    //pick the selection
+    var value = $("#confirmSelect-"+idStr).children("option:selected").val();
+
+    var query = [{"id":idStr,"value":value}];
     http_post("/setProperties",JSON.stringify(query),null,null,null);
 
 }

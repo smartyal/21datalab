@@ -9,6 +9,7 @@ import json
 import dates
 import modelhelper as mh
 from timeseries import TimeSeries
+from model import getRandomId
 
 
 
@@ -65,6 +66,17 @@ StreamLogger = {
     ]
 }
 
+
+StreamAlarms = {
+    "name":"Alarming",
+    "type":"object",
+    "class": "streamthreshold.StreamAlarming",
+    "children":[
+        {"name":"alarmMessagesFolder","type":"referencer"},
+        {"name":"alarmTimeout","type":"const","value":300},  #after a time of x seconds of NO alarm, a new alarm can come
+        __functioncontrolfolder
+    ]
+}
 
 def write_series(node,data,appendOnly=True):
     if node.get_type()=="eventseries":
@@ -508,3 +520,69 @@ class StreamLoggerClass(streaming.Interface):
         return data
 
 
+class StreamAlarming(streaming.Interface):
+    """
+    this class creates alarm messages when scores of variables trigger
+    """
+    def __init__(self, objectNode):
+        self.objectNode = objectNode
+        self.model = objectNode.get_model()
+        self.logger = objectNode.get_logger()
+        self.outOfLimits={} # id:{out of limit epoch
+
+    def reset(self, data):
+        self.alarmFolder = self.objectNode.get_child("alarmMessagesFolder").get_target()
+        self.alarmTimeout = self.objectNode.get_child("alarmTimeout").get_value()
+        self.outOfLimits = {}
+        return data
+
+    def feed(self, blob=None):
+        if blob["type"] == "timeseries":
+            times = blob["data"]["__time"]
+            length = len(times)
+            for id, values in blob["data"].items():
+                if id[0:2] == "__":
+                    continue
+                name = self.model.get_node_info(id)["name"]
+                if name.endswith("total_score"):
+                    continue
+                if name.endswith("_score"):
+                    #this is  a score variable
+                    if numpy.any(numpy.isfinite(values)):
+                        #the values have an outlier in at least one place in this time frame
+                        #do we have to generate a message
+                        if id not in self.outOfLimits:
+                            #generate a message
+                            self.__generate_alarm(name,values,times)
+                        self.outOfLimits[id]=times[0] # update or set the alarm time
+
+            #now remove all "old" states
+            removeList = []
+            for id,alarmTime in self.outOfLimits.items():
+                if times[-1] > (alarmTime+self.alarmTimeout):
+                    removeList.append(id)
+            for id in removeList:
+                del self.outOfLimits[id]
+
+    def __generate_alarm(self,name,values,times):
+
+        messagetemplate = {
+            "name":None,"type":"alarm","children":[
+                {"name": "text","type":"const","value":f"Variable {name} out of threshold"},
+                {"name": "level", "type": "const", "value":"automatic"},
+                {"name": "confirmed", "type": "const", "value": "unconfirmed","enumValues":["unconfirmed","critical","continue","accepted"]},
+                {"name": "startTime", "type": "const", "value": dates.epochToIsoString(times[0])},
+                {"name": "endTime", "type": "const", "value": None},
+                {"name": "confirmTime", "type": "const", "value": None},
+                {"name": "mustEscalate", "type": "const", "value":True}
+            ]
+        }
+
+        path = self.alarmFolder.get_browse_path()+".thresholdAlarm_"+getRandomId()
+        self.model.create_template_from_path(path,messagetemplate)
+        return
+
+
+
+    def flush(self, blob=None):
+        return blob

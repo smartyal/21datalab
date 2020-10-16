@@ -35,34 +35,50 @@
    
    function meter_init()
    {
+        //get the initial value
+        http_post("_getvalue",JSON.stringify(["root.system.alarms.checkEscalation.assessment"]), null,null, function(obj,status,data,params)
+        {
+            if (status == 200)
+            {
+                var value = JSON.parse(data)[0];
+                set_lights(value);
+            }
+        });
+
+        //hook the event
         var ev = new EventSource('/event/stream');
         ev.addEventListener('meter.value', (e) => {
-        // Do something - event data will be in e.data,
-        // message will be of type 'eventType'
+            let data = e.data;
+            //replace potential single quotes
+            data = data.replace(/\'/g, "\"");
+            var parsed = JSON.parse(data);
+            set_lights(parsed.value);
+        });
 
-        let data = e.data;
-        //replace potential single quotes
-        data = data.replace(/\'/g, "\"");
-        var parsed=JSON.parse(data);
+   }
+
+   function set_lights(value)
+   {
         var red = $("#traffic-lights-red");
         var yellow = $("#traffic-lights-yellow");
         var green = $("#traffic-lights-green");
         red.attr("opacity",0.9);
         yellow.attr("opacity",0.9);
         green.attr("opacity",0.9);
-        if (parsed.value == true)
+        if (value == "red")
         {
             red.attr("opacity",0);
         }
-        if (parsed.value == false)
+        if (value == "green")
         {
             green.attr("opacity",0);
         }
-        console.log("EVENT system.progress" + parsed );
-        
-        });
+        if (value == "yellow")
+        {
+            yellow.attr("opacity",0);
+        }
 
-    }
+   }
 
 
 </script>
