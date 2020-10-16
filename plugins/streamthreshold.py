@@ -73,7 +73,7 @@ StreamAlarms = {
     "class": "streamthreshold.StreamAlarming",
     "children":[
         {"name":"alarmMessagesFolder","type":"referencer"},
-        {"name":"alarmTimeout","type":"const","value":300},  #after a time of x seconds of NO alarm, a new alarm can come
+        {"name":"alarmTimeout","type":"const","value":300},  #after a time of x seconds of NO alarm on a variable, a new alarm can come
         __functioncontrolfolder
     ]
 }
