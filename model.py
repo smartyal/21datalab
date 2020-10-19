@@ -3787,7 +3787,7 @@ class Model:
         id = self.get_id(desc)
         if not id in self.model:
             return None
-        if not values or not times:
+        if type(values)==type(None) or type(times)==type(None):
             return None
         if not(type(values) is list or type(values) is numpy.ndarray):
             values = [values]*len(times)
