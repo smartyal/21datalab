@@ -1740,28 +1740,25 @@ function refresh_alarm_table()
                     selectDiv.className = "col";
 
 
-                    if (statusDiv.innerHTML=="unconfirmed")
+                    //create the classify area only
+                    var select = document.createElement("SELECT")
+                    var inner = "";
+                    for (var idx in msgs[msg].confirmed[".properties"].enumValues)
                     {
-                        //create the classify area only if the element is not yet confirmed
-                        var select = document.createElement("SELECT")
-                        var inner = "";
-                        for (var idx in msgs[msg].confirmed[".properties"].enumValues)
-                        {
-                            var enumval = msgs[msg].confirmed[".properties"].enumValues[idx];
-                            inner=inner+"<option>"+enumval+"</option>";
-                        }
-                        select.innerHTML=inner;
-                        select.id = "confirmSelect-"+msgs[msg].confirmed[".properties"].id;
-                        selectDiv.append(select);
-
-                        var btn =  document.createElement("BUTTON");   // Create a <button> element
-                        btn.className = "btn btn-secondary";
-                        btn.id = "confirmAlarm-"+msgs[msg].confirmed[".properties"].id;
-                        btn.innerHTML = '<i class="fas fa-check"></i>';
-                        btn.onclick = confirmAlarm;
-
-                        buttonDiv.append(btn);
+                        var enumval = msgs[msg].confirmed[".properties"].enumValues[idx];
+                        inner=inner+"<option>"+enumval+"</option>";
                     }
+                    select.innerHTML=inner;
+                    select.id = "confirmSelect-"+msgs[msg].confirmed[".properties"].id;
+                    selectDiv.append(select);
+
+                    var btn =  document.createElement("BUTTON");   // Create a <button> element
+                    btn.className = "btn btn-secondary";
+                    btn.id = "confirmAlarm-"+msgs[msg].confirmed[".properties"].id;
+                    btn.innerHTML = '<i class="fas fa-check"></i>';
+                    btn.onclick = confirmAlarm;
+
+                    buttonDiv.append(btn);
 
 
                     row.append(timeDiv,msgDiv,statusDiv,levelDiv,selectDiv, buttonDiv);
