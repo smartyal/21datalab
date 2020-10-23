@@ -377,6 +377,7 @@ function on_first_load () {
 
     initialize_progress_bar();
     initialize_context_menu();
+    initialize_alarms();
 
 } //on_first_load;
 
@@ -1682,6 +1683,121 @@ function launch_cockpit(url,path,widget)
 
 }
 
+
+function refresh_alarm_table()
+{
+    console.log("refresh_alarm_table ");
+
+    var alarmColors={};
+    http_post("_getvalue",JSON.stringify(["root.system.alarms.colors"]), null,null, function(obj,status,data,params)
+    {
+        if (status == 200)
+        {
+            alarmColors = JSON.parse(data)[0];
+        }
+        var query = {"node":"root.system.alarms.messages","depth":4,"ignore":[]}
+        http_post("_getbranchpretty",JSON.stringify(query), null,null, function(obj,status,data,params)
+        {
+            if (status==200)
+            {
+                var table = $('#alarmcontainer');
+                table.empty();
+
+                var msgs = JSON.parse(data);
+                for(var msg in msgs)
+                {
+                    if (msg[0]==".") continue; //skip the .properties
+
+                    //make a row
+                    var row = document.createElement("div");
+                    row.className = "row mb-4";
+
+                    var timeDiv = document.createElement("div");
+                    timeDiv.className = "col-3";
+                    timeDiv.innerHTML = msgs[msg].startTime[".properties"].value;
+
+                    var msgDiv = document.createElement("div");
+                    msgDiv.className = "col-4";
+                    msgDiv.innerHTML = msgs[msg].text[".properties"].value;
+
+                    var statusDiv = document.createElement("div");
+                    statusDiv.className = "col";
+                    var classification = msgs[msg].confirmed[".properties"].value;
+                    if (classification in alarmColors)
+                    {
+                        statusDiv.style.color = alarmColors[classification];
+                    }
+                    statusDiv.innerHTML = msgs[msg].confirmed[".properties"].value;
+
+                    var levelDiv = document.createElement("div");
+                    levelDiv.className = "col";
+                    levelDiv.innerHTML = msgs[msg].level[".properties"].value;
+
+                    var buttonDiv = document.createElement("div");
+                    buttonDiv.className = "col";
+
+                    var selectDiv = document.createElement("div");
+                    selectDiv.className = "col";
+
+
+                    //create the classify area only
+                    var select = document.createElement("SELECT")
+                    var inner = "";
+                    for (var idx in msgs[msg].confirmed[".properties"].enumValues)
+                    {
+                        var enumval = msgs[msg].confirmed[".properties"].enumValues[idx];
+                        inner=inner+"<option>"+enumval+"</option>";
+                    }
+                    select.innerHTML=inner;
+                    select.id = "confirmSelect-"+msgs[msg].confirmed[".properties"].id;
+                    selectDiv.append(select);
+
+                    var btn =  document.createElement("BUTTON");   // Create a <button> element
+                    btn.className = "btn btn-secondary";
+                    btn.id = "confirmAlarm-"+msgs[msg].confirmed[".properties"].id;
+                    btn.innerHTML = '<i class="fas fa-check"></i>';
+                    btn.onclick = confirmAlarm;
+
+                    buttonDiv.append(btn);
+
+
+                    row.append(timeDiv,msgDiv,statusDiv,levelDiv,selectDiv, buttonDiv);
+                    //row.appendChild(msgDiv);
+                    table.append(row);
+                }
+            }
+        });
+    });
+
+}
+//executed on confirm click
+function confirmAlarm()
+{
+    var id=$(this).attr('id');
+    var idStr = id.substr(13);
+    console.log("the node id is ",idStr);
+
+    //pick the selection
+    var value = $("#confirmSelect-"+idStr).children("option:selected").val();
+
+    var query = [{"id":idStr,"value":value}];
+    http_post("/setProperties",JSON.stringify(query),null,null,null);
+
+}
+
+function initialize_alarms()
+{
+    $('#refreshalarms').click(refresh_alarm_table);
+    /// register event
+
+    // Handler for events of type 'system.progress' only
+    eventSource.addEventListener('alarms.update', (e) => {
+        refresh_alarm_table();
+    });
+        // Do something - event data will be in e.data,
+        // message will be of type 'eventType'
+    refresh_alarm_table();
+}
 
 
 

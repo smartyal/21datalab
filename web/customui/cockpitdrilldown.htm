@@ -83,15 +83,22 @@ function cockpit_init(path)
     $("#cockpit-area-end").val("");
     $("#cockpit-drill-variables").empty();
 
+    //get the widget path
+    widgetPath = $("#cockpit").attr("widget");
+
     //get more info
     http_post("_getbranchpretty",cockpitPath, null,null, function(obj,status,data,params)
     {
         if (status==200)
         {
             cockpitPipeLineData = JSON.parse(data);
-            widgetPath = cockpitPipeLineData.drilldown.widget[".properties"].targets[0];
+            //widgetPath = cockpitPipeLineData.drilldown.widget[".properties"].targets[0];
             cockpit_drill_down_enable_observers(cockpitPipeLineData);
             //cockpit_update_results(); // do this once in the beginning, later it is triggered per event
+
+           //set the widget right
+           var query={"deleteExisting":true,"parent":cockpitPath+".drilldown.widget","add":[widgetPath]};
+           http_post('/_references',JSON.stringify(query), null, this, null);
         }
     });
 
@@ -103,7 +110,7 @@ function cockpit_init(path)
 function cockpit_drill_down_enable_observers(pipeLineData)
 {
 
-    let widgetPath = pipeLineData.drilldown.widget[".properties"].targets[0];
+    //let widgetPath = pipeLineData.drilldown.widget[".properties"].targets[0];
     let pipeLinePath = pipeLineData[".properties"].browsePath;
 
     let query = {   "parent": pipeLinePath+".selectionObserver.targets",
