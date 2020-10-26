@@ -1,5 +1,6 @@
 from system import __functioncontrolfolder
-from model import date2secs
+from typing import List
+from model import date2secs, Node
 #  from tqdm import tqdm
 import logging
 import pandas as pd 
@@ -142,6 +143,13 @@ def import_run(iN):
         cols.add_references(fieldvar)
         _helper_log(f"val: {fieldname}")
         print(fieldvar) 
+
+    # look for nodes of type widget and ensure variables can be selected
+    workbench_model = iN.get_model()
+    widget_nodes: List[Node] = workbench_model.find_nodes("root", matchProperty={"type": "widget"})
+    for widget_node in widget_nodes:
+        selectable_variables_referencer: Node = widget_node.get_child("selectableVariables")
+        selectable_variables_referencer.add_references([vars])
 
     _helper_log(f"IMPORT DONE (seconds: {(dt.datetime.now()-timeStartImport).seconds})")
     return True
