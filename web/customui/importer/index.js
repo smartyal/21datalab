@@ -21,11 +21,11 @@ function cockpit_init(path) {
   // --- [TODO] remove
   _helper_log('cockpit_importer_init') 
   cockpitPath = path
-  console.log('cockpitPath', cockpitPath) 
+  console.log('cockpitPath', cockpitPath)
   $("#cockpit").attr("path",path)
   cockpiteventSource = new EventSource('/event/stream');
   cockpiteventSource.addEventListener(`${cockpitPath.substr(5)}.importer_preview.data_imported`, (e) => {
-    console.log('e', e) 
+    console.log('e', e)
     cockpit_importer_2_approve_file_finished()
   });
   cockpit_importer_1_choose_file()
@@ -435,10 +435,11 @@ function _helper_html_wrap(msg, wrap) {
 
 // --- ensures that the corresponding checkboxes have the right value
 // - when checkbox time is set, all other time checkboxes will be removed 
-// - the corresponding import checkbox is activated
+// - the corresponding import checkbox is deactivated
 function _helper_checkbox_time(fieldId) {
   const clickedElId = 'importer-field-time-' + fieldId
-  $("#importer-field-import-" + fieldId).attr('checked', 'checked')
+  // make sure that we do not import time fields
+  $("#importer-field-import-" + fieldId).prop('checked', false)
   $("input[id^=importer-field-time-]").each(function(index, el) {
     const elId = $(el).attr('id')
     if ( elId !== clickedElId ) {
