@@ -26,6 +26,7 @@ import os
 import argparse
 
 from utils import str_lim
+from logging.handlers import RotatingFileHandler
 
 
 UPLOAD_FOLDER = './upload'
@@ -43,7 +44,7 @@ handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-logfile = logging.FileHandler("./log/restservice.log")
+logfile =  RotatingFileHandler("./log/restservice.log",maxBytes=1000*1000*100,backupCount=10) # 10x100MB = 1GB max
 logfile.setFormatter(formatter)
 logger.addHandler(logfile)
 logger.setLevel(logging.DEBUG)

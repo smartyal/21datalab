@@ -4,6 +4,7 @@ import copy
 import importlib
 import threading
 import logging
+from logging.handlers import RotatingFileHandler
 import pytz
 
 #for tables
@@ -678,7 +679,7 @@ class Model:
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
 
-        logfile = logging.FileHandler("./log/model.log")
+        logfile = RotatingFileHandler("./log/model.log", maxBytes=1000 * 1000 * 100, backupCount=10)  # 10x100MB = 1GB max
         logfile.setFormatter(formatter)
         self.logger.addHandler(logfile)
 

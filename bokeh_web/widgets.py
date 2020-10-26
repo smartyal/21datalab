@@ -12,6 +12,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import requests
 import json
 import logging
+from logging.handlers import RotatingFileHandler
 import copy
 import random
 import time
@@ -80,7 +81,7 @@ def setup_logging(loglevel=logging.DEBUG,tag = ""):
         #logfile = logging.FileHandler('./widget_' + '%08x' % random.randrange(16 ** 8) + ".log")
         if tag == "":
             tag = '%08x' % random.randrange(16 ** 8)
-        logfile = logging.FileHandler('./log/widget_' + tag+ ".log")
+        logfile = RotatingFileHandler('./log/widget_' + tag+ ".log", maxBytes=1000 * 1000 * 100, backupCount=10)  # 10x100MB = 1GB max
         logfile.setLevel(loglevel)
         logfile.setFormatter(formatter)
         logging.getLogger('').addHandler(logfile)
