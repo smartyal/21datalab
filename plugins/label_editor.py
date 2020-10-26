@@ -7,7 +7,7 @@ label_editor_template = {
     "type": "folder",
     "children": [
         { "name": "cockpit", "type": "const", "value": "customui/label_editor/index.htm"},
-        { "name": "src_frontends", "type": "referencer"},
-        { "name": "dst_frontends", "type": "referencer"},
+        { "name": "master_frontend", "type": "referencer"},
+        { "name": "slave_frontends", "type": "referencer"},
     ]
 }

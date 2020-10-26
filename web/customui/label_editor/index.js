@@ -2,8 +2,8 @@
 _helper_log('label_editor load')
 var cockpitPath = ""
 var currentLabels = []
-var srcFrontends = []
-var dstFrontends = []
+var masterFrontend = null
+var slaveFrontends = []
 
 class LabelColor {
   constructor(hexCode, pattern) {
@@ -44,19 +44,20 @@ function cockpit_init(path) {
   cockpitPath = path
   console.log('cockpitPath', cockpitPath)
 
-  http_post("_getbranchpretty", JSON.stringify({'node':  cockpitPath + '.src_frontends', 'depth': 1}), null, null, function(obj,status,data,params) {
+  http_post("_getbranchpretty", JSON.stringify({'node':  cockpitPath + '.master_frontend', 'depth': 1}), null, null, function(obj,status,data,params) {
     if (status == 200) {
       let res = JSON.parse(data)[".properties"]["targets"];
-      srcFrontends = res;
-
-      if (srcFrontends.length == 0) {
-        console.log("Referencer src_frontends does not contain any reference to a frontend. Exiting!")
+      if (res.length == 0) {
+        console.log("Referencer master_frontend does not contain any reference to a frontend. Exiting!")
         return;
       }
+      masterFrontend = res[0];
 
-      console.log("label_editor.cockpit_init: srcFrontends", srcFrontends);
+
+
+      console.log("label_editor.cockpit_init: masterFrontend", masterFrontend);
       // colors contains a dictionary mapping from
-      http_post("_getvalue",JSON.stringify([srcFrontends[0] + '.hasAnnotation.colors']), null, null, function(obj,status,data,params) {
+      http_post("_getvalue",JSON.stringify([masterFrontend + '.hasAnnotation.colors']), null, null, function(obj,status,data,params) {
         if (status == 200) {
           labelNameColorDict = JSON.parse(data)[0];
           let labels = convertDictToLabels(labelNameColorDict);
@@ -66,11 +67,11 @@ function cockpit_init(path) {
       });
     }
   });
-  http_post("_getbranchpretty", JSON.stringify({'node':  cockpitPath + '.dst_frontends', 'depth': 1}), null, null, function(obj,status,data,params) {
+  http_post("_getbranchpretty", JSON.stringify({'node':  cockpitPath + '.slave_frontends', 'depth': 1}), null, null, function(obj,status,data,params) {
     if (status == 200) {
       let res = JSON.parse(data)[".properties"]["targets"];
-      dstFrontends = res;
-      console.log("label_editor.cockpit_init: dstFrontends", dstFrontends);
+      slaveFrontends = res;
+      console.log("label_editor.cockpit_init: slaveFrontends", slaveFrontends);
     }
   });
 }
@@ -100,11 +101,43 @@ function updateLabelsView(labels) {
     $(selector).html(tableRowHtml)
 }
 
+function getExistingAnnotationNodes(labelNames, callable) {
+  http_post("_getleaves", masterFrontend + ".hasAnnotation.annotations", null, null, function(obj,status,data,params) {
+    if (status == 200) {
+      let nodes = JSON.parse(data);
+      let annotationNodes = []
+      for (const node of nodes) {
+        let typeNode = node["children"].filter(n => n["name"] == "type")[0];
+        let tagsNode = node["children"].filter(n => n["name"] == "tags")[0];
+        let type = typeNode["value"];
+        let tags = tagsNode["value"];
+        if (type == "time" && labelNames.includes(tags[0])) {
+          annotationNodes.push(node);
+        }
+      }
+      callable(annotationNodes);
+    }
+  });
+}
+
 function changeLabelName(labelId, labelName) {
   let oldName = currentLabels[labelId].name;
   currentLabels[labelId].name = labelName;
-  console.log("Updating labels from \"" + oldName + "\" to \"" + labelName + "\"");
-  http_post("_getleaves", srcFrontends[0] + ".hasAnnotation.annotations", null, null, function(obj,status,data,params) {
+  getExistingAnnotationNodes([oldName], annotationNodes => {
+    console.log("Need to update " + annotationNodes.length + " existing annotations with label " + oldName);
+    for (const annotationNode of annotationNodes) {
+      let tagsNode = annotationNode["children"].filter(n => n["name"] == "tags")[0];
+      console.log("Updating annotation ", tagsNode['browsePath']);
+      // need to update
+      http_post(
+        '/setProperties',
+        JSON.stringify([ { 'id': tagsNode['id'], 'value': [labelName] } ]),
+        null, null, null
+      );
+    }
+  });
+  /*
+  http_post("_getleaves", masterFrontend + ".hasAnnotation.annotations", null, null, function(obj,status,data,params) {
     if (status == 200) {
       let nodes = JSON.parse(data);
       for (const node of nodes) {
@@ -125,7 +158,7 @@ function changeLabelName(labelId, labelName) {
         }
       }
   });
-
+  */
 }
 
 
@@ -134,11 +167,11 @@ function updateBackend(labels) {
   // set everything to visible by default
   let newVisibleTagsDict = Object.fromEntries(labels.map(label => [label.name, true]));
 
-  console.log("updateBackend - srcFrontends=", srcFrontends);
+  console.log("updateBackend - masterFrontend=", masterFrontend);
   console.log("updateBackend - labelsDict: ", JSON.stringify(labelsDict));
   console.log("updateBackend - newVisibleTagsDict: ", JSON.stringify(newVisibleTagsDict));
 
-  let request = http_post_sync('_getvalue', true, [srcFrontends[0] + '.hasAnnotation.visibleTags']);
+  let request = http_post_sync('_getvalue', true, [masterFrontend + '.hasAnnotation.visibleTags']);
   //console.log("updateBackend: data=", request);
   if (request.status == 200) {
     let oldVisibleTagsDict = JSON.parse(request.response)[0];
@@ -150,41 +183,41 @@ function updateBackend(labels) {
       }
     }
     console.log("updateBackend - mergedVisibleTagsDict: ", JSON.stringify(newVisibleTagsDict));
-    console.log("updateBackend - dstFrontends=", dstFrontends);
-    for (const dstFrontend of dstFrontends) {
-      console.log("Updating ", dstFrontend + '.hasAnnotation.visibleTags');
+    console.log("updateBackend - slaveFrontends=", slaveFrontends);
+    for (const slaveFrontend of slaveFrontends) {
+      console.log("Updating ", slaveFrontend + '.hasAnnotation.visibleTags');
       //var query = [{"id":id.substr(13),"value":true}];
       //http_post("/setProperties",JSON.stringify(query),null,null,null);
       http_post(
         '/setProperties',
-        JSON.stringify([ { 'browsePath': dstFrontend + '.hasAnnotation.visibleTags', 'value': newVisibleTagsDict } ]),
+        JSON.stringify([ { 'browsePath': slaveFrontend + '.hasAnnotation.visibleTags', 'value': newVisibleTagsDict } ]),
         null, null, null
       )
       http_post(
         '/setProperties',
-        JSON.stringify([ { browsePath: dstFrontend + '.hasAnnotation.colors', value: labelsDict } ]),
+        JSON.stringify([ { browsePath: slaveFrontend + '.hasAnnotation.colors', value: labelsDict } ]),
         null, null, null
       )
       http_post(
         '/setProperties',
-        JSON.stringify([ { browsePath: dstFrontend + '.hasAnnotation.tags', value: Object.keys(newVisibleTagsDict) } ]),
+        JSON.stringify([ { browsePath: slaveFrontend + '.hasAnnotation.tags', value: Object.keys(newVisibleTagsDict) } ]),
         null, null, null
       )
       /*
       res = http_post_sync(
         '/setProperties',
         true,
-        [ { browsePath: dstFrontend + '.hasAnnotation.visibleTags', value: newVisibleTagsDict } ]
+        [ { browsePath: slaveFrontend + '.hasAnnotation.visibleTags', value: newVisibleTagsDict } ]
       )
       res = http_post_sync(
         '/setProperties',
         true,
-        [ { browsePath: dstFrontend + '.hasAnnotation.colors', value: labelsDict } ]
+        [ { browsePath: slaveFrontend + '.hasAnnotation.colors', value: labelsDict } ]
       )
       res = http_post_sync(
         '/setProperties',
         true,
-        [ { browsePath: dstFrontend + '.hasAnnotation.tags', value: Object.keys(newVisibleTagsDict) } ]
+        [ { browsePath: slaveFrontend + '.hasAnnotation.tags', value: Object.keys(newVisibleTagsDict) } ]
       );
       */
     }
@@ -227,8 +260,8 @@ function removeLabel(labelId) {
 
 
 function cockpit_close() {
-  console.log("label_editor.cockpit_close: srcFrontends=", srcFrontends);
-  console.log("label_editor.cockpit_close: dstFrontends=", dstFrontends);
+  console.log("label_editor.cockpit_close: masterFrontend=", masterFrontend);
+  console.log("label_editor.cockpit_close: slaveFrontends=", slaveFrontends);
   updateBackend(currentLabels);
   _helper_log('cockpit_close')
 }

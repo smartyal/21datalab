@@ -7,7 +7,8 @@
             "490",
             "15449664376381869170",
             "600134431294461625",
-            "4307244501275852324"
+            "4307244501275852324",
+            "10961192520235699890"
         ],
         "parent": "0",
         "id": "1",
@@ -97,7 +98,9 @@
         "backRefs": [
             "664"
         ],
-        "forwardRefs": [],
+        "forwardRefs": [
+            "1481490081721722193"
+        ],
         "value": null,
         "browsePath": "root.visualization.workbench.selectableVariables"
     },
@@ -112,7 +115,9 @@
             "10029816200158863035",
             "664"
         ],
-        "forwardRefs": [],
+        "forwardRefs": [
+            "12939935374182894183"
+        ],
         "value": null,
         "browsePath": "root.visualization.workbench.selectedVariables"
     },
@@ -126,7 +131,7 @@
             "13071347114919871021"
         ],
         "forwardRefs": [],
-        "value": "2018-01-24T14:06:51.892519+01:00",
+        "value": "2018-11-10T04:19:50.701514+01:00",
         "browsePath": "root.visualization.workbench.startTime"
     },
     "131": {
@@ -139,7 +144,7 @@
             "13071347114919871021"
         ],
         "forwardRefs": [],
-        "value": "2020-10-10T20:02:59.451056+02:00",
+        "value": "2022-02-08T13:16:45.495826+01:00",
         "browsePath": "root.visualization.workbench.endTime"
     },
     "132": {
@@ -204,7 +209,8 @@
             "14200580607556292096",
             "4966050449417314615",
             "5891544850793974282",
-            "11969461426600585110"
+            "11969461426600585110",
+            "6084231541392686133"
         ],
         "backRefs": [
             "134",
@@ -642,7 +648,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 189,
+        "value": 193,
         "browsePath": "root.visualization.workbench.observerVariables.triggerCounter"
     },
     "645": {
@@ -653,7 +659,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-26T14:44:29.162444",
+        "value": "2020-10-26T15:17:18.829872",
         "browsePath": "root.visualization.workbench.observerVariables.lastTriggerTime"
     },
     "646": {
@@ -1022,7 +1028,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 983,
+        "value": 994,
         "browsePath": "root.visualization.workbench.observerAnnotations.triggerCounter"
     },
     "13646722735659859395": {
@@ -1033,7 +1039,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-26T14:35:08.316950",
+        "value": "2020-10-26T15:16:17.919308",
         "browsePath": "root.visualization.workbench.observerAnnotations.lastTriggerTime"
     },
     "12416654533870087467": {
@@ -1136,7 +1142,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 1227,
+        "value": 1252,
         "browsePath": "root.visualization.workbench.observerVisibleElements.triggerCounter"
     },
     "15683200324838571042": {
@@ -1147,7 +1153,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-26T14:35:13.722471",
+        "value": "2020-10-26T15:16:53.787928",
         "browsePath": "root.visualization.workbench.observerVisibleElements.lastTriggerTime"
     },
     "13071347114919871021": {
@@ -1356,7 +1362,7 @@
         "forwardRefs": [],
         "value": {
             "type": "time",
-            "tag": "freea"
+            "tag": "busy"
         },
         "browsePath": "root.visualization.workbench.nextNewAnnotation"
     },
@@ -1399,7 +1405,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 70,
+        "value": 72,
         "browsePath": "root.visualization.workbench.observerNewAnnotation.triggerCounter"
     },
     "67741450388327913": {
@@ -1410,7 +1416,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-26T14:04:54.104084",
+        "value": "2020-10-26T15:07:11.805630",
         "browsePath": "root.visualization.workbench.observerNewAnnotation.lastTriggerTime"
     },
     "2805595053862460105": {
@@ -1887,7 +1893,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 683,
+        "value": 696,
         "browsePath": "root.system.progress.triggerCounter"
     },
     "10857910486653991896": {
@@ -1898,7 +1904,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-26T14:45:44.560146",
+        "value": "2020-10-26T15:17:13.202765",
         "browsePath": "root.system.progress.lastTriggerTime"
     },
     "16724694746718170912": {
@@ -2528,7 +2534,7 @@
             "15729178998903584294"
         ],
         "forwardRefs": [],
-        "value": 170,
+        "value": 173,
         "browsePath": "root.importer.importer_preview.control.executionCounter"
     },
     "11415052170816904150": {
@@ -2539,7 +2545,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.193529,
+        "value": 0.088765,
         "browsePath": "root.importer.importer_preview.control.lastExecutionDuration"
     },
     "9789011534106794761": {
@@ -2550,7 +2556,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-26T14:44:40.634280",
+        "value": "2020-10-26T15:16:59.630022",
         "browsePath": "root.importer.importer_preview.control.lastStartTime"
     },
     "17003395223414030424": {
@@ -2616,7 +2622,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 164,
+        "value": 167,
         "browsePath": "root.importer.observer.triggerCounter"
     },
     "5054980845379168330": {
@@ -2817,7 +2823,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 18,
+        "value": 19,
         "browsePath": "root.importer.importer_import.control.executionCounter"
     },
     "15095161392115402281": {
@@ -2828,7 +2834,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 46.410779,
+        "value": 1.556471,
         "browsePath": "root.importer.importer_import.control.lastExecutionDuration"
     },
     "11831237733371818659": {
@@ -2839,7 +2845,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-26T14:44:58.125427",
+        "value": "2020-10-26T15:17:11.633328",
         "browsePath": "root.importer.importer_import.control.lastStartTime"
     },
     "4658324870008208400": {
@@ -2872,7 +2878,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "{\"fields\":[{\"id\":\"importer-field-name-1 \",\"no\":\"1 \",\"val\":\"ACTUATOR_TEMP_FF_H0\",\"use\":true}],\"filename\":\"FAMoS_SHORT_linearfill_900.csv\",\"timefield\":\"178 \",\"headerexists\":true}",
+        "value": "{\"fields\":[{\"id\":\"importer-field-name-1 \",\"no\":\"1 \",\"val\":\"ACTUATOR_TEMP_FF_H0\",\"use\":true}],\"filename\":\"FAMoS_SHORT_linearfill_900.csv\",\"timefield\":\"177 \",\"headerexists\":true}",
         "browsePath": "root.importer.importer_import.metadata"
     },
     "14578804319044543202": {
@@ -2880,7 +2886,9 @@
         "name": "imports",
         "type": "folder",
         "parent": "600134431294461625",
-        "children": [],
+        "children": [
+            "12655525853384736944"
+        ],
         "backRefs": [],
         "forwardRefs": [],
         "value": null,
@@ -2894,7 +2902,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-26T14:44:40.837751",
+        "value": "2020-10-26T15:16:59.727792",
         "browsePath": "root.importer.observer.lastTriggerTime"
     },
     "4307244501275852324": {
@@ -3003,7 +3011,9 @@
         "backRefs": [
             "10681583388649539434"
         ],
-        "forwardRefs": [],
+        "forwardRefs": [
+            "1481490081721722193"
+        ],
         "value": null,
         "browsePath": "root.visualization.expert.selectableVariables"
     },
@@ -3888,7 +3898,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 27,
+        "value": 28,
         "browsePath": "root.visualization.expert.observerVisibleElements.triggerCounter"
     },
     "3925665882953368278": {
@@ -3899,7 +3909,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-26T14:35:13.781267",
+        "value": "2020-10-26T15:16:53.840783",
         "browsePath": "root.visualization.expert.observerVisibleElements.lastTriggerTime"
     },
     "16039525705259183376": {
@@ -4219,7 +4229,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "len 4",
+        "value": "len 5",
         "eventMap": {},
         "browsePath": "root.visualization.expert.hasEvents.newEvents"
     },
@@ -4632,5 +4642,331 @@
             "freeb"
         ],
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.421b8caa.tags"
+    },
+    "6084231541392686133": {
+        "id": "6084231541392686133",
+        "name": "c86b2248",
+        "type": "annotation",
+        "parent": "135",
+        "children": [
+            "14992166165349369966",
+            "5642174518597998450",
+            "8251474502119918290",
+            "13621217486975519473"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.c86b2248"
+    },
+    "14992166165349369966": {
+        "id": "14992166165349369966",
+        "name": "type",
+        "type": "const",
+        "parent": "6084231541392686133",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "time",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.c86b2248.type"
+    },
+    "5642174518597998450": {
+        "id": "5642174518597998450",
+        "name": "startTime",
+        "type": "const",
+        "parent": "6084231541392686133",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2019-05-02T08:03:11.916052+02:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.c86b2248.startTime"
+    },
+    "8251474502119918290": {
+        "id": "8251474502119918290",
+        "name": "endTime",
+        "type": "const",
+        "parent": "6084231541392686133",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2019-08-10T01:27:21.811794+02:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.c86b2248.endTime"
+    },
+    "13621217486975519473": {
+        "id": "13621217486975519473",
+        "name": "tags",
+        "type": "const",
+        "parent": "6084231541392686133",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.c86b2248.tags"
+    },
+    "10961192520235699890": {
+        "id": "10961192520235699890",
+        "name": "logistic_regression",
+        "type": "function",
+        "parent": "1",
+        "children": [
+            "917548285083636271",
+            "17231174271373347771",
+            "10516717446093374407",
+            "13083771525385706551",
+            "4106497504214774271",
+            "4576196723540996607"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "functionPointer": "logisticregression.logistic_regression",
+        "autoReload": true,
+        "browsePath": "root.logistic_regression"
+    },
+    "917548285083636271": {
+        "id": "917548285083636271",
+        "name": "input",
+        "type": "referencer",
+        "parent": "10961192520235699890",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.logistic_regression.input"
+    },
+    "17231174271373347771": {
+        "id": "17231174271373347771",
+        "name": "output",
+        "type": "referencer",
+        "parent": "10961192520235699890",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.logistic_regression.output"
+    },
+    "10516717446093374407": {
+        "id": "10516717446093374407",
+        "name": "annotations",
+        "type": "referencer",
+        "parent": "10961192520235699890",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.logistic_regression.annotations"
+    },
+    "13083771525385706551": {
+        "id": "13083771525385706551",
+        "name": "categoryMap",
+        "type": "const",
+        "parent": "10961192520235699890",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.logistic_regression.categoryMap"
+    },
+    "4106497504214774271": {
+        "id": "4106497504214774271",
+        "name": "resamplePeriod",
+        "type": "const",
+        "parent": "10961192520235699890",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.logistic_regression.resamplePeriod"
+    },
+    "4576196723540996607": {
+        "id": "4576196723540996607",
+        "name": "control",
+        "type": "folder",
+        "parent": "10961192520235699890",
+        "children": [
+            "14024847004631069812",
+            "10033975645840194553",
+            "9210322860253097911",
+            "9061055047331451113",
+            "9689477192625707386",
+            "7829829942864690992",
+            "6597146686082944745",
+            "8184328078851683225"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.logistic_regression.control"
+    },
+    "14024847004631069812": {
+        "id": "14024847004631069812",
+        "name": "status",
+        "type": "variable",
+        "parent": "4576196723540996607",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "idle",
+        "browsePath": "root.logistic_regression.control.status"
+    },
+    "10033975645840194553": {
+        "id": "10033975645840194553",
+        "name": "progress",
+        "type": "variable",
+        "parent": "4576196723540996607",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.logistic_regression.control.progress"
+    },
+    "9210322860253097911": {
+        "id": "9210322860253097911",
+        "name": "result",
+        "type": "variable",
+        "parent": "4576196723540996607",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "ok",
+        "browsePath": "root.logistic_regression.control.result"
+    },
+    "9061055047331451113": {
+        "id": "9061055047331451113",
+        "name": "signal",
+        "type": "variable",
+        "parent": "4576196723540996607",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "nosignal",
+        "browsePath": "root.logistic_regression.control.signal"
+    },
+    "9689477192625707386": {
+        "id": "9689477192625707386",
+        "name": "executionCounter",
+        "type": "variable",
+        "parent": "4576196723540996607",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.logistic_regression.control.executionCounter"
+    },
+    "7829829942864690992": {
+        "id": "7829829942864690992",
+        "name": "lastExecutionDuration",
+        "type": "variable",
+        "parent": "4576196723540996607",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": 0,
+        "browsePath": "root.logistic_regression.control.lastExecutionDuration"
+    },
+    "6597146686082944745": {
+        "id": "6597146686082944745",
+        "name": "lastStartTime",
+        "type": "variable",
+        "parent": "4576196723540996607",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "not yet",
+        "browsePath": "root.logistic_regression.control.lastStartTime"
+    },
+    "8184328078851683225": {
+        "id": "8184328078851683225",
+        "name": "executionType",
+        "type": "const",
+        "parent": "4576196723540996607",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "async",
+        "browsePath": "root.logistic_regression.control.executionType"
+    },
+    "12655525853384736944": {
+        "id": "12655525853384736944",
+        "name": "FAMoS_SHORT_linearfill_900_csv",
+        "type": "table",
+        "parent": "14578804319044543202",
+        "children": [
+            "1481490081721722193",
+            "10086958393965938896",
+            "8185554358815152054"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.importer.imports.FAMoS_SHORT_linearfill_900_csv"
+    },
+    "1481490081721722193": {
+        "id": "1481490081721722193",
+        "name": "variables",
+        "type": "folder",
+        "parent": "12655525853384736944",
+        "children": [
+            "12939935374182894183"
+        ],
+        "backRefs": [
+            "128",
+            "127770511826564780"
+        ],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.importer.imports.FAMoS_SHORT_linearfill_900_csv.variables"
+    },
+    "10086958393965938896": {
+        "id": "10086958393965938896",
+        "name": "columns",
+        "type": "referencer",
+        "parent": "12655525853384736944",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [
+            "12939935374182894183"
+        ],
+        "value": null,
+        "browsePath": "root.importer.imports.FAMoS_SHORT_linearfill_900_csv.columns"
+    },
+    "8185554358815152054": {
+        "id": "8185554358815152054",
+        "name": "metadata",
+        "type": "const",
+        "parent": "12655525853384736944",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": {
+            "fields": [
+                {
+                    "id": "importer-field-name-1 ",
+                    "no": "1 ",
+                    "val": "ACTUATOR_TEMP_FF_H0",
+                    "use": true
+                }
+            ],
+            "filename": "FAMoS_SHORT_linearfill_900.csv",
+            "timefield": "177 ",
+            "headerexists": true
+        },
+        "browsePath": "root.importer.imports.FAMoS_SHORT_linearfill_900_csv.metadata"
+    },
+    "12939935374182894183": {
+        "id": "12939935374182894183",
+        "name": "ACTUATOR_TEMP_FF_H0",
+        "type": "timeseries",
+        "parent": "1481490081721722193",
+        "children": [],
+        "backRefs": [
+            "10086958393965938896",
+            "129"
+        ],
+        "forwardRefs": [],
+        "value": "None",
+        "browsePath": "root.importer.imports.FAMoS_SHORT_linearfill_900_csv.variables.ACTUATOR_TEMP_FF_H0"
     }
 }
