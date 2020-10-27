@@ -1,7 +1,8 @@
 /* move this to cockpit widget later */
-_helper_log('label_editor load')
 var cockpitPath = ""
+var initialLabels = []
 var currentLabels = []
+
 var masterFrontend = null
 var slaveFrontends = []
 
@@ -22,6 +23,8 @@ class Label {
 function convertLabelsToDict(labels) {
   dict = {}
   for (const label of labels) {
+    if (label == null)
+      continue;
     dict[label.name] = {"color": label.color.hexCode, "pattern": null}
   }
   return dict;
@@ -43,7 +46,9 @@ function convertDictToLabels(labelNameColorDict) {
 function cockpit_init(path) {
   cockpitPath = path
   console.log('cockpitPath', cockpitPath)
-
+  // reset state variables
+  initialLabels = []
+  currentLabels = []
   http_post("_getbranchpretty", JSON.stringify({'node':  cockpitPath + '.master_frontend', 'depth': 1}), null, null, function(obj,status,data,params) {
     if (status == 200) {
       let res = JSON.parse(data)[".properties"]["targets"];
@@ -53,16 +58,14 @@ function cockpit_init(path) {
       }
       masterFrontend = res[0];
 
-
-
       console.log("label_editor.cockpit_init: masterFrontend", masterFrontend);
       // colors contains a dictionary mapping from
       http_post("_getvalue",JSON.stringify([masterFrontend + '.hasAnnotation.colors']), null, null, function(obj,status,data,params) {
         if (status == 200) {
           labelNameColorDict = JSON.parse(data)[0];
-          let labels = convertDictToLabels(labelNameColorDict);
-          updateLabelsView(labels);
-          currentLabels = labels;
+          currentLabels = convertDictToLabels(labelNameColorDict);
+          initialLabels = convertDictToLabels(labelNameColorDict);
+          updateLabelsView(currentLabels);
         }
       });
     }
@@ -77,13 +80,7 @@ function cockpit_init(path) {
 }
 
 function updateLabelColor(labelId, labelColorString) {
-  console.log("updateLabelColor, labelId, labelColorstring", labelId, labelColorString);
   currentLabels[labelId].color.hexCode = labelColorString;
-  //for (const label of currentLabels) {
-  //  if (label.name == labelName) {
-  //    label.color.hexCode = labelColorString;
-  //  }
-  //}
 }
 
 function updateLabelsView(labels) {
@@ -91,6 +88,9 @@ function updateLabelsView(labels) {
     let tableRowHtml = '';
     let removeButtonHtml = '';
     for (const [labelId, label] of labels.entries()) {
+        // label has been deleted
+        if (label == null)
+            continue;
         let labelNameInputId = "labelName" + labelId;
         removeButtonHtml = '<button type="button" class="btn btn-primary" onclick="removeLabel(' + labelId + ')">Remove</button>';
         tableRowHtml += '<tr><td><input type="text" minlength="1" value="' + label.name + '" id="' + labelNameInputId + '">'
@@ -102,16 +102,16 @@ function updateLabelsView(labels) {
 }
 
 function getExistingAnnotationNodes(labelNames, callable) {
-  http_post("_getleaves", masterFrontend + ".hasAnnotation.annotations", null, null, function(obj,status,data,params) {
+  http_post('_getleaves', masterFrontend + '.hasAnnotation.annotations', null, null, function(obj,status,data,params) {
     if (status == 200) {
       let nodes = JSON.parse(data);
       let annotationNodes = []
       for (const node of nodes) {
-        let typeNode = node["children"].filter(n => n["name"] == "type")[0];
-        let tagsNode = node["children"].filter(n => n["name"] == "tags")[0];
-        let type = typeNode["value"];
-        let tags = tagsNode["value"];
-        if (type == "time" && labelNames.includes(tags[0])) {
+        let typeNode = node['children'].filter(n => n['name'] == 'type')[0];
+        let tagsNode = node['children'].filter(n => n['name'] == 'tags')[0];
+        let type = typeNode['value'];
+        let tags = tagsNode['value'];
+        if (type == 'time' && labelNames.includes(tags[0])) {
           annotationNodes.push(node);
         }
       }
@@ -120,117 +120,106 @@ function getExistingAnnotationNodes(labelNames, callable) {
   });
 }
 
-function changeLabelName(labelId, labelName) {
-  let oldName = currentLabels[labelId].name;
-  currentLabels[labelId].name = labelName;
-  getExistingAnnotationNodes([oldName], annotationNodes => {
-    console.log("Need to update " + annotationNodes.length + " existing annotations with label " + oldName);
+function changeLabelName(labelId, newName) {
+  currentLabels[labelId].name = newName;
+}
+
+function renameExistingAnnotations(oldNameToNewNameDict) {
+  getExistingAnnotationNodes(Object.keys(oldNameToNewNameDict), annotationNodes => {
+    console.log('Need to update ' + annotationNodes.length + ' existing annotations with labels', Object.keys(oldNameToNewNameDict));
     for (const annotationNode of annotationNodes) {
-      let tagsNode = annotationNode["children"].filter(n => n["name"] == "tags")[0];
-      console.log("Updating annotation ", tagsNode['browsePath']);
+      let tagsNode = annotationNode['children'].filter(n => n['name'] == 'tags')[0];
+      let oldName = tagsNode['value'][0];
+      let newName = oldNameToNewNameDict[oldName];
+      console.log("Updating annotation", tagsNode['browsePath'], ':', oldName, '->', newName);
       // need to update
       http_post(
         '/setProperties',
-        JSON.stringify([ { 'id': tagsNode['id'], 'value': [labelName] } ]),
+        JSON.stringify([ { 'id': tagsNode['id'], 'value': [newName] } ]),
         null, null, null
       );
     }
   });
-  /*
-  http_post("_getleaves", masterFrontend + ".hasAnnotation.annotations", null, null, function(obj,status,data,params) {
-    if (status == 200) {
-      let nodes = JSON.parse(data);
-      for (const node of nodes) {
-        let typeNode = node["children"].filter(n => n["name"] == "type")[0];
-        let tagsNode = node["children"].filter(n => n["name"] == "tags")[0];
-        let type = typeNode["value"];
-        let tags = tagsNode["value"];
-        console.log("tags=" + JSON.stringify(tags) + ", type=" + type);
-        if (type == "time" && tags[0] == oldName) {
-            console.log("Updating annotation ", tagsNode["browsePath"]);
-            // need to update
-            http_post(
-              '/setProperties',
-              JSON.stringify([ { 'id': tagsNode["id"], "value": [labelName] } ]),
-              null, null, null
-            );
-          }
-        }
-      }
-  });
-  */
 }
 
+function deleteExistingAnnotations(labelNames) {
+  getExistingAnnotationNodes(labelNames, annotationNodes => {
+    for (const annotationNode of annotationNodes) {
+      let tagsNode = annotationNode['children'].filter(n => n['name'] == 'tags')[0];
+      let label = tagsNode['value'][0];
+      console.log('Deleting annotation', tagsNode['browsePath'], ' of type', label);
+      //console.log(annotationNode);
+      // TODO: figure out how delete works
+      //http_post(
+      //  '/_delete',
+      //  JSON.stringify([ { 'id': annotationNode['id'] } ]),
+      //  null, null, null
+      //);
+    }
+  });
+}
 
-function updateBackend(labels) {
+function saveLabels(labels) {
   let labelsDict = convertLabelsToDict(labels);
   // set everything to visible by default
-  let newVisibleTagsDict = Object.fromEntries(labels.map(label => [label.name, true]));
+  // TODO: store visibility information in label class to preserve it
+  // ignore deleted labels marked with null
+  let visibleTagsDict = Object.fromEntries(labels.filter(label => label != null).map(label => [label.name, true]));
 
-  console.log("updateBackend - masterFrontend=", masterFrontend);
-  console.log("updateBackend - labelsDict: ", JSON.stringify(labelsDict));
-  console.log("updateBackend - newVisibleTagsDict: ", JSON.stringify(newVisibleTagsDict));
-
-  let request = http_post_sync('_getvalue', true, [masterFrontend + '.hasAnnotation.visibleTags']);
-  //console.log("updateBackend: data=", request);
-  if (request.status == 200) {
-    let oldVisibleTagsDict = JSON.parse(request.response)[0];
-    console.log("updateBackend - oldVisibleTagsDict: ", JSON.stringify(oldVisibleTagsDict));
-    for (const [labelName, isVisible] of Object.entries(oldVisibleTagsDict)) {
-      if (labelName in newVisibleTagsDict) {
-        // preserve visibility information
-        newVisibleTagsDict[labelName] = isVisible;
-      }
-    }
-    console.log("updateBackend - mergedVisibleTagsDict: ", JSON.stringify(newVisibleTagsDict));
-    console.log("updateBackend - slaveFrontends=", slaveFrontends);
-    for (const slaveFrontend of slaveFrontends) {
-      console.log("Updating ", slaveFrontend + '.hasAnnotation.visibleTags');
-      //var query = [{"id":id.substr(13),"value":true}];
-      //http_post("/setProperties",JSON.stringify(query),null,null,null);
-      http_post(
-        '/setProperties',
-        JSON.stringify([ { 'browsePath': slaveFrontend + '.hasAnnotation.visibleTags', 'value': newVisibleTagsDict } ]),
-        null, null, null
-      )
-      http_post(
-        '/setProperties',
-        JSON.stringify([ { browsePath: slaveFrontend + '.hasAnnotation.colors', value: labelsDict } ]),
-        null, null, null
-      )
-      http_post(
-        '/setProperties',
-        JSON.stringify([ { browsePath: slaveFrontend + '.hasAnnotation.tags', value: Object.keys(newVisibleTagsDict) } ]),
-        null, null, null
-      )
-      /*
-      res = http_post_sync(
-        '/setProperties',
-        true,
-        [ { browsePath: slaveFrontend + '.hasAnnotation.visibleTags', value: newVisibleTagsDict } ]
-      )
-      res = http_post_sync(
-        '/setProperties',
-        true,
-        [ { browsePath: slaveFrontend + '.hasAnnotation.colors', value: labelsDict } ]
-      )
-      res = http_post_sync(
-        '/setProperties',
-        true,
-        [ { browsePath: slaveFrontend + '.hasAnnotation.tags', value: Object.keys(newVisibleTagsDict) } ]
-      );
-      */
-    }
+  for (const slaveFrontend of slaveFrontends) {
+    console.log("Updating ", slaveFrontend + '.hasAnnotation.visibleTags');
+    //var query = [{"id":id.substr(13),"value":true}];
+    //http_post("/setProperties",JSON.stringify(query),null,null,null);
+    http_post(
+      '/setProperties',
+      JSON.stringify([ { 'browsePath': slaveFrontend + '.hasAnnotation.visibleTags', 'value': visibleTagsDict } ]),
+      null, null, null
+    )
+    http_post(
+      '/setProperties',
+      JSON.stringify([ { browsePath: slaveFrontend + '.hasAnnotation.colors', value: labelsDict } ]),
+      null, null, null
+    )
+    http_post(
+      '/setProperties',
+      JSON.stringify([ { browsePath: slaveFrontend + '.hasAnnotation.tags', value: Object.keys(visibleTagsDict) } ]),
+      null, null, null
+    )
   }
 }
 
-function updateAnnotations(labels) {
-  // http_post("/_delete",JSON.stringify(option.data),null,null,null);
-}
+function updateBackend(currentLabels, initialLabels) {
+  // store labels in backend
+  saveLabels(currentLabels);
 
-function cockpit_test() {
-}
+  // make sure that existing annotations are consistent
+  let oldNameToNewNameDict = {};
+  let deletedLabelNames = [];
+  for (let i = 0; i < initialLabels.length; ++i) {
+    if (currentLabels[i] != null) {
+      // label has not been deleted
+      if (currentLabels[i].name != initialLabels[i].name) {
+        oldNameToNewNameDict[initialLabels[i].name] = currentLabels[i].name;
+      }
+    } else {
+      deletedLabelNames.push(initialLabels[i].name);
+    }
+  }
+  if (Object.keys(oldNameToNewNameDict).length > 0) {
+    if (confirm('Rename existing annotations ' + JSON.stringify(oldNameToNewNameDict) + '?')) {
+      console.log("Renaming existing annotations with names " + JSON.stringify(Object.keys(oldNameToNewNameDict)));
+      renameExistingAnnotations(oldNameToNewNameDict);
+    }
+  }
+  if (deletedLabelNames.length > 0) {
+    if (confirm('Delete existing annotations with labels ' + JSON.stringify(deletedLabelNames) + '?')) {
+      console.log('Deleting existing annotations with labels ' + JSON.stringify(deletedLabelNames));
+      deleteExistingAnnotations(deletedLabelNames);
+    }
+  }
 
+
+}
 
 function addLabel() {
   let labelName = "NewLabel";
@@ -250,30 +239,12 @@ function addLabel() {
 
 function removeLabel(labelId) {
   let labelName = currentLabels[labelId].name;
-
   console.log("Trying to remove label labelID=", labelId, ", labelName=", labelName);
-  let labels = currentLabels.filter(label => label.name != labelName);
-
-  currentLabels = labels;
+  currentLabels[labelId] = null;
   updateLabelsView(currentLabels);
 }
 
 
 function cockpit_close() {
-  console.log("label_editor.cockpit_close: masterFrontend=", masterFrontend);
-  console.log("label_editor.cockpit_close: slaveFrontends=", slaveFrontends);
-  updateBackend(currentLabels);
-  _helper_log('cockpit_close')
-}
-
-
-function _helper_log(logText) {
-  const length = logText.length + 4
-  let header = ''
-  for (var i = 0, len = length; i < len ; i++) {
-    header = `${header}=` 
-  } 
-  console.log(header)
-  console.log(`| ${logText} |`)
-  console.log(header)
+  updateBackend(currentLabels, initialLabels);
 }
