@@ -96,11 +96,10 @@
         "parent": "127",
         "children": [],
         "backRefs": [
-            "664"
+            "664",
+            "917548285083636271"
         ],
-        "forwardRefs": [
-            "1481490081721722193"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.workbench.selectableVariables"
     },
@@ -115,9 +114,7 @@
             "10029816200158863035",
             "664"
         ],
-        "forwardRefs": [
-            "12939935374182894183"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.workbench.selectedVariables"
     },
@@ -131,7 +128,7 @@
             "13071347114919871021"
         ],
         "forwardRefs": [],
-        "value": "2018-11-10T04:19:50.701514+01:00",
+        "value": "2018-11-04T17:13:13.160937+01:00",
         "browsePath": "root.visualization.workbench.startTime"
     },
     "131": {
@@ -144,7 +141,7 @@
             "13071347114919871021"
         ],
         "forwardRefs": [],
-        "value": "2022-02-08T13:16:45.495826+01:00",
+        "value": "2022-02-15T04:20:43.078800+01:00",
         "browsePath": "root.visualization.workbench.endTime"
     },
     "132": {
@@ -183,7 +180,8 @@
         "parent": "133",
         "children": [],
         "backRefs": [
-            "12416654533870087467"
+            "12416654533870087467",
+            "10516717446093374407"
         ],
         "forwardRefs": [
             "135",
@@ -210,7 +208,9 @@
             "4966050449417314615",
             "5891544850793974282",
             "11969461426600585110",
-            "6084231541392686133"
+            "6084231541392686133",
+            "3342971019367866771",
+            "14410258240415204851"
         ],
         "backRefs": [
             "134",
@@ -232,8 +232,7 @@
         "forwardRefs": [],
         "value": [
             "busy",
-            "freeb",
-            "whatever"
+            "free"
         ],
         "browsePath": "root.visualization.workbench.hasAnnotation.tags"
     },
@@ -250,12 +249,8 @@
                 "color": "#5ac461",
                 "pattern": null
             },
-            "freeb": {
+            "free": {
                 "color": "#ac2f2f",
-                "pattern": null
-            },
-            "whatever": {
-                "color": "#2950c7",
                 "pattern": null
             }
         },
@@ -309,7 +304,9 @@
         "backRefs": [
             "655"
         ],
-        "forwardRefs": [],
+        "forwardRefs": [
+            "12692089911453162890"
+        ],
         "value": null,
         "browsePath": "root.visualization.workbench.background"
     },
@@ -648,7 +645,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 193,
+        "value": 198,
         "browsePath": "root.visualization.workbench.observerVariables.triggerCounter"
     },
     "645": {
@@ -659,7 +656,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-26T15:17:18.829872",
+        "value": "2020-10-27T15:38:13.561161",
         "browsePath": "root.visualization.workbench.observerVariables.lastTriggerTime"
     },
     "646": {
@@ -960,8 +957,8 @@
         "value": {
             "thresholds": false,
             "annotations": false,
-            "scores": false,
-            "background": false,
+            "scores": true,
+            "background": true,
             "variables": true,
             "motifs": false
         },
@@ -1028,7 +1025,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 994,
+        "value": 1020,
         "browsePath": "root.visualization.workbench.observerAnnotations.triggerCounter"
     },
     "13646722735659859395": {
@@ -1039,7 +1036,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-26T15:16:17.919308",
+        "value": "2020-10-27T14:36:14.468289",
         "browsePath": "root.visualization.workbench.observerAnnotations.lastTriggerTime"
     },
     "12416654533870087467": {
@@ -1142,7 +1139,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 1252,
+        "value": 1475,
         "browsePath": "root.visualization.workbench.observerVisibleElements.triggerCounter"
     },
     "15683200324838571042": {
@@ -1153,7 +1150,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-26T15:16:53.787928",
+        "value": "2020-10-27T14:51:28.740308",
         "browsePath": "root.visualization.workbench.observerVisibleElements.lastTriggerTime"
     },
     "13071347114919871021": {
@@ -1345,8 +1342,7 @@
         "forwardRefs": [],
         "value": {
             "busy": true,
-            "freeb": true,
-            "whatever": true
+            "free": true
         },
         "browsePath": "root.visualization.workbench.hasAnnotation.visibleTags"
     },
@@ -1405,7 +1401,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 72,
+        "value": 76,
         "browsePath": "root.visualization.workbench.observerNewAnnotation.triggerCounter"
     },
     "67741450388327913": {
@@ -1416,7 +1412,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-26T15:07:11.805630",
+        "value": "2020-10-27T14:10:10.919424",
         "browsePath": "root.visualization.workbench.observerNewAnnotation.lastTriggerTime"
     },
     "2805595053862460105": {
@@ -1746,11 +1742,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": {
-            "root.importer.imports.FAMoS_SHORT_linearfill_900_csv.variables.ACTUATOR_TEMP_FF_H0": {
-                "lineColor": "#D9B100"
-            }
-        },
+        "value": {},
         "browsePath": "root.visualization.workbench.currentColors"
     },
     "8639743599502979877": {
@@ -1893,7 +1885,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 696,
+        "value": 719,
         "browsePath": "root.system.progress.triggerCounter"
     },
     "10857910486653991896": {
@@ -1904,7 +1896,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-26T15:17:13.202765",
+        "value": "2020-10-27T14:41:34.109402",
         "browsePath": "root.system.progress.lastTriggerTime"
     },
     "16724694746718170912": {
@@ -1915,7 +1907,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [
-            "476160793280814585"
+            "10033975645840194553"
         ],
         "value": null,
         "browsePath": "root.system.progress.targets"
@@ -2534,7 +2526,7 @@
             "15729178998903584294"
         ],
         "forwardRefs": [],
-        "value": 173,
+        "value": 174,
         "browsePath": "root.importer.importer_preview.control.executionCounter"
     },
     "11415052170816904150": {
@@ -2545,7 +2537,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.088765,
+        "value": 0.502628,
         "browsePath": "root.importer.importer_preview.control.lastExecutionDuration"
     },
     "9789011534106794761": {
@@ -2556,7 +2548,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-26T15:16:59.630022",
+        "value": "2020-10-27T09:45:38.273559",
         "browsePath": "root.importer.importer_preview.control.lastStartTime"
     },
     "17003395223414030424": {
@@ -2622,7 +2614,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 167,
+        "value": 168,
         "browsePath": "root.importer.observer.triggerCounter"
     },
     "5054980845379168330": {
@@ -2786,9 +2778,7 @@
         "type": "variable",
         "parent": "8997030012463420739",
         "children": [],
-        "backRefs": [
-            "16724694746718170912"
-        ],
+        "backRefs": [],
         "forwardRefs": [],
         "value": 0,
         "browsePath": "root.importer.importer_import.control.progress"
@@ -2823,7 +2813,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 19,
+        "value": 20,
         "browsePath": "root.importer.importer_import.control.executionCounter"
     },
     "15095161392115402281": {
@@ -2834,7 +2824,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 1.556471,
+        "value": 2.612229,
         "browsePath": "root.importer.importer_import.control.lastExecutionDuration"
     },
     "11831237733371818659": {
@@ -2845,7 +2835,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-26T15:17:11.633328",
+        "value": "2020-10-27T09:46:18.400306",
         "browsePath": "root.importer.importer_import.control.lastStartTime"
     },
     "4658324870008208400": {
@@ -2886,9 +2876,7 @@
         "name": "imports",
         "type": "folder",
         "parent": "600134431294461625",
-        "children": [
-            "12655525853384736944"
-        ],
+        "children": [],
         "backRefs": [],
         "forwardRefs": [],
         "value": null,
@@ -2902,7 +2890,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-26T15:16:59.727792",
+        "value": "2020-10-27T09:45:38.799126",
         "browsePath": "root.importer.observer.lastTriggerTime"
     },
     "4307244501275852324": {
@@ -3011,9 +2999,7 @@
         "backRefs": [
             "10681583388649539434"
         ],
-        "forwardRefs": [
-            "1481490081721722193"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.expert.selectableVariables"
     },
@@ -3130,8 +3116,7 @@
         "forwardRefs": [],
         "value": [
             "busy",
-            "freeb",
-            "whatever"
+            "free"
         ],
         "browsePath": "root.visualization.expert.hasAnnotation.tags"
     },
@@ -3148,12 +3133,8 @@
                 "color": "#5ac461",
                 "pattern": null
             },
-            "freeb": {
+            "free": {
                 "color": "#ac2f2f",
-                "pattern": null
-            },
-            "whatever": {
-                "color": "#2950c7",
                 "pattern": null
             }
         },
@@ -3182,8 +3163,7 @@
         "forwardRefs": [],
         "value": {
             "busy": true,
-            "freeb": true,
-            "whatever": true
+            "free": true
         },
         "browsePath": "root.visualization.expert.hasAnnotation.visibleTags"
     },
@@ -3898,7 +3878,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 28,
+        "value": 58,
         "browsePath": "root.visualization.expert.observerVisibleElements.triggerCounter"
     },
     "3925665882953368278": {
@@ -3909,7 +3889,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-26T15:16:53.840783",
+        "value": "2020-10-27T14:36:11.740740",
         "browsePath": "root.visualization.expert.observerVisibleElements.lastTriggerTime"
     },
     "16039525705259183376": {
@@ -4432,7 +4412,7 @@
     },
     "6949918641293764627": {
         "id": "6949918641293764627",
-        "name": "src_frontends",
+        "name": "master_frontend",
         "type": "referencer",
         "parent": "4307244501275852324",
         "children": [],
@@ -4441,11 +4421,11 @@
             "127"
         ],
         "value": null,
-        "browsePath": "root.label_editor.src_frontends"
+        "browsePath": "root.label_editor.master_frontend"
     },
     "9534121590586708044": {
         "id": "9534121590586708044",
-        "name": "dst_frontends",
+        "name": "slave_frontends",
         "type": "referencer",
         "parent": "4307244501275852324",
         "children": [],
@@ -4455,7 +4435,7 @@
             "6326365480006829771"
         ],
         "value": null,
-        "browsePath": "root.label_editor.dst_frontends"
+        "browsePath": "root.label_editor.slave_frontends"
     },
     "4966050449417314615": {
         "id": "4966050449417314615",
@@ -4639,7 +4619,7 @@
         "backRefs": [],
         "forwardRefs": [],
         "value": [
-            "freeb"
+            "free"
         ],
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.421b8caa.tags"
     },
@@ -4716,7 +4696,8 @@
             "10516717446093374407",
             "13083771525385706551",
             "4106497504214774271",
-            "4576196723540996607"
+            "4576196723540996607",
+            "12692089911453162890"
         ],
         "backRefs": [],
         "forwardRefs": [],
@@ -4732,7 +4713,9 @@
         "parent": "10961192520235699890",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [],
+        "forwardRefs": [
+            "128"
+        ],
         "value": null,
         "browsePath": "root.logistic_regression.input"
     },
@@ -4743,7 +4726,9 @@
         "parent": "10961192520235699890",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [],
+        "forwardRefs": [
+            "12692089911453162890"
+        ],
         "value": null,
         "browsePath": "root.logistic_regression.output"
     },
@@ -4754,7 +4739,9 @@
         "parent": "10961192520235699890",
         "children": [],
         "backRefs": [],
-        "forwardRefs": [],
+        "forwardRefs": [
+            "134"
+        ],
         "value": null,
         "browsePath": "root.logistic_regression.annotations"
     },
@@ -4766,7 +4753,10 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": null,
+        "value": {
+            "busy": 0,
+            "free": 1
+        },
         "browsePath": "root.logistic_regression.categoryMap"
     },
     "4106497504214774271": {
@@ -4808,7 +4798,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "idle",
+        "value": "finished",
         "browsePath": "root.logistic_regression.control.status"
     },
     "10033975645840194553": {
@@ -4817,7 +4807,9 @@
         "type": "variable",
         "parent": "4576196723540996607",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "16724694746718170912"
+        ],
         "forwardRefs": [],
         "value": 0,
         "browsePath": "root.logistic_regression.control.progress"
@@ -4852,7 +4844,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0,
+        "value": 1,
         "browsePath": "root.logistic_regression.control.executionCounter"
     },
     "7829829942864690992": {
@@ -4863,7 +4855,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0,
+        "value": 0.230382,
         "browsePath": "root.logistic_regression.control.lastExecutionDuration"
     },
     "6597146686082944745": {
@@ -4874,7 +4866,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "not yet",
+        "value": "2020-10-27T14:41:33.848102",
         "browsePath": "root.logistic_regression.control.lastStartTime"
     },
     "8184328078851683225": {
@@ -4888,85 +4880,142 @@
         "value": "async",
         "browsePath": "root.logistic_regression.control.executionType"
     },
-    "12655525853384736944": {
-        "id": "12655525853384736944",
-        "name": "FAMoS_SHORT_linearfill_900_csv",
-        "type": "table",
-        "parent": "14578804319044543202",
+    "3342971019367866771": {
+        "id": "3342971019367866771",
+        "name": "c016c6a5",
+        "type": "annotation",
+        "parent": "135",
         "children": [
-            "1481490081721722193",
-            "10086958393965938896",
-            "8185554358815152054"
+            "13688966583305042959",
+            "6406164948515796346",
+            "5645701220077623718",
+            "6500375169374662619"
         ],
         "backRefs": [],
         "forwardRefs": [],
         "value": null,
-        "browsePath": "root.importer.imports.FAMoS_SHORT_linearfill_900_csv"
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.c016c6a5"
     },
-    "1481490081721722193": {
-        "id": "1481490081721722193",
-        "name": "variables",
-        "type": "folder",
-        "parent": "12655525853384736944",
-        "children": [
-            "12939935374182894183"
-        ],
-        "backRefs": [
-            "128",
-            "127770511826564780"
-        ],
-        "forwardRefs": [],
-        "value": null,
-        "browsePath": "root.importer.imports.FAMoS_SHORT_linearfill_900_csv.variables"
-    },
-    "10086958393965938896": {
-        "id": "10086958393965938896",
-        "name": "columns",
-        "type": "referencer",
-        "parent": "12655525853384736944",
-        "children": [],
-        "backRefs": [],
-        "forwardRefs": [
-            "12939935374182894183"
-        ],
-        "value": null,
-        "browsePath": "root.importer.imports.FAMoS_SHORT_linearfill_900_csv.columns"
-    },
-    "8185554358815152054": {
-        "id": "8185554358815152054",
-        "name": "metadata",
+    "13688966583305042959": {
+        "id": "13688966583305042959",
+        "name": "type",
         "type": "const",
-        "parent": "12655525853384736944",
+        "parent": "3342971019367866771",
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": {
-            "fields": [
-                {
-                    "id": "importer-field-name-1 ",
-                    "no": "1 ",
-                    "val": "ACTUATOR_TEMP_FF_H0",
-                    "use": true
-                }
-            ],
-            "filename": "FAMoS_SHORT_linearfill_900.csv",
-            "timefield": "177 ",
-            "headerexists": true
-        },
-        "browsePath": "root.importer.imports.FAMoS_SHORT_linearfill_900_csv.metadata"
+        "value": "time",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.c016c6a5.type"
     },
-    "12939935374182894183": {
-        "id": "12939935374182894183",
-        "name": "ACTUATOR_TEMP_FF_H0",
+    "6406164948515796346": {
+        "id": "6406164948515796346",
+        "name": "startTime",
+        "type": "const",
+        "parent": "3342971019367866771",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2019-02-28T19:51:42.478575+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.c016c6a5.startTime"
+    },
+    "5645701220077623718": {
+        "id": "5645701220077623718",
+        "name": "endTime",
+        "type": "const",
+        "parent": "3342971019367866771",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2019-06-17T02:57:07.478428+02:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.c016c6a5.endTime"
+    },
+    "6500375169374662619": {
+        "id": "6500375169374662619",
+        "name": "tags",
+        "type": "const",
+        "parent": "3342971019367866771",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.c016c6a5.tags"
+    },
+    "14410258240415204851": {
+        "id": "14410258240415204851",
+        "name": "2e0c3136",
+        "type": "annotation",
+        "parent": "135",
+        "children": [
+            "4396527184758335678",
+            "7160021819626328898",
+            "16138084434190536967",
+            "17890006061100360395"
+        ],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": null,
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.2e0c3136"
+    },
+    "4396527184758335678": {
+        "id": "4396527184758335678",
+        "name": "type",
+        "type": "const",
+        "parent": "14410258240415204851",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "time",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.2e0c3136.type"
+    },
+    "7160021819626328898": {
+        "id": "7160021819626328898",
+        "name": "startTime",
+        "type": "const",
+        "parent": "14410258240415204851",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2019-02-04T19:12:11.239213+01:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.2e0c3136.startTime"
+    },
+    "16138084434190536967": {
+        "id": "16138084434190536967",
+        "name": "endTime",
+        "type": "const",
+        "parent": "14410258240415204851",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": "2019-09-06T11:45:03.668914+02:00",
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.2e0c3136.endTime"
+    },
+    "17890006061100360395": {
+        "id": "17890006061100360395",
+        "name": "tags",
+        "type": "const",
+        "parent": "14410258240415204851",
+        "children": [],
+        "backRefs": [],
+        "forwardRefs": [],
+        "value": [
+            "busy"
+        ],
+        "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.2e0c3136.tags"
+    },
+    "12692089911453162890": {
+        "id": "12692089911453162890",
+        "name": "classification_result",
         "type": "timeseries",
-        "parent": "1481490081721722193",
+        "parent": "10961192520235699890",
         "children": [],
         "backRefs": [
-            "10086958393965938896",
-            "129"
+            "17231174271373347771",
+            "145"
         ],
         "forwardRefs": [],
         "value": "None",
-        "browsePath": "root.importer.imports.FAMoS_SHORT_linearfill_900_csv.variables.ACTUATOR_TEMP_FF_H0"
+        "browsePath": "root.logistic_regression.classification_result"
     }
 }
