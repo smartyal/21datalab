@@ -147,14 +147,14 @@ function deleteExistingAnnotations(labelNames) {
     for (const annotationNode of annotationNodes) {
       let tagsNode = annotationNode['children'].filter(n => n['name'] == 'tags')[0];
       let label = tagsNode['value'][0];
-      console.log('Deleting annotation', tagsNode['browsePath'], ' of type', label);
-      //console.log(annotationNode);
-      // TODO: figure out how delete works
-      //http_post(
-      //  '/_delete',
-      //  JSON.stringify([ { 'id': annotationNode['id'] } ]),
-      //  null, null, null
-      //);
+      let browsePath = tagsNode['browsePath'];
+      browsePath = browsePath.substr(0, browsePath.lastIndexOf('.'));
+      console.log('Deleting annotation', browsePath, ' of type', label);
+      http_post(
+        '/_delete',
+        JSON.stringify([ annotationNode['id'] ]),
+        null, null, null
+      );
     }
   });
 }
