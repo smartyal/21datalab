@@ -4,6 +4,7 @@ import copy
 import importlib
 import threading
 import logging
+from logging.handlers import RotatingFileHandler
 import pytz
 
 #for tables
@@ -678,7 +679,7 @@ class Model:
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
 
-        logfile = logging.FileHandler("./log/model.log")
+        logfile = RotatingFileHandler("./log/model.log", maxBytes=1000 * 1000 * 100, backupCount=10)  # 10x100MB = 1GB max
         logfile.setFormatter(formatter)
         self.logger.addHandler(logfile)
 
@@ -2596,7 +2597,7 @@ class Model:
                     self.disable_observers()
                     controlNode.get_child("status").set_value("running")
                     controlNode.get_child("result")#.set_value("pending")
-                    controlNode.get_child("progress").set_value(0)
+                    controlNode.get_child("progress").set_value(0) #progress will always be observed even in disable observers
                     #controlNode.get_child("signal").set_value("nosignal")
                     startTime = datetime.datetime.now()
                     controlNode.get_child("lastStartTime").set_value(startTime.isoformat())
@@ -2625,13 +2626,16 @@ class Model:
                     self.disable_observers() # we don't signal these
                     controlNode.get_child("lastExecutionDuration").set_value(duration)
                     controlNode.get_child("status").set_value("finished")
+                    self.enable_observers()
                     controlExecutionCounter = controlNode.get_child("executionCounter")
                     controlExecutionCounter.set_value(controlExecutionCounter.get_value() + 1)
-                    controlProgress = controlNode.get_child("progress")#.set_value(0)
-                    controlProgress.set_value(0)
-                    self.enable_observers()
+                    controlProgress = controlNode.get_child("progress")
+                    if controlProgress.get_value()!=0:
+                        #only set it if it was set by the function, otherwise we save a progree event
+                        controlProgress.set_value(0)
 
-                    self.notify_observers([controlExecutionCounter.get_id(),controlProgress.get_id()],"value")
+
+                    #self.notify_observers([controlExecutionCounter.get_id(),controlProgress.get_id()],"value")
 
                     if not isFunction:
                         result = True # for execution of member function we don't have a general return code
@@ -3784,7 +3788,7 @@ class Model:
         id = self.get_id(desc)
         if not id in self.model:
             return None
-        if not values or not times:
+        if type(values)==type(None) or type(times)==type(None):
             return None
         if not(type(values) is list or type(values) is numpy.ndarray):
             values = [values]*len(times)

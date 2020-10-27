@@ -96,7 +96,7 @@ def logistic_regression(functionNode):
     # do  we have a region?
     regions = mh.filter_annotations(annotations,"region")
     if regions:
-        regionMask = numpy.isfinite(mh.annotations_to_class_vector(regions,times))
+        regionMask = numpy.isfinite(mh.annotations_to_class_vector(regions,times,ignoreTags=[]))
         scoreTimes = times[regionMask]
     else:
         scoreTimes = times

@@ -107,7 +107,8 @@ class TimeSeries:
         if type(start) == type(None):
             left = 0
         else:
-            left = numpy.searchsorted(self.get_times(), start)
+            left = numpy.searchsorted(self.get_times(), start,side="left")
+
 
         if type(end) == type(None):
             # this is a tail delete that is easy:
@@ -116,9 +117,9 @@ class TimeSeries:
 
         else:
             right = numpy.searchsorted(self.get_times(), end, side="right")
-            siz = right-left+1
-            self.times[left:self.lastValidIndex-siz] = self.times[right+1:self.lastValidIndex]
-            self.values[left:self.lastValidIndex - siz] = self.values[right+1:self.lastValidIndex]
+            siz = right-left
+            self.times[left:self.lastValidIndex - siz+1] = self.times[right:self.lastValidIndex+1]
+            self.values[left:self.lastValidIndex - siz+1] = self.values[right:self.lastValidIndex+1]
             self.lastValidIndex = self.lastValidIndex - siz
 
         return True
@@ -159,6 +160,9 @@ class TimeSeries:
 
     def get_times(self):
         return self.times[0:self.lastValidIndex+1]
+
+    def get_len(self):
+        return self.lastValidIndex+1
 
     def get(self, start=None, end=None, copy=False, resampleTimes = None, noBins = None, includeIntervalLimits = False, resampleMethod = None):
         """

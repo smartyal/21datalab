@@ -152,7 +152,7 @@ def events_to_annotations(functionNode):
             tim = times[index]
             if tim>lastTimeSeen:
                 lastTimeSeen = tim
-            print(f"ev:{evStr}, tag:{tag}, open Annos {openAnnos}")
+            print(f"ev:{evStr}, open Annos {openAnnos}")
             if evStr in startEvents:
                 tag = startEvents[evStr]
                 #this is a start of a new event

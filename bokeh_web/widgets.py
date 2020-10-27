@@ -12,6 +12,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import requests
 import json
 import logging
+from logging.handlers import RotatingFileHandler
 import copy
 import random
 import time
@@ -80,7 +81,7 @@ def setup_logging(loglevel=logging.DEBUG,tag = ""):
         #logfile = logging.FileHandler('./widget_' + '%08x' % random.randrange(16 ** 8) + ".log")
         if tag == "":
             tag = '%08x' % random.randrange(16 ** 8)
-        logfile = logging.FileHandler('./log/widget_' + tag+ ".log")
+        logfile = RotatingFileHandler('./log/widget_' + tag+ ".log", maxBytes=1000 * 1000 * 100, backupCount=10)  # 10x100MB = 1GB max
         logfile.setLevel(loglevel)
         logfile.setFormatter(formatter)
         logging.getLogger('').addHandler(logfile)
@@ -1266,6 +1267,7 @@ class TimeSeriesWidget():
             for r in self.plot.renderers:
                 if r.name and r.name in self.server.get_variables_selected() and r.visible == False:
                     # there was a click on the legend to hide the variables
+                    self.logger.debug("=>>>>>>>>>>>>>>>>>DELETE FROM plot:" + r.name)
                     self.logger.debug("=>>>>>>>>>>>>>>>>>DELETE FROM plot:" + r.name)
                     deleteList.append(r.name)
 
@@ -3252,9 +3254,9 @@ class TimeSeriesWidget():
                         if self.boxModifierAnnotationName == k:
                             self.box_modifier_hide()
 
-        self.logger.debug(f"add {len(addList)} annotations to plot")
+        self.logger.debug(f"add {len(addList)} annotations to plot remove {len(removeList)} from plot")
         self.plot.renderers.extend(addList)
-        self.remove_renderers(renderers=removeList,deleteFromLocal=True) ## xxx new
+        self.remove_renderers(renderers=removeList)
 
 
     def hide_annotations(self):
