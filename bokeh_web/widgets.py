@@ -1268,6 +1268,7 @@ class TimeSeriesWidget():
                 if r.name and r.name in self.server.get_variables_selected() and r.visible == False:
                     # there was a click on the legend to hide the variables
                     self.logger.debug("=>>>>>>>>>>>>>>>>>DELETE FROM plot:" + r.name)
+                    self.logger.debug("=>>>>>>>>>>>>>>>>>DELETE FROM plot:" + r.name)
                     deleteList.append(r.name)
 
 
@@ -3253,9 +3254,9 @@ class TimeSeriesWidget():
                         if self.boxModifierAnnotationName == k:
                             self.box_modifier_hide()
 
-        self.logger.debug(f"add {len(addList)} annotations to plot")
+        self.logger.debug(f"add {len(addList)} annotations to plot remove {len(removeList)} from plot")
         self.plot.renderers.extend(addList)
-        self.remove_renderers(renderers=removeList,deleteFromLocal=True) ## xxx new
+        self.remove_renderers(renderers=removeList)
 
 
     def hide_annotations(self):
