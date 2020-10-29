@@ -1706,6 +1706,36 @@ function refresh_alarm_table()
                 var msgs = JSON.parse(data);
                 //for(var msg in msgs)
                 var keys = Object.keys(msgs).reverse();
+                if (keys.length>1) // one entry is the ".properties"
+                {
+                    //we have at least one message
+                    let row = document.createElement("div");
+                    row.className = "row mb-4";
+
+                    let buttonDiv = document.createElement("div");
+                    buttonDiv.className = "col-1";
+                    buttonDiv.style = "margin-left:auto; margin-right:0";
+
+                    var btn =  document.createElement("BUTTON");   // Create a <button> element
+                    btn.className = "btn btn-secondary";
+                    //btn.id = "deleteAllAlarms-"+msgs[msg].confirmed[".properties"].id;
+                    btn.innerHTML = '<i class="far fa-trash-alt"></i>';
+                    btn.onclick = deleteAllAlarms;
+
+                    var ids = [];
+                    for (var i in keys)
+                    {
+                        var msg = keys[i];
+                        if (msg[0]==".") continue; //skip the .properties
+                        ids.push(msgs[msg][".properties"].id);
+                    }
+
+                    btn.deleteIds = ids;
+                    buttonDiv.append(btn);
+                    row.append(buttonDiv);
+                    table.append(row);
+
+                }
                 for (var i in keys)
                 {
                     var msg = keys[i];
@@ -1731,10 +1761,6 @@ function refresh_alarm_table()
                         statusDiv.style.color = alarmColors[classification];
                     }
                     statusDiv.innerHTML = msgs[msg].confirmed[".properties"].value;
-
-                    var levelDiv = document.createElement("div");
-                    levelDiv.className = "col";
-                    levelDiv.innerHTML = msgs[msg].level[".properties"].value;
 
                     var buttonDiv = document.createElement("div");
                     buttonDiv.className = "col";
@@ -1763,8 +1789,17 @@ function refresh_alarm_table()
 
                     buttonDiv.append(btn);
 
+                    var deleteDiv = document.createElement("div");
+                    deleteDiv.className = "col";
+                    var delbtn =  document.createElement("BUTTON");   // Create a <button> element
+                    delbtn.className = "btn btn-secondary";
+                    delbtn.id = "deleteAlarm-"+msgs[msg][".properties"].id;
+                    delbtn.innerHTML = '<i class="far fa-trash-alt"></i>';
+                    delbtn.msgText = msgs[msg].startTime[".properties"].value+" \n: "+msgs[msg].text[".properties"].value;
+                    delbtn.onclick = deleteAlarm;
+                    deleteDiv.append(delbtn);
 
-                    row.append(timeDiv,msgDiv,statusDiv,levelDiv,selectDiv, buttonDiv);
+                    row.append(timeDiv,msgDiv,statusDiv,selectDiv, buttonDiv,deleteDiv);
                     //row.appendChild(msgDiv);
                     table.append(row);
                 }
@@ -1786,6 +1821,42 @@ function confirmAlarm()
     var query = [{"id":idStr,"value":value}];
     http_post("/setProperties",JSON.stringify(query),null,null,null);
 
+}
+//executed on delete clickfunction btn_trash(id)
+function deleteAlarm()
+{
+    var id=this.id;
+    var idStr = id.substr(12);//remove the "deleteAlarm-" part
+    console.log("the node id is ",idStr);
+
+    $("#confirm-modal-div").empty();
+    $("#confirm-modal-div").append("<p>are you sure to delete alarm </p><p> "+ this.msgText +" ?</p>");
+    $("#confirm-modal-ok").unbind();
+    $("#confirm-modal-ok").click( function() {deleteAlarm_confirmed(idStr);});
+    $("#confirm-delete").modal('show');
+}
+
+function deleteAllAlarms()
+{
+    var ids = this.deleteIds;
+    $("#confirm-modal-div").empty();
+    $("#confirm-modal-div").append("<p>Are you sure to delete all alarms?</p>");
+    $("#confirm-modal-ok").unbind();
+    $("#confirm-modal-ok").click( function() {delete_all_alarms_confirmed(ids);});
+    $("#confirm-delete").modal('show');
+
+}
+function delete_all_alarms_confirmed(ids)
+{
+    var query = ids;
+    http_post("/_delete",JSON.stringify(query),null,null,null);
+}
+
+
+function deleteAlarm_confirmed(idStr)
+{
+    var query = [idStr];
+    http_post("/_delete",JSON.stringify(query),null,null,null);
 }
 
 function initialize_alarms()
