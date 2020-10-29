@@ -1704,8 +1704,11 @@ function refresh_alarm_table()
                 table.empty();
 
                 var msgs = JSON.parse(data);
-                for(var msg in msgs)
+                //for(var msg in msgs)
+                var keys = Object.keys(msgs).reverse();
+                for (var i in keys)
                 {
+                    var msg = keys[i];
                     if (msg[0]==".") continue; //skip the .properties
 
                     //make a row
