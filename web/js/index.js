@@ -437,6 +437,13 @@ function initialize_context_menu()
                             </div>
                         </div>
 
+                        <div class="form-group row" id="annotationeditvariables" hidden>
+                            <label class="col-3">variables</label>
+                            <div class="col-9">
+                                <input type="text" id="annotationeditvariablesval" class="form-control edit-modal-input" value="start" readonly>
+                            </div>
+                        </div>
+
                         <div class="form-group row" id="annotationedittagsselect" hidden>
                             <label class="col-3">select tags</label>
                             <div class="col-9">
@@ -449,12 +456,6 @@ function initialize_context_menu()
 
 
 
-                        <div class="form-group row" id="annotationeditvariables" hidden>
-                            <label class="col-3">variables</label>
-                            <div class="col-9">
-                                <input type="text" id="annotationeditvariablesval" class="form-control edit-modal-input" value="start">
-                            </div>
-                        </div>
 
 
                     </div>
@@ -1044,6 +1045,7 @@ function context_menu_edit(option,contextMenuIndex,optionIndex)
                     $('#annotationeditend').attr("hidden",false);
                     $('#annotationedittags').attr("hidden",false);
                     $('#annotationedittagsselect').attr("hidden",false);
+                    $('#annotationeditvariables').attr("hidden",true);
 
 
                     $('#annotationeditstartval').val(JSON.stringify(data.startTime[".properties"].value));
@@ -1065,6 +1067,12 @@ function context_menu_edit(option,contextMenuIndex,optionIndex)
                     $('#annotationeditminval').val(JSON.stringify(data.min[".properties"].value));
                     $('#annotationeditmaxval').val(JSON.stringify(data.max[".properties"].value));
                     $('#annotationedittagsval').val(JSON.stringify(data.tags[".properties"].value));
+                    var variable = data.variable[".properties"].leaves;
+                    if (variable.length>0)
+                    {
+                        $('#annotationeditvariables').attr("hidden",false);
+                        $('#annotationeditvariablesval').val(JSON.stringify(variable[0]));
+                    }
                 }
                 else
                 {
