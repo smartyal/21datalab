@@ -102,7 +102,7 @@ class TimeSeries:
 
         return True
 
-    def delete_area(self,start=None,end=None):
+    def delete_area(self,start=None,end=None,includeEnd=True):
         #delete all data where start<=times<=end
         if type(start) == type(None):
             left = 0
@@ -116,7 +116,10 @@ class TimeSeries:
             self.lastValidIndex = left -1
 
         else:
-            right = numpy.searchsorted(self.get_times(), end, side="right")
+            if includeEnd:
+                right = numpy.searchsorted(self.get_times(), end, side="right")
+            else:
+                right = numpy.searchsorted(self.get_times(),end,side="left")
             siz = right-left
             self.times[left:self.lastValidIndex - siz+1] = self.times[right:self.lastValidIndex+1]
             self.values[left:self.lastValidIndex - siz+1] = self.values[right:self.lastValidIndex+1]
