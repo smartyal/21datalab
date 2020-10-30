@@ -239,11 +239,11 @@ function saveLabels(labels) {
     )
   }
   // TODO: remove me this is non-generic
-  http_post(
-    '/setProperties',
-    JSON.stringify([ { browsePath: 'root.logistic_regression.categoryMap', value: labelNameToIndexMap } ]),
-    null, null, null
-  )
+  //http_post(
+  //  '/setProperties',
+  //  JSON.stringify([ { browsePath: 'root.logistic_regression.categoryMap', value: labelNameToIndexMap } ]),
+  //  null, null, null
+  //)
 }
 
 function updateBackend(currentLabels, initialLabels) {
