@@ -6,18 +6,18 @@ var currentLabels = []
 var masterFrontend = null
 var slaveFrontends = []
 
-class LabelColor {
-  constructor(hexCode, pattern) {
-    this.hexCode = hexCode;
-    this.pattern = pattern;
-  }
+function LabelColor(hexCode, pattern) {
+  o = new Object();
+  o.hexCode = hexCode;
+  o.pattern = pattern;
+  return o;
 }
 
-class Label {
-  constructor(name, color) {
-    this.name = name
-    this.color = color;
-  }
+function Label(name, color) {
+  o = new Object();
+  o.name = name
+  o.color = color;
+  return o;
 }
 
 function convertLabelsToDict(labels) {
@@ -36,7 +36,7 @@ function convertDictToLabels(labelNameColorDict) {
   //});
   let labels = [];
   for (const [labelName, colorDict] of Object.entries(labelNameColorDict)) {
-    let label = new Label(labelName, new LabelColor(colorDict["color"], colorDict["pattern"]));
+    let label = Label(labelName, LabelColor(colorDict["color"], colorDict["pattern"]));
     labels.push(label);
   }
   return labels;
@@ -102,7 +102,7 @@ function updateLabelsView(labels) {
 }
 
 function getExistingAnnotationNodes(labelNames, callable) {
-  http_post('_getleaves', masterFrontend + '.hasAnnotation.annotations', null, null, function(obj,status,data,params) {
+  http_post('_getleaves', cockpitPath + '.annotations', null, null, function(obj,status,data,params) {
     if (status == 200) {
       let nodes = JSON.parse(data);
       let annotationNodes = []
@@ -159,12 +159,59 @@ function deleteExistingAnnotations(labelNames) {
   });
 }
 
+// taken from https://stackoverflow.com/questions/5560248/programmatically-lighten-or-darken-a-hex-color-or-rgb-and-blend-colors
+// Version 4.0
+function pSBC(p,c0,c1,l) {
+    let r,g,b,P,f,t,h,i=parseInt,m=Math.round,a=typeof(c1)=="string";
+    if(typeof(p)!="number"||p<-1||p>1||typeof(c0)!="string"||(c0[0]!='r'&&c0[0]!='#')||(c1&&!a))return null;
+    if(!this.pSBCr)this.pSBCr=(d)=>{
+        let n=d.length,x={};
+        if(n>9){
+            [r,g,b,a]=d=d.split(","),n=d.length;
+            if(n<3||n>4)return null;
+            x.r=i(r[3]=="a"?r.slice(5):r.slice(4)),x.g=i(g),x.b=i(b),x.a=a?parseFloat(a):-1
+        }else{
+            if(n==8||n==6||n<4)return null;
+            if(n<6)d="#"+d[1]+d[1]+d[2]+d[2]+d[3]+d[3]+(n>4?d[4]+d[4]:"");
+            d=i(d.slice(1),16);
+            if(n==9||n==5)x.r=d>>24&255,x.g=d>>16&255,x.b=d>>8&255,x.a=m((d&255)/0.255)/1000;
+            else x.r=d>>16,x.g=d>>8&255,x.b=d&255,x.a=-1
+        }return x};
+    h=c0.length>9,h=a?c1.length>9?true:c1=="c"?!h:false:h,f=this.pSBCr(c0),P=p<0,t=c1&&c1!="c"?this.pSBCr(c1):P?{r:0,g:0,b:0,a:-1}:{r:255,g:255,b:255,a:-1},p=P?p*-1:p,P=1-p;
+    if(!f||!t)return null;
+    if(l)r=m(P*f.r+p*t.r),g=m(P*f.g+p*t.g),b=m(P*f.b+p*t.b);
+    else r=m((P*f.r**2+p*t.r**2)**0.5),g=m((P*f.g**2+p*t.g**2)**0.5),b=m((P*f.b**2+p*t.b**2)**0.5);
+    a=f.a,t=t.a,f=a>=0||t>=0,a=f?a<0?t:t<0?a:a*P+t*p:0;
+    if(h)return"rgb"+(f?"a(":"(")+r+","+g+","+b+(f?","+m(a*1000)/1000:"")+")";
+    else return"#"+(4294967296+r*16777216+g*65536+b*256+(f?m(a*255):0)).toString(16).slice(1,f?undefined:-2)
+}
+
+function createHoverMap(labels) {
+  // simply sort alphabetically
+  let labelsSorted = [...labels].filter(label => label != null).sort((left, right) => left.name.localeCompare(right.name));
+  let labelNames = labelsSorted.map(label => label.name);
+  console.log("labelsSorted=", labelNames);
+  let labelIndexToColorMap = Object.fromEntries(
+    Object.entries(labelsSorted).map(
+      ([index, label]) => [index.toString(), pSBC(-0.4, label.color.hexCode)]
+    )
+  );
+  // for logistic_regression.categoryMap
+  let labelNameToIndexMap = Object.fromEntries(
+    Object.entries(labelNames).map(
+      ([index, labelName]) => [labelName, index]
+    )
+  );
+  return [labelNameToIndexMap, labelIndexToColorMap];
+}
+
 function saveLabels(labels) {
   let labelsDict = convertLabelsToDict(labels);
   // set everything to visible by default
   // TODO: store visibility information in label class to preserve it
   // ignore deleted labels marked with null
   let visibleTagsDict = Object.fromEntries(labels.filter(label => label != null).map(label => [label.name, true]));
+  [labelNameToIndexMap, labelIndexToColorMap] = createHoverMap(labels);
 
   for (const slaveFrontend of slaveFrontends) {
     console.log("Updating ", slaveFrontend + '.hasAnnotation.visibleTags');
@@ -185,7 +232,18 @@ function saveLabels(labels) {
       JSON.stringify([ { browsePath: slaveFrontend + '.hasAnnotation.tags', value: Object.keys(visibleTagsDict) } ]),
       null, null, null
     )
+    http_post(
+      '/setProperties',
+      JSON.stringify([ { browsePath: slaveFrontend + '.backgroundMap', value: labelIndexToColorMap } ]),
+      null, null, null
+    )
   }
+  // TODO: remove me this is non-generic
+  //http_post(
+  //  '/setProperties',
+  //  JSON.stringify([ { browsePath: 'root.logistic_regression.categoryMap', value: labelNameToIndexMap } ]),
+  //  null, null, null
+  //)
 }
 
 function updateBackend(currentLabels, initialLabels) {
@@ -223,7 +281,7 @@ function updateBackend(currentLabels, initialLabels) {
 
 function addLabel() {
   let labelName = "NewLabel";
-  let labelNames = currentLabels.map(label => label.name);
+  let labelNames = currentLabels.filter(label => label != null).map(label => label.name);
   let i = 0;
   while (true) {
     if (labelNames.includes(labelName)) {
@@ -233,7 +291,7 @@ function addLabel() {
       break;
     }
   }
-  currentLabels.push(new Label(labelName, new LabelColor("#000000", null)));
+  currentLabels.push(Label(labelName, new LabelColor("#000000", null)));
   updateLabelsView(currentLabels);
 }
 
@@ -246,5 +304,7 @@ function removeLabel(labelId) {
 
 
 function cockpit_close() {
+  console.log("currentLabels=", currentLabels);
+  console.log("initialLabels=", initialLabels);
   updateBackend(currentLabels, initialLabels);
 }
