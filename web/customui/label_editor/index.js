@@ -6,18 +6,18 @@ var currentLabels = []
 var masterFrontend = null
 var slaveFrontends = []
 
-class LabelColor {
-  constructor(hexCode, pattern) {
-    this.hexCode = hexCode;
-    this.pattern = pattern;
-  }
+function LabelColor(hexCode, pattern) {
+  o = new Object();
+  o.hexCode = hexCode;
+  o.pattern = pattern;
+  return o;
 }
 
-class Label {
-  constructor(name, color) {
-    this.name = name
-    this.color = color;
-  }
+function Label(name, color) {
+  o = new Object();
+  o.name = name
+  o.color = color;
+  return o;
 }
 
 function convertLabelsToDict(labels) {
@@ -36,7 +36,7 @@ function convertDictToLabels(labelNameColorDict) {
   //});
   let labels = [];
   for (const [labelName, colorDict] of Object.entries(labelNameColorDict)) {
-    let label = new Label(labelName, new LabelColor(colorDict["color"], colorDict["pattern"]));
+    let label = Label(labelName, LabelColor(colorDict["color"], colorDict["pattern"]));
     labels.push(label);
   }
   return labels;
@@ -188,7 +188,7 @@ function pSBC(p,c0,c1,l) {
 
 function createHoverMap(labels) {
   // simply sort alphabetically
-  let labelsSorted = [...labels].sort((left, right) => left.name.localeCompare(right.name));
+  let labelsSorted = [...labels].filter(label => label != null).sort((left, right) => left.name.localeCompare(right.name));
   let labelNames = labelsSorted.map(label => label.name);
   console.log("labelsSorted=", labelNames);
   let labelIndexToColorMap = Object.fromEntries(
@@ -232,14 +232,18 @@ function saveLabels(labels) {
       JSON.stringify([ { browsePath: slaveFrontend + '.hasAnnotation.tags', value: Object.keys(visibleTagsDict) } ]),
       null, null, null
     )
-    let backgroundMap = {};
-
     http_post(
       '/setProperties',
       JSON.stringify([ { browsePath: slaveFrontend + '.backgroundMap', value: labelIndexToColorMap } ]),
       null, null, null
     )
   }
+  // TODO: remove me this is non-generic
+  http_post(
+    '/setProperties',
+    JSON.stringify([ { browsePath: 'root.logistic_regression.categoryMap', value: labelNameToIndexMap } ]),
+    null, null, null
+  )
 }
 
 function updateBackend(currentLabels, initialLabels) {
@@ -277,7 +281,7 @@ function updateBackend(currentLabels, initialLabels) {
 
 function addLabel() {
   let labelName = "NewLabel";
-  let labelNames = currentLabels.map(label => label.name);
+  let labelNames = currentLabels.filter(label => label != null).map(label => label.name);
   let i = 0;
   while (true) {
     if (labelNames.includes(labelName)) {
@@ -287,7 +291,7 @@ function addLabel() {
       break;
     }
   }
-  currentLabels.push(new Label(labelName, new LabelColor("#000000", null)));
+  currentLabels.push(Label(labelName, new LabelColor("#000000", null)));
   updateLabelsView(currentLabels);
 }
 
@@ -300,5 +304,7 @@ function removeLabel(labelId) {
 
 
 function cockpit_close() {
+  console.log("currentLabels=", currentLabels);
+  console.log("initialLabels=", initialLabels);
   updateBackend(currentLabels, initialLabels);
 }
