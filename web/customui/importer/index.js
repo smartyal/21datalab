@@ -3,10 +3,10 @@ _helper_log('cockpit importer load')
 var cockpiteventSource = 0
 var cockpitPath = ""
 var cockpitWidgetPath = ""
-let importerFields
-let importerStepNo = 1
-let importerFileName
-let importerHeaderExists = undefined
+var importerFields
+var importerStepNo = 1
+var importerFileName
+var importerHeaderExists = undefined
 
 // --- FOR TESTING PURPOSES
 // --- [TODO] remove
