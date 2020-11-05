@@ -58,7 +58,8 @@ pipeline = {
 
 def preview_file(iN):
 
-    _helper_log(f"PREVIEW FILE STARTED")
+    logger = iN.get_logger()
+    logger.debug(f"importer.preview_file()")
 
     # --- define vars
     observer = iN.get_parent().get_child("observer")
@@ -79,14 +80,13 @@ def preview_file(iN):
     node = iN.get_child("data_preview")
     node.set_value(previewDataString)
 
-    _helper_log(f"PREVIEW FILE FINISHED")
-
     # --- return
     return True
 
 def import_run(iN):
 
-    _helper_log(f"IMPORT STARTED")
+    logger = iN.get_logger()
+    logger.debug(f"import running..")
     timeStartImport = dt.datetime.now()
 
     # --- define vars
@@ -94,7 +94,7 @@ def import_run(iN):
 
     # --- [vars] define
     tablename = iN.get_child("tablename").get_value()
-    _helper_log(f"tablename: {tablename}")
+    logger.debug(f"tablename: {tablename}")
 
     #  # --- create needed nodes
     importerNode.create_child('imports', type="folder")
@@ -141,7 +141,7 @@ def import_run(iN):
             data[fieldname] = df.iloc[ :, fieldno].to_list()
             fieldvar.set_time_series(values=data[fieldname],times=epochs)
         cols.add_references(fieldvar)
-        _helper_log(f"val: {fieldname}")
+        logger.debug(f"import val: {fieldname}")
         print(fieldvar) 
 
     # look for nodes of type widget and ensure variables can be selected
@@ -151,10 +151,6 @@ def import_run(iN):
         selectable_variables_referencer: Node = widget_node.get_child("selectableVariables")
         selectable_variables_referencer.add_references([vars])
 
-    _helper_log(f"IMPORT DONE (seconds: {(dt.datetime.now()-timeStartImport).seconds})")
+    logger.debug(f"import complete (seconds: {(dt.datetime.now()-timeStartImport).seconds})")
     return True
 
-def _helper_log(text):
-    logging.warning('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-    logging.warning(text)
-    logging.warning('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')

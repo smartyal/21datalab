@@ -279,7 +279,7 @@
             "655"
         ],
         "forwardRefs": [
-            "12692089911453162890"
+            "16463869669775406288"
         ],
         "value": null,
         "browsePath": "root.visualization.workbench.background"
@@ -1605,7 +1605,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 797,
+        "value": 800,
         "browsePath": "root.system.progress.triggerCounter"
     },
     "10857910486653991896": {
@@ -1616,7 +1616,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-29T15:25:14.029605",
+        "value": "2020-11-02T11:13:41.534580",
         "browsePath": "root.system.progress.lastTriggerTime"
     },
     "16724694746718170912": {
@@ -2931,9 +2931,7 @@
         "backRefs": [
             "10519047959356290605"
         ],
-        "forwardRefs": [
-            "12692089911453162890"
-        ],
+        "forwardRefs": [],
         "value": null,
         "browsePath": "root.visualization.expert.background"
     },
@@ -4166,7 +4164,7 @@
             "13083771525385706551",
             "4106497504214774271",
             "4576196723540996607",
-            "12692089911453162890"
+            "16463869669775406288"
         ],
         "backRefs": [
             "14814504338557830832",
@@ -4199,7 +4197,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [
-            "12692089911453162890"
+            "16463869669775406288"
         ],
         "value": null,
         "browsePath": "root.logistic_regression.output"
@@ -4270,7 +4268,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "finished",
+        "value": "interrupted",
         "browsePath": "root.logistic_regression.control.status"
     },
     "10033975645840194553": {
@@ -4294,7 +4292,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "ok",
+        "value": "error:list index out of range",
         "browsePath": "root.logistic_regression.control.result"
     },
     "9061055047331451113": {
@@ -4338,7 +4336,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-10-29T15:25:13.749352",
+        "value": "2020-11-02T11:13:41.523587",
         "browsePath": "root.logistic_regression.control.lastStartTime"
     },
     "8184328078851683225": {
@@ -4351,21 +4349,6 @@
         "forwardRefs": [],
         "value": "async",
         "browsePath": "root.logistic_regression.control.executionType"
-    },
-    "12692089911453162890": {
-        "id": "12692089911453162890",
-        "name": "classification_result",
-        "type": "timeseries",
-        "parent": "10961192520235699890",
-        "children": [],
-        "backRefs": [
-            "17231174271373347771",
-            "145",
-            "6863578518285481911"
-        ],
-        "forwardRefs": [],
-        "value": "len 5",
-        "browsePath": "root.logistic_regression.classification_result"
     },
     "25998318472993105": {
         "id": "25998318472993105",
@@ -4409,5 +4392,19 @@
         "forwardRefs": [],
         "value": {},
         "browsePath": "root.visualization.expert.backgroundHighlight"
+    },
+    "16463869669775406288": {
+        "id": "16463869669775406288",
+        "name": "classification_result",
+        "type": "timeseries",
+        "parent": "10961192520235699890",
+        "children": [],
+        "backRefs": [
+            "17231174271373347771",
+            "145"
+        ],
+        "forwardRefs": [],
+        "value": "None",
+        "browsePath": "root.logistic_regression.classification_result"
     }
 }
