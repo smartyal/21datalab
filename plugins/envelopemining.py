@@ -25,6 +25,7 @@ envelopeMinerTemplate = {
                 {"name": "motif", "type": "referencer"},        # the one motif we are using
                 {"name": "widget","type":"referencer"} ,        # the widget to which this miner belongs which is used (to find the selected motif
                 {"name": "annotations","type":"folder"},        # the results
+                {"name": "results","type":"variable"},
                 mycontrol[0]
             ]
         },
@@ -106,7 +107,7 @@ envelopeMinerTemplate = {
                 # the sourceId of the node which caused the observer to trigger
                 {"name": "hasEvent", "type": "const", "value": True},
                 # set to event string iftrue if we want an event as well
-                {"name": "eventString", "type": "const", "value": "motifminer.progress"},  # the string of the event
+                {"name": "eventString", "type": "const", "value": "envelopemining.progress"},  # the string of the event
                 {"name": "eventData", "type": "const", "value": {"text": "observer status update"}}
                 # the value-dict will be part of the SSE event["data"] , the key "text": , this will appear on the page,
             ]
@@ -123,10 +124,20 @@ envelopeMinerTemplate = {
 def envelope_miner(functionNode):
 
     logger = functionNode.get_logger()
+    signal = functionNode.get_child("control.signal")
     logger.info("==>>>> in envelope_miner " + functionNode.get_browse_path())
     progressNode = functionNode.get_child("control").get_child("progress")
+    functionNode.get_child("results").set_value([])
     progressNode.set_value(0)
-    time.sleep(3)
+    signal.set_value(None)
+    total = 15
+    for i in range(total):
+        time.sleep(1)
+        progressNode.set_value(float(i)/total)
+        if signal.get_value()=="stop":
+            break
+
+    functionNode.get_child("results").set_value([{"time":"1234","match":1.2},{"time":"1235","match":1.6}])
     progressNode.set_value(1)
     return True
 
