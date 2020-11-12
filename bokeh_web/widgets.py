@@ -24,7 +24,7 @@ import traceback
 
 
 from bokeh.models import DatetimeTickFormatter, ColumnDataSource, BoxSelectTool, BoxAnnotation, Label, LegendItem, Legend, HoverTool, BoxEditTool, TapTool, Circle
-from bokeh.models import Range1d,DataRange1d, Span,LinearAxis
+from bokeh.models import Range1d,DataRange1d, Span,LinearAxis, Band
 from bokeh import events
 from bokeh.models.widgets import RadioButtonGroup, Paragraph, Toggle, MultiSelect, Button, Select, CheckboxButtonGroup,Dropdown
 from bokeh.plotting import figure, curdoc
@@ -49,6 +49,7 @@ globalAlpha = 1.0#0.3
 globalAnnotationLevel  = "image"
 globalBackgroundsLevel = "underlay"
 globalThresholdsLevel = "underlay"
+globalBandsLevel = "overlay"
 globalAnnotationsAlpha = 0.90
 globalThresholdsAlpha = 0.5
 globalBackgroundsAlpha = 0.2
@@ -126,6 +127,8 @@ class TimeSeriesWidgetDataServer():
         self.scoreVariables = []
         self.events = None
         self.sseCb = None # the callbackfunction on event
+        self.objectsInfo = {} # a dict holding node ids and more info of the current objects in the display
+
 
         self.__init_logger(logging.DEBUG)
         self.__init_proxy()
@@ -154,7 +157,7 @@ class TimeSeriesWidgetDataServer():
                         if self.sseCb:
                             self.sseCb(data)
             except Exception as ex:
-                self.logger.error(f"sse_Cb error {ex}, {sys.exc_info()[0]}")
+                self.logger.error(f"sse_Cb error {ex}, {sys.exc_info()[0]} {str(traceback.format_exc())}")
 
     def sse_stop(self):
         self.sse.stop()
@@ -230,6 +233,13 @@ class TimeSeriesWidgetDataServer():
 
         nodes = self.__web_call("post", "_getleaves", request)
         selectedVars=[node["browsePath"] for node in nodes]
+        #build the info as id:info plus browsepath:info, so we have a faster lookup; both browsepath and id are unique
+        self.objectsInfo = {}
+        for node in nodes:
+            info = copy.deepcopy(node)
+            self.objectsInfo[node["id"]]=info
+            self.objectsInfo[node["browsePath"]]=info
+
         self.selectedVariables=copy.deepcopy(selectedVars)
         self.logger.debug(f"get_selected_variables_sync => {self.selectedVariables}")
         return selectedVars
@@ -285,11 +295,12 @@ class TimeSeriesWidgetDataServer():
 
 
         #also grab the selected
-        request = self.path+".selectedVariables"
-        self.selectedVariables=[]
-        nodes = self.__web_call("post","_getleaves",request)
-        for node in nodes:
-            self.selectedVariables.append(node["browsePath"])
+        self.get_selected_variables_sync()
+        #request = self.path+".selectedVariables"
+        #self.selectedVariables=[]
+        #nodes = self.__web_call("post","_getleaves",request)
+        #for node in nodes:
+        #    self.selectedVariables.append(node["browsePath"])
         #get the selectable
         nodes = self.__web_call('POST',"_getleaves",self.path+'.selectableVariables')
         self.selectableVariables = []
@@ -1080,8 +1091,20 @@ class TimeSeriesWidget():
 
         for var in newData:
             if not var.endswith("__time"):
-                dic = {"y":newData[var],
-                       "x":newData[var+"__time"]}
+                if var.endswith("_limitMax"):
+                    #special dictionary
+                    minName = var[:-len("_limitMax")]+"_limitMin"
+                    if minName in newData:
+                        dic = {"x":newData[var+"__time"],
+                               "upper":newData[var],
+                               "lower":newData[minName],
+                               "y":newData[var]} # is needed for the auto adjust y limits
+                    else:
+                        #min is missing, can't process
+                        continue
+                else:
+                    dic = {"y":newData[var],
+                           "x":newData[var+"__time"]}
                 if var in self.columnData:
                     self.columnData[var].data = dic #update
                 else:
@@ -2067,50 +2090,7 @@ class TimeSeriesWidget():
             self.logger.error(f"stream_update error {ex}")
         self.inStreamUpdate = False
         self.streamingUpdateData = None
-    def __check_observed(self,counter):
-        """
-            this function is periodically called from a threading.thread
-            we check if some data if the backend has changed and if we need to do something on change
-        """
-        self.logger.debug("enter __check_observed() "+str(counter))
-        try:
-            """
-            #now see what we have to do
-            if "background" in self.observerStatus:
-                #check the background counter for update
-                backgroundCounter = self.server.get_values(self.server.get_settings()["observer"]["observerBackground"])
-                #self.logger.debug("background observer Val"+str(backgroundCounter))
-                if self.observerStatus["background"] != None and self.observerStatus["background"] != backgroundCounter:
-                    #we have a change in the background:
-                    self.logger.debug("observer background changed")
-                    self.__dispatch_function(self.refresh_backgrounds)
-                self.observerStatus["background"] = backgroundCounter
-            if "variables" in self.observerStatus:
-                variables = self.server.get_selected_variables_sync()
-                if self.observerStatus["variables"] != None and self.observerStatus["variables"]!=variables:
-                    #we have a change in the selected variables
-                    self.logger.debug("variables selection observer changed"+str(self.observerStatus["variables"] )+"=>"+str(variables))
-                    self.__dispatch_function(self.refresh_plot)
-                self.observerStatus["variables"] = variables
-            """
-            #now we also check if we have a legend click which means that we must delete a variable from the selection
-            self.logger.debug("RENDERERS CHECK --------------------------")
-            deleteList=[]
-            for r in self.plot.renderers:
-                if r.name and r.name in self.server.get_variables_selected() and r.visible == False:
-                    #there was a click on the legend to hide the variables
-                    self.logger.debug("=>>>>>>>>>>>>>>>>>DELETE FROM plot:"+r.name)
-                    deleteList.append(r.name)
-            if deleteList != []:
-                #now prepare the new list:
-                newVariablesSelected = [var for var in self.server.get_variables_selected() if var not in deleteList]
-                self.logger.debug("new var list"+str(newVariablesSelected))
-                self.server.set_variables_selected(newVariablesSelected)
-                #self.__dispatch_function(self.refresh_plot)
-        except Exception as ex:
-            self.logger.error("problem during __check_observed"+str(ex)+str(sys.exc_info()[0]))
 
-        self.logger.debug("leave __check_observed()")
 
     def reset_all(self):
         """
@@ -2574,7 +2554,7 @@ class TimeSeriesWidget():
 
         #not found, get a new one
 
-        usedColors =  [self.lines[lin].glyph.line_color for lin in self.lines]
+        usedColors =  [self.lines[lin].glyph.line_color for lin in self.lines if hasattr(self.lines[lin],"glyph")]
         for color in self.lineColors:
             if color not in usedColors:
                 return color
@@ -2659,6 +2639,17 @@ class TimeSeriesWidget():
         self.adjust_y_axis_limits()
         #timeNode = "__time"
         #now plot var
+
+        if newVars != []:
+            #sort the limits to the end so that the lines are created first, then the band can take the same color
+            newList = []
+            for elem in newVars:
+                if elem.endswith("_limitMax") or elem.endswith("_limitMin"):
+                    newList.append(elem)
+                else:
+                    newList.insert(0,elem)
+            newVars = newList
+
         for variableName in newVars:
             if variableName.endswith('__time'):
                 continue
@@ -2671,9 +2662,29 @@ class TimeSeriesWidget():
                 self.lines[variableName] = self.plot.circle(x="x", y="y", line_color="red", fill_color=None,
                                                             source=self.columnData[variableName], name=variableName,size=7)  # x:"time", y:variableName #the legend must havee different name than the source bug
 
+            elif variableName.endswith("_limitMax"):
+                if variableName in self.columnData:# if it is in the column data we can process
+                    #we found both min and max
+                    thisLineColor = None
+                    originalVarName = variableName.split('.')[-1][:-len("_expected")]
+                    for lineName in self.lines:
+                        if lineName.split('.')[-1] == originalVarName:
+                            thisLineColor = self.lines[lineName].glyph.line_color
+                            break
+                    if not thisLineColor:
+                        thisLineColor = "gray"
+                    band = Band(base='x', lower='lower', upper='upper', level=globalBandsLevel,fill_color = thisLineColor,
+                                fill_alpha=0.4, line_width=1, line_color='black',source = self.columnData[variableName])
+                    self.lines[variableName] = band
+                    self.plot.add_layout(band)
+                continue
+            elif variableName.endswith("_limitMin"):
+                continue
 
 
             else:
+                #these are the lines
+
                 if ".score" in variableName:
                     # this is a score 0..1 line
                     self.lines[variableName] = self.plot.line(x="x", y="y", color="gray", line_dash="dotted",
@@ -2695,7 +2706,7 @@ class TimeSeriesWidget():
                             thisLineColor = color
                         self.lines[variableName] = self.plot.line(x="x", y="y", color=thisLineColor,
                                                                   source=self.columnData[variableName], name=variableName,
-                                                                  line_width=2, line_dash="dashed")
+                                                                  line_width=8, line_dash="dashed")
                     else:
 
                         #this is a real line
@@ -2726,8 +2737,14 @@ class TimeSeriesWidget():
         #compile the new colors
         nowColors = {}
         for variableName,glyph in self.lines.items():
-            nowColors[variableName] = {"lineColor":glyph.glyph.line_color}
+            if variableName.endswith("_limitMax"):
+                nowColors[variableName] = {"lineColor": glyph.line_color}
+            else:
+                nowColors[variableName] = {"lineColor":glyph.glyph.line_color}
         self.server.update_current_colors(nowColors)
+
+
+
 
         #now make a legend
         #legendItems=[LegendItem(label=var,renderers=[self.lines[var]]) for var in self.lines]
@@ -2870,7 +2887,9 @@ class TimeSeriesWidget():
             serverDeletes = deleteLines.copy()
             serverDeletes.extend([r.name for r in extraDeleteRenderers])
             newServerSelection=[lin for lin in backendLines if lin not in serverDeletes]
-            self.server.set_variables_selected(newServerSelection)
+            #self.logger.debug(f"SET SELECTED {newServerSelection} {backendLines}")
+            if set(newServerSelection) != set(backendLines):
+                self.server.set_variables_selected(newServerSelection)
 
 
 

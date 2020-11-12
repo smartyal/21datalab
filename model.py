@@ -117,7 +117,7 @@ class Node():
     def get_raw_time_series(self,start=None,end=None):
         return self.model.time_series_get_raw(self.id,start=start,end=end)
 
-    def add_references(self,targetNodes,deleteAll=False):
+    def add_references(self,targetNodes,deleteAll=False,allowDuplicates=True):
         """
             add references from the node to the targets
             Args:
@@ -131,7 +131,17 @@ class Node():
         if type(targetNodes) is not list:
             targetNodes = [targetNodes]
         targetIds = [node.get_id() for node in targetNodes]
-        return self.model.add_forward_refs(self.id,targetIds)
+        return self.model.add_forward_refs(self.id,targetIds,allowDuplicates=allowDuplicates)
+
+    def del_references(self,targetNodes):
+        """
+            remove the forward refs from this node to targetNodes
+        :return:
+        """
+        if type(targetNodes) is not list:
+            targetNodes = [targetNodes]
+        targetIds = [node.get_id() for node in targetNodes]
+        return self.model.remove_forward_refs(self.id,targetIds)
 
     def set_value(self,value):
         """
@@ -204,6 +214,16 @@ class Node():
                 a Node() instance of the child holding the childName
                 None if the current node does not have a child with the name childName
         """
+
+        if '.' in childName:
+            remain = '.'.join(childName.split('.')[1:])
+            now = childName.split('.')[0]
+            child = self.get_child(now)
+            if child:
+                return child.get_child(remain)
+            else:
+                return None
+
         nodeInfo = self.model.get_node_info(self.id)
         if nodeInfo:
             for childId in nodeInfo['children']:
@@ -1674,20 +1694,23 @@ class Model:
 
 
 
-    def __get_targets(self,id):
+    def __get_targets(self,id,includeNodeInfo=True):
         """
             #this is a recusive helper function for the get_leaves function
         """
         targets=[]
         if self.model[id]["type"] == "referencer":
             for targetId in self.model[id]["forwardRefs"]:
-                targets.extend(self.__get_targets(targetId))
+                targets.extend(self.__get_targets(targetId,includeNodeInfo))
         elif self.model[id]["type"] == "folder":
             for targetId in self.model[id]["children"]:
-                targets.extend(self.__get_targets(targetId))
+                targets.extend(self.__get_targets(targetId,includeNodeInfo))
         else:
-            addNode = self.__copy_node(id,resolveChildren=True)
-            addNode["browsePath"]=self.get_browse_path(id)
+            if includeNodeInfo:
+                addNode = self.__copy_node(id,resolveChildren=True)
+                addNode["browsePath"]=self.get_browse_path(id)
+            else:
+                addNode={"id":id,"children":self.model[id]["children"]}
             targets = [addNode]
         return targets
 
@@ -1705,8 +1728,10 @@ class Model:
         return leaveIds
 
 
-    def get_leaves(self,desc,allowDuplicates=False):
+    def get_leaves(self,desc,allowDuplicates=False,includeNodeInfo=True):
         """
+            Args:
+                includeNodeInfo : if set true, we get the properties of the node, else we only get the id
             this function returns a list of dicts containing the leaves where this referencer points to
             this functions works only for nodes of type "referencer", as we are following the forward references
             leaves are defined as following:
@@ -1722,7 +1747,7 @@ class Model:
             id = self.__get_id(desc)
             if not id:return None
 
-            targets=self.__get_targets(id)
+            targets=self.__get_targets(id,includeNodeInfo)
             if targets and targets[0]["id"] == id:
                 #this can happen if the node is not a folder, ref and had no children
                 targets.pop(0)
@@ -1871,6 +1896,9 @@ class Model:
                     if childInfo["name"] == childName:
                         return childId
         return None
+
+
+
 
     def get_children_dict(self,desc):
         """
@@ -2631,6 +2659,7 @@ class Model:
                     controlExecutionCounter.set_value(controlExecutionCounter.get_value() + 1)
                     controlProgress = controlNode.get_child("progress")
                     if controlProgress.get_value()!=0:
+                        #reset the progress back to zero
                         #only set it if it was set by the function, otherwise we save a progree event
                         controlProgress.set_value(0)
 
@@ -2641,13 +2670,15 @@ class Model:
                         result = True # for execution of member function we don't have a general return code
                     if result == True:
                         controlNode.get_child("result").set_value("ok")
-                        self.publish_event("result of " + str(functionName) + ": " + controlNode.get_child("result").get_value())
+                        self.publish_status_msg("result of " + str(functionName) + ": " + controlNode.get_child("result").get_value())
                     else:
                         if controlNode.get_child("result").get_value() == "pending":
                             #if the functions hasn't set anything else
                             controlNode.get_child("result").set_value("error")
                         #also publish this result
-                        self.publish_event("error in " + str(functionName) + ": " + controlNode.get_child("result").get_value())
+                        self.publish_status_msg("error in " + str(functionName) + ": " + controlNode.get_child("result").get_value())
+
+                    self.publish_event("system.function.complete",id,{"result":controlNode.get_child("result").get_value(),"progress":controlNode.get_child("progress").get_value()})
 
                 #  except:
                     #  self.logger.error("problem setting results from execution of #"+str(id))
@@ -2663,7 +2694,7 @@ class Model:
             controlNode.get_child("status").set_value("interrupted")
             controlNode.get_child("result").set_value("error:"+errorString)
             controlNode.get_child("progress").set_value(0)
-            self.publish_event("error in "+str(functionName)+": "+errorString)
+            self.publish_status_msg("error in "+str(functionName)+": "+errorString)
         return
 
     def get_error(self):
@@ -2698,7 +2729,7 @@ class Model:
 
         """
         self.logger.debug(f"save model as {fileName} with data {includeData}")
-        self.publish_event(f"saving model {fileName}...")
+        self.publish_status_msg(f"saving model {fileName}...")
         with self.lock:
             try:
                 m = self.get_model_for_web()  # leave out the tables
@@ -2725,11 +2756,11 @@ class Model:
                 f.write(json.dumps(m, indent=4))
                 f.close()
                 self.currentModelName = fileName
-                self.publish_event(f"model {fileName} saved.")
+                self.publish_status_msg(f"model {fileName} saved.")
                 return True
             except Exception as e:
                 self.logger.error("problem sving "+str(e))
-                self.publish_event(f"saving model {fileName} error")
+                self.publish_status_msg(f"saving model {fileName} error")
                 return False
 
     def move(self, nodeList, newParent, newIndex=None):
@@ -2816,7 +2847,7 @@ class Model:
         result = False
         self.logger.info(f"load {fileName}, includeData {includeData}")
         with self.lock:
-            self.publish_event(f"loading model {fileName}...")
+            self.publish_status_msg(f"loading model {fileName}...")
             self.disable_observers()
             try:
                 if type(fileName) is str:
@@ -2884,13 +2915,13 @@ class Model:
                 self.reset_all_objects()
 
                 self.enable_observers()
-                self.publish_event(f"loading model {fileName} done.")
+                self.publish_status_msg(f"loading model {fileName} done.")
                 self.model["1"]["version"]=self.version #update the version
 
                 result = True
             except Exception as e:
                 self.logger.error("problem loading"+str(e))
-                self.publish_event(f"loading model {fileName} error.")
+                self.publish_status_msg(f"loading model {fileName} error.")
                 self.enable_observers()
                 result = False
 
@@ -3011,7 +3042,7 @@ class Model:
             return diff
 
 
-    def publish_event(self, event):
+    def publish_status_msg(self, event):
         """
             send out an event e.g. for status information
             event to send looks like
@@ -3022,7 +3053,7 @@ class Model:
             Args
                 event [string or dict]
         """
-        self.logger.debug(f"publish_event ({event})")
+        self.logger.debug(f"publish_status_msg ({event})")
         self.modelUpdateCounter += 1
 
         if type(event) is str:
@@ -3033,6 +3064,31 @@ class Model:
 
         for observerObject in self.observers:
             observerObject.update(event)
+
+    def publish_event(self,event,desc=None,info=None):
+        """
+            send an event out
+            Args
+                event [str] the event string
+                desc the node descriptor
+                info [dict] aditional field to send out
+        """
+        self.logger.debug(f"publish_event {event} : {desc}, {info}")
+        data = {}
+        if desc:
+            id = self.get_id(desc)
+            if not id: return
+            data["id"] = id
+            data["browsePath"] = self.get_browse_path(id)
+
+
+        data.update(info)
+        event = {"event":event,"data":data}
+
+        for observerObject in self.observers:
+            observerObject.update(event)
+
+
 
 
     def disable_observers(self):
