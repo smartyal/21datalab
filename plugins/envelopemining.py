@@ -113,7 +113,7 @@ envelopeMinerTemplate = {
             ]
         },
 
-        {"name":"defaultParameters","type":"const","value":{"filter":[0,20,2],"samplingPeriod":[1,60,10],"freedom":[0,1,5],"dynamicFreedom":[0,1,5]}}, # the default contain each three values: min,max,default
+        {"name":"defaultParameters","type":"const","value":{"filter":[0,20,2],"samplingPeriod":[1,60,10],"freedom":[0,1,0.5],"dynamicFreedom":[0,1,0.5],"numberSamples":[1,100,1],"step":[1,100,1]}}, # the default contain each three values: min,max,default
         {"name": "cockpit", "type": "const", "value": "/customui/envelopeminer.htm"}  #the cockpit for the motif miner
     ]
 }
@@ -156,8 +156,8 @@ def create(functionNode):
         envelope.create_child(name+"_limitMax",type="timeseries")
         envelope.create_child(name+"_limitMin",type="timeseries")
         envelope.create_child(name+"_expected",type="timeseries")
-        for elem in ["samplingPeriod","filter","freedom","dynamicFreedom"]:
-            envelope.create_child(elem,type="const",value=defaults[elem][2],properties={"validation":{"limits":[defaults[elem][0],defaults[elem][1]]}})
+        for k,v in defaults.items():#["samplingPeriod","filter","freedom","dynamicFreedom"]:
+            envelope.create_child(k,type="const",value=v[2],properties={"validation":{"limits":[v[0],v[1]]}})
         if not _connect(motif,widget):
             logger.error("can't connect motif envelope to widget")
         #also
@@ -229,6 +229,16 @@ def update(functionNode):
     lower = data-diff*freedom
     expect = data
     #xxx todo dynamic freedom
+
+
+    numberSamples = len(times)
+    motif.get_child("envelope.numberSamples").set_value(numberSamples) # the number of samples
+    #also set the possible step size
+    step = motif.get_child("envelope.step").get_value()
+    if step > numberSamples:
+        step = numberSamples
+    #also set the limits
+    motif.get_child("envelope.step").set_properties({"value":step,"validation":{"limits":[1,numberSamples]}})
 
 
     if lMax:
