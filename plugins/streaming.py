@@ -7,6 +7,7 @@ from utils import Profiling
 from system import __functioncontrolfolder
 import dates
 import numpy
+import numpy as np
 import copy
 
 class Interface(ABC):
@@ -191,6 +192,112 @@ class Pipeline():
         return data
 
 
+
+
+class Windowing:
+
+    def __init__(self,samplePeriod,stepSize, maxHoleSize, samplePointsPerWindow, debug = False):
+        """
+            Args:
+                windowSize  [int]        the windowLen in samples
+                stepSize    [int]        advance to the next window in samples
+                maxHoleSize [int]        in samples
+                samplingPerio [float]    resampling in seconds
+        :param windowLen:
+        """
+        self.samplePeriod = samplePeriod
+        self.stepSize = stepSize
+        self.maxHoleSize = maxHoleSize
+        self.samplePointsPerWindow = samplePointsPerWindow
+        self.debug = debug
+        self.windowTime = (samplePointsPerWindow-1)*samplePeriod
+
+        self.times = np.asarray([],dtype=np.float64)
+        self.values = np.asarray([], dtype=np.float64)
+        self.currentStartTime = 0
+
+
+
+
+
+    def __append(self,times,values):
+        if self.times.size==0:
+            self.currentStartTime = times[0]
+        self.times = np.append(self.times,times)
+        self.values = np.append(self.values,values)
+
+    def insert(self,times, values):
+        """
+            insert data in the internal cache
+        """
+        self.__append(times,values)
+
+    def get_all(self,times,values):
+        return list(self.iterate(times,values))
+
+    def log(self,msg):
+        if self.debug:
+            print(msg)
+
+    def __sample_times(self,start,stop,step):
+        """
+            creating an array of equidistant points including the stop value i
+            Args:
+                start: first value in the array
+                stop: last value in the array (including)
+                step: step size
+        """
+        c = np.arange(start, stop, step)
+        if c.size == 0:
+            c=np.asarray([start])
+        if c[-1]+step<=stop:            # can including the last ?
+            c=np.append(c,c[-1]+step)   # unfortunately, this requires realloc of the array memory
+        return c
+
+    def iterate(self,times=None,values=None):
+        """
+            we assume :
+             - time-ordered incoming data, so we can simply append
+        """
+
+        # first, update the internal cache memory
+        if type(times) is not type(None):
+            self.__append(times,values)
+
+        #first downsample the current data, so create the target time points
+        samplingTimes = self.__sample_times(self.currentStartTime,self.times[-1],self.samplePeriod)
+        samplingIndices = np.searchsorted(self.times,samplingTimes)
+        #print(f"no sampingIndices {samplingIndices}, sample times {samplingTimes}")
+
+        #now downsample
+        values = self.values[samplingIndices]
+        times = self.times[samplingIndices]
+
+        start = 0 # the startindex of the window
+        while True:
+            if values.size-start >= self.samplePointsPerWindow:
+                timesW = times[start:start+self.samplePointsPerWindow]
+                if self.maxHoleSize:
+                    holes = (timesW[self.maxHoleSize:]-timesW[0:-self.maxHoleSize])==0
+                    if np.any(holes):
+                        #this window has a hole, step forward
+                        #find the last index and advance
+                        #print("hole")
+                        lastZero = np.max(np.argwhere(holes))+self.maxHoleSize
+                        start = start+lastZero
+                        continue
+                yield([samplingTimes[start:start+self.samplePointsPerWindow],values[start:start+self.samplePointsPerWindow]])
+                start=start+self.stepSize
+            else:
+                break
+        # complete all yields, now shift the data
+        # the current start position is the position which did not work, so we take that for the next
+        if start != 0: #if start is zero we did not create any window
+            originalIndex = samplingIndices[start]
+            self.times = self.times[originalIndex:]
+            self.values = self.values[originalIndex:]
+            self.currentStartTime=samplingTimes[1]
+        #print(f"now shift by {start}, the original was {originalIndex}")
 
 
 

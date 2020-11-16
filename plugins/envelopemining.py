@@ -5,6 +5,8 @@ import copy
 from system import __functioncontrolfolder
 import dates
 import numpy
+import streaming
+import json
 
 
 # use a list to avoid loading of this in the model as template
@@ -25,7 +27,8 @@ envelopeMinerTemplate = {
                 {"name": "motif", "type": "referencer"},        # the one motif we are using
                 {"name": "widget","type":"referencer"} ,        # the widget to which this miner belongs which is used (to find the selected motif
                 {"name": "annotations","type":"folder"},        # the results
-                {"name": "results","type":"variable"},
+                {"name": "results","type":"variable"},          # list of results
+                {"name": "maxNumberOfMatches","value":10},      # the maximum number of matches to avoid massive production of annotations
                 mycontrol[0]
             ]
         },
@@ -93,6 +96,16 @@ envelopeMinerTemplate = {
             ]
         },
         {
+            "name": "jump",
+            "type": "function",
+            "functionPointer": "envelopemining.jump",  # filename.functionname
+            "autoReload": True,  # set this to true to reload the module on each execution
+            "children": [
+                {"name":"match","type":"variable"},
+                mycontrol[0]
+            ]
+        },
+        {
             "name": "progress",
             "type": "observer",
             "children": [
@@ -130,16 +143,92 @@ def envelope_miner(functionNode):
     functionNode.get_child("results").set_value([])
     progressNode.set_value(0)
     signal.set_value(None)
-    total = 15
-    for i in range(total):
-        time.sleep(1)
-        progressNode.set_value(float(i)/total)
-        if signal.get_value()=="stop":
-            break
 
-    functionNode.get_child("results").set_value([{"time":"1234","match":1.2},{"time":"1235","match":1.6}])
+    motif = functionNode.get_child("motif").get_target()
+    variable = motif.get_child("variable").get_target()
+    ts = variable.get_time_series()
+
+
+    samplePeriod = motif.get_child("envelope.samplingPeriod").get_value()
+    stepSize = motif.get_child("envelope.step").get_value()
+    samplePointsPerWindow = motif.get_child("envelope.numberSamples").get_value()
+    windowMaker = streaming.Windowing(samplePeriod = samplePeriod, stepSize = stepSize,maxHoleSize=stepSize*5,samplePointsPerWindow=samplePointsPerWindow)
+    numberOfWindows = (ts["__time"][-1] -ts["__time"][0]) /samplePeriod/stepSize #approx
+    windowTime = samplePointsPerWindow*samplePeriod
+
+    logger.debug(f"producing {numberOfWindows} windows..")
+    windowMaker.insert(ts["__time"],ts["values"])
+
+    #get the motif data
+    upper = motif.get_child("envelope."+variable.get_name()+"_limitMax").get_time_series()["values"]
+    lower = motif.get_child("envelope."+variable.get_name()+"_limitMin").get_time_series()["values"]
+    expected  = motif.get_child("envelope."+variable.get_name()+"_expected").get_time_series()["values"]
+
+    matches = []
+    i = 0
+    last = 0
+    for w in windowMaker.iterate():
+        # now we have the window w =[t,v] which is of correct length and resampled, let's compare it
+        # to the motif
+        # first the offset
+        offset = w[1][0]-expected[0]
+        x = w[1] - offset
+        below = upper-x
+        above = x-lower
+        if numpy.all(below>0) and numpy.all(above>0):
+            logger.debug(f"match @ {w[1][0]}")
+            matches.append({"startTime":dates.epochToIsoString(w[0][0],zone='Europe/Berlin'),
+                            "endTime":dates.epochToIsoString(w[0][0]+windowTime,zone='Europe/Berlin'),
+                            "match":numpy.sum(below),
+                            "epochStart":w[0][0],
+                            "epochEnd": w[0][0]+windowTime,
+                            })
+
+        i = i + 1
+        progress = round(float(i)/numberOfWindows) *20
+        if progress != last:
+            progressNode.set_value(float(i)/numberOfWindows)
+            last = progress
+        if signal.get_value() == "stop":
+            break
+    progressNode.set_value(1)
+
+
+    #remove trivial matches inside half of the window len, we just take the first
+    cleanMatches = []
+    tNow = 0
+
+    for m in matches:
+        dif = m["epochStart"]-tNow
+        if dif<(windowTime/2):
+            continue
+        else:
+            cleanMatches.append(m)
+            tNow = m["epochStart"]
+
+
+    annoFolder = functionNode.get_child("annotations")
+    _create_annos_from_matches(annoFolder,cleanMatches)
+
+
+    functionNode.get_child("results").set_value(cleanMatches)
     progressNode.set_value(1)
     return True
+
+
+def _create_annos_from_matches(annoFolder,matches):
+
+    for child in annoFolder.get_children():
+        child.delete()
+
+    for m in matches:
+        newAnno = annoFolder.create_child(type="annotation")
+        anno = {"type":"time",
+                "startTime":m["startTime"],
+                "endTime":m["endTime"],
+                "tags":["pattern_match"]}
+        for k, v in anno.items():
+            newAnno.create_child(properties={"name": k, "value": v, "type": "const"})
 
 
 def create(functionNode):
@@ -271,6 +360,16 @@ def recreate(functionNode):
     return create(functionNode)
 
 
+def jump(functionNode):
+    widget = functionNode.get_parent().get_child("EnvelopeMiner").get_child("widget").get_target()
+    widgetStartTime = dates.date2secs(widget.get_child("startTime").get_value())
+    widgetEndTime = dates.date2secs(widget.get_child("endTime").get_value())
+    match=json.loads(functionNode.get_child("match").get_value())
+    middle = match["epochStart"]+(match["epochEnd"]-match["epochStart"])/2
+    newStart = middle - (widgetEndTime-widgetStartTime)/2
+    newEnd = middle + (widgetEndTime - widgetStartTime) / 2
+    widget.get_child("startTime").set_value(dates.epochToIsoString(newStart))
+    widget.get_child("endTime").set_value(dates.epochToIsoString(newEnd))
 
 def select(functionNode):
     logger = functionNode.get_logger()

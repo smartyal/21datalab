@@ -1671,12 +1671,14 @@ function prepare_context_menu(dataString,modelPath)
 
 function launch_cockpit(url,path,widget)
 {
+    /*
     if (url!="")
     {
         var data=http_get(url);
         $("#cockpit").remove();
         $("#cockpitplaceholder").html(data);
     }
+    */
 
     var cockpit = $('#cockpit');
     cockpit.draggable({handle: ".modal-header"});                                   //make it movable
@@ -1879,6 +1881,21 @@ function initialize_alarms()
         // Do something - event data will be in e.data,
         // message will be of type 'eventType'
     refresh_alarm_table();
+}
+
+
+function confirm_dialog(title,text,buttonText,confirmCallback,parameter)
+{
+    var callback = confirmCallback;
+    $("#confirm-modal-title").empty();
+    $("#confirm-modal-title").append(title);
+    $("#confirm-modal-div").empty();
+    $("#confirm-modal-div").append(text);
+    $("#confirm-modal-ok").empty();
+    $("#confirm-modal-ok").append(buttonText);
+    $("#confirm-modal-ok").unbind();
+    $("#confirm-modal-ok").click( function() {callback(parameter);});
+    $("#confirm-delete").modal('show');
 }
 
 

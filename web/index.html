@@ -380,7 +380,7 @@
             <div class="modal-content">
 
                 <div class="modal-header">
-                    <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                    <h4 class="modal-title" id="confirm-modal-title">Confirm Delete</h4>
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 
                 </div>
@@ -389,14 +389,8 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-12" id ="confirm-modal-div" style="word-break:break-all">
-
                       </div>
                     </div>
-
-
-
-
-
                 </div>
 
                 <div class="modal-footer">
@@ -409,6 +403,688 @@
 
     <div id="cockpitplaceholder">
     <!-- insert cockpit test code here -->
+
+
+
+<div id="cockpit" class="modal fade" role="dialog" path="" style="width:600;height:700">
+
+    <div class="modal-dialog modal-lg" role="dialog" id="cockpitmodal">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="doublechecktitl2e"><i class="fas fa-gamepad"></i> &nbsp &nbsp Envelope Mining Cockpit</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs bg-secondary" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="tab-cockpit-motif-select" data-toggle="tab" href="#cockpit-motif-select" role="tab">
+                            Select Motif
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="tab-cockpit-motif-parameters" data-toggle="tab" href="#cockpit-motif-parameters" role="tab" onclick="envelope_parameters_click()">
+                            Parameters
+                        </a>
+                    </li>
+                    <!--
+                    <li class="nav-item">
+                          <a class="nav-link" id="tab-cockpit-motif-search" data-toggle="tab" href="#cockpit-motif-search" role="tab">
+                            Search Area
+                          </a>
+                    </li>
+                    -->
+
+                    <li class="nav-item">
+                          <a class="nav-link" id="tab-cockpit-motif-run" data-toggle="tab" href="#cockpit-motif-run" role="tab">
+                            Run
+                          </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="myTabContent">
+
+                    <div class="tab-pane fade show active" id="cockpit-motif-select" role="tabpanel">
+                        <br>
+                        <div class="form-group row">
+                            <div class="col-3">Selected Motif Path</div>
+                            <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-path"  readonly style="text-align:right;direction:rtl;"  > </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-3">Selected Motif Variable</div>
+                            <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-variable" readonly> </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col-3">Selected Motif Start Time</div>
+                            <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-start" readonly> </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col-3">Selected Motif End Time</div>
+                            <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-end" readonly> </div>
+                        </div>
+
+                        <!--
+                        <div class="form-group row">
+                            <div class="col-3">Current Selection</div>
+                            <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-current" readonly style="text-align:right;direction:rtl;"> </div>
+                        </div>
+                        -->
+
+                        <p align="right">
+                            <button type="button" class="btn btn-primary"   onclick="cockpit_select_motif()">    take current annotation </button>
+                            <button type="button" class="btn btn-primary"   onclick="cockpit_find_motif()"> <i class="fas fa-search-location"></i>  jump to motif</button>
+                        </p>
+                    </div>
+
+                    <div class="tab-pane fade" id="cockpit-motif-parameters" role="tabpanel">
+                        <br>
+
+                        <div class="form-group row" id="create-envelope-button" style="display:none;">
+                            <div class="col-12">
+                                <p align="right">
+                                    <button type="button" class="btn btn-primary"  onclick="create_envelope()">create envelope from motif</button>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div id="envelope-parameters">
+
+                            <div class="form-group row">
+                                <div class="col-6">Resampling Period</div>
+                                <div class="col-3">
+                                     <input type="range" min="1" max="100" value="50" class="slider" id="envelope-sampling-period" onchange="on_envelope_params_change()" oninput="on_envelope_input_change()">
+                                 </div>
+                                <div class="col-3" id="envelope-sampling-period-value">?</div>
+                            </div>
+
+
+                            <!--
+                            <div class="form-group row">
+                                <div class="col-6">Smoothing Filter</div>
+                                <div class="col-3">
+                                    <input type="range" min="0" max="100" value="20" class="slider" id="envelope-filter" onchange="on_envelope_params_change()">
+                                    <div class="col-3" id="envelope-filter-value">?</div>
+                                </div>
+                            </div>
+                            -->
+
+                            <div class="form-group row">
+                                <div class="col-6">Envelope Width</div>
+                                <div class="col-3">
+                                     <input type="range" min="1" max="100" value="50" class="slider" id="envelope-width" onchange="on_envelope_params_change()" oninput="on_envelope_input_change()">
+                                </div>
+                                <div class="col-3" id="envelope-width-value">?</div>
+                            </div>
+
+                            <div class="form-group row">
+                                <div class="col-6">Mining Step Size </div>
+                                <div class="col-3">
+                                     <input type="range" min="1" max="100" value="1" class="slider" id="envelope-step" onchange="on_envelope_params_change()" oninput="on_envelope_input_change()">
+                                </div>
+                                <div class="col-3" id="envelope-step-value">?</div>
+                            </div>
+
+                            <!--
+                            <div class="form-group row">
+                                <div class="col-6">Dynamic Envelope Width</div>
+                                <div class="col-6">
+                                     <input type="range" min="1" max="100" value="50" class="slider" id="envelope-dynamic-width" onchange="on_envelope_params_change()">
+                                </div>
+                            </div>
+                            -->
+
+                            <div class="form-group row">
+                                <div class="col-12">
+                                    <p align="right">
+                                        <button type="button" class="btn btn-primary"  onclick="cockpit_recreate_envelope()">recreate</button>
+                                        <button type="button" class="btn btn-primary"  onclick="cockpit_delete_envelope()">delete</button>
+                                    </p>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!--
+                    <div class="tab-pane fade" id="cockpit-motif-search" role="tabpanel">
+                        <div class="col-9">
+                        <br>
+                        <select class = "custom-select"   multiple="multiple">
+                            <option >currently not supported 1</option>
+                        </select>
+                        <br><br>
+                        <p align="right">
+                            <button type="button" class="btn btn-primary"   onclick="cockpit_find_motif()"> apply</button>
+                        </p>
+                        </div>
+                    </div>
+                    -->
+
+
+
+
+
+                    <div class="tab-pane fade" id="cockpit-motif-run" role="tabpanel">
+                        <br>
+                        <div class="form-group row">
+                            <div class="col-9"> Envelope Motif Mining </div>
+                            <div class="col-3">
+                                <button type="button" class="btn btn-primary"   onclick="cockpit_motif_run()">  run </button>
+                                <button type="button" class="btn btn-primary"   onclick="cockpit_motif_stop()"> stop </button>
+                            </div>
+                        </div>
+
+
+                        <div class="form-group row">
+                            <div class="col-3"> Select Result </div>
+                            <div class="col-6">
+                                <select class="form-control" id="select-mining-result"></select>
+                            </div>
+                            <div class="col-3">
+                                <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump()">show</button>
+                            </div>
+                        </div>
+
+
+                        <div class="progress">
+                            <div id="cockpit-motif-progress" class="progress-bar" role="progressbar" style="width:50%"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+
+
+
+
+
+
+
+
+            </div>
+            <div class="modal-footer">
+
+                <button type="button" class="btn btn-primary"  data-dismiss="modal" id ="doublecheckButtonSave2">Close</button>
+            </div>
+        </div>
+    <script>
+
+
+
+
+
+
+
+var cockpiteventSource = 0;
+var cockpitPath = "";
+var cockpitWidgetPath = "";
+var envelopeMotif = null;
+
+
+
+
+function cockpit_init(path)
+{
+    //activate first tab
+    $('#tab-cockpit-motif-parameters').removeClass("active");
+    $('#tab-cockpit-motif-run').removeClass("active");
+    $('#tab-cockpit-motif-select').addClass("active");
+
+    $('#cockpit-motif-select').addClass("active show");
+    $('#cockpit-motif-parameters').removeClass("active show");
+    $('#cockpit-motif-run').removeClass("active show");
+
+    cockpitPath = path;
+    $("#cockpit").attr("path",path);
+
+    //$("#cockpit").off('hidden.bs.modal',exit_envelope_cockpit);
+    //$('#cockpit').on('hidden.bs.modal', exit_envelope_cockpit);
+
+    //set the widget
+    cockpitWidgetPath = $("#cockpit").attr("widget");
+    var query = {"deleteExisting":true,"parent":cockpitPath+".EnvelopeMiner.widget","add":[cockpitWidgetPath]};
+    http_post("/_references",JSON.stringify(query),null,null, function(obj,status,data,params)
+    {
+        if (status==201)
+        {
+            cockpit_load_settings();
+            console.log("in cockpit init");
+            cockpit_motif_init_events();
+        }
+        else
+        {
+            console.log("problem init env miner");
+        }
+    });
+
+}
+
+function exit_envelope_cockpit()
+{
+    //hide potentially shown parts
+    let path = cockpitPath+".hide";
+    http_post("/_execute",JSON.stringify(path),null,null,null);
+}
+
+
+function cockpit_apply_settings()
+{
+    let algorithm = JSON.parse($("#cockpit-parameters-algorithm").val());
+    let noise = JSON.parse($("#cockpit-parameters-noise").val());
+    let polynom =  JSON.parse($("#cockpit-parameters-polynom").val());
+    let subsampling = JSON.parse($("#cockpit-parameters-subsampling").val());
+    let threshold =  JSON.parse($("#cockpit-parameters-threshold").val());
+
+    let path =$("#cockpit").attr("path");
+
+    var query = [
+        {"browsePath":path+".MotifMiner.algorithm","value":algorithm},
+        {"browsePath":path+".MotifMiner.addNoise","value":noise},
+        {"browsePath":path+".MotifMiner.subtractPolynomOrder","value":polynom},
+        {"browsePath":path+".MotifMiner.subSamplingFactor","value":subsampling},
+        {"browsePath":path+".peakSearch.threshold","value":threshold}
+    ];
+    http_post("/setProperties",JSON.stringify(query))
+
+}
+
+
+
+
+
+
+
+function cockpit_motif_init_events()
+{
+    cockpiteventSource = new EventSource('/event/stream');
+
+    cockpiteventSource.addEventListener('system.function.complete', (e) => {
+        let data = e.data.replace(/\'/g, "\"");
+        var msg = JSON.parse(data);
+        if (msg.browsePath == cockpitPath+".create") on_create_complete();
+        if (msg.browsePath == cockpitPath+".recreate") on_create_complete();
+        if (msg.browsePath == cockpitPath+".delete") on_create_complete();
+        if (msg.browsePath == cockpitPath+".select") on_select_complete();
+        if (msg.browsePath == cockpitPath+".update") on_update_complete();
+    });
+
+    //init the progress bar
+    cockpiteventSource.addEventListener('envelopemining.progress', (e) => {
+        let data = e.data.replace(/\'/g, "\"");
+        var valeur=JSON.parse(data).value;
+        if ((valeur == 0) || (valeur == 1))
+        {
+            refresh_mining_results(valeur);
+        }
+        //progress bar is automatically updated by the main script, initialize_progress_bar, it controls all progressbars
+    });
+}
+
+
+function on_create_complete()
+{
+    var motifPath = $("#cockpit-select-motif-path").val();
+
+    http_post("_getbranchpretty",motifPath, null,null, function(obj,status,data,params)
+    {
+        if (status == 200)
+        {
+            var data = JSON.parse(data);
+            envelopeMotif = data;
+            envelope_parameters_click(); //update the parameters page
+        }
+    });
+
+}
+
+function on_update_complete()
+{
+    var motifPath = $("#cockpit-select-motif-path").val();
+    http_post("_getbranchpretty",motifPath, null,null, function(obj,status,data,params)
+    {
+        if (status == 200)
+        {
+            var data = JSON.parse(data);
+            envelopeMotif = data;
+            envelope_update_step(envelopeMotif);
+        }
+    });
+}
+
+
+function cockpit_close()
+{
+    //hide potentially shown parts
+    let path = cockpitPath+".hide";
+    http_post("/_execute",JSON.stringify(path),null,null,null);
+    console.log("motif cockpit close");
+    cockpiteventSource.close();
+}
+
+
+function cockpit_motif_run()
+{
+    //start the mining process
+    let path =$("#cockpit").attr("path")+".EnvelopeMiner";
+    http_post("/_execute",JSON.stringify(path),null,null,null);
+}
+
+function cockpit_motif_stop()
+{
+    let path =$("#cockpit").attr("path")+".EnvelopeMiner.control.signal";
+    var query = [{"browsePath":path,"value":"stop"}];
+    http_post("/setProperties",JSON.stringify(query))
+}
+
+
+
+function cockpit_find_motif()
+{
+
+
+    let start  =  $("#cockpit-select-motif-start").val();
+    let end = $("#cockpit-select-motif-end").val();
+
+
+    var query = [{browsePath:cockpitWidgetPath+".startTime",value:start},{browsePath:cockpitWidgetPath+".endTime",value:end}];
+    http_post('/setProperties',JSON.stringify(query), null, null, null);
+
+
+}
+
+function cockpit_motif_jump()
+{
+   //jump to the selected one
+   //https://learn.jquery.com/using-jquery-core/faq/how-do-i-get-the-text-value-of-a-selected-option/
+    var selected = $("#select-mining-result").val();
+    console.log("show motif "+selected);
+
+    var query = [{browsePath:cockpitPath+".jump.match",value:selected}];
+    http_post('/setProperties',JSON.stringify(query), null, null,  (self,status,data,params) => {
+        if (status<400)
+        {
+           http_post("/_execute",JSON.stringify(cockpitPath+".jump"),null,null,null);
+        }
+    });
+}
+
+
+function cockpit_select_motif_old()
+{
+
+    var query=cockpitWidgetPath+".hasAnnotation.selectedAnnotations";
+    http_post('/_getleaves',JSON.stringify(query), null, this, (self,status,data,params) => {
+        if (status==200)
+        {
+            try
+            {
+                let motif = JSON.parse(data)[0]["browsePath"];
+                $("#cockpit-select-motif-path").val(motif);
+                let path =$("#cockpit").attr("path");
+                var query = {"deleteExisting":true,"parent":path+".select.motif","add":[motif]};
+                http_post("/_references",JSON.stringify(query),null,null,null);
+                http_post("/_execute",JSON.stringify(cockpitPath+".select"),null,null,null);
+
+                http_post("/_references",JSON.stringify(query),null,null,null);
+                cockpit_load_settings(); // refresh all values
+            }
+            catch
+            {
+                cockpit_load_settings(); // refresh all values
+            }
+        }
+    });
+}
+
+
+function cockpit_select_motif()
+{
+    http_post("/_execute",JSON.stringify(cockpitPath+".select"),null,null,null);
+}
+
+function on_select_complete()
+{
+   cockpit_load_settings();
+}
+
+function cockpit_load_settings()
+{
+    //first load the info for tab 1
+    http_post("_getbranchpretty",cockpitPath, null,null, function(obj,status,data,params)
+    {
+        if (status==200)
+        {
+            var pipeLineData = JSON.parse(data);
+            var minerData = pipeLineData.EnvelopeMiner;
+            cockpitWidgetPath = minerData.widget[".properties"].leaves[0];
+
+            //first the motif selection data
+            var motifPath = minerData.motif[".properties"].leaves[0];
+            if (motifPath)
+            {
+                $("#cockpit-select-motif-path").val(motifPath);
+
+                http_post("_getbranchpretty",motifPath, null,null, function(obj,status,data,params)
+                {
+                    if (status == 200)
+                    {
+
+                        var data = JSON.parse(data);
+                        envelopeMotif = data;
+                        let variable = data.variable[".properties"].leaves[0];
+                        let start = data.startTime[".properties"].value;
+                        let end = data.endTime[".properties"].value;
+                        $("#cockpit-select-motif-variable").val(variable);
+                        $("#cockpit-select-motif-start").val(start);
+                        $("#cockpit-select-motif-end").val(end);
+
+
+                   }
+                });
+            }
+        }
+    });
+}
+
+
+function envelope_update_step(envelopeMotif)
+{
+    $("#envelope-step").val(envelopeMotif.envelope.step[".properties"].value);
+    $("#envelope-step").attr("min",envelopeMotif.envelope.step[".properties"].validation.limits[0]);
+    $("#envelope-step").attr("max",envelopeMotif.envelope.step[".properties"].validation.limits[1]);
+    $("#envelope-step").attr("step",1);//always one as step in the range slider! this is not the "step" value
+    $("#envelope-step-value").text(envelopeMotif.envelope.step[".properties"].value.toString()); // the numerical value
+}
+
+function envelope_parameters_click()
+{
+
+    //load the settings of the motif or display the create button
+    if (envelopeMotif == null)
+    {
+        //hide all controls
+        $("#create-envelope-button").css("display","none");
+        $("#envelope-parameters").css("display","none");
+    }
+
+    else
+    {
+        if ("envelope" in  envelopeMotif) // is an envelope already?
+        {
+            //this is an existing envelope motif
+            let steps = 50;
+            $("#create-envelope-button").css("display","none");
+
+            //adjust all parameters to the correct values
+            $("#envelope-sampling-period").val(envelopeMotif.envelope.samplingPeriod[".properties"].value);
+            $("#envelope-sampling-period").attr("min",envelopeMotif.envelope.samplingPeriod[".properties"].validation.limits[0]);
+            $("#envelope-sampling-period").attr("max",envelopeMotif.envelope.samplingPeriod[".properties"].validation.limits[1]);
+            $("#envelope-sampling-period").attr("step",(envelopeMotif.envelope.samplingPeriod[".properties"].validation.limits[1]-envelopeMotif.envelope.samplingPeriod[".properties"].validation.limits[0])/steps);
+            $("#envelope-sampling-period-value").text(envelopeMotif.envelope.samplingPeriod[".properties"].value.toString()+" s");
+
+            /*
+            $("#envelope-filter").val(envelopeMotif.envelope.filter[".properties"].value);
+            $("#envelope-filter").attr("min",envelopeMotif.envelope.filter[".properties"].validation.limits[0]);
+            $("#envelope-filter").attr("max",envelopeMotif.envelope.filter[".properties"].validation.limits[1]);
+            $("#envelope-filter").attr("step",(envelopeMotif.envelope.filter[".properties"].validation.limits[1]-envelopeMotif.envelope.filter[".properties"].validation.limits[0])/steps);
+            */
+
+            $("#envelope-width").val(envelopeMotif.envelope.freedom[".properties"].value);
+            $("#envelope-width").attr("min",envelopeMotif.envelope.freedom[".properties"].validation.limits[0]);
+            $("#envelope-width").attr("max",envelopeMotif.envelope.freedom[".properties"].validation.limits[1]);
+            $("#envelope-width").attr("step",(envelopeMotif.envelope.freedom[".properties"].validation.limits[1]-envelopeMotif.envelope.freedom[".properties"].validation.limits[0])/steps);
+            var value = parseFloat(envelopeMotif.envelope.freedom[".properties"].value);
+            $("#envelope-width-value").text((value*100).toString()+"%");
+
+
+            envelope_update_step(envelopeMotif);
+
+
+
+            $("#envelope-parameters").css("display","block");
+
+
+
+
+            //also connect the motif to show it
+            let path = cockpitPath+".show";
+            http_post("/_execute",JSON.stringify(path),null,null,null);
+
+            console.log("this is en envelope");
+        }
+        else
+        {
+            //not yet an envelope
+            $("#create-envelope-button").css("display","block");
+            $("#envelope-parameters").css("display","none");
+        }
+    }
+
+}
+
+
+function update_parameter_values()
+{
+}
+
+
+// create an envelope from a "simple" motif by adding some children
+function create_envelope()
+{
+    //create children with default values
+    let path = cockpitPath+".create";
+    http_post("/_execute",JSON.stringify(path),null,null,null);
+}
+
+function on_envelope_input_change()
+{
+    write_range_slider_numerical_values();
+}
+
+function write_range_slider_numerical_values()
+{
+    var sampling = parseFloat($("#envelope-sampling-period").val());
+    var freedom = parseFloat($("#envelope-width").val());
+    var step = parseFloat($("#envelope-step").val());
+    //this is called when we move the range slider
+    //write the current values to the numerical displays
+    $("#envelope-sampling-period-value").text(sampling.toString()+" s");
+    $("#envelope-width-value").text((freedom*100).toString()+"%");
+    $("#envelope-step-value").text(step.toString());
+}
+
+function on_envelope_params_change()
+{
+    //this is called when we release the range slider
+
+    var sampling = parseFloat($("#envelope-sampling-period").val());
+    var filter = parseFloat($("#envelope-filter").val());
+    var freedom = parseFloat($("#envelope-width").val());
+    var dynFreedom = parseFloat($("#envelope-dynamic-width").val());
+    var step = parseFloat($("#envelope-step").val());
+
+    console.log("on echnge",sampling,filter,freedom,dynFreedom);
+
+    //write the values to the numbers
+    write_range_slider_numerical_values();
+
+    //write the values to the backend
+    var query = [
+        {"id":envelopeMotif.envelope.step[".properties"].id,"value":step},
+        {"id":envelopeMotif.envelope.freedom[".properties"].id,"value":freedom},
+        {"id":envelopeMotif.envelope.samplingPeriod[".properties"].id,"value":sampling}]
+
+    http_post("setProperties",JSON.stringify(query),null,null,function(obj,status,data,params)
+    {
+        if (status<400)
+        {
+            //now also update the time series limit values by calling the update function
+            http_post("/_execute",JSON.stringify(cockpitPath+".update"),null,null,null);
+        }
+    });
+
+
+}
+
+
+function cockpit_delete_envelope()
+{
+
+    confirm_dialog("Delete Envelope","Deletion will include all settings for this envelope","Delete",on_delete_confirm,"my");
+}
+
+
+function on_delete_confirm(x)
+{
+    console.log("delete confirm",x);
+    http_post("/_execute",JSON.stringify(cockpitPath+".delete"),null,null,null);
+}
+
+function cockpit_recreate_envelope()
+{
+    http_post("/_execute",JSON.stringify(cockpitPath+".recreate"),null,null,null);
+}
+
+
+function refresh_mining_results(progress)
+{
+    if (progress == 1)
+    {
+        http_post("_getbranchpretty",cockpitPath+".EnvelopeMiner", null,null, function(obj,status,data,params)
+        {
+            if (status == 200)
+            {
+                var data = JSON.parse(data);
+                $('#select-mining-result').empty();
+                for (var result of data.results['.properties'].value)
+                {
+                    $('#select-mining-result').append("<option>"+JSON.stringify(result)+"</option>");
+                }
+
+            }
+        });
+    }
+    else if (progress == 0)
+    {
+        $('#select-mining-result').empty();
+    }
+
+}
+
+
+
+
+    </script>
+    </div>
+</div>
+
+
+
+
+
     <!-- end of cockpit test code -->
     </div>
 </body>
