@@ -16,9 +16,82 @@ __functioncontrolfolder = {
         {"name":"executionType","type":"const","value":"async"}             # one of ["sync", "async"] sync: is executed on the main server thread, async: in separate thread
     ]
 }
+"""
+systemFolder = {
+    {"name":"system","type":"folder","children":[
+        {"name":"enableTreeUpdateEvents","type":"const","value":True},
+        {"name":"enableAutoReload","type":"const","value":True},
+        {"name": "progress", "type": "observer", "children": [
+            {"name": "enabled", "type": "const", "value": True},  # turn on/off the observer
+            {"name": "triggerCounter", "type": "variable", "value": 0},  # increased on each trigger
+            {"name": "lastTriggerTime", "type": "variable", "value": ""},  # last datetime when it was triggered
+            {"name": "targets", "type": "referencer"},  # pointing to the nodes observed
+            {"name": "properties", "type": "const", "value": ["value"]},
+            {"name": "onTriggerFunction", "type": "referencer"},  # the function(s) to be called when triggering
+            {"name": "triggerSourceId", "type": "variable"},
+            {"name": "hasEvent", "type": "const", "value": True},
+            {"name": "eventString", "type": "const", "value": "system.progress"},  # the string of the event
+            {"name": "eventData", "type": "const", "value": {"text": ""}}
+            ]
+        },
+        {"name": "streaming", "type": "observer", "children": [
+            {"name": "enabled", "type": "const", "value": True},  # turn on/off the observer
+            {"name": "triggerCounter", "type": "variable", "value": 0},  # increased on each trigger
+            {"name": "lastTriggerTime", "type": "variable", "value": ""},  # last datetime when it was triggered
+            {"name": "targets", "type": "referencer","references":["system.timeSeriesValues.targets","system.timeSeriesEvents.targets"]},  # pointing to the nodes observed
+            {"name": "properties", "type": "const", "value": ["stream"]},
+            {"name": "onTriggerFunction", "type": "referencer"},  # the function(s) to be called when triggering
+            {"name": "triggerSourceId", "type": "variable"},
+            {"name": "hasEvent", "type": "const", "value": True},
+            {"name": "eventString", "type": "const", "value": "global.series.stream"},  # the string of the event
+            {"name": "eventData", "type": "const", "value": {"text": ""}}
+            ]
+        },
+        {"name": "annotations", "type": "observer", "children": [
+            {"name": "enabled", "type": "const", "value": True},  # turn on/off the observer
+            {"name": "triggerCounter", "type": "variable", "value": 0},  # increased on each trigger
+            {"name": "lastTriggerTime", "type": "variable", "value": ""},  # last datetime when it was triggered
+            {"name": "targets", "type": "referencer"},
+            {"name": "properties", "type": "const", "value": ["value","children"]},
+            {"name": "onTriggerFunction", "type": "referencer"},  # the function(s) to be called when triggering
+            {"name": "triggerSourceId", "type": "variable"},
+            {"name": "hasEvent", "type": "const", "value": True},
+            {"name": "eventString", "type": "const", "value": "global.annotations"},  # the string of the event
+            {"name": "eventData", "type": "const", "value": {"text": ""}}
+            ]
+         },
+        {"name": "timeSeriesValues", "type": "observer", "children": [
+            {"name": "enabled", "type": "const", "value": True},  # turn on/off the observer
+            {"name": "triggerCounter", "type": "variable", "value": 0},  # increased on each trigger
+            {"name": "lastTriggerTime", "type": "variable", "value": ""},  # last datetime when it was triggered
+            {"name": "targets", "type": "referencer"},
+            {"name": "properties", "type": "const", "value": ["value"]},
+            {"name": "onTriggerFunction", "type": "referencer"},  # the function(s) to be called when triggering
+            {"name": "triggerSourceId", "type": "variable"},
+            {"name": "hasEvent", "type": "const", "value": True},
+            {"name": "eventString", "type": "const", "value": "global.timeSeries.value"},  # the string of the event
+            {"name": "eventData", "type": "const", "value": {"text": ""}}
+            ]
+        },
+        {"name": "eventSeriesValues", "type": "observer", "children": [
+            {"name": "enabled", "type": "const", "value": True},  # turn on/off the observer
+            {"name": "triggerCounter", "type": "variable", "value": 0},  # increased on each trigger
+            {"name": "lastTriggerTime", "type": "variable", "value": ""},  # last datetime when it was triggered
+            {"name": "targets", "type": "referencer"},
+            {"name": "properties", "type": "const", "value": ["value"]},
+            {"name": "onTriggerFunction", "type": "referencer"},  # the function(s) to be called when triggering
+            {"name": "triggerSourceId", "type": "variable"},
+            {"name": "hasEvent", "type": "const", "value": True},
+            {"name": "eventString", "type": "const", "value": "global.eventSeries.value"},  # the string of the event
+            {"name": "eventData", "type": "const", "value": {"text": ""}}
+            ]
+        },
 
 
+    ]}
 
+}
+"""
 
 
 periodicTimer = {

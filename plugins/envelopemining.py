@@ -13,6 +13,14 @@ import json
 mycontrol = [copy.deepcopy(__functioncontrolfolder)]
 mycontrol[0]["children"][-1]["value"]="threaded"
 
+"""
+how to connect the envelope miner:
+- create the template
+- connect the result annotations folder to your annotations referencer
+- put in the cockpit in the context menu
+- set the "defaultParameters" for the envelope useful
+"""
+
 
 envelopeMinerTemplate = {
     "name": "EnvelopeMiner",
@@ -28,7 +36,7 @@ envelopeMinerTemplate = {
                 {"name": "widget","type":"referencer"} ,        # the widget to which this miner belongs which is used (to find the selected motif
                 {"name": "annotations","type":"folder"},        # the results
                 {"name": "results","type":"variable"},          # list of results
-                {"name": "maxNumberOfMatches","value":10},      # the maximum number of matches to avoid massive production of annotations
+                {"name": "maxNumberOfMatches","type":"const","value":0},      # the maximum number of matches to avoid massive production of annotations
                 mycontrol[0]
             ]
         },
@@ -125,6 +133,22 @@ envelopeMinerTemplate = {
                 # the value-dict will be part of the SSE event["data"] , the key "text": , this will appear on the page,
             ]
         },
+        {
+            "name": "userInteraction",
+            "type": "observer",
+            "children": [
+                {"name": "enabled", "type": "const", "value": False},  # turn on/off the observer
+                {"name": "triggerCounter", "type": "variable", "value": 0},  # increased on each trigger
+                {"name": "lastTriggerTime", "type": "variable", "value": ""},  # last datetime when it was triggered
+                {"name": "targets", "type": "referencer"},  # pointing to the nodes observed
+                {"name": "properties", "type": "const", "value": ["value"]},
+                {"name": "onTriggerFunction", "type": "referencer"},  # the function(s) to be called when triggering
+                {"name": "triggerSourceId", "type": "variable"},
+                {"name": "hasEvent", "type": "const", "value": True},
+                {"name": "eventString", "type": "const", "value": "global.timeSeries.values"},  # the string of the event
+                {"name": "eventData", "type": "const", "value": {"text": ""}}
+            ]
+        },
 
         {"name":"defaultParameters","type":"const","value":{"filter":[0,20,2],"samplingPeriod":[1,60,10],"freedom":[0,1,0.5],"dynamicFreedom":[0,1,0.5],"numberSamples":[1,100,1],"step":[1,100,1]}}, # the default contain each three values: min,max,default
         {"name": "cockpit", "type": "const", "value": "/customui/envelopeminer.htm"}  #the cockpit for the motif miner
@@ -132,6 +156,11 @@ envelopeMinerTemplate = {
 }
 
 
+
+def my_date_format(epoch):
+    dat = dates.epochToIsoString(epoch,zone='Europe/Berlin')
+    my = dat[0:10]+"&nbsp&nbsp"+dat[11:19]
+    return my
 
 
 def envelope_miner(functionNode):
@@ -175,13 +204,15 @@ def envelope_miner(functionNode):
         x = w[1] - offset
         below = upper-x
         above = x-lower
+        diff = numpy.sum(numpy.power(x-expected,2))
         if numpy.all(below>0) and numpy.all(above>0):
             logger.debug(f"match @ {w[1][0]}")
-            matches.append({"startTime":dates.epochToIsoString(w[0][0],zone='Europe/Berlin'),
-                            "endTime":dates.epochToIsoString(w[0][0]+windowTime,zone='Europe/Berlin'),
-                            "match":numpy.sum(below),
+            matches.append({"startTime":dates.epochToIsoString(w[0][0],'Europe/Berlin'),
+                            "endTime":dates.epochToIsoString(w[0][0]+windowTime,'Europe/Berlin'),
+                            "match":diff,
                             "epochStart":w[0][0],
                             "epochEnd": w[0][0]+windowTime,
+                            "format":my_date_format(w[0][0])+"&nbsp&nbsp(match=%2.3f)"%diff
                             })
 
         i = i + 1
@@ -191,8 +222,6 @@ def envelope_miner(functionNode):
             last = progress
         if signal.get_value() == "stop":
             break
-    progressNode.set_value(1)
-
 
     #remove trivial matches inside half of the window len, we just take the first
     cleanMatches = []
@@ -201,25 +230,70 @@ def envelope_miner(functionNode):
     for m in matches:
         dif = m["epochStart"]-tNow
         if dif<(windowTime/2):
+            #check if this is a better match
+            if m["match"]<cleanMatches[-1]["match"]:
+                #exchange it to the better match
+                cleanMatches[-1]=m
             continue
         else:
             cleanMatches.append(m)
             tNow = m["epochStart"]
 
 
+    #now sort the matches by match value
+    sortIndices = numpy.argsort([m["match"] for m in cleanMatches])
+    cleanMatches = [cleanMatches[idx] for idx in sortIndices] # fancy indexing via list comprehension
+
+
+    #now create the annotations and notify them in one event
+    myModel = functionNode.get_model()
+    myModel.disable_observers()
     annoFolder = functionNode.get_child("annotations")
-    _create_annos_from_matches(annoFolder,cleanMatches)
+    if functionNode.get_child("maxNumberOfMatches"):
+        maxMatches = functionNode.get_child("maxNumberOfMatches").get_value()
+    else:
+        maxMatches = None
+    if maxMatches != 0:
+        _create_annos_from_matches(annoFolder,cleanMatches,maxMatches=maxMatches)
+    myModel.enable_observers()
+    if maxMatches != 0:
+        myModel.notify_observers(annoFolder.get_id(), "children")
 
 
     functionNode.get_child("results").set_value(cleanMatches)
-    progressNode.set_value(1)
+    if maxMatches != 0:
+        display_matches(functionNode,True)
+    progressNode.set_value(1) # this triggers the results list to be updated int he UI
     return True
 
 
-def _create_annos_from_matches(annoFolder,matches):
+def enable_interaction_observer(functionNode):
+    motif=functionNode.get_parent().get_child("EnvelopeMiner.motif").get_target()
+
+    observer = functionNode.get_parent().get_child("userInteraction")
+    observer.get_child("enabled").set_value(False)
+
+    newRefs = [child for child in motif.get_child("envelope").get_children() if child.get_type()=="timeseries"]
+    print([n.get_name() for n in newRefs])
+    observer.get_child("targets").add_references(newRefs,deleteAll=True)
+    observer.get_child("enabled").set_value(True)
+
+
+def disable_interaction_observer(functionNode):
+    observer = functionNode.get_parent().get_child("userInteraction")
+    observer.get_child("enabled").set_value(False)
+
+
+def _create_annos_from_matches(annoFolder,matches,maxMatches=None):
 
     for child in annoFolder.get_children():
         child.delete()
+
+    if maxMatches == 0:
+        return  #we don't write any annotation
+
+    if maxMatches and maxMatches<len(matches):
+        matches = matches[0:maxMatches]
 
     for m in matches:
         newAnno = annoFolder.create_child(type="annotation")
@@ -319,34 +393,44 @@ def update(functionNode):
     expect = data
     #xxx todo dynamic freedom
 
+    model=functionNode.get_model() #get the model Api
 
-    numberSamples = len(times)
-    motif.get_child("envelope.numberSamples").set_value(numberSamples) # the number of samples
-    #also set the possible step size
-    step = motif.get_child("envelope.step").get_value()
-    if step > numberSamples:
-        step = numberSamples
-    #also set the limits
-    motif.get_child("envelope.step").set_properties({"value":step,"validation":{"limits":[1,numberSamples]}})
+    try:
+        model.disable_observers()
+        numberSamples = len(times)
+        motif.get_child("envelope.numberSamples").set_value(numberSamples) # the number of samples
+        #also set the possible step size
+        step = motif.get_child("envelope.step").get_value()
+        if step > numberSamples:
+            step = numberSamples
+        #also set the limits
+        motif.get_child("envelope.step").set_properties({"value":step,"validation":{"limits":[1,numberSamples]}})
 
 
-    if lMax:
-        lMax.set_time_series(upper,times)
-    if lMin:
-        lMin.set_time_series(lower,times)
-    if exPe:
-        exPe.set_time_series(expect,times)
+        if lMax:
+            lMax.set_time_series(upper,times)
+        if lMin:
+            lMin.set_time_series(lower,times)
+        if exPe:
+            exPe.set_time_series(expect,times)
+    finally:
+        model.enable_observers()
+        model.notify_observers(motif.get_id(), "children")
+        model.notify_observers(lMax.get_id(), "value")
 
     return True
 
 def show(functionNode):
     motif = functionNode.get_parent().get_child("EnvelopeMiner").get_child("motif").get_target()
     widget = functionNode.get_parent().get_child("EnvelopeMiner").get_child("widget").get_target()
+    enable_interaction_observer(functionNode)
     return _connect(motif,widget)
 
 def hide(functionNode):
+    display_matches(functionNode,False)
     motif = functionNode.get_parent().get_child("EnvelopeMiner").get_child("motif").get_target()
     widget = functionNode.get_parent().get_child("EnvelopeMiner").get_child("widget").get_target()
+    disable_interaction_observer(functionNode)
     return _connect(motif,widget,False)
 
 def delete(functionNode):
@@ -364,12 +448,42 @@ def jump(functionNode):
     widget = functionNode.get_parent().get_child("EnvelopeMiner").get_child("widget").get_target()
     widgetStartTime = dates.date2secs(widget.get_child("startTime").get_value())
     widgetEndTime = dates.date2secs(widget.get_child("endTime").get_value())
-    match=json.loads(functionNode.get_child("match").get_value())
+
+    #now get the user selection, it will be the index of the results list
+    matchIndex=int(functionNode.get_child("match").get_value())
+    results = functionNode.get_parent().get_child("EnvelopeMiner").get_child("results").get_value()
+    match = results[matchIndex]
+
     middle = match["epochStart"]+(match["epochEnd"]-match["epochStart"])/2
     newStart = middle - (widgetEndTime-widgetStartTime)/2
     newEnd = middle + (widgetEndTime - widgetStartTime) / 2
     widget.get_child("startTime").set_value(dates.epochToIsoString(newStart))
     widget.get_child("endTime").set_value(dates.epochToIsoString(newEnd))
+    return True
+
+
+def display_matches(functionNode,on=True):
+    widget = functionNode.get_parent().get_child("EnvelopeMiner").get_child("widget").get_target()
+
+    if on:
+        #show the tags
+        tags = widget.get_child("hasAnnotation.visibleTags").get_value()
+        tags["pattern_match"]=True
+        widget.get_child("hasAnnotation.visibleTags").set_value(tags)
+
+        #show annos in general
+        visibleElements = widget.get_child("visibleElements").get_value()
+        visibleElements["annotations"]=True
+        widget.get_child("visibleElements").set_value(visibleElements)
+    else:
+        #hide tags
+        tags = widget.get_child("hasAnnotation.visibleTags").get_value()
+        tags["pattern_match"]=False
+        widget.get_child("hasAnnotation.visibleTags").set_value(tags)
+
+
+
+
 
 def select(functionNode):
     logger = functionNode.get_logger()

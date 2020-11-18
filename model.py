@@ -133,7 +133,7 @@ class Node():
         targetIds = [node.get_id() for node in targetNodes]
         return self.model.add_forward_refs(self.id,targetIds,allowDuplicates=allowDuplicates)
 
-    def del_references(self,targetNodes):
+    def del_references(self,targetNodes=[]):
         """
             remove the forward refs from this node to targetNodes
         :return:
@@ -1454,8 +1454,9 @@ class Model:
                         self.model[toId]["backRefs"].remove(fromId)
                 else:
                     # we delete only one entry
-                    self.model[fromId]["forwardRefs"].remove(toId)
-                    self.model[toId]["backRefs"].remove(fromId)
+                    if toId in self.model[fromId]["forwardRefs"]:
+                        self.model[fromId]["forwardRefs"].remove(toId)
+                        self.model[toId]["backRefs"].remove(fromId)
             self.__notify_observers(fromId,"forwardRefs")
         return True
 
