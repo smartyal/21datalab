@@ -216,14 +216,14 @@ def envelope_miner(functionNode):
                             })
 
         i = i + 1
-        progress = round(float(i)/numberOfWindows) *20
+        progress = round(float(i)/numberOfWindows *20) #only 5% units on the progress bar
         if progress != last:
             progressNode.set_value(float(i)/numberOfWindows)
             last = progress
         if signal.get_value() == "stop":
             break
 
-    #remove trivial matches inside half of the window len, we just take the first
+    #remove trivial matches inside half of the window len, we just take the best inside that area
     cleanMatches = []
     tNow = 0
 
@@ -240,9 +240,18 @@ def envelope_miner(functionNode):
             tNow = m["epochStart"]
 
 
-    #now sort the matches by match value
+    #now sort the matches by match value and rescale them
+    matchlist = numpy.asarray([m["match"] for m in cleanMatches])
+    scaleMin = numpy.max(matchlist)
+    scaleMax = numpy.min(matchlist)
+    matchlist = (matchlist-scaleMin)/(scaleMax-scaleMin)*100
     sortIndices = numpy.argsort([m["match"] for m in cleanMatches])
     cleanMatches = [cleanMatches[idx] for idx in sortIndices] # fancy indexing via list comprehension
+    sortMatches = []
+    for idx in sortIndices:
+        m = cleanMatches[idx]
+        m["format"] = my_date_format(m["epochStart"])+"&nbsp&nbsp(distance=%.3g)"%matchlist[idx]
+        sortMatches.append(cleanMatches[idx])
 
 
     #now create the annotations and notify them in one event
@@ -254,16 +263,17 @@ def envelope_miner(functionNode):
     else:
         maxMatches = None
     if maxMatches != 0:
-        _create_annos_from_matches(annoFolder,cleanMatches,maxMatches=maxMatches)
+        _create_annos_from_matches(annoFolder,sortMatches,maxMatches=maxMatches)
+
+
     myModel.enable_observers()
     if maxMatches != 0:
         myModel.notify_observers(annoFolder.get_id(), "children")
 
-
-    functionNode.get_child("results").set_value(cleanMatches)
+    functionNode.get_child("results").set_value(sortMatches)
     if maxMatches != 0:
         display_matches(functionNode,True)
-    progressNode.set_value(1) # this triggers the results list to be updated int he UI
+    progressNode.set_value(1)
     return True
 
 
@@ -319,6 +329,7 @@ def create(functionNode):
         envelope.create_child(name+"_limitMax",type="timeseries")
         envelope.create_child(name+"_limitMin",type="timeseries")
         envelope.create_child(name+"_expected",type="timeseries")
+
         for k,v in defaults.items():#["samplingPeriod","filter","freedom","dynamicFreedom"]:
             envelope.create_child(k,type="const",value=v[2],properties={"validation":{"limits":[v[0],v[1]]}})
         if not _connect(motif,widget):
@@ -517,8 +528,8 @@ def _connect(motif,widget,connect=True):
                 lMax = child
             elif "_limitMin" in child.get_name():
                 lMin = child
-            elif "_expected" in child.get_name():
-                exPe = child
+            #elif "_expected" in child.get_name():
+            #    exPe = child
         if connect:
             if lMax and lMin:
                 if exPe:
