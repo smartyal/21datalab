@@ -325,9 +325,11 @@ def event_stream_handler():
     # Start processing the new events and send them to the client
     return flask.Response(observer.get_event(), mimetype="text/event-stream")
 
-#@web.route('/',defaults={'path':''},methods=['GET','POST'])
+@web.route('/',defaults={'path':''},methods=['GET','POST'])
 @web.route('/<path:path>', methods=['GET', 'POST'])
 def all(path):
+
+    if path in ["/",""]: path="index.html"
 
     requestStartTime = datetime.datetime.now()
     #print("here")
@@ -350,7 +352,7 @@ def all(path):
             path = path[:-1]
 
         # server all the frontend stuff: js, css etc
-        if any(extension in str(path) for extension in ['.js','.css','.htm','.img','.ico','.png','.gif','.map','.svg','.wof','.ttf']):
+        if any(extension in str(path) for extension in ['.js','.css','.htm','.img','.ico','.png','.gif','.map','.svg','.wof','.ttf','.pdf']):
 
             logger.debug(" serve html "+ str(path))
             if "styles.css" in path:

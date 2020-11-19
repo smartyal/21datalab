@@ -477,6 +477,18 @@ function initialize_context_menu()
         var query = [];
         var nodePath = $('#annotationeditnodepath').text();
         var fields = {"min":"min","max":"max","start":"startTime","end":"endTime","variables":"variables","tags":"tags"};
+
+        //sanity check max>min
+        var max = parseFloat(JSON.parse($('#annotationeditmaxval').val()));
+        var min = parseFloat(JSON.parse($('#annotationeditminval').val()));
+        if (max<min)
+        {
+            $('#annotationeditmaxval').val(min);
+            $('#annotationeditminval').val(max);
+
+        }
+
+
         for (let field in fields)
         {
             let hidden = $("#annotationedit"+field).attr("hidden");
