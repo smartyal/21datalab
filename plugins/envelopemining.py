@@ -37,6 +37,7 @@ envelopeMinerTemplate = {
                 {"name": "annotations","type":"folder"},        # the results
                 {"name": "results","type":"variable"},          # list of results
                 {"name": "maxNumberOfMatches","type":"const","value":0},      # the maximum number of matches to avoid massive production of annotations
+                {"name": "holeSize","type":"const","value":60},                 #the allowed size of a hole in the data to ignore it, larger holes will cause the windowing to skip the area
                 mycontrol[0]
             ]
         },
@@ -175,13 +176,14 @@ def envelope_miner(functionNode):
 
     motif = functionNode.get_child("motif").get_target()
     variable = motif.get_child("variable").get_target()
+    holeSize = functionNode.get_child("holeSize").get_value()
     ts = variable.get_time_series()
 
 
     samplePeriod = motif.get_child("envelope.samplingPeriod").get_value()
     stepSize = motif.get_child("envelope.step").get_value()
     samplePointsPerWindow = motif.get_child("envelope.numberSamples").get_value()
-    windowMaker = streaming.Windowing(samplePeriod = samplePeriod, stepSize = stepSize,maxHoleSize=stepSize*5,samplePointsPerWindow=samplePointsPerWindow)
+    windowMaker = streaming.Windowing(samplePeriod = samplePeriod, stepSize = stepSize,maxHoleSize=holeSize,samplePointsPerWindow=samplePointsPerWindow)
     numberOfWindows = (ts["__time"][-1] -ts["__time"][0]) /samplePeriod/stepSize #approx
     windowTime = samplePointsPerWindow*samplePeriod
 
@@ -242,8 +244,8 @@ def envelope_miner(functionNode):
 
     #now sort the matches by match value and rescale them
     matchlist = numpy.asarray([m["match"] for m in cleanMatches])
-    scaleMin = numpy.max(matchlist)
-    scaleMax = numpy.min(matchlist)
+    scaleMax = numpy.max(matchlist)
+    scaleMin = numpy.min(matchlist)
     matchlist = (matchlist-scaleMin)/(scaleMax-scaleMin)*100
     sortIndices = numpy.argsort([m["match"] for m in cleanMatches])
     cleanMatches = [cleanMatches[idx] for idx in sortIndices] # fancy indexing via list comprehension
