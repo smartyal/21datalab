@@ -195,6 +195,18 @@ class LogFileFollower():
 
 class HTTPOut():
     def __init__(self,url,logger=None,retryPeriod = 1,httpTimeout=20,maxRetries=None):
+        """
+            Args.
+                url: the target url
+                retryPeriod: the timeout for http post retries
+                httpTimeout: the timeout for one http post call
+                maxRetries: the max retries for one packet until discard, set to -1 to retry forever
+        :param url:
+        :param logger:
+        :param retryPeriod:
+        :param httpTimeout:
+        :param maxRetries:
+        """
         self.url = url
         self.logger = logger
         self.q = queue.Queue()
@@ -222,7 +234,7 @@ class HTTPOut():
 
     def send(self,msg):
         self.q.put(msg)
-        if self.logger: self.logger.debug(f"HTTPOut.send, quque size {self.q.qsize()}, msg: {str_lim(msg,100)}")
+        if self.logger: self.logger.debug(f"HTTPOut.send for enqueue, quque size {self.q.qsize()}, msg: {str_lim(msg,100)}")
 
 
     def run(self):
@@ -236,19 +248,18 @@ class HTTPOut():
             try:
                 result = self.__call(msg)
                 if not result:
-                    if type(self.maxRetries) is type(None):
-                        if self.logger: self.logger.debug(f"HTTPOut retries disabled, discard this packet, queue size {self.q.qsize()}")
-                    else:
-                        while not result and self.running:
-                            for i in range(self.maxRetries):
-                                if self.logger: self.logger.debug(f"HTTPOut retry#{i}/{self.maxRetries} packet, queue size {self.q.qsize()}")
-                                result = self.__call(msg)
-                                if result:
-                                    break #the retry loop
-                                time.sleep(self.retryPeriod)
-                            if not result:
-                                if self.logger: self.logger.warning(f"HTTPOut retries exhausted, discard this packet, queue size {self.q.qsize()}")
-                                break #break the retry loop
+                    retries = self.maxRetries
+                    if not retries:
+                        if self.logger: self.logger.warning(f"HTTPOut retries exhausted, discard this packet, queue size {self.q.qsize()}")
+                    while retries!=0 and not result and self.running:
+                        if retries>0:
+                            retries=retries-1
+                        if retries==0:
+                            if self.logger: self.logger.warning( f"HTTPOut retry {retries}/{self.maxRetries} exhausted, discard this packet, queue size {self.q.qsize()}")
+                        else:
+                            if self.logger: self.logger.warning(f"HTTPOut retry {retries}/{self.maxRetries}, queue size {self.q.qsize()}")
+                            result = self.__call(msg) #retry
+
             except Exception as ex:
                 if self.logger: self.logger.error(f"HTTPOut.run {ex}")
 
