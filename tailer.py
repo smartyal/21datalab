@@ -6,7 +6,10 @@ import glob
 import signal
 import argparse
 import logging
-from logging.handlers import RotatingFileHandler
+#from logging.handlers import RotatingFileHandler
+import queue
+import requests
+import datetime
 
 
 
@@ -33,6 +36,7 @@ class DirWatcher():
         self.callback = callback
         self.lastModified = lastModified
         self.logger = logger
+        self.files = []
 
     def get_files(self):
         # returns the list of files matching the match filter sorted by last changed first
@@ -44,6 +48,12 @@ class DirWatcher():
         now = time.time()
         filteredNames = []
         changeTimes = []
+
+        if self.files != [] and not self.lastModified:
+            if set(self.files)==set(files):
+                totalTime = time.time() - start
+                if self.logger: self.logger.debug(f"DirWatcher.get_files shortcut in {totalTime} {len(files)}files")
+                return self.files
         for name in files:
             changeTime = now-os.path.getmtime(name)
 
@@ -58,12 +68,14 @@ class DirWatcher():
             sortedNames.append(filteredNames[index])
 
         totalTime = time.time()-start
-        if self.logger: self.logger.debug(f"DirWatcher.get_files processed in {totalTime}")
+        if self.logger: self.logger.debug(f"DirWatcher.get_files processed in {totalTime} {len(sortedNames)}files")
+
         return sortedNames
 
     def start(self):
         self.files = self.get_files()
-        self.callback(self.files[0])
+        if self.files:
+            self.callback(self.files[0])
         #now start the thread
         self.running = True
         self.thread = threading.Thread(target=self.follow)
@@ -73,10 +85,11 @@ class DirWatcher():
         if self.logger : self.logger.info(f"DirWatcher.start thread")
         while self.running:
             newList = self.get_files()
-            if newList[0]!=self.files[0]:
-                #the file name that has changed last has changed, this is a new log file:
+            if newList:
+                if not self.files or newList[0]!=self.files[0]:
+                    #the file name that has changed last has changed, this is a new log file:
+                    self.callback(newList[0])
                 self.files = newList
-                self.callback(newList[0])
             time.sleep(self.timeout)
         if self.logger: self.logger.info("DirWatcher. thread finished")
 
@@ -164,6 +177,57 @@ class LogFileFollower():
         self.dirWatcher.stop()
         if self.fileWatcher:
             self.fileWatcher.stop()
+
+class HTTPOut():
+    def __init__(self,url,logger=None,retryPeriod = 1,httpTimeout=20):
+        self.url = url
+        self.logger = logger
+        self.q = queue.Queue()
+        self.retryPeriod = retryPeriod
+        self.httpTimeout = httpTimeout
+
+    def start(self):
+        self.thread = threading.Thread(target = self.run)
+        self.thread.start()
+
+    def __call(self,msg):
+        start = time.time()
+        try:
+            res = requests.post(self.url, data=msg, timeout=self.httpTimeout)
+            duration = time.time() - start
+            if res.status_code < 400:
+                if self.logger:self.logger.debug(f"{datetime.datetime.now().isoformat()} successfully called out to {self.url} in {duration} s, responseCode {res.status_code}")
+                return True
+        except Exception as ex:
+            duration = time.time() - start
+            if self.logger: self.logger.warning(f"{datetime.datetime.now().isoformat()} error http post {self.url} in {duration} s, {ex}")
+            pass
+        return False
+
+    def send(self,msg):
+        self.q.put(msg)
+        if self.logger: self.logger.debug(f"HTTPOut.send, quque size {self.q.qsize()}, msg: {msg}")
+
+
+    def run(self):
+        if self.logger:self.logger.info(f"HTTPOut.thread start")
+        self.running = True
+        while self.running:
+            try:
+                msg = self.q.get(timeout=1)
+                result = self.__call(msg)
+                while not result and self.running:
+                    if self.logger:self.logger.debug(f"HTTPOut retry  quque size {self.q.qsize()}")
+                    #retry forever
+                    time.sleep(self.retryPeriod)
+                    result = self.__call(msg)
+            except:
+                pass
+        if self.logger: self.logger.info("HTTPOut.thread finish")
+
+    def stop(self):
+        if self.logger: self.logger.info(f"HTTPOut.stop()")
+        self.running = False
 
 if __name__ == "__main__":
 
