@@ -781,9 +781,7 @@
         "type": "variable",
         "parent": "223",
         "children": [],
-        "backRefs": [
-            "16724694746718170912"
-        ],
+        "backRefs": [],
         "forwardRefs": [],
         "value": 0,
         "browsePath": "root.logisticRegression.control.progress"
@@ -818,7 +816,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 152,
+        "value": 155,
         "browsePath": "root.logisticRegression.control.executionCounter"
     },
     "229": {
@@ -829,7 +827,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.125959,
+        "value": 0.038119,
         "browsePath": "root.logisticRegression.control.lastExecutionDuration"
     },
     "230": {
@@ -840,7 +838,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:31:57.702457",
+        "value": "2020-11-05T23:19:22.553802",
         "browsePath": "root.logisticRegression.control.lastStartTime"
     },
     "231": {
@@ -5692,7 +5690,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 176,
+        "value": 185,
         "browsePath": "root.visualization.workbench.observerVariables.triggerCounter"
     },
     "645": {
@@ -5703,7 +5701,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:32:51.083553",
+        "value": "2020-11-05T23:22:41.449193",
         "browsePath": "root.visualization.workbench.observerVariables.lastTriggerTime"
     },
     "646": {
@@ -5804,7 +5802,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 190,
+        "value": 193,
         "browsePath": "root.visualization.workbench.observerBack.triggerCounter"
     },
     "654": {
@@ -5815,7 +5813,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:31:57.744667",
+        "value": "2020-11-05T23:19:22.583943",
         "browsePath": "root.visualization.workbench.observerBack.lastTriggerTime"
     },
     "655": {
@@ -5916,7 +5914,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 9188,
+        "value": 9196,
         "browsePath": "root.visualization.workbench.observerStream.triggerCounter"
     },
     "663": {
@@ -5927,7 +5925,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:28:55.849896",
+        "value": "2020-11-05T23:22:34.709679",
         "browsePath": "root.visualization.workbench.observerStream.lastTriggerTime"
     },
     "664": {
@@ -6142,7 +6140,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 206,
+        "value": 209,
         "browsePath": "root.visualization.selfservice0.observerBack.triggerCounter"
     },
     "681": {
@@ -6153,7 +6151,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:31:57.742668",
+        "value": "2020-11-05T23:19:22.583943",
         "browsePath": "root.visualization.selfservice0.observerBack.lastTriggerTime"
     },
     "682": {
@@ -6254,7 +6252,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 9110,
+        "value": 9111,
         "browsePath": "root.visualization.selfservice0.observerStream.triggerCounter"
     },
     "690": {
@@ -6265,7 +6263,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:27:44.122960",
+        "value": "2020-11-05T23:19:51.414351",
         "browsePath": "root.visualization.selfservice0.observerStream.lastTriggerTime"
     },
     "691": {
@@ -6480,7 +6478,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 7,
+        "value": 10,
         "browsePath": "root.visualization.selfservice1.observerBack.triggerCounter"
     },
     "708": {
@@ -6491,7 +6489,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:31:57.745666",
+        "value": "2020-11-05T23:19:22.583943",
         "browsePath": "root.visualization.selfservice1.observerBack.lastTriggerTime"
     },
     "709": {
@@ -6592,7 +6590,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 9110,
+        "value": 9111,
         "browsePath": "root.visualization.selfservice1.observerStream.triggerCounter"
     },
     "717": {
@@ -6603,7 +6601,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:27:44.123958",
+        "value": "2020-11-05T23:19:51.414351",
         "browsePath": "root.visualization.selfservice1.observerStream.lastTriggerTime"
     },
     "718": {
@@ -6818,7 +6816,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 7,
+        "value": 10,
         "browsePath": "root.visualization.selfservice2.observerBack.triggerCounter"
     },
     "735": {
@@ -6829,7 +6827,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:31:57.746665",
+        "value": "2020-11-05T23:19:22.583943",
         "browsePath": "root.visualization.selfservice2.observerBack.lastTriggerTime"
     },
     "736": {
@@ -6930,7 +6928,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 9110,
+        "value": 9111,
         "browsePath": "root.visualization.selfservice2.observerStream.triggerCounter"
     },
     "744": {
@@ -6941,7 +6939,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:27:44.121951",
+        "value": "2020-11-05T23:19:51.406340",
         "browsePath": "root.visualization.selfservice2.observerStream.lastTriggerTime"
     },
     "745": {
@@ -7156,7 +7154,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 7,
+        "value": 10,
         "browsePath": "root.visualization.selfservice3.observerBack.triggerCounter"
     },
     "762": {
@@ -7167,7 +7165,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:31:57.742668",
+        "value": "2020-11-05T23:19:22.583943",
         "browsePath": "root.visualization.selfservice3.observerBack.lastTriggerTime"
     },
     "763": {
@@ -7268,7 +7266,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 9110,
+        "value": 9111,
         "browsePath": "root.visualization.selfservice3.observerStream.triggerCounter"
     },
     "771": {
@@ -7279,7 +7277,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:27:44.126955",
+        "value": "2020-11-05T23:19:51.406340",
         "browsePath": "root.visualization.selfservice3.observerStream.lastTriggerTime"
     },
     "772": {
@@ -7494,7 +7492,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 7,
+        "value": 10,
         "browsePath": "root.visualization.selfservice4.observerBack.triggerCounter"
     },
     "789": {
@@ -7505,7 +7503,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:31:57.740213",
+        "value": "2020-11-05T23:19:22.583943",
         "browsePath": "root.visualization.selfservice4.observerBack.lastTriggerTime"
     },
     "790": {
@@ -7606,7 +7604,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 9110,
+        "value": 9111,
         "browsePath": "root.visualization.selfservice4.observerStream.triggerCounter"
     },
     "798": {
@@ -7617,7 +7615,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:27:44.125956",
+        "value": "2020-11-05T23:19:51.406340",
         "browsePath": "root.visualization.selfservice4.observerStream.lastTriggerTime"
     },
     "799": {
@@ -7832,7 +7830,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 7,
+        "value": 10,
         "browsePath": "root.visualization.selfservice5.observerBack.triggerCounter"
     },
     "816": {
@@ -7843,7 +7841,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:31:57.743668",
+        "value": "2020-11-05T23:19:22.583943",
         "browsePath": "root.visualization.selfservice5.observerBack.lastTriggerTime"
     },
     "817": {
@@ -7944,7 +7942,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 9110,
+        "value": 9111,
         "browsePath": "root.visualization.selfservice5.observerStream.triggerCounter"
     },
     "825": {
@@ -7955,7 +7953,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:27:44.125956",
+        "value": "2020-11-05T23:19:51.414351",
         "browsePath": "root.visualization.selfservice5.observerStream.lastTriggerTime"
     },
     "826": {
@@ -8235,7 +8233,6 @@
         "backRefs": [],
         "forwardRefs": [
             "218",
-            "15325922506801289201",
             "18133595189220387199",
             "3914545116652997264"
         ],
@@ -8292,7 +8289,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 1612,
+        "value": 1620,
         "browsePath": "root.visualization.workbench.observerAnnotations.triggerCounter"
     },
     "13646722735659859395": {
@@ -8303,7 +8300,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:31:55.293620",
+        "value": "2020-11-05T23:22:31.771633",
         "browsePath": "root.visualization.workbench.observerAnnotations.lastTriggerTime"
     },
     "12416654533870087467": {
@@ -8406,7 +8403,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 1740,
+        "value": 1779,
         "browsePath": "root.visualization.workbench.observerVisibleElements.triggerCounter"
     },
     "15683200324838571042": {
@@ -8417,7 +8414,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T15:02:50.532067",
+        "value": "2020-11-05T23:22:41.188634",
         "browsePath": "root.visualization.workbench.observerVisibleElements.lastTriggerTime"
     },
     "13071347114919871021": {
@@ -8498,7 +8495,6 @@
             "16439521956232905422"
         ],
         "backRefs": [
-            "14814504338557830832",
             "15641223121457533597",
             "2884170151358687290",
             "1005617448869180260",
@@ -8662,7 +8658,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 3308,
+        "value": 3309,
         "browsePath": "root.thresholdScorer.control.executionCounter"
     },
     "5131199841340550266": {
@@ -8673,7 +8669,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.059113,
+        "value": 0.024016,
         "browsePath": "root.thresholdScorer.control.lastExecutionDuration"
     },
     "8402630191021691744": {
@@ -8684,7 +8680,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:27:44.085202",
+        "value": "2020-11-05T23:19:51.390335",
         "browsePath": "root.thresholdScorer.control.lastStartTime"
     },
     "16087097520903802600": {
@@ -8737,7 +8733,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 12251,
+        "value": 12267,
         "browsePath": "root.visualization.workbench.observerValues.triggerCounter"
     },
     "5201468128014100031": {
@@ -8748,7 +8744,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:28:55.869410",
+        "value": "2020-11-05T23:22:34.717676",
         "browsePath": "root.visualization.workbench.observerValues.lastTriggerTime"
     },
     "10029816200158863035": {
@@ -8825,7 +8821,7 @@
         "value": {
             "busy": true,
             "region": false,
-            "free": true,
+            "free": false,
             "pattern_match": true
         },
         "browsePath": "root.visualization.workbench.hasAnnotation.visibleTags"
@@ -9080,7 +9076,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2015-02-13T02:32:53.308061+01:00",
+        "value": "2015-02-13T05:24:43.140129+01:00",
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.019f278c.endTime"
     },
     "6036174499824652432": {
@@ -11940,7 +11936,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2015-02-12T10:21:45.817109+01:00",
+        "value": "2015-02-12T05:52:48.688654+01:00",
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.9c911de0.startTime"
     },
     "9397435188946551075": {
@@ -12020,7 +12016,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 20728,
+        "value": 20769,
         "browsePath": "root.system.progress.triggerCounter"
     },
     "10857910486653991896": {
@@ -12031,7 +12027,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:31:57.834412",
+        "value": "2020-11-05T23:22:34.725677",
         "browsePath": "root.system.progress.lastTriggerTime"
     },
     "16724694746718170912": {
@@ -12042,7 +12038,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [
-            "225"
+            "8039683095335665683"
         ],
         "value": null,
         "browsePath": "root.system.progress.targets"
@@ -12140,7 +12136,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 32.445182879377434,
+        "value": 32.550612710765236,
         "browsePath": "root.visualization.workbench.hasAnnotation.newAnnotations.2a08747b.max"
     },
     "8645534284337143559": {
@@ -12209,7 +12205,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 58,
+        "value": 61,
         "browsePath": "root.system.relevantChanges.triggerCounter"
     },
     "12027250451543955530": {
@@ -12220,7 +12216,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:31:57.746665",
+        "value": "2020-11-05T23:19:22.583943",
         "browsePath": "root.system.relevantChanges.lastTriggerTime"
     },
     "13880253212629121141": {
@@ -18359,7 +18355,9 @@
         "type": "variable",
         "parent": "15599358538094682379",
         "children": [],
-        "backRefs": [],
+        "backRefs": [
+            "16724694746718170912"
+        ],
         "forwardRefs": [],
         "value": 0,
         "browsePath": "root.new_ThresholdScorer_b9dd.scoreAll.control.progress"
@@ -18394,7 +18392,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 2,
+        "value": 6,
         "browsePath": "root.new_ThresholdScorer_b9dd.scoreAll.control.executionCounter"
     },
     "8085257981948681931": {
@@ -18405,7 +18403,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": 0.107493,
+        "value": 0.042981,
         "browsePath": "root.new_ThresholdScorer_b9dd.scoreAll.control.lastExecutionDuration"
     },
     "1433504294612000351": {
@@ -18416,7 +18414,7 @@
         "children": [],
         "backRefs": [],
         "forwardRefs": [],
-        "value": "2020-11-02T14:28:55.778998",
+        "value": "2020-11-05T23:22:34.674695",
         "browsePath": "root.new_ThresholdScorer_b9dd.scoreAll.control.lastStartTime"
     },
     "7981999005920235630": {

@@ -28,3 +28,4 @@ web/plugins
 /web/customui/*.old
 /web/customui/hybif6.html
 /log/whatsinsidehere.txt
+/upload/whatsinsidehere.txt
