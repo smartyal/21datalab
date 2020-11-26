@@ -55,6 +55,7 @@ class Profiling:
 def str_lim(obj,lim):
     stri = str(obj)
     if len(stri)>lim:
-        return stri[:lim]+"..."
+        half = round(lim/2)
+        return stri[:half]+"..."+stri[-half:]
     else:
         return stri

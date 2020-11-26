@@ -11,6 +11,15 @@ import queue
 import requests
 import datetime
 
+def str_lim(obj,lim):
+    stri = str(obj)
+    stri=stri.replace('\n','')
+    if len(stri)>lim:
+        half = round(lim/2)
+        return stri[:half]+"..."+stri[-half:]
+    else:
+        return stri
+
 
 
 class DirWatcher():
@@ -68,7 +77,7 @@ class DirWatcher():
             sortedNames.append(filteredNames[index])
 
         totalTime = time.time()-start
-        if self.logger: self.logger.debug(f"DirWatcher.get_files processed in {totalTime} {len(sortedNames)}files")
+        if self.logger: self.logger.debug(f"DirWatcher.get_files processed in {totalTime} {len(sortedNames)} files")
 
         return sortedNames
 
@@ -120,14 +129,20 @@ class FileTailer():
                 break
 
     def follow(self):
+        buffer = ""
         if self.logger: self.logger.info(f"FileTailer.follow {self.fileName}")
         while self.running:
             newLine = self.file.readline()
             if not newLine:
                 time.sleep(self.timeout)
             else:
-                if self.cb:
-                    self.cb(newLine)
+                buffer += newLine
+                if buffer.endswith('\n'):
+                    if self.cb:
+                        self.cb(buffer)
+                    buffer = ""#reset buffer
+                else:
+                    if self.logger: self.logger.info(f"FileTailer.follow. line not complete")
         self.file.close()
         if self.logger: self.logger.info(f"FileTailer.follow.threadFinish {self.fileName}")
 
@@ -155,7 +170,7 @@ class LogFileFollower():
         self.dirWatcher.start()
 
     def on_new_log_line(self,line):
-        if self.logger: self.logger.debug(f"LogFileFollower.on_new_log_line {line} ")
+        if self.logger: self.logger.debug(f"LogFileFollower.on_new_log_line {str_lim(line,100)} ")
         if self.dataCb:
             self.dataCb(line)
 
@@ -197,17 +212,17 @@ class HTTPOut():
             res = requests.post(self.url, data=msg, timeout=self.httpTimeout)
             duration = time.time() - start
             if res.status_code < 400:
-                if self.logger:self.logger.debug(f"{datetime.datetime.now().isoformat()} successfully called out to {self.url} in {duration} s, responseCode {res.status_code}")
+                if self.logger:self.logger.debug(f"successfully called out to {self.url} in {duration} s, responseCode {res.status_code}")
                 return True
         except Exception as ex:
             duration = time.time() - start
-            if self.logger: self.logger.warning(f"{datetime.datetime.now().isoformat()} error http post {self.url} in {duration} s, {ex}")
+            if self.logger: self.logger.warning(f"error http post {self.url} in {duration} s, {ex}")
             pass
         return False
 
     def send(self,msg):
         self.q.put(msg)
-        if self.logger: self.logger.debug(f"HTTPOut.send, quque size {self.q.qsize()}, msg: {msg}")
+        if self.logger: self.logger.debug(f"HTTPOut.send, quque size {self.q.qsize()}, msg: {str_lim(msg,100)}")
 
 
     def run(self):
