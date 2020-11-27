@@ -85,10 +85,13 @@ class DirWatcher():
         self.files = self.get_files()
         if self.files:
             self.callback(self.files[0])
-        #now start the thread for repeated check for new files
-        self.running = True
-        self.thread = threading.Thread(target=self.follow)
-        self.thread.start()
+        #now start the thread for repeated check for new files only if we have a wildcard in the name
+        if "*" in self.dir or "?" in self.dir:
+            self.running = True
+            self.thread = threading.Thread(target=self.follow)
+            self.thread.start()
+        else:
+            if self.logger: self.logger.info(f"DirWatcher.start we DONT start the watch thread, as there is only one file")
 
     def follow(self):
         if self.logger : self.logger.info(f"DirWatcher.start thread")
