@@ -85,7 +85,7 @@ class DirWatcher():
         self.files = self.get_files()
         if self.files:
             self.callback(self.files[0])
-        #now start the thread
+        #now start the thread for repeated check for new files
         self.running = True
         self.thread = threading.Thread(target=self.follow)
         self.thread.start()
@@ -150,6 +150,10 @@ class FileTailer():
         self.running = False
 
     def get_file_name(self):
+        name = self.fileName.split('\\')[-1].split('/')[-1]
+        return name
+
+    def get_full_file_name(self):
         return self.fileName
 
 class LogFileFollower():
@@ -170,7 +174,7 @@ class LogFileFollower():
         self.dirWatcher.start()
 
     def on_new_log_line(self,line):
-        if self.logger: self.logger.debug(f"LogFileFollower.on_new_log_line {str_lim(line,100)} ")
+        if self.logger: self.logger.debug(f"LogFileFollower.on_new_log_line ({self.fileWatcher.get_file_name()}): {str_lim(line,100)} ")
         if self.dataCb:
             self.dataCb(line)
 
