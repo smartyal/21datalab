@@ -566,15 +566,17 @@ class StreamAlarming(streaming.Interface):
 
     def __generate_alarm(self,name,values,times):
 
+        alarmTime = dates.epochToIsoString(times[0],zone='Europe/Berlin')
         messagetemplate = {
             "name":None,"type":"alarm","children":[
                 {"name": "text","type":"const","value":f"Variable {name} out of threshold"},
                 {"name": "level", "type": "const", "value":"automatic"},
                 {"name": "confirmed", "type": "const", "value": "unconfirmed","enumValues":["unconfirmed","critical","continue","accepted"]},
-                {"name": "startTime", "type": "const", "value": dates.epochToIsoString(times[0])},
+                {"name": "startTime", "type": "const", "value": alarmTime},
                 {"name": "endTime", "type": "const", "value": None},
                 {"name": "confirmTime", "type": "const", "value": None},
-                {"name": "mustEscalate", "type": "const", "value":True}
+                {"name": "mustEscalate", "type": "const", "value":True},
+                {"name": "summary","type":"const","value":f"21data alarm: Variable {name} out of threshold ({values[numpy.isfinite(values)]}) at {alarmTime}"}
             ]
         }
 

@@ -148,6 +148,9 @@ def check_mail_sending(functionNode):
             body = {child.get_name():child.get_value() for child in msg.get_children()}
             logger.debug(f"email body {body}")
             sendMailFunction.get_child("body").set_value(json.dumps(body,indent=4))
+            #now check for an alternative header of the email
+            if msg.get_child("summary"):
+                sendMailFunction.get_child("subject").set_value(msg.get_child("summary").get_value())
             try:
                 model.disable_observers()
                 mustSend.set_value(False) # flag this message as done
@@ -184,6 +187,10 @@ def check_excalation(functionNode):
             body = {child.get_name():child.get_value() for child in msg.get_children()}
             logger.debug(f"email body {body}")
             sendMailFunction.get_child("body").set_value(json.dumps(body,indent=4))
+            #now check for an alternative header of the email
+            if msg.get_child("summary"):
+                sendMailFunction.get_child("subject").set_value(msg.get_child("summary").get_value())
+
             try:
                 model.disable_observers()
                 mustSend.set_value(False) # flag this message as done
