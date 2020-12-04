@@ -1217,31 +1217,35 @@ function prepare_context_menu(dataString,modelPath)
 
     for (tag in visibleTags)
     {
-        let icon = "far fa-square";
-        if (visibleTags[tag]== true) {icon = "far fa-check-square";}
-        let mycolor = colors[tag].color;
-        let mypattern = colors[tag].pattern;
-        if (mypattern == null) mypattern = "&nbsp &nbsp &nbsp";
-        else mypattern = "&nbsp "+mypattern + " &nbsp";
-        let mycolorString = `<span style='background-color:${mycolor};text-color:red;font-family:monospace;'> <font color='white'> ${mypattern}</font> </span> <i> &nbsp ${tag}</i>`;
-        //let mycolorString = `${tag} &nbsp <span style='textcolor:red;background-color:${mycolor}'> ${mypattern}  </span>`;
+        try
+        {
+            let icon = "far fa-square";
+            if (visibleTags[tag]== true) {icon = "far fa-check-square";}
+            let mycolor = colors[tag].color;
+            let mypattern = colors[tag].pattern;
+            if (mypattern == null) mypattern = "&nbsp &nbsp &nbsp";
+            else mypattern = "&nbsp "+mypattern + " &nbsp";
+            let mycolorString = `<span style='background-color:${mycolor};text-color:red;font-family:monospace;'> <font color='white'> ${mypattern}</font> </span> <i> &nbsp ${tag}</i>`;
+            //let mycolorString = `${tag} &nbsp <span style='textcolor:red;background-color:${mycolor}'> ${mypattern}  </span>`;
 
-        var entry = {
-            icon:icon,
-            label:mycolorString,
-            entry:tag,
-            data:visibleTags,
-            modelPath:modelPath,
-            currentValue:visibleTags[tag],
-            action: function(option, contextMenuIndex, optionIndex){
-                    var opt = option;
-                    var idx = contextMenuIndex; var
-                    optIdx = optionIndex;
-                    context_menu_tag_select_click(opt,idx,optIdx);
-                }
+            var entry = {
+                icon:icon,
+                label:mycolorString,
+                entry:tag,
+                data:visibleTags,
+                modelPath:modelPath,
+                currentValue:visibleTags[tag],
+                action: function(option, contextMenuIndex, optionIndex){
+                        var opt = option;
+                        var idx = contextMenuIndex; var
+                        optIdx = optionIndex;
+                        context_menu_tag_select_click(opt,idx,optIdx);
+                    }
+            }
+
+            annotationsSubmenu.push(entry);
         }
-
-        annotationsSubmenu.push(entry);
+        catch {};
     }
 
 
@@ -1441,27 +1445,29 @@ function prepare_context_menu(dataString,modelPath)
     let newAnnnotationsSubmenu = [];
     for (tag in visibleTags)
     {
-        let mycolor = colors[tag].color;
-        let mypattern = colors[tag].pattern;
-        if (mypattern == null) mypattern = "&nbsp &nbsp &nbsp";
-        else mypattern = "&nbsp "+mypattern + " &nbsp";
-        //let mycolorString = `${tag} &nbsp <span style='background-color:${mycolor}'> ${mypattern} </span>`;
-        let mycolorString = `<span style='background-color:${mycolor};text-color:red;font-family:monospace'> <font color='white'> ${mypattern}</font> </span> &nbsp ${tag}`;
+        try{
+            let mycolor = colors[tag].color;
+            let mypattern = colors[tag].pattern;
+            if (mypattern == null) mypattern = "&nbsp &nbsp &nbsp";
+            else mypattern = "&nbsp "+mypattern + " &nbsp";
+            //let mycolorString = `${tag} &nbsp <span style='background-color:${mycolor}'> ${mypattern} </span>`;
+            let mycolorString = `<span style='background-color:${mycolor};text-color:red;font-family:monospace'> <font color='white'> ${mypattern}</font> </span> &nbsp ${tag}`;
 
-        var entry = {
-            label:mycolorString,
-            data:visibleTags,
-            modelPath:modelPath,
-            setValue:{type:"time",tag:tag},
-            action: function(option, contextMenuIndex, optionIndex){
-                    var opt = option;
-                    var idx = contextMenuIndex;
-                    var optIdx = optionIndex;
-                    context_menu_new_annotation_click(opt,idx,optIdx);
-                }
+            var entry = {
+                label:mycolorString,
+                data:visibleTags,
+                modelPath:modelPath,
+                setValue:{type:"time",tag:tag},
+                action: function(option, contextMenuIndex, optionIndex){
+                        var opt = option;
+                        var idx = contextMenuIndex;
+                        var optIdx = optionIndex;
+                        context_menu_new_annotation_click(opt,idx,optIdx);
+                    }
+            }
+            newAnnnotationsSubmenu.push(entry);
         }
-
-        newAnnnotationsSubmenu.push(entry);
+        catch{};
     }
 
     let newThresholdsSubmenu = [];

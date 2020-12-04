@@ -25,7 +25,7 @@ sendEmailWsdl = {
      "children":[
         {"name":"URL","type":"const","value":"http://domain:port/sendapp?wsdl"},
         {"name":"fromAddress","type":"variable","value":"noreply@domain.com"},
-        {"name":"toAddress","type":"variable","value":"receiver@domain.com"},
+        {"name":"toAddress","type":"variable","value":"receiver@domain.com"}, # multiple addresses like "albert@21data.io, receiver@domain.com"
         {"name":"subject","type":"variable","value":"alarm email from 21data workbench"},
         {"name":"body","type":"variable","value":"this is an automatic mail from the 21data workbench. re-thinking self service analytics"},
         __functioncontrolfolder
