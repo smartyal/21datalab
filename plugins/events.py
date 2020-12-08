@@ -5,6 +5,7 @@ import time
 import dates
 import numpy
 import streaming
+import re
 
 
 
@@ -19,7 +20,7 @@ events2Annotation = {
         {"name": "processedUntil","type":"variable","value":None},      # holds the time until the differential process has run, it is the timestamp of the last processed event
         {"name": "differential","type":"const","value":False},          #set true if differential execution is wanted
         {"name": "interleaved","type":"const","value":False},           #when set to true, we allow interleaved events, that means one event is running while another starts, if set true this is not allowed and events can never overlap
-        {"name": "eventSelection","type":"const","value":{              #name of the resulting anno: [start,end] names of the events
+        {"name": "eventSelection","type":"const","value":{              #configuration how to translate events to states: {"state1": {"start":["ev1","ev11"],"end":["ev1_end"],"ignore":["*"] wildcards *,? allowed
                 "busy": ["busy_start","busy_end"],
                 "free": ["free_start","free_end"]}},
         __functioncontrolfolder
@@ -435,8 +436,32 @@ class Events2StateClass(streaming.Interface):
         #   we will select the "machine1.init and the "macine1.op2" events and name the annotation type as Preparation, Printing
 
         self.eventSelection = self.objectNode.get_child("eventSelection").get_value()
-        self.startEvents = {v[0]:k for k, v in self.eventSelection.items()}  # always the first event startEvent:machinestate
-        self.endEvents = {v[1]:k for k, v in self.eventSelection.items()}  # always the second event
+
+        """
+            supporting both the old and the new format:
+            old format: 
+              - {"state":["startevent","endevent"],"state2":["startEvent2","endevent2"]
+              - restarts are anomalies
+              - any intermediate event is allowed
+            new format:
+                {"state":{"start":["startevent"],"end":["endevent"],"ignore":["*ignoreevents*"]
+                 "state2:{"start":["startevent2"],"end":["endevent2","endevent3"], ignore=[]
+              - start and end events can be more than one per state
+              - allowed intermediate events must be given, else it is anomaly
+              
+        """
+        if type(self.eventSelection[list(self.eventSelection)[0]]) is list:
+            #old format
+            #convert the old to the new format
+            newFormat = {}
+            for k,v in self.eventSelection.items():
+                newFormat[k]={"start":[v[0]],"end":[v[1]],"ignore":["*"]}
+            self.eventSelection=newFormat
+            self.objectNode.get_child("eventSelection").set_value(newFormat)  #write new format back
+
+        # format: startEvent: machinestate
+        self.startEvents = {ev:state for state,definition in self.eventSelection.items() for ev in definition["start"]}
+        self.endEvents =   {ev:state for state,definition in self.eventSelection.items() for ev in definition["end"]}
 
         #self.state = {}
         self.openAnnos = {}
@@ -470,6 +495,31 @@ class Events2StateClass(streaming.Interface):
                 anno.delete()
 
 
+    def __match(self,ev, matchDefinition):
+        """
+            the matchDefinition is a list of string with wildcards *,? allowed
+            the ev is the string to match
+            example
+                ev = "event2"
+                matchDefinitino is ["start","event*"]
+                this is a match because second definitino matches
+        """
+        if not type(matchDefinition) is list:
+            matchDefinition=[matchDefinition]
+        for match in matchDefinition:
+            if ev == match:
+                return True
+            if "?" in match or "*" in match:
+                # we must check the wildcards
+                match = match.replace("*", ".*")    #zero or more any char
+                match = match.replace("?", ".")     #one of any char
+                reg = re.compile(match+"$")         #insert the end to avoid matching "test?" to "test3333"
+                result = bool(re.match(reg,ev))
+                if result:
+                    return True
+        return False
+
+
     def process_event_series(self,times,eventStrings):
         """
             process one event series
@@ -486,45 +536,50 @@ class Events2StateClass(streaming.Interface):
         for index in range(len(times)):
             evStr = eventStrings[index]
             tim = times[index]
-            if evStr not in self.startEvents and evStr not in self.endEvents:
-                self.logger.debug(f"event {evStr} unknown, ignore")
-            if evStr in self.startEvents:
-                # this is a start of a new event
-                tag = self.startEvents[evStr]
-                self.logger.debug(f" {evStr} is start of {tag}")
-                if tag in self.openAnnos:
-                    # we are in this state already, and get a repeated start event, this is an error
-                    # so we submit an anomaly annotation
-                    anno = self.openAnnos[tag].copy() # take the annotation away from the open list
-                    del self.openAnnos[tag]
+
+            #first check in the running states, if we have to do something
+
+            for tag in list(self.openAnnos): #create a list() copy for iteration
+                # this is a running state, check for restart, end or error
+                if self.__match(evStr, self.eventSelection[tag]["start"]):
+                    # a restart event so we submit an anomaly annotation
+                    anno = self.openAnnos[tag].copy()  # take the annotation away from the open list
+                    del self.openAnnos[tag]  # remove this from the running state list
 
                     anno["endTime"] = dates.epochToIsoString(tim, zone='Europe/Berlin')
                     anno["tags"] = ["anomaly", tag]
                     newAnnotations.append(anno)  # put the anomaly node
 
-                self.openAnnos[tag]={
-                    "type": "time",
-                    "endTime": dates.now_iso(),
-                    "startTime": dates.epochToIsoString(tim, zone='Europe/Berlin'),
-                    "tags":[tag,"open"]
-                }
-
-
-
-            # not an else if, because it can be in both start and end events
-            if evStr in self.endEvents:
-                tag = self.endEvents[evStr]
-                self.logger.debug(f" {evStr} is end of {tag}")
-                # this is an end event, see if we have a matching running state
-                if tag in self.openAnnos:
+                elif self.__match(evStr,self.eventSelection[tag]["end"]):
+                    # close the annotation, this is a correct standard end event
                     anno = self.openAnnos[tag].copy()
                     del  self.openAnnos[tag]
 
                     anno["endTime"] = dates.epochToIsoString(tim, zone='Europe/Berlin')
                     anno["tags"]=[tag]
                     newAnnotations.append(anno)
+                elif self.__match(evStr,self.eventSelection[tag]["ignore"]):
+                    continue
                 else:
-                    self.logger.warning(f"end event without start {tim} {evStr} ")
+                    # any other not allowed event so we submit an anomaly annotation
+                    anno = self.openAnnos[tag].copy()  # take the annotation away from the open list
+                    del self.openAnnos[tag]  # remove this from the running state list
+
+                    anno["endTime"] = dates.epochToIsoString(tim, zone='Europe/Berlin')
+                    anno["tags"] = ["anomaly", tag]
+                    newAnnotations.append(anno)  # put the anomaly node
+
+            #now check if we start a new annotation with this event
+            if evStr in self.startEvents:
+                # this is a start of a new event, if it was a restart (start after start) then we have covered that before and created an anomaly
+                tag = self.startEvents[evStr]
+                self.logger.debug(f" {evStr} is start of {tag}")
+                self.openAnnos[tag]={
+                    "type": "time",
+                    "endTime": dates.now_iso(),
+                    "startTime": dates.epochToIsoString(tim, zone='Europe/Berlin'),
+                    "tags":[tag,"open"]
+                }
 
         if self.stateNode:
             self.stateNode.set_value(list(self.openAnnos.keys()))

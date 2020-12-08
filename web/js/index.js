@@ -1120,7 +1120,11 @@ function context_menu_edit(option,contextMenuIndex,optionIndex)
                     }
 
                 }
-                $('#annotationeditselect').selectpicker('refresh');
+                try {
+                    $('#annotationeditselect').selectpicker('refresh');
+                }
+                catch {}
+
 
 
                 modal.modal('show');
