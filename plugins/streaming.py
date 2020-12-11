@@ -125,6 +125,10 @@ class PipelineHead():
         varBrowsePathLookup = {node.get_browse_path():node for node in leaves if node.get_type() in ["timeseries","eventseries"]}
         self.varNameLookup.update(varBrowsePathLookup)
 
+        varIdLookup = {node.get_id():node for node in leaves if node.get_type() in ["timeseries","eventseries"]}
+        self.varNameLookup.update(varIdLookup)
+
+
         #build the pipeline
         self.pipeline = Pipeline(self.functionNode.get_child("processors").get_targets())
         self.pipeline.reset() # reset all processors

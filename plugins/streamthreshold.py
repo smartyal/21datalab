@@ -166,8 +166,12 @@ class ThresholdPipelineClass():
             elif typ == "eventseries":
                 self.varNameLookup[node.get_name()] = node
                 self.varNameLookup["__events"] = node # this is the default entry for incoming events
+
         varBrowsePathLookup = {node.get_browse_path():node for node in leaves if node.get_type() in ["timeseries","eventseries"]}
         self.varNameLookup.update(varBrowsePathLookup)
+
+        varIdLookup = {node.get_id():node for node in leaves if node.get_type() in ["timeseries","eventseries"]}
+        self.varNameLookup.update(varIdLookup)
 
         #build the pipeline
         self.pipeline = streaming.Pipeline(self.functionNode.get_child("processors").get_targets())
