@@ -18,16 +18,24 @@ mycontrol[0]["children"][-1]["value"] = "threaded"
 
 
 
+"""
+    how to use the replayer
+    - put the template
+    - connect the variables
+    - connect either the widget or give an annotation 
+    - if the widget is given, at run of the function we try to take the current annotation of te widget and write it as annotation
+"""
 Replayer = {
     "name": "Replayer",
     "type": "function",
     "functionPointer": "replay.replay",  # filename.functionname
     "autoReload": True,  # set this to true to reload the module on each execution
     "children": [
-        {"name": "input", "type": "referencer"},  # the one motif we are using
-        {"name": "widget", "type": "referencer"},
+        {"name": "input", "type": "referencer"},  # the input variables [timeseries, eventseries] to replay
+        {"name": "widget", "type": "referencer"},   #if the widget is given, we take the "current selection " of the widget
+        {"name": "annotation", "type": "referencer"},       #the time annotation to replay
         {"name": "replaySpeed","type":"const","value":0},  #the time in seconds [float] between two data points sent, 0 for full speed
-        {"name": "loop", "type": "const", "value": False},
+        {"name": "loop", "type": "const", "value": False},      #set this true to endless loop and append data
         {"name": "format", "type":"const","validation": {"values": ["21_insert", "21_execute"]},"value":"21_execute"},
         {"name": "url","type":"const","value":"http://127.0.0.1:6001/_execute"},
         {"name": "parameters","type":"const","value":"root.pipeline"}, #depending on the format, here are more params, for the format 21_execute it's the node
@@ -70,12 +78,15 @@ def replay(functionNode):
     functionNode.get_child("control.signal").set_value(None)
 
     widget = functionNode.get_child("widget").get_target()
-    if not widget:
-        logger.error("replay:no widget given")
-        return False
-    annotation = widget.get_child("hasAnnotation.selectedAnnotations").get_target()
+    if widget:
+        #try to get the current anno
+        annotation = widget.get_child("hasAnnotation.selectedAnnotations").get_target()
+        if annotation:
+            #remember the anno
+            functionNode.get_child("annotation").add_references(annotation,deleteAll=True)
+    annotation = functionNode.get_child("annotation").get_target()
     if not annotation:
-        logger.error("replay:no annotation given")
+        logger.error("replay:no annotation/widget given")
         return False
     startTime = dates.date2secs(annotation.get_child("startTime").get_value())
     endTime = dates.date2secs(annotation.get_child("endTime").get_value())
@@ -108,14 +119,15 @@ def replay(functionNode):
 
     #table.sort_values("__time", inplace=True)
     table = remove_dublicate_times(table)
-    print(table)
+    #print(table)
 
     #now we have the data sorted and dublicates removed in the pd frame, let's replay
     offset = latestTime - table["__time"].iloc[-1]
+    #logger.debug(f"latest Time {dates.epochToIsoString(latestTime)} , offset {offset}")
     repeatoffset = table["__time"].iloc[-1]-table["__time"].iloc[0]
     while 1:
         offset = offset+repeatoffset
-        print("latest", latestTime, "offset", offset)
+        logger.debug(f"latest Time {dates.epochToIsoString(latestTime)} , offset {offset}")
         speed = functionNode.get_child("replaySpeed").get_value()
         url = functionNode.get_child("url").get_value()
         format = functionNode.get_child("format").get_value()
@@ -140,15 +152,12 @@ def replay(functionNode):
                         else:
                             eventblob[k]=v
                     else:
-                        print("not finit?")
+                        logger.warning("data not finite")
 
                 body = {"node": params, "function": "feed", "parameter": []}#{"type": "timeseries", "data": blob}]}
                 if len(timeblob)>1:
                     body["parameter"].append({"type":"timeseries","data":timeblob})
-                    #{"node": "mynode", "function": "feed", "parameter": [{"type": "timeseries", "data": blob}]}
-                    print("submit TIMESERIES",timeblob)
                 if len(eventblob)>1:
-                    print("submit EVENTSERIES", eventblob)
                     body["parameter"].append({"type": "eventseries", "data": eventblob})
             else:
                 logger.warning("replay:unknown format")
