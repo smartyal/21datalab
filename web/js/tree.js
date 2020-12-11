@@ -56,7 +56,8 @@ class TreeWidget
             setlen: "fas fa-arrows-alt-h",
             object: "fas fa-dice-d6",
             reset: "fas fa-redo-alt",
-            alarm: "fas fa-exclamation-triangle"
+            alarm: "fas fa-exclamation-triangle",
+            stop: "fas fa-stop-circle tree-icon-class"
         };
 
         this.eventSource = undefined;
@@ -661,6 +662,11 @@ class TreeWidget
                             "action": function(obj){treeWidgetObject.context_menu_execute(node);},
                             "icon": treeWidgetObject.treeIcons["function"]
                         }
+                        menuObject["stop"] = {
+                            "label": "stop",
+                            "action": function(obj){treeWidgetObject.context_menu_stop_execute(node);},
+                            "icon": treeWidgetObject.treeIcons["stop"]
+                        }
                     }
 
                     //if treeWidgetObject node is an object instantiation is also possible
@@ -913,6 +919,14 @@ class TreeWidget
         console.log("context execute",node);
         var query=node.id;
         http_post("/_execute",JSON.stringify(query),null,null,null);
+    }
+
+    context_menu_stop_execute(node)
+    {
+        console.log("context menu stop function exec",node);
+        var query=[{browsePath:node.id+".control.signal",value:"stop"}];
+        http_post('/setProperties',JSON.stringify(query), null,null,null);
+        var query = node.id
     }
 
     context_menu_instantiate(node)
