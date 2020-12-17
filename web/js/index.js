@@ -663,6 +663,45 @@ function context_menu_click_show(option,contextMenuIndex, optionIndex)
 
 }
 
+
+
+
+
+function context_menu_click_show_hide_show(option,contextMenuIndex, optionIndex)
+{
+    let element = option.element;
+    let data = option.data
+
+    if (option.currentValue == true)
+    {
+        option.currentValue = false;
+        option.icon = "far fa-square";
+        data["_visible"] = false;
+    }
+    else
+    {
+        option.currentValue = true;
+        option.icon = "far fa-check-square";
+        data["_visible"] = true;
+    }
+
+
+    console.log("switch show",data);
+    //context_menu_set_visible_elements(option.path,data);
+    option.data["_visible"]=option.currentValue;
+    var query = [{browsePath:option.modelPath,value:option.data}];
+    http_post('/setProperties',JSON.stringify(query), null, this, null);
+
+
+    superCm.setMenuOption(contextMenuIndex, optionIndex, option);
+    superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
+
+
+}
+
+
+
+
 function update_context_menu(index)
 {
     superCm.settings.maxHeight = "100vh" //hack to avoid the resizing
@@ -747,6 +786,34 @@ function context_menu_tag_select_click(option,contextMenuIndex, optionIndex)
     superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
 
 }
+
+function context_menu_show_hide_select_click(option,contextMenuIndex, optionIndex)
+{
+    console.log("context_menu_show_hide_select_click",option);
+    //make the true/false check box adjustment
+
+
+    if (option.currentValue == true)
+    {
+        option.currentValue = false;
+        option.icon = "far fa-square";
+    }
+    else
+    {
+        option.currentValue = true;
+        option.icon = "far fa-check-square";
+    }
+
+    option.data[option.entry]=option.currentValue;
+    var query = [{browsePath:option.modelPath,value:option.data}];
+    http_post('/setProperties',JSON.stringify(query), null, this, null);
+    superCm.setMenuOption(contextMenuIndex, optionIndex, option);
+    superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
+
+}
+
+
+
 
 function context_menu_tag_select_click_event(option,contextMenuIndex, optionIndex)
 {
@@ -854,6 +921,55 @@ function context_menu_tag_select_click_all(option,contextMenuIndex, optionIndex)
     }
 
     var query = [{browsePath:option.modelPath+".hasAnnotation.visibleTags",value:option.data}];
+    http_post('/setProperties',JSON.stringify(query), null, this, null);
+
+    // now we also need to set all checkboxes accordingly
+    // for all options: set current value and set icon
+
+    allOptions = superCm.getMenuOptions(contextMenuIndex)
+    for (key in allOptions)
+    {
+        let thisOption = allOptions[key];
+        thisOption.currentValue = option.currentValue;
+        thisOption.icon = option.icon;
+        superCm.setMenuOption(contextMenuIndex, key, thisOption);
+    }
+
+
+
+    superCm.setMenuOption(contextMenuIndex, optionIndex, option);
+    superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
+
+}
+
+
+function context_menu_show_hide_click_all(option,contextMenuIndex, optionIndex)
+{
+    console.log("context_menu_show_hide_select_click all",option);
+    //make the true/false check box adjustment
+
+
+    if (option.currentValue == true)
+    {
+        option.currentValue = false;
+        option.icon = "far fa-square";
+    }
+    else
+    {
+        option.currentValue = true;
+        option.icon = "far fa-check-square";
+    }
+
+    //now set them all
+    for(key in option.data)
+    {
+        if (key!="_visible")
+        {
+            option.data[key]=option.currentValue;
+        }
+    }
+
+    var query = [{browsePath:option.modelPath,value:option.data}];
     http_post('/setProperties',JSON.stringify(query), null, this, null);
 
     // now we also need to set all checkboxes accordingly
@@ -1253,6 +1369,68 @@ function prepare_context_menu(dataString,modelPath)
     }
 
 
+    // the showHIde entries, these are the dynmic entries
+    var showHideMenu = {}; //key(name): submenu
+    if (data.hasOwnProperty("showHide"))
+    {
+        for(var subMenuName in data.showHide)
+        {
+            if (subMenuName == ".properties") continue; // ignore this child
+            var subMenu =[];
+            //the "all" entry
+            var entry = {
+                    icon:"far fa-check-square",
+                    label:"(all)",
+                    entry:" all",
+                    data:data.showHide[subMenuName][".properties"].value,
+                    modelPath:modelPath+".showHide."+subMenuName,
+                    currentValue:true, // only used to switch off
+                    action: function(option, contextMenuIndex, optionIndex){
+                            var opt = option;
+                            var idx = contextMenuIndex;
+                            var optIdx = optionIndex;
+                            context_menu_show_hide_click_all(opt,idx,optIdx);
+                    }
+            }
+            subMenu.push(entry);
+            // now the single entries
+            var tags = data.showHide[subMenuName][".properties"].value;
+            for (var tag in tags)
+            {
+                if (tag=="_visible") continue;
+                try
+                {
+                    let icon = "far fa-square";
+                    if (tags[tag]== true) {icon = "far fa-check-square";}
+                    let mycolorString = tag;
+
+                    var entry = {
+                        icon:icon,
+                        label:mycolorString,
+                        entry:tag,
+                        data:tags,
+                        modelPath:modelPath+".showHide."+subMenuName,
+                        currentValue:tags[tag],
+                        action: function(option, contextMenuIndex, optionIndex){
+                                var opt = option;
+                                var idx = contextMenuIndex; var
+                                optIdx = optionIndex;
+                                context_menu_show_hide_select_click(opt,idx,optIdx);
+                            }
+                    }
+
+                    subMenu.push(entry);
+                }
+                catch {};
+            }
+
+
+
+            showHideMenu[subMenuName]= subMenu;
+        }
+
+    }
+
 
     // events submenu, only if the events are part of the model
     var hasEvents;
@@ -1384,6 +1562,51 @@ function prepare_context_menu(dataString,modelPath)
 
         showSubmenu.push(entry);
     }
+
+
+    //now the extra entries for showHIde
+    // the show hide-dictionaries can support a _visible setting to turn on/off these classes of objects,
+    // so if the dict carries a _visible entry we provide that switchable
+    for (var element in showHideMenu)
+    {
+        let icon = "far fa-square";
+        let visible;
+        if (data.showHide[element][".properties"].value.hasOwnProperty("_visible"))
+        {
+            visible = data.showHide[element][".properties"].value["_visible"];
+            if (visible == true) icon = "far fa-check-square";
+        }
+        else
+        {
+            icon = null;
+            visible = false;
+        }
+
+        var entry = {
+            icon: icon,
+            label:element,
+            element : element,
+            modelPath : modelPath+".showHide."+element,
+            data : data.showHide[element][".properties"].value,
+            currentValue : visible,
+            action: function(option, contextMenuIndex, optionIndex){
+                        var opt = option;
+                        var idx = contextMenuIndex; var
+                        optIdx = optionIndex;
+                        context_menu_click_show_hide_show(opt,idx,optIdx);
+                    }
+        };
+
+        if (icon == null)
+        {
+            delete entry.action;
+        }
+
+        entry.submenu = showHideMenu[element];
+        showSubmenu.push(entry);
+    }
+
+
 
     var selectedVariables = data.selectedVariables[".properties"].leaves;
 
