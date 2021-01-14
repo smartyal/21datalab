@@ -602,6 +602,15 @@ class TimeSeriesWidgetDataServer():
     def is_score_variable(self,variableBrowsePath):
         return (variableBrowsePath in self.scoreVariables)
 
+    def get_score_marker(self,variableBrowsePath):
+        #look for the uiInfo in the mirror
+        #find this variable and potential info about the display
+        for id,info in self.mirror["scoreVariables"][".properties"]["leavesProperties"].items():
+            if info["browsePath"] == variableBrowsePath:
+                if "uiInfo" in info:
+                    return info["uiInfo"]["marker"]
+        return "cross"
+
 
     #start and end are ms(!) sice epoch, tag is a string
     def add_annotation(self,start=0,end=0,tag="unknown",type="time",min=0,max=0, var = None):
@@ -2658,9 +2667,20 @@ class TimeSeriesWidget():
 
             self.logger.debug(f"plotting line {variableName}, is score: {self.server.is_score_variable(variableName)}")
             if self.server.is_score_variable(variableName):
+                scoreMarker = self.server.get_score_marker(variableName)
                 #this is a red circle score varialbe
-                self.lines[variableName] = self.plot.circle(x="x", y="y", line_color="red", fill_color=None,
-                                                            source=self.columnData[variableName], name=variableName,size=7)  # x:"time", y:variableName #the legend must havee different name than the source bug
+                if scoreMarker == "x":
+                    self.lines[variableName] = self.plot.asterisk(x="x", y="y", line_color="red", fill_color=None,
+                                                            source=self.columnData[variableName], name=variableName,size=10)  # x:"time", y:variableName #the legend must havee different name than the source bug
+                elif scoreMarker=="+":
+                    self.lines[variableName] = self.plot.cross(x="x", y="y", line_color="red", fill_color=None,
+                                                            source=self.columnData[variableName], name=variableName,size=10)
+                else:
+                    #default is circle
+                    self.lines[variableName] = self.plot.circle(x="x", y="y", line_color="red", fill_color=None,
+                                                            source=self.columnData[variableName], name=variableName,
+                                                            size=7)  # x:"time", y:variableName #the legend must havee different name than the source bug
+
 
             elif variableName.endswith("_limitMax"):
                 if variableName in self.columnData:# if it is in the column data we can process
