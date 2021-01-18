@@ -38,6 +38,7 @@ envelopeMinerTemplate = {
                 {"name": "results","type":"variable"},          # list of results
                 {"name": "maxNumberOfMatches","type":"const","value":0},      # the maximum number of matches to avoid massive production of annotations
                 {"name": "holeSize","type":"const","value":60},                 #the allowed size of a hole in the data to ignore it, larger holes will cause the windowing to skip the area
+                {"name": "createAnnotations","type":"const","value":False},     #set to true of creation of annos is required
                 mycontrol[0]
             ]
         },
@@ -195,6 +196,12 @@ def envelope_miner(functionNode):
     lower = motif.get_child("envelope."+variable.get_name()+"_limitMin").get_time_series()["values"]
     expected  = motif.get_child("envelope."+variable.get_name()+"_expected").get_time_series()["values"]
 
+    if functionNode.get_child("maxNumberOfMatches"):
+        maxMatches = functionNode.get_child("maxNumberOfMatches").get_value()
+    else:
+        maxMatches = None
+
+
     matches = []
     i = 0
     last = 0
@@ -216,6 +223,8 @@ def envelope_miner(functionNode):
                             "epochEnd": w[0][0]+windowTime,
                             "format":my_date_format(w[0][0])+"&nbsp&nbsp(match=%2.3f)"%diff
                             })
+            if maxMatches and len(matches) == maxMatches:
+                break
 
         i = i + 1
         progress = round(float(i)/numberOfWindows *20) #only 5% units on the progress bar
@@ -257,20 +266,15 @@ def envelope_miner(functionNode):
 
 
     #now create the annotations and notify them in one event
-    myModel = functionNode.get_model()
-    myModel.disable_observers()
-    annoFolder = functionNode.get_child("annotations")
-    if functionNode.get_child("maxNumberOfMatches"):
-        maxMatches = functionNode.get_child("maxNumberOfMatches").get_value()
-    else:
-        maxMatches = None
-    if maxMatches != 0:
-        _create_annos_from_matches(annoFolder,sortMatches,maxMatches=maxMatches)
-
-
-    myModel.enable_observers()
-    if maxMatches != 0:
-        myModel.notify_observers(annoFolder.get_id(), "children")
+    if functionNode.get_child("createAnnotations") and functionNode.get_child("createAnnotations").get_value():
+        myModel = functionNode.get_model()
+        myModel.disable_observers()
+        annoFolder = functionNode.get_child("annotations")
+        if maxMatches:
+            _create_annos_from_matches(annoFolder,sortMatches,maxMatches=maxMatches)
+        myModel.enable_observers()
+        if maxMatches != 0:
+            myModel.notify_observers(annoFolder.get_id(), "children")
 
     functionNode.get_child("results").set_value(sortMatches)
     if maxMatches != 0:

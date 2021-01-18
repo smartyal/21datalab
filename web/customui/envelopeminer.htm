@@ -768,6 +768,13 @@ function refresh_mining_results(progress)
                     $('#select-mining-result').append(optionEntry);
                 }
 
+                if (data.maxNumberOfMatches['.properties'].value == results.length)
+                {
+                    console.log("LIMITS");
+                    confirm_dialog("Too many results","The number of results was limited to <br> EnvelopeMiner.MaxNumberOfMatches = "+String(results.length),"ok",null,null);
+                }
+
+
             }
         });
     }
