@@ -493,8 +493,8 @@ function cockpit_load_settings()
                         let start = data.startTime[".properties"].value;
                         let end = data.endTime[".properties"].value;
                         $("#cockpit-select-motif-variable").val(variable);
-                        $("#cockpit-select-motif-start").val(start);
-                        $("#cockpit-select-motif-end").val(end);
+                        $("#cockpit-select-motif-start").val(start.substring(0,10)+" T "+start.substring(11,23)+"  ("+start.substring(start.length-6)+")");
+                        $("#cockpit-select-motif-end").val(end.substring(0,10)+" T "+end.substring(11,23)+"  ("+end.substring(end.length-6)+")");
 
 
                    }
