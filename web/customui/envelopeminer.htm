@@ -89,7 +89,7 @@
                             <div class="form-group row">
                                 <div class="col-6">Resampling Period</div>
                                 <div class="col-3">
-                                     <input type="range" min="1" max="100" value="50" class="slider" id="envelope-sampling-period" onchange="on_envelope_params_change()" oninput="on_envelope_input_change()">
+                                     <input type="range" min="1" max="100" value="50" class="slider" id="envelope-sampling-period" onchange="on_envelope_params_change_resampling()" oninput="on_envelope_input_change()">
                                  </div>
                                 <div class="col-3" id="envelope-sampling-period-value">?</div>
                             </div>
@@ -108,7 +108,7 @@
                             <div class="form-group row">
                                 <div class="col-6">Envelope Width</div>
                                 <div class="col-3">
-                                     <input type="range" min="1" max="100" value="50" class="slider" id="envelope-width" onchange="on_envelope_params_change()" oninput="on_envelope_input_change()">
+                                     <input type="range" min="1" max="100" value="50" class="slider" id="envelope-width" onchange="on_envelope_params_change_width()" oninput="on_envelope_input_change()">
                                 </div>
                                 <div class="col-3" id="envelope-width-value">?</div>
                             </div>
@@ -116,7 +116,7 @@
                             <div class="form-group row">
                                 <div class="col-6">Mining Step Size </div>
                                 <div class="col-3">
-                                     <input type="range" min="1" max="100" value="1" class="slider" id="envelope-step" onchange="on_envelope_params_change()" oninput="on_envelope_input_change()">
+                                     <input type="range" min="1" max="100" value="1" class="slider" id="envelope-step" onchange="on_envelope_params_change_step()" oninput="on_envelope_input_change()">
                                 </div>
                                 <div class="col-3" id="envelope-step-value">?</div>
                             </div>
@@ -618,12 +618,10 @@ function on_envelope_params_change()
     //this is called when we release the range slider
 
     var sampling = parseFloat($("#envelope-sampling-period").val());
-    var filter = parseFloat($("#envelope-filter").val());
     var freedom = parseFloat($("#envelope-width").val());
-    var dynFreedom = parseFloat($("#envelope-dynamic-width").val());
     var step = parseFloat($("#envelope-step").val());
 
-    console.log("on echnge",sampling,filter,freedom,dynFreedom);
+    console.log("on echnge",sampling,freedom);
 
     //write the values to the numbers
     write_range_slider_numerical_values();
@@ -645,6 +643,94 @@ function on_envelope_params_change()
 
 
 }
+
+
+function on_envelope_params_change_resampling()
+{
+    //this is called when we release the range slider
+
+    var sampling = parseFloat($("#envelope-sampling-period").val());
+    console.log("on_envelope_params_change_resampling",sampling);
+
+    //write the values to the numbers
+    write_range_slider_numerical_values();
+
+    //write the values to the backend
+    var query = [
+        {"id":envelopeMotif.envelope.samplingPeriod[".properties"].id,"value":sampling}];
+
+    http_post("setPropertiesQuiet",JSON.stringify(query),null,null,function(obj,status,data,params)
+    {
+        if (status<400)
+        {
+            //now also update the time series limit values by calling the update function
+            //http_post("/_execute",JSON.stringify(cockpitPath+".update"),null,null,null);
+        }
+    });
+    http_post("/_execute",JSON.stringify(cockpitPath+".update"),null,null,null);
+}
+
+function on_envelope_params_change_width()
+{
+    //this is called when we release the range slider
+
+
+    var freedom = parseFloat($("#envelope-width").val());
+
+
+    console.log("on on_envelope_params_change_width" ,freedom);
+
+    //write the values to the numbers
+    write_range_slider_numerical_values();
+
+    //write the values to the backend
+    var query = [{"id":envelopeMotif.envelope.freedom[".properties"].id,"value":freedom} ]
+
+    http_post("setPropertiesQuiet",JSON.stringify(query),null,null,function(obj,status,data,params)
+    {
+        if (status<400)
+        {
+            //now also update the time series limit values by calling the update function
+            //http_post("/_execute",JSON.stringify(cockpitPath+".update"),null,null,null);
+        }
+    });
+    http_post("/_execute",JSON.stringify(cockpitPath+".update"),null,null,null);
+
+
+}
+
+
+function on_envelope_params_change_step()
+{
+    //this is called when we release the range slider
+
+
+    var step = parseFloat($("#envelope-step").val());
+
+    console.log("on on_envelope_params_change_step",step );
+
+    //write the values to the numbers
+    write_range_slider_numerical_values();
+
+    //write the values to the backend
+    var query = [{"id":envelopeMotif.envelope.step[".properties"].id,"value":step}]
+
+    http_post("setPropertiesQuiet",JSON.stringify(query),null,null,function(obj,status,data,params)
+    {
+        if (status<400)
+        {
+            //now also update the time series limit values by calling the update function
+            //http_post("/_execute",JSON.stringify(cockpitPath+".update"),null,null,null);
+        }
+    });
+    http_post("/_execute",JSON.stringify(cockpitPath+".update"),null,null,null);
+
+
+}
+
+
+
+
 
 
 function cockpit_delete_envelope()

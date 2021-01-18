@@ -882,9 +882,10 @@ class TimeSeriesWidget():
         self.logger.debug(f"observer_cb {data}")
         if data["event"] == "timeSeriesWidget.variables" or data["event"] == "global.timeSeries.values":
             #refresh the lines
-            self.server.get_selected_variables_sync() # get the new set of lines
+            if data["event"] == "timeSeriesWidget.variables":
+                self.server.get_selected_variables_sync() # get the new set of lines
+                self.__dispatch_function(self.update_scores)
             self.logger.debug("dispatch the refresh lines")
-            self.__dispatch_function(self.update_scores)
             self.__dispatch_function(self.refresh_plot) #this includes the backgrounds
         elif data["event"] == "timeSeriesWidget.background":
             self.logger.debug("dispatch the refresh background")
@@ -1185,6 +1186,14 @@ class TimeSeriesWidget():
         self.logger.debug(f"update_annotations {arg}")
         # this is called when the backend has changed annotation leaves or values, it adjusts annotations
         # and thresholds
+
+        #avoid reload if an envelope embedded in a annotation is changed
+        if "data" in arg and "sourcePath" in arg["data"]:
+            splitted = arg["data"]["sourcePath"].split('.')
+            if len(splitted)>2 and splitted[-2]=="envelope":
+                self.logger.info("skip anno update due to envelope")
+                return
+
 
         lastAnnotations = self.server.get_annotations()
         if "data" in arg and "_eventInfo" in arg["data"]:

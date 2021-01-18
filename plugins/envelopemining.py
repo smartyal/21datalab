@@ -428,7 +428,7 @@ def update(functionNode):
             exPe.set_time_series(expect,times)
     finally:
         model.enable_observers()
-        model.notify_observers(motif.get_id(), "children")
+        #model.notify_observers(motif.get_id(), "children")
         model.notify_observers(lMax.get_id(), "value")
 
     return True

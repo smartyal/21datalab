@@ -1521,7 +1521,7 @@ class Model:
             self.__notify_observers(id, property)
             return True
 
-    def set_properties(self,properties={},nodeDesc=None):
+    def set_properties(self,properties={},nodeDesc=None,notify=True):
         """
             changes a random set of properties given by the dict or adds them if not existant, some properties are not allowed here:
             children, parent, forward and back ward refs, allowed are all others including type, name, value
@@ -1551,7 +1551,8 @@ class Model:
                     continue # we ignore these entries
                 self.model[id][k]=v # overwrite or set new
                 notificationProperties.append(k)
-            self.__notify_observers(id,notificationProperties)
+            if notify:
+                self.__notify_observers(id,notificationProperties)
             return True
 
 
