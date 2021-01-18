@@ -373,21 +373,6 @@ function cockpit_motif_stop()
 }
 
 
-
-function cockpit_find_motif()
-{
-
-
-    let start  =  $("#cockpit-select-motif-start").val();
-    let end = $("#cockpit-select-motif-end").val();
-
-
-    var query = [{browsePath:cockpitWidgetPath+".startTime",value:start},{browsePath:cockpitWidgetPath+".endTime",value:end}];
-    http_post('/setProperties',JSON.stringify(query), null, null, null);
-
-
-}
-
 function cockpit_motif_jump_old()
 {
    //jump to the selected one
@@ -396,6 +381,20 @@ function cockpit_motif_jump_old()
     console.log("show motif "+selected);
 
     var query = [{browsePath:cockpitPath+".jump.match",value:selected}];
+    http_post('/setProperties',JSON.stringify(query), null, null,  (self,status,data,params) => {
+        if (status<400)
+        {
+           http_post("/_execute",JSON.stringify(cockpitPath+".jump"),null,null,null);
+        }
+    });
+}
+
+//Jump directly to the motif
+function cockpit_find_motif()
+{
+   console.log("cockpit_find_motif");
+
+    var query = [{browsePath:cockpitPath+".jump.match",value:-1}];
     http_post('/setProperties',JSON.stringify(query), null, null,  (self,status,data,params) => {
         if (status<400)
         {

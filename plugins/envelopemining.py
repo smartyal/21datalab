@@ -464,8 +464,15 @@ def jump(functionNode):
 
     #now get the user selection, it will be the index of the results list
     matchIndex=int(functionNode.get_child("match").get_value())
-    results = functionNode.get_parent().get_child("EnvelopeMiner").get_child("results").get_value()
-    match = results[matchIndex]
+
+    if matchIndex==-1:
+        motif = functionNode.get_parent().get_child("EnvelopeMiner").get_child("motif").get_target()
+        match = {}
+        match["epochStart"] = dates.date2secs(motif.get_child("startTime").get_value())
+        match["epochEnd"] = dates.date2secs(motif.get_child("endTime").get_value())
+    else:
+        results = functionNode.get_parent().get_child("EnvelopeMiner").get_child("results").get_value()
+        match = results[matchIndex]
 
     middle = match["epochStart"]+(match["epochEnd"]-match["epochStart"])/2
     newStart = middle - (widgetEndTime-widgetStartTime)/2
