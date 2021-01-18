@@ -152,7 +152,7 @@ envelopeMinerTemplate = {
             ]
         },
 
-        {"name":"defaultParameters","type":"const","value":{"filter":[0,20,2],"samplingPeriod":[1,60,10],"freedom":[0,1,0.5],"dynamicFreedom":[0,1,0.5],"numberSamples":[1,100,1],"step":[1,100,1]}}, # the default contain each three values: min,max,default
+        {"name":"defaultParameters","type":"const","value":{"filter":[0,20,2],"samplingPeriod":[1,60,10],"freedom":[0,1,0.3],"dynamicFreedom":[0,1,0.5],"numberSamples":[1,100,1],"step":[0,1,0.1]}}, # the default contain each three values: min,max,default
         {"name": "cockpit", "type": "const", "value": "/customui/envelopeminer.htm"}  #the cockpit for the motif miner
     ]
 }
@@ -182,13 +182,19 @@ def envelope_miner(functionNode):
 
 
     samplePeriod = motif.get_child("envelope.samplingPeriod").get_value()
-    stepSize = motif.get_child("envelope.step").get_value()
+    samplePointsPerWindow = motif.get_child("envelope.numberSamples").get_value()
+
+    stepSizePercent = motif.get_child("envelope.step").get_value() # in percent
+    if stepSizePercent == 0:
+        stepSize = 1 # choose one point for 0% settings
+    else:
+        stepSize = int ( float(samplePointsPerWindow)  * float(stepSizePercent))
     samplePointsPerWindow = motif.get_child("envelope.numberSamples").get_value()
     windowMaker = streaming.Windowing(samplePeriod = samplePeriod, stepSize = stepSize,maxHoleSize=holeSize,samplePointsPerWindow=samplePointsPerWindow)
     numberOfWindows = (ts["__time"][-1] -ts["__time"][0]) /samplePeriod/stepSize #approx
     windowTime = samplePointsPerWindow*samplePeriod
 
-    logger.debug(f"producing {numberOfWindows} windows..")
+    logger.debug(f"producing {numberOfWindows} windows, point per window ={samplePointsPerWindow}, stepsize {stepSizePercent*100}% => {stepSize} pt, sample Period {samplePeriod}")
     windowMaker.insert(ts["__time"],ts["values"])
 
     #get the motif data
@@ -336,6 +342,15 @@ def create(functionNode):
         envelope.create_child(name+"_limitMin",type="timeseries")
         envelope.create_child(name+"_expected",type="timeseries")
 
+        #adapt the sampling selection to the selected widget:
+        # we take the average sampling period *2 as the default and the 10*average sampling period as max
+        start = dates.date2secs(motif.get_child("startTime").get_value())
+        end = dates.date2secs(motif.get_child("endTime").get_value())
+        ts = motif.get_child("variable").get_target().get_time_series(start, end)
+        avr = (end-start)/len(ts["values"])
+        logger.debug(f"sampling period in motif: {avr}")
+        defaults["samplingPeriod"]=[avr,10*avr,2*avr]
+
         for k,v in defaults.items():#["samplingPeriod","filter","freedom","dynamicFreedom"]:
             envelope.create_child(k,type="const",value=v[2],properties={"validation":{"limits":[v[0],v[1]]}})
         if not _connect(motif,widget):
@@ -417,11 +432,11 @@ def update(functionNode):
         numberSamples = len(times)
         motif.get_child("envelope.numberSamples").set_value(numberSamples) # the number of samples
         #also set the possible step size
-        step = motif.get_child("envelope.step").get_value()
-        if step > numberSamples:
-            step = numberSamples
+        #step = motif.get_child("envelope.step").get_value()
+        #if step > numberSamples:
+        #    step = numberSamples
         #also set the limits
-        motif.get_child("envelope.step").set_properties({"value":step,"validation":{"limits":[1,numberSamples]}})
+        #motif.get_child("envelope.step").set_properties({"value":step,"validation":{"limits":[1,numberSamples]}})
 
 
         if lMax:
