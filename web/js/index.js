@@ -779,10 +779,13 @@ function context_menu_tag_select_click(option,contextMenuIndex, optionIndex)
         option.icon = "far fa-check-square";
     }
 
+
     option.data[option.entry]=option.currentValue;
     var query = [{browsePath:option.modelPath+".hasAnnotation.visibleTags",value:option.data}];
     http_post('/setProperties',JSON.stringify(query), null, this, null);
     superCm.setMenuOption(contextMenuIndex, optionIndex, option);
+
+    set_all_icon_of_submenu_dynamic(contextMenuIndex);
     superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
 
 }
@@ -808,6 +811,7 @@ function context_menu_show_hide_select_click(option,contextMenuIndex, optionInde
     var query = [{browsePath:option.modelPath,value:option.data}];
     http_post('/setProperties',JSON.stringify(query), null, this, null);
     superCm.setMenuOption(contextMenuIndex, optionIndex, option);
+    set_all_icon_of_submenu_dynamic(contextMenuIndex);
     superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
 
 }
@@ -836,6 +840,7 @@ function context_menu_tag_select_click_event(option,contextMenuIndex, optionInde
     var query = [{browsePath:option.modelPath+".hasEvents.visibleEvents",value:option.data}];
     http_post('/setProperties',JSON.stringify(query), null, this, null);
     superCm.setMenuOption(contextMenuIndex, optionIndex, option);
+    set_all_icon_of_submenu_dynamic(contextMenuIndex);
     superCm.updateMenu(allowHorzReposition = false, allowVertReposition = false);
 
 }
@@ -877,7 +882,8 @@ function context_menu_variables_deselect_all(option,contextMenuIndex, optionInde
     // then it is a variable entry, and we set the icon to unselected
     var newOptions = deselect_variables(options);
     console.log("done")
-    superCm.setMenuOptions(contextMenuIndex,newOptions)
+    superCm.setMenuOptions(contextMenuIndex,newOptions);
+    update_context_menu(contextMenuIndex);
 }
 
 function deselect_variables(OptionList)
@@ -1367,6 +1373,7 @@ function prepare_context_menu(dataString,modelPath)
         }
         catch {};
     }
+    set_all_icon_of_submenu(annotationsSubmenu);
 
 
     // the showHIde entries, these are the dynmic entries
@@ -1425,7 +1432,7 @@ function prepare_context_menu(dataString,modelPath)
             }
 
 
-
+            set_all_icon_of_submenu(subMenu);
             showHideMenu[subMenuName]= subMenu;
         }
 
@@ -1488,6 +1495,7 @@ function prepare_context_menu(dataString,modelPath)
     {
         hasEvents = false;
     }
+    set_all_icon_of_submenu(eventsSubmenu);
 
 
 
@@ -1506,7 +1514,8 @@ function prepare_context_menu(dataString,modelPath)
     }
 
     var entry = {
-        label:"(deselect all)",
+        label:"(all)",
+        icon:"fas fa-square",
         entry:" all",
         selectedVariablesId : data.selectedVariables[".properties"].id,
         action: function(option, contextMenuIndex, optionIndex){
@@ -2144,6 +2153,54 @@ function confirm_dialog(title,text,buttonText,confirmCallback,parameter)
 }
 
 
+
+function set_all_icon_of_submenu(menuarray)
+{
+
+    var active = 0;
+    var total = 0;
+
+    for (i=1;i<menuarray.length;i++)
+    {
+        if (menuarray[i].currentValue == true) active = active +1;
+        total = total +1;
+    }
+
+
+
+    //now set the all (first entry in the list) button right
+    if (active == 0)
+    {
+        // all disabled
+        menuarray[0].currentValue = false;
+        menuarray[0].icon = "far fa-square";
+    }
+    else
+    {
+        if (active == total)
+        {
+            //all enabled
+            menuarray[0].currentValue = true;
+            menuarray[0].icon = "far fa-check-square";
+        }
+        else
+        {
+            //Mixed
+            menuarray[0].currentValue = true;
+            menuarray[0].icon = "fas fa-square";
+        }
+    }
+    return menuarray;
+}
+
+function set_all_icon_of_submenu_dynamic(cmindex)
+{
+
+    var options = superCm.getMenuOptions(cmindex);
+    options = set_all_icon_of_submenu(options);
+    superCm.setMenuOptions(cmindex,options);
+
+}
 
 
 

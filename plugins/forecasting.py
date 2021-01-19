@@ -124,6 +124,7 @@ class ForecasterClass(streaming.Interface):
         if not widget: return #not yet hooked correctly
 
         scoreVars = []
+        submenuName = "anomalyForecast"
 
         #!!! FAKE Implementation, later: the deep learning model should know which variables it can score and create the outputs accordingly
         vars = widget.get_child("selectableVariables").get_leaves()
@@ -141,14 +142,14 @@ class ForecasterClass(streaming.Interface):
         # 3. create the showHide entry in the widget context menu
         # and put all the switchable variables in
         showHide = widget.create_child("showHide")
-        self.showHide = showHide.create_child("anomalyForecast")
+        self.showHide = showHide.create_child(submenuName)
         self.showHide.set_value({v.get_name():False for v in vars}) #initially all are disabled
 
         # 4. setup the observer right
         self.objectNode.get_child("observerVariables.enabled").set_value(False)
         self.objectNode.get_child("observerContextMenu.enabled").set_value(False)
         self.objectNode.get_child("observerVariables.targets").add_references(widget.get_child("selectedVariables"),deleteAll=True)
-        self.objectNode.get_child("observerContextMenu.targets").add_references(widget.get_child("showHide.anomalyForecast"), deleteAll=True)
+        self.objectNode.get_child("observerContextMenu.targets").add_references(widget.get_child("showHide."+submenuName), deleteAll=True)
         self.objectNode.get_child("observerVariables.enabled").set_value(False) #for future use: we make a clever selection of the possible entries
         self.objectNode.get_child("observerContextMenu.enabled").set_value(True)
 
