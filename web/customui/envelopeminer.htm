@@ -22,13 +22,6 @@
                             Parameters
                         </a>
                     </li>
-                    <!--
-                    <li class="nav-item">
-                          <a class="nav-link" id="tab-cockpit-motif-search" data-toggle="tab" href="#cockpit-motif-search" role="tab">
-                            Search Area
-                          </a>
-                    </li>
-                    -->
 
                     <li class="nav-item">
                           <a class="nav-link" id="tab-cockpit-motif-run" data-toggle="tab" href="#cockpit-motif-run" role="tab">
@@ -60,13 +53,6 @@
                             <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-end" readonly> </div>
                         </div>
 
-                        <!--
-                        <div class="form-group row">
-                            <div class="col-3">Current Selection</div>
-                            <div class="col-9"> <input class="form-control" type="text" id="cockpit-select-motif-current" readonly style="text-align:right;direction:rtl;"> </div>
-                        </div>
-                        -->
-
                         <p align="right">
                             <button type="button" class="btn btn-primary"   onclick="cockpit_select_motif()">    take selected motif </button>
                             <button type="button" class="btn btn-primary"   onclick="cockpit_find_motif()"> <i class="fas fa-search-location"></i>  jump to motif</button>
@@ -87,30 +73,19 @@
                         <div id="envelope-parameters">
 
                             <div class="form-group row">
-                                <div class="col-6">Resampling Period</div>
-                                <div class="col-3">
-                                     <input type="range" min="1" max="100" value="50" class="slider" id="envelope-sampling-period" onchange="on_envelope_params_change_resampling()" oninput="on_envelope_input_change()">
-                                 </div>
-                                <div class="col-3" id="envelope-sampling-period-value">?</div>
-                            </div>
-
-
-                            <!--
-                            <div class="form-group row">
-                                <div class="col-6">Smoothing Filter</div>
-                                <div class="col-3">
-                                    <input type="range" min="0" max="100" value="20" class="slider" id="envelope-filter" onchange="on_envelope_params_change()">
-                                    <div class="col-3" id="envelope-filter-value">?</div>
-                                </div>
-                            </div>
-                            -->
-
-                            <div class="form-group row">
                                 <div class="col-6">Envelope Width</div>
                                 <div class="col-3">
                                      <input type="range" min="1" max="100" value="50" class="slider" id="envelope-width" onchange="on_envelope_params_change_width()" oninput="on_envelope_input_change()">
                                 </div>
                                 <div class="col-3" id="envelope-width-value">?</div>
+                            </div>
+
+                            <div class="form-group row">
+                                <div class="col-6">Resampling Period</div>
+                                <div class="col-3">
+                                     <input type="range" min="1" max="100" value="50" class="slider" id="envelope-sampling-period" onchange="on_envelope_params_change_resampling()" oninput="on_envelope_input_change()">
+                                 </div>
+                                <div class="col-3" id="envelope-sampling-period-value">?</div>
                             </div>
 
                             <div class="form-group row">
@@ -120,15 +95,6 @@
                                 </div>
                                 <div class="col-3" id="envelope-step-value">?</div>
                             </div>
-
-                            <!--
-                            <div class="form-group row">
-                                <div class="col-6">Dynamic Envelope Width</div>
-                                <div class="col-6">
-                                     <input type="range" min="1" max="100" value="50" class="slider" id="envelope-dynamic-width" onchange="on_envelope_params_change()">
-                                </div>
-                            </div>
-                            -->
 
                             <div class="form-group row">
                                 <div class="col-12">
@@ -143,25 +109,6 @@
 
                     </div>
 
-                    <!--
-                    <div class="tab-pane fade" id="cockpit-motif-search" role="tabpanel">
-                        <div class="col-9">
-                        <br>
-                        <select class = "custom-select"   multiple="multiple">
-                            <option >currently not supported 1</option>
-                        </select>
-                        <br><br>
-                        <p align="right">
-                            <button type="button" class="btn btn-primary"   onclick="cockpit_find_motif()"> apply</button>
-                        </p>
-                        </div>
-                    </div>
-                    -->
-
-
-
-
-
                     <div class="tab-pane fade" id="cockpit-motif-run" role="tabpanel">
                         <br>
                         <div class="form-group row">
@@ -174,14 +121,11 @@
 
 
                         <div class="form-group row">
-                            <div class="col-3"> Select Result </div>
-                            <div class="col-5">
-                                <select class="form-control" id="select-mining-result"></select>
-                            </div>
+                            <div class="col-3">  Select Result</div>
+                            <div class="col-5"> <select class="form-control" id="select-mining-result" onchange="select_result()"></select></div>
                             <div class="col-4">
-                                <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump(0)">show</button>
-                                <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump(-1)"><i class="fas fa-arrow-up"></i></button>
-                                <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump(1)"><i class="fas fa-arrow-down"></i></button>
+                                <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump(-1)" id="arrowup"> &nbsp;<i class="fas fa-arrow-up"></i>&nbsp;</button>&nbsp;
+                                <button type="button" class="btn btn-primary"   onclick="cockpit_motif_jump(1)" id="arrowdown">&nbsp;<i class="fas fa-arrow-down"></i>&nbsp;</button>
                             </div>
                         </div>
 
@@ -375,22 +319,6 @@ function cockpit_motif_stop()
 }
 
 
-function cockpit_motif_jump_old()
-{
-   //jump to the selected one
-   //https://learn.jquery.com/using-jquery-core/faq/how-do-i-get-the-text-value-of-a-selected-option/
-    var selected = $("#select-mining-result").val();
-    console.log("show motif "+selected);
-
-    var query = [{browsePath:cockpitPath+".jump.match",value:selected}];
-    http_post('/setProperties',JSON.stringify(query), null, null,  (self,status,data,params) => {
-        if (status<400)
-        {
-           http_post("/_execute",JSON.stringify(cockpitPath+".jump"),null,null,null);
-        }
-    });
-}
-
 //Jump directly to the motif
 function cockpit_find_motif()
 {
@@ -415,6 +343,24 @@ function cockpit_motif_jump(inc)
     if (selected <0) selected = 0;
     if (selected > last) selected = last;
     $("#select-mining-result").val(selected);
+
+    if (selected == 0)
+    {
+         $("#arrowup").addClass("disabled");
+    }
+    else
+    {
+        $("#arrowup").removeClass("disabled");
+    }
+
+    if (selected == last)
+    {
+        $("#arrowdown").addClass("disabled");
+    }
+    else
+    {
+        $("#arrowdown").removeClass("disabled");
+    }
 
 
     console.log("show motif "+selected);
@@ -784,6 +730,14 @@ function refresh_mining_results(progress)
         $('#select-mining-result').empty();
     }
 
+}
+
+function select_result()
+{
+
+    var selected = parseInt($("#select-mining-result").val());
+    console.log("select",selected);
+    cockpit_motif_jump(0);
 }
 
 

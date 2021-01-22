@@ -258,33 +258,36 @@ def envelope_miner(functionNode):
 
 
     #now sort the matches by match value and rescale them
-    matchlist = numpy.asarray([m["match"] for m in cleanMatches])
-    scaleMax = numpy.max(matchlist)
-    scaleMin = numpy.min(matchlist)
-    matchlist = (matchlist-scaleMin)/(scaleMax-scaleMin)*100
-    sortIndices = numpy.argsort([m["match"] for m in cleanMatches])
-    cleanMatches = [cleanMatches[idx] for idx in sortIndices] # fancy indexing via list comprehension
-    sortMatches = []
-    for idx in sortIndices:
-        m = cleanMatches[idx]
-        m["format"] = my_date_format(m["epochStart"])+"&nbsp&nbsp(distance=%.3g)"%matchlist[idx]
-        sortMatches.append(cleanMatches[idx])
+    if cleanMatches == []:
+        functionNode.get_child("results").set_value([])
+    else:
+        matchlist = numpy.asarray([m["match"] for m in cleanMatches])
+        scaleMax = numpy.max(matchlist)
+        scaleMin = numpy.min(matchlist)
+        matchlist = (matchlist-scaleMin)/(scaleMax-scaleMin)*100
+        sortIndices = numpy.argsort([m["match"] for m in cleanMatches])
+        cleanMatches = [cleanMatches[idx] for idx in sortIndices] # fancy indexing via list comprehension
+        sortMatches = []
+        for idx in sortIndices:
+            m = cleanMatches[idx]
+            m["format"] = my_date_format(m["epochStart"])+"&nbsp&nbsp(distance=%.3g)"%matchlist[idx]
+            sortMatches.append(cleanMatches[idx])
 
 
-    #now create the annotations and notify them in one event
-    if functionNode.get_child("createAnnotations") and functionNode.get_child("createAnnotations").get_value():
-        myModel = functionNode.get_model()
-        myModel.disable_observers()
-        annoFolder = functionNode.get_child("annotations")
-        if maxMatches:
-            _create_annos_from_matches(annoFolder,sortMatches,maxMatches=maxMatches)
-        myModel.enable_observers()
+        #now create the annotations and notify them in one event
+        if functionNode.get_child("createAnnotations") and functionNode.get_child("createAnnotations").get_value():
+            myModel = functionNode.get_model()
+            myModel.disable_observers()
+            annoFolder = functionNode.get_child("annotations")
+            if maxMatches:
+                _create_annos_from_matches(annoFolder,sortMatches,maxMatches=maxMatches)
+            myModel.enable_observers()
+            if maxMatches != 0:
+                myModel.notify_observers(annoFolder.get_id(), "children")
+
+        functionNode.get_child("results").set_value(sortMatches)
         if maxMatches != 0:
-            myModel.notify_observers(annoFolder.get_id(), "children")
-
-    functionNode.get_child("results").set_value(sortMatches)
-    if maxMatches != 0:
-        display_matches(functionNode,True)
+            display_matches(functionNode,True)
     progressNode.set_value(1)
     return True
 
