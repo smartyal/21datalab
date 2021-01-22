@@ -3263,8 +3263,12 @@ class Model:
                                     "id": self.modelUpdateCounter,
                                     "event": observer["eventString"]["value"],
                                     "data": {"nodeId":observerId,"sourceId":nodeId,"sourcePath":self.get_browse_path(nodeId)}}
+                                #we directly put some changed properties in the event
                                 if self.model[nodeId]["type"] not in ["column","file","timeseries"]:
                                     event["data"]["value"]=self.model[nodeId]["value"]
+                                for prop in properties:
+                                    if prop in ["children","forwardRefs"]:
+                                        event["data"][prop]=self.model[nodeId][prop]
                                 #some special handling
                                 try:
                                     if event["event"] == "system.progress":

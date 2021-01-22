@@ -54,8 +54,8 @@
                         </div>
 
                         <p align="right">
-                            <button type="button" class="btn btn-primary"   onclick="cockpit_select_motif()">    take selected motif </button>
-                            <button type="button" class="btn btn-primary"   onclick="cockpit_find_motif()"> <i class="fas fa-search-location"></i>  jump to motif</button>
+                            <button type="button" class="btn btn-primary disabled"   onclick="cockpit_select_motif()" id="take-selected-motif">    take selected motif </button>
+                            <button type="button" class="btn btn-primary"   onclick="cockpit_find_motif()" id="jump-to-motif"> <i class="fas fa-search-location"></i> &nbsp;  jump to motif</button>
                         </p>
                     </div>
 
@@ -193,6 +193,8 @@ function cockpit_init(path)
             cockpit_load_settings();
             console.log("in cockpit init");
             cockpit_motif_init_events();
+            http_post("/_execute",JSON.stringify(cockpitPath+".init"),null,null,null); //start the observers
+
         }
         else
         {
@@ -251,6 +253,23 @@ function cockpit_motif_init_events()
         if (msg.browsePath == cockpitPath+".update") on_update_complete();
         if (msg.browsePath == cockpitPath+".EnvelopeMiner") on_mining_complete();
     });
+
+    cockpiteventSource.addEventListener('envelopeMiner.selectMotif', (e) => {
+        let data = e.data.replace(/\'/g, "\"");
+        var msg = JSON.parse(data);
+        console.log(msg);
+        //do we have a selected motif?
+        if (msg.forwardRefs.length == 0)
+        {
+             $('#take-selected-motif').addClass("disabled");
+        }
+        else
+        {
+            $('#take-selected-motif').removeClass("disabled");
+        }
+
+    });
+
 
     //progress bar is automatically updated by the main script, initialize_progress_bar, it controls all progressbars
 }
@@ -375,34 +394,6 @@ function cockpit_motif_jump(inc)
 }
 
 
-function cockpit_select_motif_old()
-{
-
-    var query=cockpitWidgetPath+".hasAnnotation.selectedAnnotations";
-    http_post('/_getleaves',JSON.stringify(query), null, this, (self,status,data,params) => {
-        if (status==200)
-        {
-            try
-            {
-                let motif = JSON.parse(data)[0]["browsePath"];
-                $("#cockpit-select-motif-path").val(motif);
-                let path =$("#cockpit").attr("path");
-                var query = {"deleteExisting":true,"parent":path+".select.motif","add":[motif]};
-                http_post("/_references",JSON.stringify(query),null,null,null);
-                http_post("/_execute",JSON.stringify(cockpitPath+".select"),null,null,null);
-
-                http_post("/_references",JSON.stringify(query),null,null,null);
-                cockpit_load_settings(); // refresh all values
-            }
-            catch
-            {
-                cockpit_load_settings(); // refresh all values
-            }
-        }
-    });
-}
-
-
 function cockpit_select_motif()
 {
     http_post("/_execute",JSON.stringify(cockpitPath+".select"),null,null,null);
@@ -426,10 +417,12 @@ function cockpit_load_settings()
 
             //first the motif selection data
             var motifPath = minerData.motif[".properties"].leaves[0];
+
+
             if (motifPath)
             {
                 $("#cockpit-select-motif-path").val(motifPath);
-
+                $('#jump-to-motif').removeClass("disabled");
                 http_post("_getbranchpretty",motifPath, null,null, function(obj,status,data,params)
                 {
                     if (status == 200)
@@ -447,6 +440,11 @@ function cockpit_load_settings()
 
                    }
                 });
+
+            }
+            else
+            {
+                $('#jump-to-motif').addClass("disabled");
             }
         }
     });
@@ -682,7 +680,7 @@ function on_envelope_params_change_step()
 function cockpit_delete_envelope()
 {
 
-    confirm_dialog("Delete Envelope","Deletion will include all settings for this envelope","Delete",on_delete_confirm,"my");
+    confirm_dialog("Delete Envelope","Delete the envelope and all settings for this envelope","Delete",on_delete_confirm,"my");
 }
 
 

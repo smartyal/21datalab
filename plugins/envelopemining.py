@@ -48,7 +48,7 @@ envelopeMinerTemplate = {
             "functionPointer": "envelopemining.create",  # filename.functionname
             "autoReload": True,  # set this to true to reload the module on each execution
             "children": [
-                mycontrol[0]
+                __functioncontrolfolder
             ]
         },
         {
@@ -57,7 +57,7 @@ envelopeMinerTemplate = {
             "functionPointer": "envelopemining.update",  # filename.functionname
             "autoReload": True,  # set this to true to reload the module on each execution
             "children": [
-                mycontrol[0]
+                __functioncontrolfolder
             ]
         },
         {
@@ -66,7 +66,7 @@ envelopeMinerTemplate = {
             "functionPointer": "envelopemining.show",  # filename.functionname
             "autoReload": True,  # set this to true to reload the module on each execution
             "children": [
-                mycontrol[0]
+                __functioncontrolfolder
             ]
         },
         {
@@ -75,7 +75,7 @@ envelopeMinerTemplate = {
             "functionPointer": "envelopemining.hide",  # filename.functionname
             "autoReload": True,  # set this to true to reload the module on each execution
             "children": [
-                mycontrol[0]
+                __functioncontrolfolder
             ]
         },
         {
@@ -84,7 +84,7 @@ envelopeMinerTemplate = {
             "functionPointer": "envelopemining.select",  # filename.functionname
             "autoReload": True,  # set this to true to reload the module on each execution
             "children": [
-                mycontrol[0]
+                __functioncontrolfolder
             ]
         },
         {
@@ -93,7 +93,7 @@ envelopeMinerTemplate = {
             "functionPointer": "envelopemining.delete",  # filename.functionname
             "autoReload": True,  # set this to true to reload the module on each execution
             "children": [
-                mycontrol[0]
+                __functioncontrolfolder
             ]
         },
         {
@@ -102,7 +102,7 @@ envelopeMinerTemplate = {
             "functionPointer": "envelopemining.recreate",  # filename.functionname
             "autoReload": True,  # set this to true to reload the module on each execution
             "children": [
-                mycontrol[0]
+                __functioncontrolfolder
             ]
         },
         {
@@ -112,7 +112,16 @@ envelopeMinerTemplate = {
             "autoReload": True,  # set this to true to reload the module on each execution
             "children": [
                 {"name":"match","type":"variable"},
-                mycontrol[0]
+                __functioncontrolfolder
+            ]
+        },
+        {
+            "name": "init",
+            "type": "function",
+            "functionPointer": "envelopemining.init",  # filename.functionname
+            "autoReload": True,  # set this to true to reload the module on each execution
+            "children": [
+                __functioncontrolfolder
             ]
         },
         {
@@ -151,6 +160,41 @@ envelopeMinerTemplate = {
                 {"name": "eventData", "type": "const", "value": {"text": ""}}
             ]
         },
+        {
+            "name": "userSelectMotif",
+            "type": "observer",
+            "children": [
+                {"name": "enabled", "type": "const", "value": False},  # turn on/off the observer
+                {"name": "triggerCounter", "type": "variable", "value": 0},  # increased on each trigger
+                {"name": "lastTriggerTime", "type": "variable", "value": ""},  # last datetime when it was triggered
+                {"name": "targets", "type": "referencer"},  # pointing to the nodes observed
+                {"name": "properties", "type": "const", "value": ["forwardRefs"]},
+                {"name": "onTriggerFunction", "type": "referencer"},  # the function(s) to be called when triggering
+                {"name": "triggerSourceId", "type": "variable"},
+                {"name": "hasEvent", "type": "const", "value": True},
+                {"name": "eventString", "type": "const", "value": "envelopeMiner.selectMotif"},
+                # the string of the event
+                {"name": "eventData", "type": "const", "value": {"text": ""}}
+            ]
+        },
+        {
+            "name": "userChangeMotifSize",
+            "type": "observer",
+            "children": [
+                {"name": "enabled", "type": "const", "value": False},  # turn on/off the observer
+                {"name": "triggerCounter", "type": "variable", "value": 0},  # increased on each trigger
+                {"name": "lastTriggerTime", "type": "variable", "value": ""},  # last datetime when it was triggered
+                {"name": "targets", "type": "referencer"},  # pointing to the nodes observed
+                {"name": "properties", "type": "const", "value": ["value"]},
+                {"name": "onTriggerFunction", "type": "referencer","references":["EnvelopeMiner.recreate"]},  # the function(s) to be called when triggering
+                {"name": "triggerSourceId", "type": "variable"},
+                {"name": "hasEvent", "type": "const", "value": False},
+                {"name": "eventString", "type": "const", "value": "envelopeMiner.motifSize"},
+                # the string of the event
+                {"name": "eventData", "type": "const", "value": {"text": ""}}
+            ]
+        },
+
 
         {"name":"defaultParameters","type":"const","value":{"filter":[0,20,2],"samplingPeriod":[1,60,10],"freedom":[0,1,0.3],"dynamicFreedom":[0,1,0.5],"numberSamples":[1,100,1],"step":[0,1,0.1]}}, # the default contain each three values: min,max,default
         {"name": "cockpit", "type": "const", "value": "/customui/envelopeminer.htm"}  #the cockpit for the motif miner
@@ -309,6 +353,38 @@ def disable_interaction_observer(functionNode):
     observer.get_child("enabled").set_value(False)
 
 
+def enable_motif_select_observer(functionNode):
+    disable_motif_select_observer(functionNode) #make sure all are initially off
+
+    widget = functionNode.get_parent().get_child("EnvelopeMiner.widget").get_target()
+    selected = widget.get_child("hasAnnotation.selectedAnnotations")
+    selectObserver = functionNode.get_parent().get_child("userSelectMotif")
+    selectObserver.get_child("targets").add_references([selected],deleteAll=True)
+    selectObserver.get_child("enabled").set_value(True)
+    #if there is a selected motif, initially trigger this to set the UI correctly
+    if selected.get_targets()!=[]:
+        model = functionNode.get_model()
+        model.notify_observers(selected.get_id(), "forwardRefs")
+
+    #xxx how and when to enable the motif-change size observer
+
+
+
+def disable_motif_select_observer(functionNode):
+    functionNode.get_parent().get_child("userSelectMotif").get_child("enabled").set_value(False)
+
+def disable_motif_change_size_observer(functionNode):
+    functionNode.get_parent().get_child("userChangeMotifSize").get_child("enabled").set_value(False)
+
+def enable_motif_change_size_observer(functionNode,motif):
+    observer = functionNode.get_parent().get_child("userChangeMotifSize")
+    observer.get_child("enabled").set_value(False)
+    observer.get_child("targets").add_references([motif.get_child("startTime"),motif.get_child("endTime")],deleteAll=True)
+    observer.get_child("enabled").set_value(True)
+
+
+
+
 def _create_annos_from_matches(annoFolder,matches,maxMatches=None):
 
     for child in annoFolder.get_children():
@@ -459,6 +535,7 @@ def show(functionNode):
     motif = functionNode.get_parent().get_child("EnvelopeMiner").get_child("motif").get_target()
     widget = functionNode.get_parent().get_child("EnvelopeMiner").get_child("widget").get_target()
     enable_interaction_observer(functionNode)
+    enable_motif_change_size_observer(functionNode,motif)
     return _connect(motif,widget)
 
 def hide(functionNode):
@@ -466,13 +543,22 @@ def hide(functionNode):
     motif = functionNode.get_parent().get_child("EnvelopeMiner").get_child("motif").get_target()
     widget = functionNode.get_parent().get_child("EnvelopeMiner").get_child("widget").get_target()
     disable_interaction_observer(functionNode)
+    disable_motif_select_observer(functionNode)
+    disable_motif_change_size_observer(functionNode)
     return _connect(motif,widget,False)
+
+def init(functionNode):
+    logger = functionNode.get_logger()
+    logger.debug("init")
+    enable_motif_select_observer(functionNode)
+    return True
 
 def delete(functionNode):
     hide(functionNode)
     motif = functionNode.get_parent().get_child("EnvelopeMiner").get_child("motif").get_target()
     motif.get_child("envelope").delete()
     #remove all envelope info from the motif
+    return True
 
 def recreate(functionNode):
     delete(functionNode)
@@ -576,4 +662,4 @@ def _connect(motif,widget,connect=True):
     except Exception as ex:
         import traceback
         print(traceback.format_exc())
-        return False
+        return True
