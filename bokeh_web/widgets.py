@@ -497,7 +497,11 @@ class TimeSeriesWidgetDataServer():
         varList = self.selectedVariables.copy()
         #include background values if it has background enabled
         if self.settings["background"]["hasBackground"]==True:
-            varList.append(self.settings["background"]["background"]) # include the node it holding the backgrounds
+            #check about background
+            if "background" in self.mirror["visibleElements"][".properties"]["value"] and self.mirror["visibleElements"][".properties"]["value"]["background"] == True:
+                #include the node it holding the backgrounds
+                varList.append(self.settings["background"]["background"])
+             
         # now get data from server
         if start:
             start=start/1000
