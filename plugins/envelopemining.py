@@ -219,6 +219,13 @@ def envelope_miner(functionNode):
     progressNode.set_value(0)
     signal.set_value(None)
 
+    # also make sure we are in the right jump
+    # when we have jumped to a different result, the envelope time series are set to different values
+    # (the ones from the according match)
+    # but now we want to use the envelope time series for the mining so we need to set it back to the
+    # motif time with the chosen parameters, we do that with the help of the update function
+    update(functionNode)
+
     motif = functionNode.get_child("motif").get_target()
     variable = motif.get_child("variable").get_target()
     holeSize = functionNode.get_child("holeSize").get_value()
@@ -241,10 +248,21 @@ def envelope_miner(functionNode):
     logger.debug(f"producing {numberOfWindows} windows, point per window ={samplePointsPerWindow}, stepsize {stepSizePercent*100}% => {stepSize} pt, sample Period {samplePeriod}")
     windowMaker.insert(ts["__time"],ts["values"])
 
-    #get the motif data
-    upper = motif.get_child("envelope."+variable.get_name()+"_limitMax").get_time_series()["values"]
-    lower = motif.get_child("envelope."+variable.get_name()+"_limitMin").get_time_series()["values"]
-    expected  = motif.get_child("envelope."+variable.get_name()+"_expected").get_time_series()["values"]
+
+
+    #old
+
+    #upper = motif.get_child("envelope."+variable.get_name()+"_limitMax").get_time_series()["values"]
+    #lower = motif.get_child("envelope."+variable.get_name()+"_limitMin").get_time_series()["values"]
+    #expected  = motif.get_child("envelope."+variable.get_name()+"_expected").get_time_series()["values"]
+
+    # get the motif data with times
+    motifStart = dates.date2secs(motif.get_child("startTime").get_value())
+    motifEnd = dates.date2secs(motif.get_child("endTime").get_value())
+    upper = motif.get_child("envelope." + variable.get_name() + "_limitMax").get_time_series(motifStart, motifEnd)
+    lower = motif.get_child("envelope." + variable.get_name() + "_limitMin").get_time_series(motifStart, motifEnd)
+    expected = motif.get_child("envelope."+variable.get_name()+"_expected").get_time_series(motifStart, motifEnd)
+
 
     if functionNode.get_child("maxNumberOfMatches"):
         maxMatches = functionNode.get_child("maxNumberOfMatches").get_value()
@@ -259,11 +277,12 @@ def envelope_miner(functionNode):
         # now we have the window w =[t,v] which is of correct length and resampled, let's compare it
         # to the motif
         # first the offset
-        offset = w[1][0]-expected[0]
+        offset = w[1][0]-expected["values"][0]
         x = w[1] - offset
-        below = upper-x
-        above = x-lower
-        diff = numpy.sum(numpy.power(x-expected,2))
+        below = upper["values"]-x
+        above = x-lower["values"]
+        diff = numpy.sum(numpy.power(x-expected["values"],2))
+
         if numpy.all(below>0) and numpy.all(above>0):
             logger.debug(f"match @ {w[1][0]}")
             matches.append({"startTime":dates.epochToIsoString(w[0][0],'Europe/Berlin'),
@@ -271,6 +290,7 @@ def envelope_miner(functionNode):
                             "match":diff,
                             "epochStart":w[0][0],
                             "epochEnd": w[0][0]+windowTime,
+                            "offset" : offset,
                             "format":my_date_format(w[0][0])+"&nbsp&nbsp(match=%2.3f)"%diff
                             })
             if maxMatches and len(matches) == maxMatches:
@@ -310,7 +330,6 @@ def envelope_miner(functionNode):
         scaleMin = numpy.min(matchlist)
         matchlist = (matchlist-scaleMin)/(scaleMax-scaleMin)*100
         sortIndices = numpy.argsort([m["match"] for m in cleanMatches])
-        cleanMatches = [cleanMatches[idx] for idx in sortIndices] # fancy indexing via list comprehension
         sortMatches = []
         for idx in sortIndices:
             m = cleanMatches[idx]
@@ -329,9 +348,12 @@ def envelope_miner(functionNode):
             if maxMatches != 0:
                 myModel.notify_observers(annoFolder.get_id(), "children")
 
+            if maxMatches != 0:
+                display_matches(functionNode, True)  # turn on the annotations
+
         functionNode.get_child("results").set_value(sortMatches)
-        if maxMatches != 0:
-            display_matches(functionNode,True)
+
+
     progressNode.set_value(1)
     return True
 
@@ -343,7 +365,7 @@ def enable_interaction_observer(functionNode):
     observer.get_child("enabled").set_value(False)
 
     newRefs = [child for child in motif.get_child("envelope").get_children() if child.get_type()=="timeseries"]
-    print([n.get_name() for n in newRefs])
+    #print([n.get_name() for n in newRefs])
     observer.get_child("targets").add_references(newRefs,deleteAll=True)
     observer.get_child("enabled").set_value(True)
 
@@ -468,7 +490,7 @@ def _update_envelope(motif,widget):
 
 
 
-def update(functionNode):
+def update(functionNode,startTime=0):
     motif = functionNode.get_parent().get_child("EnvelopeMiner").get_child("motif").get_target()
     widget = functionNode.get_parent().get_child("EnvelopeMiner").get_child("widget").get_target()
     #fil = motif.get_child("envelopeFilter")
@@ -488,16 +510,30 @@ def update(functionNode):
 
 
     #now get the data and write the new envelope
+
     start = dates.date2secs(motif.get_child("startTime").get_value())
     end = dates.date2secs(motif.get_child("endTime").get_value())
+
     period =  motif.get_child("envelope.samplingPeriod").get_value()
     times = numpy.arange(start,end,period)
 
+
     ts = motif.get_child("variable").get_target().get_time_series(start,end,resampleTimes = times)
+    data = ts["values"]
+
+    #offset the times, values if necessary
+    if startTime!=0:
+        diff = startTime-start
+        times=times+diff
+        #value offset
+        ts =  motif.get_child("variable").get_target().get_time_series(resampleTimes = times)
+        dataDiff = ts["values"][0]-data[0]
+        data = data +dataDiff
+
     freedom = motif.get_child("envelope.freedom").get_value()
     dynFreedom = motif.get_child("envelope.dynamicFreedom").get_value()
 
-    data = ts["values"]
+
     diff = max(data)-min(data)
     upper = data+diff*freedom
     lower = data-diff*freedom
@@ -578,9 +614,14 @@ def jump(functionNode):
         match = {}
         match["epochStart"] = dates.date2secs(motif.get_child("startTime").get_value())
         match["epochEnd"] = dates.date2secs(motif.get_child("endTime").get_value())
+        update(functionNode) # re-write the band: ! the match will not 100% align in time with the motif: this is because we are searching for motif only with a given step
+
+
     else:
         results = functionNode.get_parent().get_child("EnvelopeMiner").get_child("results").get_value()
         match = results[matchIndex]
+
+        update(functionNode,startTime=match["epochStart"])
 
     middle = match["epochStart"]+(match["epochEnd"]-match["epochStart"])/2
     newStart = middle - (widgetEndTime-widgetStartTime)/2
@@ -645,8 +686,8 @@ def _connect(motif,widget,connect=True):
                 lMax = child
             elif "_limitMin" in child.get_name():
                 lMin = child
-            #elif "_expected" in child.get_name():
-            #    exPe = child
+            elif "_expected" in child.get_name():
+                exPe = child
         if connect:
             if lMax and lMin:
                 if exPe:
