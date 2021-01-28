@@ -2703,7 +2703,7 @@ class TimeSeriesWidget():
                     if not thisLineColor:
                         thisLineColor = "gray"
                     band = Band(base='x', lower='lower', upper='upper', level=globalBandsLevel,fill_color = thisLineColor,
-                                fill_alpha=0.4, line_width=1, line_color='black',source = self.columnData[variableName])
+                                fill_alpha=0.4, line_width=0,source = self.columnData[variableName])
                     self.lines[variableName] = band
                     self.plot.add_layout(band)
                 continue
@@ -2735,7 +2735,7 @@ class TimeSeriesWidget():
                             thisLineColor = color
                         self.lines[variableName] = self.plot.line(x="x", y="y", color=thisLineColor,
                                                                   source=self.columnData[variableName], name=variableName,
-                                                                  line_width=8, line_dash="dashed")
+                                                                  line_width=4, line_dash="dashed")
                     else:
 
                         #this is a real line
