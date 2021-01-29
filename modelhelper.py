@@ -41,8 +41,7 @@ def get_indices_from_interval(times,start,end):
     mask = get_mask_from_interval(times,start,end)
     return numpy.where(mask)[0]
 
-
-def annotations_to_class_vector(annotations, times, tagsMap = {}, regionTag=None, ignoreTags=["region"]):
+def annotations_to_class_vector(annotations, times, tagsMap = {}, regionTag=None, ignoreTags=["region"],autoAdd=True):
     """
         create a classification vector based on given time areas in the annotations
         for times where we don't classify, we return a numpy.nan
@@ -53,6 +52,8 @@ def annotations_to_class_vector(annotations, times, tagsMap = {}, regionTag=None
             ignoreTags: those are not considered useful Annotations to look for
             regionTag: the tag to be used as region filter: we only take times inside annotations with the tag regionTag
                 if not given, we take all, typically the region tag is "region"
+            autoAdd: if true, we automatically take annotation tags which are not explicitly ignored
+                        if false, we take only the tagsMap tags
     # Returns:
         {
             "values":list of class values, nan for undefined
@@ -78,8 +79,11 @@ def annotations_to_class_vector(annotations, times, tagsMap = {}, regionTag=None
         if not anno.get_child("type").get_value() in ["time"]:
             continue # we void thresholds and others
         if tag not in tagsMap:
-            maxClassId = maxClassId +1
-            tagsMap[tag]= maxClassId #create entry
+            if autoAdd:
+                maxClassId = maxClassId +1
+                tagsMap[tag]= maxClassId #create entry
+            else:
+                continue
 
         classId = tagsMap[tag]
 
@@ -109,6 +113,7 @@ def annotations_to_class_vector(annotations, times, tagsMap = {}, regionTag=None
             pass
 
     return values
+
 
 
 
