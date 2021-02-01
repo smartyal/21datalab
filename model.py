@@ -897,7 +897,7 @@ class Model:
 
         node = self.model[id]
         #create my properties
-        props = {k: copy.deepcopy(v) for k, v in node.items() if k not in ["value", "backRefs", "children"]}
+        props = {k: copy.deepcopy(v) for k, v in node.items() if k not in ["value", "backRefs", "children", "object"]}
         if node["type"] not in ["file", "column","timeseries"]:
             # we also take the value then
             props["value"] = copy.deepcopy(node["value"])
@@ -1690,6 +1690,8 @@ class Model:
                 for childId in self.model[id]["children"]:
                     childNode = self.__copy_node(childId)
                     newNode["children"].append(childNode)
+            elif key == "object":
+                continue
             else:
                 newNode[key]=copy.deepcopy(self.model[id][key])
         return newNode
@@ -2508,7 +2510,7 @@ class Model:
 
         for childName,childInfo in self.get_children_dict(source).items():
             childId = childInfo["id"]
-            if childInfo["type"] in ["timeseries","file","column"]:
+            if childInfo["type"] in ["timeseries","file","column","object"]:
                 self.logger.debug(f"clone skip node {childInfo['name']}")
                 continue
             newProps = {k:v for k,v in childInfo.items() if k not in ["parent","children","backRefs","forwardRefs","browsePath","id","name"]}

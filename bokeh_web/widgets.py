@@ -272,7 +272,25 @@ class TimeSeriesWidgetDataServer():
             self.logger.debug("server annotations" + json.dumps(self.annotations, indent=4))
 
 
+    def update_background_info_from_mirror(self):
+        if not hasattr(self,"settings"):
+            #at the startup the settings are not yet deployed
+            return
 
+        try:
+            background = {}
+            background["hasBackground"] = self.mirror["hasBackground"][".properties"]["value"]
+            background["background"] = self.mirror["background"][".properties"]["forwardRefs"][0]
+            background["backgroundMap"] = self.mirror["backgroundMap"][".properties"]["value"]
+            if all(key in background for key in ["hasBackground","background","backgroundMap"]):
+                self.settings["background"]=copy.deepcopy(background)
+            else:
+                self.settings["background"]={"hasBackground":False}
+                    #we dont have a valid background definition
+
+        except Exception as ex:
+            self.logger.error(f"problem loading background {ex}, {str(sys.exc_info()[1])}, disabling background")
+            self.settings["background"] = {"hasBackground": False}
 
 
     def __get_settings(self):
@@ -547,6 +565,7 @@ class TimeSeriesWidgetDataServer():
             query = {"node":self.path,"depth":100,"ignore":["observer","hasAnnotation.anno","hasAnnotation.new"]}
         self.mirror = self.__web_call("post", "_getbranchpretty", query)
         self.update_score_variables_from_mirror()
+        self.update_background_info_from_mirror()
         return self.mirror
 
     def fetch_score_variables(self):
@@ -3800,6 +3819,8 @@ class TimeSeriesWidget():
         startTime = None
         backgrounds = []
         defaultColor = "grey"
+        if "default" in colorMap:
+            defaultColor = colorMap["default"]
 
         if roundValues:
             # round the values, it is not useful to have float values here, we use the background value

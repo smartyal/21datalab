@@ -41,7 +41,6 @@ def get_indices_from_interval(times,start,end):
     mask = get_mask_from_interval(times,start,end)
     return numpy.where(mask)[0]
 
-
 def annotations_to_class_vector(annotations, times, tagsMap = {}, regionTag=None, ignoreTags=["region"],autoAdd=True):
     """
         create a classification vector based on given time areas in the annotations
@@ -79,11 +78,12 @@ def annotations_to_class_vector(annotations, times, tagsMap = {}, regionTag=None
             continue
         if not anno.get_child("type").get_value() in ["time"]:
             continue # we void thresholds and others
-        if tag not in tagsMap and autoAdd:
-            maxClassId = maxClassId +1
-            tagsMap[tag]= maxClassId #create entry
-        else:
-            continue
+        if tag not in tagsMap:
+            if autoAdd:
+                maxClassId = maxClassId +1
+                tagsMap[tag]= maxClassId #create entry
+            else:
+                continue
 
         classId = tagsMap[tag]
 
